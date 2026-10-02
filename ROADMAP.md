@@ -12,7 +12,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   `full` == `fast` until P1/P2 add Layer-E gates. **Known gaps:** no crawl
   determinism gate (no P1 crawler yet); `schema/examples/horde-sample` freshness
   vs `tools/convert-sample.mjs` not checked.
-- **Last human ratification:** pending (manifest provisional, 2026-10-01).
+- **Last human ratification:** 2026-10-01 (manifest ratified by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
 
@@ -45,14 +45,14 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit swarm; one test per primitive | Each test reproduces the gallery's results on the sample |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
-| **P6** Re-run diff, `.loupe/current/`, `loupe-history` | Diff of two real HORDE commits renders; history branch written |
+| **P6** Re-run diff, `.loupe/current/`, `loupe-history`. First step: file `docs/briefs/horde-loupe-001.draft.md` as `horde/integrations/loupe/brief.md` (PR on horde) and wait for HORDE's response | Brief accepted by HORDE; diff of two real HORDE commits renders; history branch written |
 | **P7** Design system integration | `tokens.css` and `primitives.json` generated from the design agent's artifact; `design/prototype/` wired to real data |
 | **PX** Pre-ship prior-art & IP re-scan (Decision 30) | Before any public release: `docs/prior-art.md` refreshed with a patent/IP pass |
 
 ## Queue
 
 ### Q-001 — Ratify the manifest
-- **Status:** open
+- **Status:** done 2026-10-01 (trace: traces/2026-10-01-spinup.md)
 - **Scope:** `project.manifest.json`
 - **Acceptance criteria:** 1. Julian answers the ratification poll with Ratify; `status` updated with the date.
 - **Out of scope:** phase work.
@@ -71,6 +71,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 ## Open questions (blocking — ask Julian)
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
+- **First push to main** of the empty remote is Julian's (spinup poll): `git push -u origin main`.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
 - **0007, 0019** are Proposed; P1 and P3 depend on them.
 

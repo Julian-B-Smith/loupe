@@ -1,7 +1,7 @@
 {
   "schema": "project-manifest.0 (draft — kit v2 will formalize)",
   "kit_version": "2.6.5",
-  "status": "PROVISIONAL — survey 2026-10-01; awaiting ratification poll. Phase state: see ROADMAP.md",
+  "status": "RATIFIED 2026-10-01 (ratification poll). Phase state: see ROADMAP.md",
   "spinup_note": "Spun up over existing content (docs, ADRs 0001-0019, schema, tools, prototype); answers inferred from docs/spinup-brief.md and confirmed by poll.",
   "survey": {
     "what_is_it": "app/tool — a Claude Code skill run in a target repo: deterministic crawler, checker and viewer plus agent stages (structure, audit, explain, navigate)",

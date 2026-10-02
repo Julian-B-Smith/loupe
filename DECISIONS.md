@@ -22,3 +22,6 @@ the one list of ADRs; this file does not copy it, so the two cannot drift.
 - **H3 (2026-10-01, spinup poll).** Repo stays public at github.com/Julian-B-Smith/loupe.
 - **H4 (2026-10-01).** Knowledge-loop forks: candidate lessons inline in LIBRARY (`tier: candidate`);
   reflection voluntary (interactive, supervised project). Kit defaults, not polled.
+- **H5 (2026-10-01, ratification poll).** Manifest ratified. First push to `main` is Julian's (the harness
+  keeps denying agent pushes to main). HORDE intake brief loupe-001 drafted at
+  `docs/briefs/horde-loupe-001.draft.md`; filing deferred to the start of P6.
