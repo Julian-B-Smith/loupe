@@ -1,0 +1,735 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://loupe.dev/schema/view-0.2.json",
+  "title": "Loupe design view",
+  "description": "The design view composed by the Structure agent and revised in dialogue. References graph and overlay ids only; holds no coordinates. The flow view is generated from the graph and is not stored.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "graph",
+    "dialect",
+    "settings",
+    "elements",
+    "exemptions"
+  ],
+  "properties": {
+    "schema": {
+      "const": "loupe.view/0.2"
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hash"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "overlay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hash"
+      ],
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "dialect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hubPlacement"
+      ],
+      "properties": {
+        "hubPlacement": {
+          "enum": [
+            "group",
+            "center"
+          ]
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "section",
+            "description": "Ownership or module boundary. A node belongs to at most one section (its home).",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "members"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "section"
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/nodeId"
+                },
+                "uniqueItems": true
+              },
+              "parent": {
+                "$ref": "#/definitions/elementId"
+              },
+              "collapsedByDefault": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "set",
+            "description": "A named set that is not a home, used by overlaps (e.g. Presets). Members keep their home section.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "members"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "set"
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/nodeId"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "overlap",
+            "description": "Members belong to every listed set at once.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "sets",
+              "members"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "overlap"
+              },
+              "sets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/elementId"
+                },
+                "minItems": 2,
+                "uniqueItems": true
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/nodeId"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "bus",
+            "description": "Edges sharing one contract, drawn as one rail. An edge is in at most one bus.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "edges",
+              "contract"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "bus"
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/edgeId"
+                },
+                "minItems": 2,
+                "uniqueItems": true
+              },
+              "contract": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "signature": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "dst": {
+                    "$ref": "#/definitions/nodeId"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "band",
+            "description": "Abstraction levels, top to bottom. Upward edges are findings; exemptions live in view.exemptions.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "levels"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "band"
+              },
+              "levels": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label",
+                    "members"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/ref"
+                      },
+                      "minItems": 1,
+                      "uniqueItems": true
+                    }
+                  }
+                },
+                "minItems": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "lane",
+            "description": "Ordered stages. Drawn with the line pattern of the provenance its order comes from.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "steps",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "lane"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/nodeId"
+                },
+                "minItems": 2
+              },
+              "source": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provenance"
+                ],
+                "properties": {
+                  "provenance": {
+                    "enum": [
+                      "static",
+                      "config",
+                      "runtime",
+                      "annotated"
+                    ],
+                    "description": "Never inferred: an order resting only on agent reading stays a dialogue question"
+                  },
+                  "evidence": {
+                    "type": "string",
+                    "description": "Config path and key, trace id, or dialogue id the order comes from"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "twins",
+            "description": "Parallel implementations of one interface; members are sections.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "members",
+              "interface"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "twins"
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/elementId"
+                },
+                "minItems": 2,
+                "uniqueItems": true
+              },
+              "interface": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "direction"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "direction": {
+                      "enum": [
+                        "in",
+                        "out"
+                      ]
+                    },
+                    "kind": {
+                      "type": "string"
+                    },
+                    "role": {
+                      "type": "string"
+                    },
+                    "peer": {
+                      "$ref": "#/definitions/nodeId"
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "hub",
+            "description": "A shared service with high fan-in.",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "node"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "hub"
+              },
+              "node": {
+                "$ref": "#/definitions/nodeId"
+              },
+              "placement": {
+                "enum": [
+                  "group",
+                  "center"
+                ],
+                "description": "Overrides settings.hubPlacement for this hub"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "loop",
+            "description": "A cycle. Classification is settled in dialogue; intentional needs evidence (state element, annotation or trace).",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "primitive",
+              "claim",
+              "by",
+              "cycle",
+              "classification"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/definitions/elementId"
+              },
+              "label": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string",
+                "description": "What this element asserts about the code, in one sentence"
+              },
+              "by": {
+                "type": "string",
+                "pattern": "^(agent|human):.+$"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "confirmed",
+                  "challenged"
+                ],
+                "description": "Audit state of the claim"
+              },
+              "primitive": {
+                "const": "loop"
+              },
+              "cycle": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/definitions/nodeId"
+                },
+                "minItems": 1
+              },
+              "classification": {
+                "enum": [
+                  "unclassified",
+                  "circular",
+                  "intentional"
+                ],
+                "description": "circular is drawn as Ring, intentional as Feedback loop, unclassified neutrally"
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "exemptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "rule",
+          "pattern",
+          "status",
+          "approvals"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/elementId"
+          },
+          "rule": {
+            "enum": [
+              "band.downward"
+            ]
+          },
+          "pattern": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "src": {
+                "$ref": "#/definitions/nodeId"
+              },
+              "dst": {
+                "$ref": "#/definitions/nodeId"
+              },
+              "srcIn": {
+                "$ref": "#/definitions/elementId"
+              },
+              "dstIn": {
+                "$ref": "#/definitions/elementId"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            }
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "established",
+              "revoked"
+            ]
+          },
+          "explicit": {
+            "type": "boolean",
+            "description": "Julian said 'always allow this'; establishes on one approval"
+          },
+          "approvals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "by"
+              ],
+              "properties": {
+                "by": {
+                  "type": "string"
+                },
+                "dialogue": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^(file|sym|ext|art|miss):.+$"
+    },
+    "edgeId": {
+      "type": "string",
+      "pattern": "^e:[0-9a-f]{16}$"
+    },
+    "elementId": {
+      "type": "string",
+      "pattern": "^[a-z]+:[A-Za-z0-9_.-]+$"
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^((file|sym|ext|art|miss):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
+      "description": "A node id or an element id"
+    }
+  }
+}

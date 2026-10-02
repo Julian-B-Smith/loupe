@@ -1,0 +1,1603 @@
+{
+  "crawler": {
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 42,
+      "excluded": [],
+      "files": 42
+    },
+    "languages": [
+      "cpp",
+      "yaml"
+    ],
+    "name": "loupe-crawl",
+    "scope": {
+      "exclude": [],
+      "include": [
+        "src/**/*.cpp",
+        "src/**/*.hpp",
+        "config/**/*.yml"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-sample"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:foundations/adaa.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/multistage_shaper.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:036eb37df0ad4333",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/fx/multistage_shaper.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/dsp_math.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dynamics/consonance_gravity.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:0dd1514e28890c47",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dynamics/consonance_gravity.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/intent_bus.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:101e76d7f6953543",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/station/lfsr_noise.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/station/pm_operator.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:118bb3511dce09e3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/station/pm_operator.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/inertia.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/quantum_morph.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1388aa9205dd8519",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/mod/quantum_morph.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/smoother.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/filter.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:13e1cb814c443167",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/fx/filter.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/quantum_morph.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/state_io.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:14c7d32bf6132e7b",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/state_io.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/parity_tests.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:15835d035e698fd1",
+      "kind": "test",
+      "provenance": "static",
+      "src": "file:tests/parity_tests.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "art:tests/goldens/*.bin",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/parity_tests.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:167d7ba0bc5fbba7",
+      "kind": "data",
+      "provenance": "static",
+      "src": "file:tests/parity_tests.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_voice.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:177af86570a9f8fa",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/saw/saw_voice.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/intent_bus.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/xy_pad_view.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1a29a56b95e650b3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/xy_pad_view.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/processor.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/clap_entry.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1b3c088254220733",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/clap_entry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/inertia.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/detune_law.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1b7a53d18006c96d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/saw/detune_law.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/choir/vowel_field.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/fof_grain.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1ce97d4b2d188e7d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/choir/fof_grain.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_voice.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:1ea9cfe86e5d300e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/saw/saw_voice.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/xy_pad_view.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/editor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:23841e4e14826db2",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/editor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/scope_view.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/editor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:2839f6c66849d624",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/editor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:29d1a3611fd22a90",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:verify",
+      "evidence": [
+        {
+          "line": 1,
+          "path": ".github/workflows/ci.yml",
+          "type": "site"
+        }
+      ],
+      "id": "e:32c3ad6169fcc5fe",
+      "kind": "call",
+      "provenance": "static",
+      "src": "art:.github/workflows/ci.yml"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/param_registry.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:362d8912576b110f",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/plugin/param_registry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/station/pm_operator.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:38fd05eddc2e902f",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/station/pm_operator.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/warp/simplex_shaper.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/parity_tests.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:3a3d5dcec3654da5",
+      "kind": "test",
+      "provenance": "static",
+      "src": "file:tests/parity_tests.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/mod_matrix.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/lfo_env.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:42c9db49039b7c6f",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/lfo_env.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/dsp_math.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/kuramoto_core.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:43b6bec6516ba664",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engines/saw/kuramoto_core.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/smoother.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/param_store.hpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:4ab2fb2814c5096c",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:foundations/param_store.hpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:tests/parity_tests.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "verify",
+          "type": "site"
+        }
+      ],
+      "id": "e:4e036357dd4eaf1c",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:verify"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/station/pm_operator.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/parity_tests.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:52fe391a80527b36",
+      "kind": "test",
+      "provenance": "static",
+      "src": "file:tests/parity_tests.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/multistage_shaper.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:53ab7d22c7727aff",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/fx/multistage_shaper.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/filter.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/fx_router.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:53e4f3cc7552c576",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/fx/fx_router.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/morph_panel_view.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/editor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:56ba55909917a53c",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/editor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/detune_law.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_voice.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:5766813998ed1e65",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/saw/saw_voice.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/choir/vowel_field.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:5ca0a3c8a93e2c2f",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/smoother.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/inertia.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:5d762310314bf179",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/mod/inertia.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dynamics/topology.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:5fbe20e3efc662ab",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dynamics/topology.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/quantum_morph.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/morph_panel_view.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:6ab61df6273760e5",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/morph_panel_view.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/dsp_math.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/voice_alloc.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:71a7e44aa5a2b0f6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:foundations/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/warp/simplex_shaper.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:74bfbacd5a1eedd7",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/warp/simplex_shaper.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/multistage_shaper.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:77f6631a3b5c26b4",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/inertia.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/register_ctl.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:796b3e03803a8f8f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/choir/register_ctl.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/warp/ou_walk.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/warp/simplex_shaper.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:7cf869cb8ceff8ed",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/warp/simplex_shaper.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/dsp_math.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/warp/ou_walk.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:8350139e37a51ebd",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engines/warp/ou_walk.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/choir/fof_grain.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/parity_tests.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:8b502a1e416deebd",
+      "kind": "test",
+      "provenance": "static",
+      "src": "file:tests/parity_tests.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/station/pm_operator.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/voice_alloc.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:8d55bc6120796946",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:foundations/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/saw_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/voice_alloc.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:96d2b35158b5ab94",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:foundations/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:9e6a123a7d600da0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/clap_entry.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "clap-wrapper",
+          "type": "site"
+        }
+      ],
+      "id": "e:a2a4a5a7c8807b17",
+      "kind": "call",
+      "provenance": "static",
+      "src": "ext:clap-wrapper"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/voice_alloc.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/processor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:a2b27bb7807cc0a7",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/processor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dynamics/consonance_gravity.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:a2f5e49b2fa8c098",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dynamics/consonance_gravity.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/time_fx.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:aa9b21afc99171ec",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/fx/time_fx.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/intent_bus.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/macros.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:acfc35a64dc764f0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/macros.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/time_fx.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/fx_router.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:b0e2a5c557fe31ce",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/fx/fx_router.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dynamics/sakaguchi.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:b0fbadb8d0574ea3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dynamics/sakaguchi.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/fof_grain.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:b452e107b0429a6e",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/choir/fof_grain.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/station/pm_operator.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:b8d99972ee98a2ba",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/station/pm_operator.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/param_registry.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/editor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:bc3b202548716035",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/editor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/param_registry.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/clap_entry.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:c0a396e54631185f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/clap_entry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/choir/fof_grain.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/register_ctl.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:c6f7ae32888d08d3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/choir/register_ctl.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/station/lfsr_noise.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:c886799cfceaa206",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/station/lfsr_noise.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/phaser.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:ca4637b38b5c8744",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/fx/phaser.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/filter.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:cc1eb61aca939cd6",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/fx/filter.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/kuramoto_core.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d09146e7d79f8f0b",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/saw/kuramoto_core.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/station/wave_ram.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/station/pm_operator.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:d173d0ad7dd12147",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/station/pm_operator.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/phaser.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/fx_router.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d6333bc0c826ad01",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/fx/fx_router.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/state_io.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/clap_entry.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:d7d8fe23f7377b5d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/clap_entry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/processor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:d8621a478d517350",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/processor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/vowel_field.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d8ac593bd204fc04",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/choir/vowel_field.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/param_store.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/detune_law.cpp",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:df019ce9845cb1f0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/saw/detune_law.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/quantum_morph.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/intent_bus.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:e023ecd191622b89",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/intent_bus.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/mod_matrix.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/processor.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:e432c77c68ae28b7",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/processor.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/dsp_math.hpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/oversampler.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:e6d85634614d1ea2",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:foundations/oversampler.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/filter.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:e7ce5df5a672094d",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:foundations/oversampler.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/multistage_shaper.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:efe85561acb768f7",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/fx/multistage_shaper.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mod/quantum_morph.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/choir/vowel_field.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:f366ca25ba13eee2",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engines/choir/vowel_field.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dynamics/consonance_gravity.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dynamics/roam.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:f656bb258c0d2e41",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dynamics/roam.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/warp/ou_walk.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mod/mod_matrix.cpp",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:f684d53142272fb5",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/choir/fof_grain.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "foundations/voice_alloc.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:f9e85bc0eec0a050",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:foundations/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/multistage_shaper.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/fx/fx_router.cpp",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:fd2cfd1089dcbcc8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/fx/fx_router.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin/param_registry.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin/state_io.cpp",
+          "type": "site"
+        }
+      ],
+      "id": "e:fd8319604a691dbf",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/plugin/state_io.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "art:.github/workflows/ci.yml",
+      "kind": "artifact",
+      "lang": "yaml",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "hash": "none",
+      "id": "art:tests/goldens/*.bin",
+      "kind": "artifact",
+      "path": "tests/goldens/*.bin"
+    },
+    {
+      "hash": "none",
+      "id": "ext:clap-wrapper",
+      "kind": "external",
+      "path": "clap-wrapper"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/adaa.hpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/adaa.hpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/dsp_math.hpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/dsp_math.hpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/oversampler.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/oversampler.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/param_store.hpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/param_store.hpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/smoother.hpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/smoother.hpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:foundations/voice_alloc.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "foundations/voice_alloc.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dynamics/consonance_gravity.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dynamics/consonance_gravity.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dynamics/roam.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dynamics/roam.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dynamics/sakaguchi.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dynamics/sakaguchi.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dynamics/topology.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dynamics/topology.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/choir/fof_grain.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/choir/fof_grain.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/choir/register_ctl.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/choir/register_ctl.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/choir/vowel_field.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/choir/vowel_field.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/saw/detune_law.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/saw/detune_law.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/saw/kuramoto_core.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/saw/kuramoto_core.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/saw/saw_voice.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/saw/saw_voice.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/station/lfsr_noise.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/station/lfsr_noise.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/station/pm_operator.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/station/pm_operator.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/station/wave_ram.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/station/wave_ram.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/warp/ou_walk.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/warp/ou_walk.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engines/warp/simplex_shaper.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engines/warp/simplex_shaper.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/fx/filter.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/fx/filter.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/fx/fx_router.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/fx/fx_router.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/fx/multistage_shaper.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/fx/multistage_shaper.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/fx/phaser.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/fx/phaser.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/fx/time_fx.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/fx/time_fx.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/inertia.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/inertia.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/intent_bus.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/intent_bus.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/lfo_env.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/lfo_env.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/macros.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/macros.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/mod_matrix.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/mod_matrix.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mod/quantum_morph.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mod/quantum_morph.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/plugin/clap_entry.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/plugin/clap_entry.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/plugin/param_registry.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/plugin/param_registry.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/plugin/processor.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/plugin/processor.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/plugin/state_io.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/plugin/state_io.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/editor.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/editor.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/morph_panel_view.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/morph_panel_view.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/scope_view.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/scope_view.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/xy_pad_view.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/xy_pad_view.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:tests/parity_tests.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "tests/parity_tests.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:verify",
+      "kind": "file",
+      "path": "verify"
+    }
+  ],
+  "schema": "loupe.graph/0.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-09-30T00:00:00Z",
+    "dirty": false,
+    "repo": "github.com/Julian-B-Smith/horde"
+  }
+}

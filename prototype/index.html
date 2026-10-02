@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loupe Code Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* Layout: drafting-table canvas (schematic of the codebase) + an inspector rail that becomes a bottom sheet on phones.
+   Data model (graph + view spec) is separate from the renderer so structure can change wholesale. */
+:root{
+  --bg:#E4E8E2; --paper:#ECEFE9; --grid:#DCE1DA; --panel:#F5F6F2; --box:#F8F9F6; --box2:#EEF1EC;
+  --ink:#1D2420; --ink-2:#56605A; --ink-3:#88918B; --rule:#C8CEC6; --shadow:rgba(25,35,30,.14);
+  --accent:#2C49D1; --accent-soft:rgba(44,73,209,.12);
+  --k-call:#46514B; --k-include:#8C958F; --k-audio:#C0462C; --k-param:#9C7414; --k-mod:#7547B5; --k-test:#1B7F74; --k-mixed:#56605A;
+  --ok:#2C7A4B; --warn:#B0701A; --bad:#B63D2C;
+  --f-ui:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Martian Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1412; --paper:#131917; --grid:#1A211E; --panel:#161C1A; --box:#1B2320; --box2:#212A26;
+  --ink:#E2E7E1; --ink-2:#A0AAA3; --ink-3:#6F7973; --rule:#2B3430; --shadow:rgba(0,0,0,.5);
+  --accent:#8497FF; --accent-soft:rgba(132,151,255,.16);
+  --k-call:#B3BCB5; --k-include:#6E7872; --k-audio:#F07B5F; --k-param:#DDB04E; --k-mod:#B28DF2; --k-test:#4CC3B3; --k-mixed:#A0AAA3;
+  --ok:#5CC287; --warn:#E3A54A; --bad:#F07A66; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1412; --paper:#131917; --grid:#1A211E; --panel:#161C1A; --box:#1B2320; --box2:#212A26;
+  --ink:#E2E7E1; --ink-2:#A0AAA3; --ink-3:#6F7973; --rule:#2B3430; --shadow:rgba(0,0,0,.5);
+  --accent:#8497FF; --accent-soft:rgba(132,151,255,.16);
+  --k-call:#B3BCB5; --k-include:#6E7872; --k-audio:#F07B5F; --k-param:#DDB04E; --k-mod:#B28DF2; --k-test:#4CC3B3; --k-mixed:#A0AAA3;
+  --ok:#5CC287; --warn:#E3A54A; --bad:#F07A66; color-scheme:dark;}
+
+html,body{height:100%}
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-ui);}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-size:.86em;letter-spacing:-.01em}
+
+.app{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;padding:10px 16px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.name{font-weight:700;font-size:19px;letter-spacing:-.02em}
+.repo{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.repo em{font-style:normal;color:var(--warn);margin-left:6px;text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+.meter{display:flex;align-items:center;gap:8px;font-size:12.5px;font-variant-numeric:tabular-nums;flex-wrap:wrap}
+.meter .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.meter .dot.bad{background:var(--bad)}
+.meter .mbrk{color:var(--ink-3);font-size:11.5px}
+
+.stages{display:flex;gap:2px;padding:6px 12px;overflow-x:auto;border-bottom:1px solid var(--rule);scrollbar-width:none}
+.stages::-webkit-scrollbar{display:none}
+.stg{display:flex;align-items:center;gap:7px;padding:6px 10px 6px 6px;border-radius:6px;color:var(--ink-2);white-space:nowrap;font-weight:500}
+.stg .sn{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid var(--rule);font:500 10.5px var(--f-mono);color:var(--ink-3)}
+.stg:hover{background:var(--box2)}
+.stg.on{color:var(--ink);background:var(--box)}
+.stg.on .sn{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stg .arrow{color:var(--ink-3);margin-left:6px}
+
+.main{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 380px;min-height:0}
+.canvas{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--paper)}
+#svg{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#svg:active{cursor:grabbing}
+
+.panel{border-left:1px solid var(--rule);background:var(--panel);display:flex;flex-direction:column;min-height:0;min-width:0}
+.ptabs{display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid var(--rule)}
+.ptab{padding:6px 10px;border-radius:6px;color:var(--ink-2);font-weight:500}
+.ptab.on{background:var(--box);color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+.sheet{margin-left:auto;display:none;padding:6px 10px;color:var(--ink-2)}
+.pbody{overflow-y:auto;padding:16px 18px 28px;min-height:0;flex:1;display:flex;flex-direction:column;gap:12px}
+.pbody h2{margin:0;font-size:19px;line-height:1.2;letter-spacing:-.015em;text-wrap:balance;overflow-wrap:anywhere}
+.pbody h3{margin:8px 0 0;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:500}
+.pbody p{margin:0}
+.eyebrow{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
+.lede{color:var(--ink-2);font-size:13.5px;max-width:62ch}
+.path{color:var(--ink-3);overflow-wrap:anywhere}
+.empty{color:var(--ink-3);font-size:13px}
+.note{font-size:12.5px;color:var(--ink-3)}
+
+.crumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12.5px}
+.crumb{color:var(--accent);padding:1px 2px}
+.sep{color:var(--ink-3)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:500 11px var(--f-mono);padding:3px 7px;border-radius:4px;background:var(--box2);color:var(--ink-2)}
+.chip.no{text-decoration:line-through;color:var(--ink-3);background:transparent;box-shadow:inset 0 0 0 1px var(--rule)}
+.v{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:3px}
+.v.confirmed{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.v.challenged{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.v.open{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+.v.resolved{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.item{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:8px;background:var(--box);box-shadow:inset 0 0 0 1px var(--rule);text-align:left;width:100%}
+.item:hover{box-shadow:inset 0 0 0 1px var(--ink-3)}
+.item .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item .t{font-weight:500}
+.item .sub{font-size:12.5px;color:var(--ink-2)}
+.item .who{font:11px var(--f-mono);color:var(--ink-3)}
+.item.active{box-shadow:inset 0 0 0 2px var(--accent)}
+
+.elist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.erow{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;padding:6px 4px;border-bottom:1px solid var(--rule);text-align:left}
+.erow:hover{background:var(--box)}
+.en{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow .meta{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.k-call{--kc:var(--k-call)} .k-include{--kc:var(--k-include)} .k-audio{--kc:var(--k-audio)} .k-param{--kc:var(--k-param)} .k-mod{--kc:var(--k-mod)} .k-test{--kc:var(--k-test)} .k-mixed{--kc:var(--k-mixed)}
+.sw{display:inline-block;width:20px;border-top:2px solid var(--kc)}
+.sw.p-i{border-top-style:dashed} .sw.p-r{border-top-style:dotted;border-top-width:3px}
+
+table.tally{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tally th,.tally td{padding:6px 4px;border-bottom:1px solid var(--rule);text-align:right}
+.tally th:first-child,.tally td:first-child{text-align:left}
+.tally th{font-weight:500;color:var(--ink-3);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.tally tfoot td{font-weight:700;border-bottom:0}
+.tally .kl{display:flex;align-items:center;gap:8px}
+
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 12px;border-radius:10px;max-width:92%;font-size:13.5px}
+.msg.agent{background:var(--box);box-shadow:inset 0 0 0 1px var(--rule)}
+.msg.user{align-self:flex-end;background:var(--accent-soft)}
+.msg .who{display:flex;gap:8px;align-items:center;font:11px var(--f-mono);color:var(--ink-3);margin-bottom:5px;flex-wrap:wrap}
+.msg .effect{margin-top:6px;font-size:12.5px;color:var(--ink-2)}
+.msg .jump{color:var(--accent);font:11px var(--f-mono);padding:0}
+form.reply{display:flex;gap:6px;margin-top:8px}
+form.reply input,form.ask input{flex:1;min-width:0;font:inherit;font-size:13px;padding:7px 9px;border-radius:6px;border:1px solid var(--rule);background:var(--panel);color:var(--ink)}
+form.reply button,form.ask button,.btn{padding:7px 11px;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:500;font-size:13px}
+form.ask{display:flex;gap:6px}
+
+ol.flow{margin:0;padding:0;list-style:none;counter-reset:f;display:flex;flex-direction:column;gap:8px}
+ol.flow li{counter-increment:f;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;font-size:13.5px}
+ol.flow li::before{content:counter(f);font:500 11px var(--f-mono);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--rule);color:var(--ink-2)}
+
+/* canvas overlays */
+.legend{position:absolute;left:12px;top:12px;max-width:min(300px,calc(100% - 140px));background:var(--panel);border-radius:8px;box-shadow:0 0 0 1px var(--rule),0 4px 14px var(--shadow);font-size:12px}
+.legend summary{padding:7px 10px;cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.legend summary::-webkit-details-marker{display:none}
+.legend summary::after{content:"＋";color:var(--ink-3)}
+.legend[open] summary::after{content:"－"}
+.lg{padding:0 10px 10px;display:flex;flex-direction:column;gap:8px}
+.lg .kinds{display:flex;flex-wrap:wrap;gap:4px}
+.kbtn{display:flex;align-items:center;gap:6px;padding:3px 7px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--rule);font-size:11.5px}
+.kbtn.dimmed{opacity:.4}
+.provs{display:flex;flex-direction:column;gap:3px;color:var(--ink-2);font-size:11.5px}
+.provs span{display:flex;align-items:center;gap:8px}
+.lg .hint{color:var(--ink-3);font-size:11px}
+.tools{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.tgrp{display:flex;background:var(--panel);border-radius:8px;box-shadow:0 0 0 1px var(--rule),0 4px 14px var(--shadow);overflow:hidden}
+.tgrp button{padding:7px 10px;font-size:12.5px;font-weight:500;min-width:34px}
+.tgrp button+button{border-left:1px solid var(--rule)}
+.tgrp button:hover{background:var(--box2)}
+.tgrp button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* svg */
+.gbox{fill:var(--box);stroke:var(--rule);stroke-width:1}
+.grp.d1 .gbox,.grp.d2 .gbox{fill:var(--box2)}
+.grp.draft .gbox{stroke-dasharray:5 4;fill:transparent}
+.grp.sel .gbox{stroke:var(--accent);stroke-width:2}
+.grp.rel .gbox{stroke:var(--ink-3)}
+.glabel{font:700 10.5px var(--f-ui);letter-spacing:.09em;text-transform:uppercase;fill:var(--ink)}
+.gcount{font:10px var(--f-mono);fill:var(--ink-3)}
+.chevbg{fill:transparent}
+.chev:hover .chevbg{fill:var(--grid)}
+.chev path{fill:var(--ink-2)}
+.nbox{fill:var(--panel);stroke:var(--rule);stroke-width:.8}
+.nlabel{font:10.5px var(--f-mono);fill:var(--ink)}
+.node{cursor:pointer}
+.node:hover .nbox{stroke:var(--ink-3)}
+.node.dim{opacity:.32}
+.node.sel .nbox{stroke:var(--accent);stroke-width:2;fill:var(--accent-soft)}
+.node.rel .nbox{stroke:var(--ink-3)}
+.e{fill:none;stroke:var(--kc);stroke-width:1.4;opacity:.75;transition:opacity .15s}
+.e.p-i{stroke-dasharray:6 4}
+.e.p-r{stroke-dasharray:1.2 3.6;stroke-linecap:round;stroke-width:2}
+.e.dim{opacity:.1}
+.e.hl{opacity:1;stroke-width:2.2}
+.e.faded{opacity:.08}
+.ehit{fill:none;stroke:transparent;stroke-width:10;cursor:pointer}
+.agg circle{fill:var(--panel);stroke:var(--kc);stroke-width:1.2}
+.agg text{font:500 9.5px var(--f-mono);fill:var(--ink);text-anchor:middle}
+.agg.dim{opacity:.15}
+.rail{stroke:var(--kc);stroke-width:5;stroke-linecap:round;opacity:.85}
+.railhit{stroke:transparent;stroke-width:18;cursor:pointer}
+.tap{fill:none;stroke:var(--kc);stroke-width:1.2;opacity:.6}
+.junc{fill:var(--kc)}
+.bus.dim .rail,.bus.dim .tap,.bus.dim .junc,.bus.dim .blabel{opacity:.12}
+.bus .tap.hl{opacity:1;stroke-width:2}
+.bus.hl .rail{opacity:1;stroke-width:7}
+.bus.sel .rail{stroke-width:8;opacity:1}
+.bus.faded .rail,.bus.faded .tap,.bus.faded .junc{opacity:.08}
+.blabel rect{fill:var(--panel);stroke:var(--kc);stroke-width:1.2}
+.blabel text{font:500 9.5px var(--f-mono);letter-spacing:.06em;fill:var(--kc);text-anchor:middle;text-transform:uppercase}
+.blabel{cursor:pointer}
+.pin circle{stroke-width:1.5}
+.pin text{font:700 10px var(--f-ui);text-anchor:middle}
+.pin.q circle{fill:var(--panel);stroke:var(--warn)} .pin.q text{fill:var(--warn)}
+.pin.r circle{fill:var(--ok);stroke:var(--ok)} .pin.r text{fill:var(--panel)}
+.pin.confirmed circle{fill:var(--ok);stroke:var(--ok)} .pin.confirmed text{fill:var(--panel)}
+.pin.challenged circle{fill:var(--bad);stroke:var(--bad)} .pin.challenged text{fill:var(--panel)}
+.pin.open circle{fill:var(--panel);stroke:var(--warn)} .pin.open text{fill:var(--warn)}
+.pin{cursor:pointer}
+.step circle{fill:var(--accent)} .step text{fill:var(--panel);font:700 10px var(--f-mono);text-anchor:middle}
+
+@media (max-width:760px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .panel{position:absolute;left:0;right:0;bottom:0;height:50%;border-left:0;border-top:1px solid var(--rule);box-shadow:0 -10px 28px var(--shadow);border-radius:14px 14px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .panel.closed{height:auto}
+  .panel.closed .pbody{display:none}
+  .sheet{display:block}
+  .meter .mbrk{display:none}
+  .top{padding-block:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="name">Loupe</span><span class="repo">Julian-B-Smith/horde<em>sample graph</em></span></div>
+    <div class="meter" id="meter" title="Conservation check: every file has a place in the view and every edge is drawn, bundled, or folded into a count."></div>
+  </header>
+  <nav class="stages" id="stages" aria-label="Pipeline stages"></nav>
+  <main class="main">
+    <section class="canvas" id="canvas">
+      <svg id="svg" aria-label="Code map">
+        <defs id="defs"></defs>
+        <g id="world"></g>
+      </svg>
+      <details class="legend" id="legend" open>
+        <summary>Key</summary>
+        <div class="lg">
+          <div class="kinds" id="kinds"></div>
+          <div class="provs">
+            <span><i class="sw k-call"></i>Static, found by the crawler</span>
+            <span><i class="sw k-call p-i"></i>Inferred by the agent</span>
+            <span><i class="sw k-call p-r"></i>Seen in a runtime trace</span>
+          </div>
+          <div class="hint">Tap a kind to dim it. Nothing can be hidden.</div>
+        </div>
+      </details>
+      <div class="tools">
+        <div class="tgrp"><button id="zout" aria-label="Zoom out">−</button><button id="zin" aria-label="Zoom in">+</button><button id="fit">Fit</button></div>
+        <div class="tgrp"><button id="bundle" aria-pressed="true">Buses</button></div>
+        <div class="tgrp"><button id="collapse">Collapse</button><button id="expand">Expand</button></div>
+      </div>
+    </section>
+    <aside class="panel" id="panel">
+      <div class="ptabs">
+        <button class="ptab" data-tab="stage" id="tab-stage">Stage</button>
+        <button class="ptab" data-tab="inspect" id="tab-inspect">Inspect</button>
+        <button class="sheet" id="sheet" aria-label="Toggle panel">▾</button>
+      </div>
+      <div class="pbody" id="pbody"></div>
+    </aside>
+  </main>
+</div>
+
+<script src="data/sample-horde.js"></script>
+<script>
+/* Data lives in data/sample-horde.js, loaded before this script. */
+const GI={},NI={},BI={};GROUPS.forEach(g=>GI[g.id]=g);NODES.forEach(n=>NI[n.id]=n);BUSES.forEach(b=>BI[b.id]=b);
+E.forEach(e=>{
+ if(!NI[e.s]||!NI[e.t])console.warn('bad edge',e);
+ if(e.k==='param')e.bus='bparam';
+ else if(e.k==='audio'&&e.t==='fxrouter')e.bus='baudio';
+ else if(e.k==='mod'&&(e.s==='modmatrix'||e.s==='intent')&&NI[e.t].group!=='mod')e.bus='bmod';
+});
+const kids=id=>GROUPS.filter(g=>g.parent===id);
+const nodesIn=id=>NODES.filter(n=>n.group===id);
+function descGroups(id){let out=[id];kids(id).forEach(k=>out=out.concat(descGroups(k.id)));return out;}
+function descNodes(id){const gs=new Set(descGroups(id));return NODES.filter(n=>gs.has(n.group));}
+function ancestors(gid){const a=[];let g=GI[gid];while(g){a.unshift(g.id);g=g.parent?GI[g.parent]:null;}return a;}
+const base=p=>p.split('/').pop();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ VIEW STATE ============ */
+const state={stage:2,bundle:true,collapsed:new Set(),sel:null,dimKinds:new Set(),tour:null,tab:'stage',sheetOpen:true};
+const V={x:0,y:0,k:1};
+
+/* ============ LAYOUT ============ */
+const COLW=250,GUT=84,HEAD=30,ROW=24,GAPY=40,IND=10;
+const colX=c=>c*(COLW+GUT);
+let L;
+function layout(){
+ L={groups:{},nodes:{},rails:{}};
+ const colY={};
+ GROUPS.filter(g=>!g.parent).forEach(g=>{const y=colY[g.col]||0;const h=layGroup(g,colX(g.col),y,COLW,0);colY[g.col]=y+h+GAPY;});
+}
+function layGroup(g,x,y,w,depth){
+ const box={x,y,w,h:HEAD,depth};L.groups[g.id]=box;
+ if(state.collapsed.has(g.id))return box.h;
+ let cy=y+HEAD;
+ kids(g.id).forEach(c=>{const h=layGroup(c,x+IND,cy,w-2*IND,depth+1);cy+=h+8;});
+ nodesIn(g.id).forEach(n=>{L.nodes[n.id]={x:x+8,y:cy,w:w-16,h:ROW-5};cy+=ROW;});
+ box.h=cy-y+6;return box.h;
+}
+function anchorOf(nid){for(const gid of ancestors(NI[nid].group))if(state.collapsed.has(gid))return {t:'g',id:gid,key:'g:'+gid};return {t:'n',id:nid,key:'n:'+nid};}
+function anchorBox(a){if(a.t==='n'){const b=L.nodes[a.id];return {x:b.x,y:b.y+b.h/2,w:b.w};}const b=L.groups[a.id];return {x:b.x,y:b.y+HEAD/2,w:b.w};}
+function linkPath(A,B){
+ let x1,x2,s1,s2;
+ if(B.x>=A.x+A.w-1){x1=A.x+A.w;x2=B.x;s1=1;s2=-1;}
+ else if(B.x+B.w<=A.x+1){x1=A.x;x2=B.x+B.w;s1=-1;s2=1;}
+ else{x1=A.x+A.w;x2=B.x+B.w;s1=1;s2=1;}
+ const y1=A.y,y2=B.y;
+ const d=s1===s2?22+Math.abs(y2-y1)*.12:Math.max(40,Math.abs(x2-x1)*.45);
+ const c1x=x1+s1*d,c2x=x2+s2*d;
+ const mx=(x1+3*c1x+3*c2x+x2)/8,my=(y1+3*y1+3*y2+y2)/8;
+ return {d:`M${x1},${y1} C${c1x},${y1} ${c2x},${y2} ${x2},${y2}`,mx,my};
+}
+const railX=b=>colX(b.col)-GUT/2;
+
+/* ============ RELATEDNESS ============ */
+function related(){
+ const r={active:false,edges:new Set(),nodes:new Set()};const s=state.sel;
+ if(s){r.active=true;
+  if(s.t==='n'){r.nodes.add(s.id);E.forEach(e=>{if(e.s===s.id||e.t===s.id){r.edges.add(e.i);r.nodes.add(e.s);r.nodes.add(e.t);}});}
+  else if(s.t==='g'){const ds=new Set(descNodes(s.id).map(n=>n.id));ds.forEach(x=>r.nodes.add(x));E.forEach(e=>{if(ds.has(e.s)||ds.has(e.t))r.edges.add(e.i);});}
+  else if(s.t==='b'){E.forEach(e=>{if(e.bus===s.id){r.edges.add(e.i);r.nodes.add(e.s);r.nodes.add(e.t);}});}
+  else if(s.t==='e'){s.id.forEach(i=>{r.edges.add(i);r.nodes.add(E[i].s);r.nodes.add(E[i].t);});}
+ } else if(state.stage===6&&state.tour!=null){
+  r.active=true;const ns=new Set(TOURS[state.tour].steps.map(x=>x[0]));ns.forEach(x=>r.nodes.add(x));
+  E.forEach(e=>{if(ns.has(e.s)&&ns.has(e.t))r.edges.add(e.i);});
+ }
+ return r;
+}
+
+/* ============ RENDER ============ */
+const svg=document.getElementById('svg'),world=document.getElementById('world');
+document.getElementById('defs').innerHTML=
+ `<pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" style="stroke:var(--grid)" stroke-width="1"/></pattern>`+
+ KINDS.concat([['mixed','']]).map(([k])=>`<marker id="ar-${k}" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0.5 L8,4 L0,7.5 z" style="fill:var(--k-${k})"/></marker>`).join('');
+
+function render(){
+ layout();
+ const rel=related();const acc={drawn:0,bussed:0,folded:0,internal:0};
+ const draft=state.stage===1;
+ let gs='',es=[],ns='',bs='',ps='';
+ // groups
+ GROUPS.forEach(g=>{
+  const b=L.groups[g.id];if(!b)return;
+  const col=state.collapsed.has(g.id);const nf=descNodes(g.id).length;
+  const dset=new Set(descNodes(g.id).map(n=>n.id));
+  const inner=E.filter(e=>dset.has(e.s)&&dset.has(e.t)).length;
+  const sel=state.sel&&state.sel.t==='g'&&state.sel.id===g.id;
+  const isRel=rel.active&&!sel&&col&&[...dset].some(x=>rel.nodes.has(x));
+  const tri=col?`M${b.x+12},${b.y+10} L${b.x+18},${b.y+15} L${b.x+12},${b.y+20} z`:`M${b.x+10},${b.y+12} L${b.x+20},${b.y+12} L${b.x+15},${b.y+18} z`;
+  gs+=`<g class="grp d${b.depth}${draft?' draft':''}${sel?' sel':''}${isRel?' rel':''}">
+   <rect class="gbox" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.depth?5:7}" data-sel="g:${g.id}"/>
+   <g class="chev" data-act="toggle" data-id="${g.id}"><rect class="chevbg" x="${b.x+4}" y="${b.y+4}" width="22" height="22" rx="4"/><path d="${tri}"/></g>
+   <text class="glabel" x="${b.x+30}" y="${b.y+19}" data-sel="g:${g.id}">${esc(g.label)}</text>
+   <text class="gcount" x="${b.x+b.w-10}" y="${b.y+19}" text-anchor="end">${nf} files${col?` · ${inner} inside`:''}</text></g>`;
+ });
+ // raw edges
+ const buckets=new Map();const taps={};BUSES.forEach(b=>taps[b.id]={src:new Map(),dst:new Map(),n:0});
+ E.forEach(e=>{
+  const a=anchorOf(e.s),c=anchorOf(e.t);
+  if(a.key===c.key){acc.internal++;return;}
+  if(state.bundle&&e.bus){acc.bussed++;const T=taps[e.bus];T.n++;
+   if(!T.src.has(a.key))T.src.set(a.key,{a,m:[]});T.src.get(a.key).m.push(e.i);
+   if(!T.dst.has(c.key))T.dst.set(c.key,{a:c,m:[]});T.dst.get(c.key).m.push(e.i);return;}
+  const key=a.key+'>'+c.key;if(!buckets.has(key))buckets.set(key,{a,c,list:[]});buckets.get(key).list.push(e);
+ });
+ buckets.forEach(({a,c,list})=>{
+  const agg=list.length>1&&(a.t==='g'||c.t==='g');
+  const groupsToDraw=agg?[list]:list.map(e=>[e]);
+  groupsToDraw.forEach(L2=>{
+   if(agg)acc.folded+=L2.length;else acc.drawn++;
+   const P=linkPath(anchorBox(a),anchorBox(c));
+   const kinds=new Set(L2.map(x=>x.k));const kind=kinds.size>1?'mixed':L2[0].k;
+   const prov=L2.every(x=>x.p==='s')?'s':(L2.some(x=>x.p==='i')?'i':'r');
+   const hl=rel.active&&L2.some(x=>rel.edges.has(x.i));
+   const faded=L2.every(x=>state.dimKinds.has(x.k));
+   const cls=`k-${kind} p-${prov}${rel.active?(hl?' hl':' dim'):''}${faded?' faded':''}`;
+   const ids=L2.map(x=>x.i).join(',');
+   let s=`<g class="${cls}"><path class="e ${cls}" d="${P.d}" marker-end="url(#ar-${kind})" style="${agg?`stroke-width:${Math.min(1.5+L2.length*.5,5)}`:''}"/><path class="ehit" d="${P.d}" data-sel="e:${ids}"><title>${esc(L2.map(x=>`${base(NI[x.s].path)} → ${base(NI[x.t].path)} · ${x.k} · ${PROV[x.p].short}`).join('\n'))}</title></path>`;
+   if(agg)s+=`<g class="agg k-${kind}${rel.active&&!hl?' dim':''}" data-sel="e:${ids}"><circle cx="${P.mx}" cy="${P.my}" r="9"/><text x="${P.mx}" y="${P.my+3.3}">${L2.length}</text></g>`;
+   s+='</g>';es.push({hl,s});
+  });
+ });
+ // buses
+ BUSES.forEach(b=>{
+  const T=taps[b.id];if(!state.bundle||!T.n)return;
+  const rx=railX(b);const ys=[];let taps_='',junc='';
+  const sel=state.sel&&state.sel.t==='b'&&state.sel.id===b.id;
+  let anyHl=false;
+  const mk=(entry,isDst)=>{
+   const box=anchorBox(entry.a);const right=rx>box.x+box.w/2;const px=right?box.x+box.w:box.x;ys.push(box.y);
+   const hl=rel.active&&entry.m.some(i=>rel.edges.has(i));if(hl)anyHl=true;
+   const d=isDst?`M${rx},${box.y} L${px+(right?4:-4)},${box.y}`:`M${px},${box.y} L${rx},${box.y}`;
+   taps_+=`<path class="tap${hl?' hl':''}" d="${d}" ${isDst?`marker-end="url(#ar-${b.k})"`:''}/>`;
+   junc+=`<circle class="junc" cx="${rx}" cy="${box.y}" r="${isDst?3.5:2.5}"/>`;
+  };
+  T.src.forEach(v=>mk(v,false));T.dst.forEach(v=>mk(v,true));
+  const y0=Math.min(...ys)-12,y1=Math.max(...ys)+12;L.rails[b.id]={x:rx,y0:y0-26,y1};
+  const faded=state.dimKinds.has(b.k);
+  const lab=`${b.label} · ${T.n}`;const lw=lab.length*6.4+14;
+  bs+=`<g class="bus k-${b.k}${sel?' sel':''}${rel.active?(anyHl||sel?' hl':' dim'):''}${faded?' faded':''}">${taps_}
+   <line class="rail" x1="${rx}" y1="${y0}" x2="${rx}" y2="${y1}"/>${junc}
+   <line class="railhit" x1="${rx}" y1="${y0}" x2="${rx}" y2="${y1}" data-sel="b:${b.id}"><title>${esc(b.label)}: ${esc(b.contract)}</title></line>
+   <g class="blabel" data-sel="b:${b.id}"><rect x="${rx-lw/2}" y="${y0-26}" width="${lw}" height="18" rx="9"/><text x="${rx}" y="${y0-13.5}">${esc(lab)}</text></g></g>`;
+ });
+ // nodes
+ NODES.forEach(n=>{
+  const b=L.nodes[n.id];if(!b)return;
+  const sel=state.sel&&state.sel.t==='n'&&state.sel.id===n.id;
+  const cls=sel?' sel':(rel.active?(rel.nodes.has(n.id)?' rel':' dim'):'');
+  ns+=`<g class="node${cls}" data-sel="n:${n.id}"><rect class="nbox" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="3"/><text class="nlabel" x="${b.x+8}" y="${b.y+b.h/2+3.6}">${esc(base(n.path))}</text><title>${esc(n.path)}</title></g>`;
+ });
+ // pins
+ const pinAt=(nid,cls,glyph,off=0)=>{const a=anchorOf(nid);const bx=a.t==='n'?L.nodes[nid]:L.groups[a.id];const cy=a.t==='n'?bx.y+bx.h/2:bx.y+HEAD/2;const cx=bx.x+bx.w-(a.t==='n'?11:80)-off;
+  return `<g class="pin ${cls}" data-sel="n:${nid}"><circle cx="${cx}" cy="${cy}" r="7.5"/><text x="${cx}" y="${cy+3.5}">${glyph}</text></g>`;};
+ if(state.stage===3)QS.forEach(q=>ps+=pinAt(q.node,q.a?'r':'q',q.a?'✓':'?'));
+ if(state.stage===4){const worst={};const rank={confirmed:0,open:1,challenged:2};AUD.forEach(f=>f.nodes.forEach(n=>{if(worst[n]==null||rank[f.v]>rank[worst[n]])worst[n]=f.v;}));
+  Object.entries(worst).forEach(([n,v])=>ps+=pinAt(n,v,v==='confirmed'?'✓':v==='open'?'?':'!'));}
+ if(state.stage===6&&state.tour!=null)TOURS[state.tour].steps.forEach(([nid],i)=>{const a=anchorOf(nid);const bx=a.t==='n'?L.nodes[nid]:L.groups[a.id];const cy=a.t==='n'?bx.y+bx.h/2:bx.y+HEAD/2;const cx=bx.x+bx.w-11-(a.t==='g'?70+i*20:0);
+  ps+=`<g class="step" data-sel="n:${nid}"><circle cx="${cx}" cy="${cy}" r="8"/><text x="${cx}" y="${cy+3.5}">${i+1}</text></g>`;});
+ es.sort((a,b)=>a.hl-b.hl);
+ world.innerHTML=`<rect x="-3000" y="-3000" width="8000" height="8000" fill="url(#grid)"/>`+gs+es.map(x=>x.s).join('')+bs+ns+ps;
+ applyView();
+ // conservation meter
+ const anchored=NODES.filter(n=>L.nodes[n.id]||anchorOf(n.id).t==='g').length;
+ const total=acc.drawn+acc.bussed+acc.folded+acc.internal;const ok=anchored===NODES.length&&total===E.length;
+ document.getElementById('meter').innerHTML=`<span class="dot${ok?'':' bad'}"></span><span><b>${anchored}/${NODES.length}</b> files placed · <b>${total}/${E.length}</b> edges accounted</span><span class="mbrk">${acc.drawn} drawn · ${acc.bussed} in buses · ${acc.folded} folded · ${acc.internal} inside collapsed groups</span>`;
+ document.getElementById('bundle').setAttribute('aria-pressed',state.bundle);
+ document.querySelectorAll('.kbtn').forEach(b=>b.classList.toggle('dimmed',state.dimKinds.has(b.dataset.k)));
+ lastAcc=acc;
+}
+let lastAcc=null;
+
+/* ============ PAN / ZOOM ============ */
+function applyView(){world.setAttribute('transform',`translate(${V.x},${V.y}) scale(${V.k})`);}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function zoomAt(mx,my,k){k=clamp(k,.12,3);const wx=(mx-V.x)/V.k,wy=(my-V.y)/V.k;V.k=k;V.x=mx-wx*k;V.y=my-wy*k;applyView();}
+function visibleRect(){const r=svg.getBoundingClientRect();const mobile=matchMedia('(max-width:760px)').matches;const panel=document.getElementById('panel');
+ const hidden=mobile?panel.getBoundingClientRect().height:0;return {w:r.width,h:Math.max(120,r.height-hidden)};}
+function fit(){
+ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+ Object.values(L.groups).forEach(b=>{x0=Math.min(x0,b.x);y0=Math.min(y0,b.y);x1=Math.max(x1,b.x+b.w);y1=Math.max(y1,b.y+b.h);});
+ Object.values(L.rails).forEach(r=>{y0=Math.min(y0,r.y0);});
+ const {w,h}=visibleRect();const pad=24;const topPad=matchMedia('(max-width:760px)').matches?60:pad;
+ const k=clamp(Math.min((w-2*pad)/(x1-x0),(h-topPad-pad)/(y1-y0)),.12,1.2);
+ V.k=k;V.x=(w-(x1-x0)*k)/2-x0*k;V.y=topPad+((h-topPad-pad)-(y1-y0)*k)/2-y0*k;applyView();
+}
+function centerOn(wx,wy){const {w,h}=visibleRect();const k=Math.max(V.k,.85);V.k=k;V.x=w/2-wx*k;V.y=h/2-wy*k;applyView();}
+const ptrs=new Map();let down=null,moved=false,pinch=null;
+const local=e=>{const r=svg.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+svg.addEventListener('pointerdown',e=>{
+ svg.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,local(e));
+ if(ptrs.size===1){const p=local(e);down={x:p.x,y:p.y,vx:V.x,vy:V.y,target:e.target};moved=false;}
+ else if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),k:V.k,wx:((a.x+b.x)/2-V.x)/V.k,wy:((a.y+b.y)/2-V.y)/V.k};moved=true;}
+});
+svg.addEventListener('pointermove',e=>{
+ if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,local(e));
+ if(pinch&&ptrs.size===2){const [a,b]=[...ptrs.values()];const k=clamp(pinch.k*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d,.12,3);const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;V.k=k;V.x=mx-pinch.wx*k;V.y=my-pinch.wy*k;applyView();}
+ else if(down&&ptrs.size===1){const p=local(e);const dx=p.x-down.x,dy=p.y-down.y;if(!moved&&Math.hypot(dx,dy)>5)moved=true;if(moved){V.x=down.vx+dx;V.y=down.vy+dy;applyView();}}
+});
+function endPtr(e){
+ ptrs.delete(e.pointerId);
+ if(ptrs.size<2)pinch=null;
+ if(ptrs.size===1){const p=[...ptrs.values()][0];down={x:p.x,y:p.y,vx:V.x,vy:V.y,target:null};}
+ if(ptrs.size===0){if(down&&!moved&&down.target&&e.type==='pointerup')canvasClick(down.target);down=null;}
+}
+svg.addEventListener('pointerup',endPtr);svg.addEventListener('pointercancel',endPtr);
+svg.addEventListener('wheel',e=>{e.preventDefault();const p=local(e);zoomAt(p.x,p.y,V.k*Math.exp(-e.deltaY*.0015));},{passive:false});
+document.getElementById('zin').onclick=()=>{const {w,h}=visibleRect();zoomAt(w/2,h/2,V.k*1.25);};
+document.getElementById('zout').onclick=()=>{const {w,h}=visibleRect();zoomAt(w/2,h/2,V.k/1.25);};
+document.getElementById('fit').onclick=fit;
+document.getElementById('bundle').onclick=()=>{state.bundle=!state.bundle;render();renderPanel();};
+document.getElementById('collapse').onclick=()=>{GROUPS.filter(g=>!g.parent).forEach(g=>state.collapsed.add(g.id));render();fit();};
+document.getElementById('expand').onclick=()=>{state.collapsed.clear();render();fit();};
+
+function parseSel(s){const [t,id]=s.split(':');return t==='e'?{t,id:id.split(',').map(Number)}:{t,id};}
+function canvasClick(t){
+ const act=t.closest&&t.closest('[data-act]');
+ if(act&&act.dataset.act==='toggle'){const id=act.dataset.id;state.collapsed.has(id)?state.collapsed.delete(id):state.collapsed.add(id);render();return;}
+ const s=t.closest&&t.closest('[data-sel]');
+ if(s){select(parseSel(s.dataset.sel),false);}else{state.sel=null;render();renderPanel();}
+}
+function select(sel,recenter){
+ state.sel=sel;state.tab='inspect';
+ if(recenter&&sel.t==='n')ancestors(NI[sel.id].group).forEach(g=>state.collapsed.delete(g));
+ setSheet(true);render();renderPanel();
+ if(recenter){
+  if(sel.t==='n'){const b=L.nodes[sel.id];centerOn(b.x+b.w/2,b.y);}
+  else if(sel.t==='g'){const b=L.groups[sel.id];centerOn(b.x+b.w/2,b.y+Math.min(b.h,200)/2);}
+  else if(sel.t==='b'&&L.rails[sel.id]){const r=L.rails[sel.id];centerOn(r.x,(r.y0+r.y1)/2);}
+ }
+}
+
+/* ============ PANEL ============ */
+const pbody=document.getElementById('pbody');
+function setSheet(open){state.sheetOpen=open;document.getElementById('panel').classList.toggle('closed',!open);document.getElementById('sheet').textContent=open?'▾':'▴';}
+document.getElementById('sheet').onclick=()=>setSheet(!state.sheetOpen);
+document.querySelectorAll('.ptab').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;setSheet(true);renderPanel();});
+
+function edgeList(list,end){
+ if(!list.length)return '<p class="empty">None.</p>';
+ return `<ul class="elist">${list.map(e=>`<li><button class="erow" data-act="sel" data-sel="n:${e[end]}"><i class="sw k-${e.k} p-${e.p}"></i><span class="mono en">${esc(base(NI[e[end]].path))}</span><span class="meta">${e.k} · ${PROV[e.p].short}${e.bus?' · '+esc(BI[e.bus].label):''}</span></button></li>`).join('')}</ul>`;
+}
+function findingsFor(pred){
+ const fs=AUD.filter(pred),qs=QS.filter(q=>pred({nodes:[q.node]}));
+ if(!fs.length&&!qs.length)return '';
+ return `<h3>Agent notes</h3><ul class="list">${qs.map(q=>`<li class="item"><div class="row"><span class="v ${q.a?'resolved':'open'}">${q.a?'resolved':'question'}</span><span class="who">structure agent</span></div><div class="sub">${esc(q.q)}</div>${q.a?`<div class="sub"><b>Answer:</b> ${esc(q.a)}</div>`:''}</li>`).join('')}
+  ${fs.map(f=>`<li class="item"><div class="row"><span class="v ${f.v}">${f.v}</span><span class="who">${f.by}</span></div><div class="sub">${esc(f.text)}</div>${f.resp?`<div class="sub"><b>Governing agent:</b> ${esc(f.resp)}</div>`:''}</li>`).join('')}</ul>`;
+}
+function inspNode(id){
+ const n=NI[id];const outs=E.filter(e=>e.s===id),ins=E.filter(e=>e.t===id);
+ const crumbs=ancestors(n.group).map(g=>`<button class="crumb" data-act="sel" data-sel="g:${g}">${esc(GI[g].label)}</button>`).join('<span class="sep">/</span>');
+ return `<div class="eyebrow">File</div><h2 class="mono">${esc(base(n.path))}</h2><div class="path mono">${esc(n.path)}</div><div class="crumbs">${crumbs}</div>
+ ${NOTES[id]?`<p class="lede">${esc(NOTES[id])}</p>`:''}
+ ${findingsFor(f=>f.nodes.includes(id))}
+ <h3>Depends on · ${outs.length}</h3>${edgeList(outs,'t')}
+ <h3>Used by · ${ins.length}</h3>${edgeList(ins,'s')}`;
+}
+function inspGroup(id){
+ const g=GI[id];const ds=new Set(descNodes(id).map(n=>n.id));
+ const inner=E.filter(e=>ds.has(e.s)&&ds.has(e.t)).length,out=E.filter(e=>ds.has(e.s)&&!ds.has(e.t)).length,inn=E.filter(e=>!ds.has(e.s)&&ds.has(e.t)).length;
+ const col=state.collapsed.has(id);
+ const subs=kids(id);
+ return `<div class="eyebrow">Group</div><h2>${esc(g.label)}</h2><p class="lede">${esc(g.blurb)}</p>
+ <table class="tally"><tbody><tr><td>Files</td><td>${ds.size}</td></tr><tr><td>Edges inside</td><td>${inner}</td></tr><tr><td>Edges out</td><td>${out}</td></tr><tr><td>Edges in</td><td>${inn}</td></tr></tbody></table>
+ <div><button class="btn" data-act="gtoggle" data-id="${id}">${col?'Expand group':'Collapse group'}</button></div>
+ ${findingsFor(f=>f.group===id)}
+ ${subs.length?`<h3>Subgroups</h3><ul class="list">${subs.map(s=>`<li><button class="item" data-act="sel" data-sel="g:${s.id}"><span class="t">${esc(s.label)}</span><span class="sub">${esc(s.blurb)}</span></button></li>`).join('')}</ul>`:''}
+ <h3>Files</h3><ul class="elist">${nodesIn(id).map(n=>`<li><button class="erow" data-act="sel" data-sel="n:${n.id}"><span></span><span class="mono en">${esc(base(n.path))}</span><span class="meta"></span></button></li>`).join('')||'<li class="empty">Only subgroups.</li>'}</ul>`;
+}
+function inspBus(id){
+ const b=BI[id];const m=E.filter(e=>e.bus===id);
+ return `<div class="eyebrow">Bus</div><h2>${esc(b.label)}</h2><p class="lede">${m.length} edges bundled into one rail. Each still exists in the graph and is listed below.</p>
+ <h3>Contract</h3><p class="mono" style="font-size:12px;overflow-wrap:anywhere">${esc(b.contract)}</p>
+ ${findingsFor(f=>f.bus===id)}
+ <h3>Members · ${m.length}</h3><ul class="elist">${m.map(e=>`<li><button class="erow" data-act="sel" data-sel="e:${e.i}"><i class="sw k-${e.k} p-${e.p}"></i><span class="mono en">${esc(base(NI[e.s].path))} → ${esc(base(NI[e.t].path))}</span><span class="meta">${PROV[e.p].short}</span></button></li>`).join('')}</ul>
+ ${state.bundle?'':'<p class="note">Buses are off, so these edges are drawn individually.</p>'}`;
+}
+function inspEdges(ids){
+ const es=ids.map(i=>E[i]);
+ return `<div class="eyebrow">${es.length>1?`${es.length} edges folded into one line`:'Edge'}</div>
+ ${es.map(e=>`<div class="item"><div class="row"><i class="sw k-${e.k} p-${e.p}"></i><span class="mono">${esc(base(NI[e.s].path))} → ${esc(base(NI[e.t].path))}</span></div>
+  <div class="sub">${e.k} · ${esc(PROV[e.p].long)}${e.bus?` Member of ${esc(BI[e.bus].label)}.`:''}</div>
+  <div class="row"><button class="crumb" data-act="sel" data-sel="n:${e.s}">Go to source</button><button class="crumb" data-act="sel" data-sel="n:${e.t}">Go to target</button></div></div>`).join('')}`;
+}
+function renderInspect(){
+ const s=state.sel;
+ if(!s)return `<div class="eyebrow">Inspect</div><h2>Nothing selected</h2><p class="lede">Tap a file, a group header, an edge or a bus rail on the map.</p>`;
+ if(s.t==='n')return inspNode(s.id);if(s.t==='g')return inspGroup(s.id);if(s.t==='b')return inspBus(s.id);return inspEdges(s.id);
+}
+function stageCrawl(){
+ const st=E.filter(e=>e.p==='s');const later={i:E.filter(e=>e.p==='i').length,r:E.filter(e=>e.p==='r').length};
+ const rows=KINDS.map(([k,l])=>`<tr><td><span class="kl"><i class="sw k-${k}"></i>${l}</span></td><td>${st.filter(e=>e.k===k).length}</td></tr>`).join('');
+ return `<div class="eyebrow">Stage 1</div><h2>Crawl</h2><p class="lede">A deterministic pass. Every file becomes a node, and every include, call, audio path, parameter read and test becomes a directed edge. This is ground truth. Every later stage is a view over it.</p>
+ <table class="tally"><thead><tr><th>Edge kind</th><th>Found</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td>${NODES.length} files</td><td>${st.length} edges</td></tr></tfoot></table>
+ <p class="note">Added in later stages: ${later.i} inferred edges from the structure agent and ${later.r} from a runtime trace.</p>
+ <p class="note">Groups show dashed here as a preview of Stage 2. The crawler has no opinion about structure.</p>`;
+}
+function stageStructure(){
+ const inf=E.filter(e=>e.p==='i').length;
+ return `<div class="eyebrow">Stage 2</div><h2>Structure</h2><p class="lede">The structure agent reads the graph and skims each file, then proposes groups and buses.</p>
+ <h3>What it may do</h3><div class="chips"><span class="chip">group</span><span class="chip">nest</span><span class="chip">bundle into bus</span><span class="chip">annotate</span><span class="chip">add inferred edge</span><span class="chip no">delete node</span><span class="chip no">hide edge</span></div>
+ <h3>Buses</h3><ul class="list">${BUSES.map(b=>{const n=E.filter(e=>e.bus===b.id).length;return `<li><button class="item" data-act="sel" data-sel="b:${b.id}"><span class="row"><i class="sw k-${b.k}"></i><span class="t">${esc(b.label)}</span><span class="who">${n} edges</span></span><span class="sub mono" style="font-size:11px">${esc(b.contract)}</span></button></li>`;}).join('')}</ul>
+ <h3>Change log</h3><ul class="list">
+  <li class="item"><span class="sub">Grouped ${NODES.length} files into ${GROUPS.filter(g=>!g.parent).length} top-level groups.</span></li>
+  <li class="item"><span class="sub">Nested SAW, CHOIR, STATION and WARP under Engines.</span></li>
+  ${BUSES.map(b=>`<li class="item"><span class="sub">Bundled ${E.filter(e=>e.bus===b.id).length} edges into ${esc(b.label)}.</span></li>`).join('')}
+  <li class="item"><span class="sub">Added ${inf} inferred edges (dashed) where no direct reference exists.</span></li></ul>`;
+}
+function stageDialogue(){
+ const open=QS.filter(q=>!q.a).length;
+ return `<div class="eyebrow">Stage 3</div><h2>Dialogue</h2><p class="lede">The structure agent asks about what it could not settle from the code. ${open} question${open===1?'':'s'} open.</p>
+ <div class="chat">${QS.map(q=>`<div class="msg agent"><div class="who">structure agent <button class="jump" data-act="sel" data-sel="n:${q.node}">${esc(base(NI[q.node].path))} ↗</button></div>${esc(q.q)}</div>
+  ${q.a?`<div class="msg user"><div class="who">you</div>${esc(q.a)}</div>${q.effect?`<div class="msg agent"><div class="who">structure agent</div><div class="effect">${esc(q.effect)}</div></div>`:''}`
+  :`<form class="reply" data-id="${q.id}"><input id="reply-${q.id}" placeholder="Answer…" aria-label="Answer"><button>Send</button></form>`}`).join('')}</div>`;
+}
+function stageAudit(){
+ const c=v=>AUD.filter(f=>f.v===v).length;
+ return `<div class="eyebrow">Stage 4</div><h2>Audit</h2><p class="lede">Auditor agents check the governing agent's groupings, buses and inferred edges against the code, then confirm or challenge each claim.</p>
+ <div class="chips"><span class="v confirmed">${c('confirmed')} confirmed</span><span class="v challenged">${c('challenged')} challenged</span><span class="v open">${c('open')} open</span></div>
+ <ul class="list">${AUD.map(f=>`<li><button class="item" data-act="sel" data-sel="${f.bus?'b:'+f.bus:f.group?'g:'+f.group:'n:'+f.nodes[0]}"><span class="row"><span class="v ${f.v}">${f.v}</span><span class="who">${f.by}</span></span><span class="sub">${esc(f.text)}</span>${f.resp?`<span class="sub"><b>Governing agent:</b> ${esc(f.resp)}</span>`:''}</button></li>`).join('')}</ul>`;
+}
+function stageExplain(){
+ return `<div class="eyebrow">Stage 5</div><h2>Explain</h2><p class="lede">Explainers fill each structure, and the data flow is summarized end to end.</p>
+ <h3>Data flow, one audio block</h3><ol class="flow">${FLOW.map(f=>`<li><span>${esc(f)}</span></li>`).join('')}</ol>
+ <h3>Groups</h3><ul class="list">${GROUPS.map(g=>`<li><button class="item" data-act="sel" data-sel="g:${g.id}"><span class="row"><span class="t">${esc(g.label)}</span><span class="who">${descNodes(g.id).length} files</span></span><span class="sub">${esc(g.blurb)}</span></button></li>`).join('')}</ul>`;
+}
+function stageNavigate(){
+ const t=state.tour!=null?TOURS[state.tour]:null;
+ return `<div class="eyebrow">Navigator</div><h2>Ask how it works</h2><p class="lede">The navigator stays with the finished map and walks you through paths in it.</p>
+ <form class="ask" id="askf"><input id="ask" placeholder="e.g. where does the XY pad write?" aria-label="Ask the navigator"><button>Ask</button></form>
+ <div class="chips">${TOURS.map((x,i)=>`<button class="chip" data-act="tour" data-i="${i}" style="${state.tour===i?'background:var(--ink);color:var(--bg)':''}">${esc(x.title)}</button>`).join('')}</div>
+ ${askReply?`<p class="note">${esc(askReply)}</p>`:''}
+ ${t?`<h3>${esc(t.title)}</h3><ol class="flow">${t.steps.map(([n,txt])=>`<li><span><button class="jump mono" style="color:var(--accent);font-size:11.5px" data-act="sel" data-sel="n:${n}">${esc(base(NI[n].path))}</button><br>${esc(txt)}</span></li>`).join('')}</ol>`:''}`;
+}
+let askReply='';
+function renderPanel(){
+ document.getElementById('tab-stage').textContent=STAGES[state.stage-1][1];
+ document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('on',b.dataset.tab===state.tab));
+ pbody.innerHTML=state.tab==='inspect'?renderInspect():[stageCrawl,stageStructure,stageDialogue,stageAudit,stageExplain,stageNavigate][state.stage-1]();
+ pbody.scrollTop=0;
+}
+pbody.addEventListener('click',e=>{
+ const a=e.target.closest('[data-act]');if(!a)return;
+ const act=a.dataset.act;
+ if(act==='sel'){const s=parseSel(a.dataset.sel);select(s,true);}
+ else if(act==='gtoggle'){const id=a.dataset.id;state.collapsed.has(id)?state.collapsed.delete(id):state.collapsed.add(id);render();renderPanel();}
+ else if(act==='tour'){const i=+a.dataset.i;state.tour=state.tour===i?null:i;askReply='';state.sel=null;render();renderPanel();if(state.tour!=null)fit();}
+});
+pbody.addEventListener('submit',e=>{
+ e.preventDefault();const f=e.target;
+ if(f.classList.contains('reply')){const q=QS.find(x=>x.id===f.dataset.id);const v=f.querySelector('input').value.trim();if(!v)return;q.a=v;q.effect='Recorded. The structure agent would revise the view on its next pass. (Not connected in this prototype.)';render();renderPanel();}
+ if(f.id==='askf'){const v=f.querySelector('input').value.toLowerCase();const i=TOURS.findIndex(t=>t.q.some(w=>v.includes(w)));
+  if(i>=0){state.tour=i;askReply='';}else{state.tour=null;askReply='This prototype knows three routes. Try one of them.';}
+  state.sel=null;render();renderPanel();}
+});
+
+/* ============ STAGES + LEGEND ============ */
+function renderStages(){
+ document.getElementById('stages').innerHTML=STAGES.map(([id,l],i)=>`<button class="stg${state.stage===i+1?' on':''}" data-n="${i+1}" aria-pressed="${state.stage===i+1}"><span class="sn">${i+1}</span>${l}</button>`).join('');
+}
+document.getElementById('stages').addEventListener('click',e=>{
+ const b=e.target.closest('.stg');if(!b)return;const n=+b.dataset.n;
+ state.stage=n;state.bundle=n>=2;state.sel=null;state.tab='stage';if(n!==6)state.tour=null;askReply='';
+ renderStages();render();renderPanel();setSheet(true);
+});
+document.getElementById('kinds').innerHTML=KINDS.map(([k,l])=>`<button class="kbtn k-${k}" data-k="${k}"><i class="sw k-${k}"></i>${l}</button>`).join('');
+document.getElementById('kinds').addEventListener('click',e=>{const b=e.target.closest('.kbtn');if(!b)return;const k=b.dataset.k;state.dimKinds.has(k)?state.dimKinds.delete(k):state.dimKinds.add(k);render();});
+
+/* ============ BOOT ============ */
+if(matchMedia('(max-width:760px)').matches)document.getElementById('legend').open=false;
+renderStages();render();renderPanel();
+requestAnimationFrame(fit);
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(fit,150);});
+</script>
+
+</body>
+</html>

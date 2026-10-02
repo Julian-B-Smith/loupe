@@ -1,0 +1,6 @@
+{
+  "repo": "github.com/Julian-B-Smith/horde",
+  "siblings": ["foundations/", "libs/vendor/"],
+  "externalPrefixes": { "pluginterfaces/": "vst3sdk", "public.sdk/": "vst3sdk", "base/source/": "vst3sdk" },
+  "includeRoots": ["src"]
+}

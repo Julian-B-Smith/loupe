@@ -1,0 +1,438 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://loupe.dev/schema/graph-0.2.json",
+  "title": "Loupe graph",
+  "description": "Deterministic crawler output. Same commit + same crawler version + same dialect rules = byte-identical canonical JSON. Agents and humans never write this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "source",
+    "crawler",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "schema": {
+      "const": "loupe.graph/0.2"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "commit",
+        "commitTime",
+        "dirty"
+      ],
+      "properties": {
+        "repo": {
+          "type": "string",
+          "description": "e.g. github.com/Julian-B-Smith/horde"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$|^sample$"
+        },
+        "commitTime": {
+          "type": "string",
+          "description": "Commit timestamp (ISO 8601). Never wall-clock time."
+        },
+        "dirty": {
+          "type": "boolean",
+          "description": "True if the working tree had uncommitted changes. Dirty graphs are never archived."
+        }
+      }
+    },
+    "crawler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "granularity",
+        "languages",
+        "dialect",
+        "scope",
+        "inventory"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "granularity": {
+          "enum": [
+            "file",
+            "symbol"
+          ]
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "dialect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "version"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Rule set that assigns semantic roles deterministically, e.g. dsp-plugin"
+            },
+            "version": {
+              "type": "string"
+            }
+          }
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "include",
+            "exclude",
+            "resolution"
+          ],
+          "description": "What the crawl looked at and how it resolved references. Recorded so nothing is left out silently.",
+          "properties": {
+            "include": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Globs or extensions crawled"
+            },
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Globs or extensions deliberately left out"
+            },
+            "resolution": {
+              "enum": [
+                "compile-db",
+                "heuristic"
+              ],
+              "description": "compile-db = include paths and defines from compile_commands.json; heuristic = path search"
+            },
+            "target": {
+              "type": "string",
+              "description": "Build target or platform configuration the crawl assumed, e.g. macos-arm64-release"
+            },
+            "defines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Preprocessor defines assumed when evaluating guards"
+            },
+            "siblings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Path prefixes that belong to sibling repos, e.g. foundations/"
+            }
+          }
+        },
+        "inventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "files",
+            "crawled",
+            "excluded"
+          ],
+          "description": "Every file in the repo is either crawled or counted here as excluded. files = crawled + sum(excluded.count).",
+          "properties": {
+            "files": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "crawled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "excluded": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "reason",
+                  "count"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "description": "e.g. docs, traces, binary, lockfile"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "byExt": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/node"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/edge"
+      }
+    }
+  },
+  "definitions": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^(file|sym|ext|art|miss):.+$",
+      "description": "file:<repo path> | sym:<path>#<qualified name> | ext:<package> | art:<path or glob> | miss:<referenced path>"
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "path",
+        "hash"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/nodeId"
+        },
+        "kind": {
+          "enum": [
+            "file",
+            "symbol",
+            "external",
+            "artifact",
+            "missing"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "description": "Repo-relative path; for external, the package name"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^(sha256:[0-9a-f]{64}|none)$",
+          "description": "Content hash; anchors explainers and drives diffs"
+        },
+        "loc": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parent": {
+          "$ref": "#/definitions/nodeId",
+          "description": "Symbols point at their file"
+        },
+        "symbolKind": {
+          "enum": [
+            "class",
+            "struct",
+            "function",
+            "method",
+            "variable",
+            "type",
+            "module"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "description": "What the file is for, from a deterministic rule: product, test, probe, bench, generator, scratch, gui, data, build, doc, vendored"
+        },
+        "roleRule": {
+          "type": "string",
+          "description": "Id of the rule that assigned the role"
+        },
+        "missing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason"
+          ],
+          "description": "Required when kind is missing: referenced by the code but not present in the tree",
+          "properties": {
+            "reason": {
+              "enum": [
+                "generated",
+                "external",
+                "sibling",
+                "unknown"
+              ]
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "src",
+        "dst",
+        "kind",
+        "provenance",
+        "evidence"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^e:[0-9a-f]{16}$",
+          "description": "First 16 hex of sha256('src|dst|kind')"
+        },
+        "src": {
+          "$ref": "#/definitions/nodeId"
+        },
+        "dst": {
+          "$ref": "#/definitions/nodeId"
+        },
+        "kind": {
+          "enum": [
+            "include",
+            "import",
+            "call",
+            "reference",
+            "inherit",
+            "instantiate",
+            "test",
+            "config",
+            "data",
+            "generates",
+            "embeds"
+          ],
+          "description": "Syntactic kind. generates = a script or build rule produces the target file; embeds = a file is compiled into another (e.g. HTML into a header)."
+        },
+        "role": {
+          "type": "string",
+          "description": "Semantic role from deterministic dialect rules (e.g. audio, param, mod). Agent-assigned roles live in the overlay."
+        },
+        "roleRule": {
+          "type": "string",
+          "description": "Id of the dialect rule that assigned the role"
+        },
+        "provenance": {
+          "enum": [
+            "static",
+            "config"
+          ],
+          "description": "The crawler only produces static and config edges"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of distinct sites"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/crawlEvidence"
+          }
+        }
+      }
+    },
+    "crawlEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "path",
+            "line"
+          ],
+          "properties": {
+            "type": {
+              "const": "site"
+            },
+            "path": {
+              "type": "string"
+            },
+            "line": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "col": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "signature": {
+              "type": "string",
+              "description": "Callee signature, e.g. render(AudioBlock&). Required for bus contract checks."
+            },
+            "guard": {
+              "type": "string",
+              "description": "Preprocessor condition the site sits under, e.g. defined(_WIN32)"
+            },
+            "resolution": {
+              "enum": [
+                "exact",
+                "compile-db",
+                "search"
+              ],
+              "description": "How the target path was found. search = heuristic path search; worth auditing"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "path",
+            "key"
+          ],
+          "properties": {
+            "type": {
+              "const": "config"
+            },
+            "path": {
+              "type": "string"
+            },
+            "key": {
+              "type": "string",
+              "description": "Where in the config file, e.g. fx.chain[2]"
+            },
+            "guard": {
+              "type": "string",
+              "description": "Build-system condition the config entry sits under, e.g. HYPERSAW_GUI2 or NOT HYPERSAW_GUI2"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

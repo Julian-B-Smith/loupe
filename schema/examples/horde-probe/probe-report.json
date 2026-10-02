@@ -1,0 +1,159 @@
+{
+  "unresolved": [],
+  "guarded": [
+    {
+      "from": "src/gui/hypersaw_gui_win.cpp",
+      "line": 13,
+      "include": "windows.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "src/gui/hypersaw_gui_win.cpp",
+      "line": 14,
+      "include": "memory",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "src/gui/hypersaw_gui_win.cpp",
+      "line": 16,
+      "include": "hypersaw_gui_common.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "tools/h2_scalpel_parity_check.cpp",
+      "line": 80,
+      "include": "fcntl.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "tools/h2_scalpel_parity_check.cpp",
+      "line": 81,
+      "include": "io.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "tools/ratchet_probe.cpp",
+      "line": 36,
+      "include": "mach/mach.h",
+      "guard": "defined(__APPLE__)"
+    },
+    {
+      "from": "tools/ratchet_probe.cpp",
+      "line": 42,
+      "include": "windows.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "tools/ratchet_probe.cpp",
+      "line": 43,
+      "include": "psapi.h",
+      "guard": "defined(_WIN32)"
+    },
+    {
+      "from": "tools/ratchet_probe.cpp",
+      "line": 45,
+      "include": "cstdio",
+      "guard": "defined(__linux__)"
+    },
+    {
+      "from": "tools/ratchet_probe.cpp",
+      "line": 46,
+      "include": "unistd.h",
+      "guard": "defined(__linux__)"
+    },
+    {
+      "from": "tools/renderer_bench.cpp",
+      "line": 31,
+      "include": "Accelerate/Accelerate.h",
+      "guard": "defined(__APPLE__)"
+    },
+    {
+      "from": "tools/renderer_bench.cpp",
+      "line": 32,
+      "include": "algorithm",
+      "guard": "defined(__APPLE__)"
+    },
+    {
+      "from": "tools/user_patch_bench.cpp",
+      "line": 18,
+      "include": "xmmintrin.h",
+      "guard": "defined(__SSE2__)"
+    },
+    {
+      "from": "tools/vst3_save_bench.cpp",
+      "line": 42,
+      "include": "CoreFoundation/CoreFoundation.h",
+      "guard": "defined(__APPLE__)"
+    }
+  ],
+  "generated": [
+    {
+      "output": "${build}/generated/gui_html.h",
+      "by": [
+        "tools/embed_file.py"
+      ],
+      "rule": "CMakeLists.txt add_custom_command@47"
+    },
+    {
+      "output": "${build}/generated/factory_bank.h",
+      "by": [
+        "tools/embed_file.py"
+      ],
+      "rule": "CMakeLists.txt add_custom_command@65"
+    },
+    {
+      "output": "${build}/generated/build_stamp.h",
+      "by": [
+        "tools/build_stamp.cmake"
+      ],
+      "rule": "CMakeLists.txt add_custom_target@96"
+    }
+  ],
+  "missing": [
+    {
+      "path": "${build}/generated/gui_html.h",
+      "reason": "generated"
+    },
+    {
+      "path": "${build}/generated/factory_bank.h",
+      "reason": "generated"
+    },
+    {
+      "path": "${build}/generated/build_stamp.h",
+      "reason": "generated"
+    },
+    {
+      "path": "foundations/note.h",
+      "reason": "sibling"
+    },
+    {
+      "path": "foundations/note_conformance.h",
+      "reason": "sibling"
+    },
+    {
+      "path": "pluginterfaces/base/ftypes.h",
+      "reason": "external"
+    },
+    {
+      "path": "pluginterfaces/base/ibstream.h",
+      "reason": "external"
+    },
+    {
+      "path": "pluginterfaces/base/ipluginbase.h",
+      "reason": "external"
+    },
+    {
+      "path": "pluginterfaces/vst/ivstaudioprocessor.h",
+      "reason": "external"
+    },
+    {
+      "path": "pluginterfaces/vst/ivstcomponent.h",
+      "reason": "external"
+    },
+    {
+      "path": "pluginterfaces/vst/ivsthostapplication.h",
+      "reason": "external"
+    }
+  ],
+  "notes": []
+}

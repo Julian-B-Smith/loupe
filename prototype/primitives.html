@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loupe Primitives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Martian+Mono:wght@400;500&family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<style>
+/* Layout: specimen sheet. One card per primitive: drawing, claim, live audit test on the HORDE sample, verdict.
+   Same drafting-paper tokens as the Loupe viewer so the two read as one system. */
+:root{
+  --bg:#E4E8E2; --paper:#ECEFE9; --grid:#DCE1DA; --panel:#F5F6F2; --box:#F8F9F6; --box2:#EEF1EC;
+  --ink:#1D2420; --ink-2:#56605A; --ink-3:#88918B; --rule:#C8CEC6; --shadow:rgba(25,35,30,.10);
+  --accent:#2C49D1; --accent-soft:rgba(44,73,209,.12);
+  --k-call:#46514B; --k-include:#8C958F; --k-audio:#C0462C; --k-param:#9C7414; --k-mod:#7547B5; --k-test:#1B7F74;
+  --ok:#2C7A4B; --warn:#B0701A; --bad:#B63D2C;
+  --setA:rgba(117,71,181,.10); --setB:rgba(27,127,116,.10); --lane:rgba(44,73,209,.07); --lane-edge:#2C49D1;
+  --f-ui:"Schibsted Grotesk",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Martian Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1412; --paper:#131917; --grid:#1A211E; --panel:#161C1A; --box:#1B2320; --box2:#212A26;
+  --ink:#E2E7E1; --ink-2:#A0AAA3; --ink-3:#6F7973; --rule:#2B3430; --shadow:rgba(0,0,0,.4);
+  --accent:#8497FF; --accent-soft:rgba(132,151,255,.16);
+  --k-call:#B3BCB5; --k-include:#6E7872; --k-audio:#F07B5F; --k-param:#DDB04E; --k-mod:#B28DF2; --k-test:#4CC3B3;
+  --ok:#5CC287; --warn:#E3A54A; --bad:#F07A66;
+  --setA:rgba(178,141,242,.12); --setB:rgba(76,195,179,.12); --lane:rgba(132,151,255,.10); --lane-edge:#8497FF; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1412; --paper:#131917; --grid:#1A211E; --panel:#161C1A; --box:#1B2320; --box2:#212A26;
+  --ink:#E2E7E1; --ink-2:#A0AAA3; --ink-3:#6F7973; --rule:#2B3430; --shadow:rgba(0,0,0,.4);
+  --accent:#8497FF; --accent-soft:rgba(132,151,255,.16);
+  --k-call:#B3BCB5; --k-include:#6E7872; --k-audio:#F07B5F; --k-param:#DDB04E; --k-mod:#B28DF2; --k-test:#4CC3B3;
+  --ok:#5CC287; --warn:#E3A54A; --bad:#F07A66;
+  --setA:rgba(178,141,242,.12); --setB:rgba(76,195,179,.12); --lane:rgba(132,151,255,.10); --lane-edge:#8497FF; color-scheme:dark;}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-ui)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:24px 64px;display:flex;flex-direction:column;gap:22px}
+header.top{display:flex;flex-direction:column;gap:8px}
+.eyebrow{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
+h1{margin:0;font-size:clamp(26px,4vw,34px);line-height:1.1;letter-spacing:-.025em;text-wrap:balance}
+.lede{margin:0;color:var(--ink-2);max-width:66ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--panel);border-radius:10px;box-shadow:inset 0 0 0 1px var(--rule)}
+.tally{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.tally b{color:var(--ink)}
+.btn{padding:7px 12px;border-radius:6px;background:var(--ink);color:var(--bg);font-weight:500;font-size:13px}
+.copied{font-size:12px;color:var(--ok)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:16px}
+.card{background:var(--panel);border-radius:12px;box-shadow:inset 0 0 0 1px var(--rule),0 2px 10px var(--shadow);display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.card.v-keep{box-shadow:inset 0 0 0 2px var(--ok),0 2px 10px var(--shadow)}
+.card.v-revise{box-shadow:inset 0 0 0 2px var(--warn),0 2px 10px var(--shadow)}
+.card.v-cut{opacity:.62}
+.chead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 16px 0}
+.chead h2{margin:0;font-size:18px;letter-spacing:-.015em}
+.chead .kind{font:11px var(--f-mono);color:var(--ink-3)}
+.claim{margin:4px 16px 0;color:var(--ink-2);font-size:13.5px}
+.fig{margin:12px 16px 0;background:var(--paper);border-radius:8px;box-shadow:inset 0 0 0 1px var(--rule);overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto}
+.toggle{display:flex;gap:4px;margin:8px 16px 0;flex-wrap:wrap}
+.toggle button{font-size:12px;padding:4px 9px;border-radius:5px;box-shadow:inset 0 0 0 1px var(--rule);color:var(--ink-2)}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.test{margin:12px 16px 0;padding:10px 12px;border-radius:8px;background:var(--box);box-shadow:inset 0 0 0 1px var(--rule);display:flex;flex-direction:column;gap:5px;min-width:0}
+.test .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.test .name{font:500 11px var(--f-mono);color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.pill{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:3px}
+.pill.pass{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.pill.fail{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.test .res{font-size:13px;overflow-wrap:anywhere}
+.test code{font:11.5px var(--f-mono)}
+.q{margin:12px 16px 0;font-size:13px;color:var(--ink)}
+.q b{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--accent);display:block;margin-bottom:2px}
+.verdict{margin:14px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.vbtns{display:flex;gap:6px;flex-wrap:wrap}
+.vbtns button{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;box-shadow:inset 0 0 0 1px var(--rule)}
+.vbtns button[data-v="keep"][aria-pressed="true"]{background:var(--ok);color:var(--panel);box-shadow:none}
+.vbtns button[data-v="revise"][aria-pressed="true"]{background:var(--warn);color:var(--panel);box-shadow:none}
+.vbtns button[data-v="cut"][aria-pressed="true"]{background:var(--ink-2);color:var(--panel);box-shadow:none}
+textarea{width:100%;min-height:44px;resize:vertical;font:13px var(--f-ui);padding:7px 9px;border-radius:6px;border:1px solid var(--rule);background:var(--box);color:var(--ink)}
+.out{white-space:pre-wrap;font:12px var(--f-mono);background:var(--panel);padding:12px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--rule);overflow-x:auto}
+
+/* svg */
+.n rect{fill:var(--panel);stroke:var(--rule);stroke-width:.9}
+.n text{font:9.5px var(--f-mono);fill:var(--ink)}
+.n.hot rect{stroke:var(--accent);stroke-width:1.8;fill:var(--accent-soft)}
+.n.badn rect{stroke:var(--bad);stroke-width:1.8;stroke-dasharray:4 3}
+.n.ghost rect{stroke-dasharray:3 3}
+.n.ghost text{fill:var(--ink-3)}
+.gb{fill:var(--box);stroke:var(--rule)}
+.gl{font:700 9px var(--f-ui);letter-spacing:.1em;text-transform:uppercase;fill:var(--ink-2)}
+.cap{font:9px var(--f-mono);fill:var(--ink-3)}
+.capb{font:9px var(--f-mono);fill:var(--bad)}
+.e{fill:none;stroke-width:1.3}
+.e.call{stroke:var(--k-call)} .e.include{stroke:var(--k-include)} .e.audio{stroke:var(--k-audio)} .e.param{stroke:var(--k-param)} .e.mod{stroke:var(--k-mod)} .e.test{stroke:var(--k-test)}
+.e.bad{stroke:var(--bad);stroke-width:1.8}
+.e.i{stroke-dasharray:5 3.5}
+.e.missing{stroke:var(--bad);stroke-dasharray:2 3;stroke-width:1.4}
+.rail{stroke-width:5;stroke-linecap:round}
+.band{fill:var(--box)}
+.band2{fill:var(--box2)}
+.setA{fill:var(--setA);stroke:var(--k-mod);stroke-width:1.2}
+.setB{fill:var(--setB);stroke:var(--k-test);stroke-width:1.2}
+.chk{font:700 11px var(--f-ui)}
+.cnt{font:500 10px var(--f-mono);fill:var(--kc)}
+.k-call{--kc:var(--k-call)} .k-include{--kc:var(--k-include)} .k-audio{--kc:var(--k-audio)} .k-param{--kc:var(--k-param)} .k-mod{--kc:var(--k-mod)} .k-test{--kc:var(--k-test)}
+.fig svg text{paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}
+.fig svg .n text,.fig svg .chk{stroke:none}
+.chk.ok{fill:var(--ok)} .chk.no{fill:var(--bad)} .chk.inf{fill:var(--warn)}
+.r1{margin:8px 16px 0;font-size:12.5px;color:var(--ink-2);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pill.r1-keep{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.pill.r1-revise{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.r1-new{color:var(--accent);background:var(--accent-soft)}
+.lanebg{fill:var(--lane);stroke:var(--lane-edge);stroke-width:1.2;stroke-linejoin:round}
+.e.spine{stroke-width:2.4}
+.step circle{fill:var(--panel);stroke:var(--lane-edge);stroke-width:1.6}
+.step text{font:700 10px var(--f-mono);fill:var(--lane-edge);stroke:none}
+.plate{fill:var(--ink);}
+.fig svg .plate+text,.fig svg .plate+text+text{fill:var(--bg);stroke:none}
+.comb{fill:none;stroke:var(--ink-2);stroke-width:1.4}
+.rowband{fill:var(--box)} .rowband.alt{fill:var(--box2)}
+.twin{fill:none;stroke:var(--ink-2);stroke-width:1.4}
+.hubn .halo{fill:none;stroke:var(--accent);stroke-width:1.2}
+.hubn .core{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.4}
+.hubn text{font:700 10px var(--f-mono);fill:var(--ink);stroke:none}
+.fanbadge rect{fill:var(--accent)} .fig svg .fanbadge text{font:700 9.5px var(--f-mono);fill:var(--panel);stroke:none}
+.e.dispatch{stroke:var(--ink-3);stroke-dasharray:1.5 3;stroke-linecap:round;stroke-width:1.6}
+.flag rect{fill:var(--bad)} .fig svg .flag text{font:700 9px var(--f-mono);fill:var(--panel);stroke:none}
+.scope{fill:none;stroke:var(--ink-3);stroke-dasharray:4 4}
+.delay rect{fill:var(--panel);stroke:var(--k-audio);stroke-width:1.6}
+.fig svg .delay text{font:700 11px var(--f-mono);fill:var(--k-audio);stroke:none}
+.loopmark circle{fill:none;stroke:var(--k-audio);stroke-width:1.2;opacity:.6}
+.fig svg .loopmark text{font:700 14px var(--f-ui);fill:var(--k-audio);stroke:none;opacity:.8}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Loupe · design view toolkit · round 2</span>
+    <h1>Visual primitives</h1>
+    <p class="lede">Round 2. Your round 1 verdicts sit on each card. Lane, Twins and Hub are redrawn, Layer band is reframed for discussion, and Feedback loop is new. Every test still runs live against the HORDE sample. Mark each card again and copy your verdicts back into the chat.</p>
+  </header>
+  <div class="bar">
+    <div class="tally" id="tally"></div>
+    <div style="display:flex;gap:10px;align-items:center"><span class="copied" id="copied" hidden>Copied</span><button class="btn" id="copy">Copy verdicts</button></div>
+  </div>
+  <div class="out" id="out" hidden></div>
+  <main class="grid" id="grid"></main>
+</div>
+
+<script src="data/sample-horde.js"></script>
+<script>
+/* ---------- graph helpers over the shared sample ---------- */
+const NI={};NODES.forEach(n=>NI[n.id]=n);
+const GI={};GROUPS.forEach(g=>GI[g.id]=g);
+E.forEach(e=>{if(e.k==='param')e.bus='bparam';else if(e.k==='audio'&&e.t==='fxrouter')e.bus='baudio';else if(e.k==='mod'&&(e.s==='modmatrix'||e.s==='intent')&&NI[e.t].group!=='mod')e.bus='bmod';});
+const base=id=>NI[id].path.split('/').pop();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function descGroups(id){let o=[id];GROUPS.filter(g=>g.parent===id).forEach(k=>o=o.concat(descGroups(k.id)));return o;}
+const membersOf=gid=>{const gs=new Set(descGroups(gid));return NODES.filter(n=>gs.has(n.group)).map(n=>n.id);};
+const has=(s,t)=>E.find(e=>e.s===s&&e.t===t);
+const edgesTouching=(id,set)=>E.filter(e=>(e.s===id&&set.has(e.t))||(e.t===id&&set.has(e.s)));
+
+/* ---------- tiny svg kit ---------- */
+/* Layering rule: backgrounds, then edges, then nodes, then labels. Edges never cross text. */
+const CW=6.7;
+const stem=id=>base(id).replace(/\.(cpp|hpp)$/,'');
+function N(x,y,label,cls=''){const w=Math.round(label.length*CW+16);return {x,y,w,h:20,cx:x+w/2,cy:y+10,r:[x+w,y+10],l:[x,y+10],t:[x+w/2,y],b:[x+w/2,y+20],
+ svg:`<g class="n ${cls}"><rect x="${x}" y="${y}" width="${w}" height="20" rx="3"/><text x="${x+8}" y="${y+13.5}">${esc(label)}</text></g>`};}
+const mk=(kind,cls)=>`url(#a-${/bad|missing/.test(cls)?'bad':kind})`;
+function C(p,q,kind,cls='',vertical=false){const [x1,y1]=p,[x2,y2]=q;let d;
+ if(vertical){const dy=Math.max(12,Math.abs(y2-y1)*.5)*(y2>=y1?1:-1);d=`M${x1},${y1} C${x1},${y1+dy} ${x2},${y2-dy} ${x2},${y2}`;}
+ else{const dx=Math.max(16,Math.abs(x2-x1)*.45)*(x2>=x1?1:-1);d=`M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;}
+ return `<path class="e ${kind} ${cls}" d="${d}" marker-end="${mk(kind,cls)}"/>`;}
+const Pth=(d,kind,cls='',arrow=true)=>`<path class="e ${kind} ${cls}" d="${d}" ${arrow?`marker-end="${mk(kind,cls)}"`:''}/>`;
+const defs=`<defs>${['call','include','audio','param','mod','test','bad'].map(k=>`<marker id="a-${k}" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,.5 L8,4 L0,7.5z" style="fill:${k==='bad'?'var(--bad)':`var(--k-${k})`}"/></marker>`).join('')}</defs>`;
+const svgWrap=(h,inner,w=400)=>`<svg viewBox="0 0 ${w} ${h}" role="img" style="min-width:${Math.round(w*.85)}px">${defs}${inner}</svg>`;
+const T=(x,y,s,cls='cap',anchor='start')=>`<text class="${cls}" x="${x}" y="${y}" text-anchor="${anchor}">${esc(s)}</text>`;
+const nodes=list=>list.filter(Boolean).map(n=>n.svg).join('');
+/* point on a node's border (padded) in direction (dx,dy) from its centre */
+function border(n,dx,dy,pad=4){const hw=n.w/2+pad,hh=n.h/2+pad;const t=Math.min(Math.abs(dx)>1e-6?hw/Math.abs(dx):1e9,Math.abs(dy)>1e-6?hh/Math.abs(dy):1e9);return [n.cx+dx*t,n.cy+dy*t];}
+const domKind=list=>{const c={};list.forEach(e=>c[e.k]=(c[e.k]||0)+1);return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0];};
+
+/* ---------- primitives ---------- */
+const P=[
+{id:'section',r1:{v:'keep',note:'Decision approved.'},name:'Section box',kind:'container',claim:'These files form one module: they work with each other more than with the outside.',
+ modes:[['fx','FX chain'],['mod','Modulation']],
+ draw(m){const gid=m||'fx';const ids=membersOf(gid);const set=new Set(ids);const bx=110,bw=210,top=26,H=40+ids.length*30;
+  let bg=`<rect class="gb" x="${bx}" y="${top}" width="${bw}" height="${H}" rx="7"/>`,e='',t=T(bx+12,top+16,GI[gid].label.toUpperCase(),'gl')+T(bx-10,16,'from outside','cap','end')+T(bx+bw+10,16,'to outside');
+  const pos={};ids.forEach((id,i)=>pos[id]=N(bx+12,top+26+i*30,stem(id)));
+  const gx=bx+bw-14;
+  E.filter(x=>set.has(x.s)&&set.has(x.t)).forEach((x,i)=>{const a=pos[x.s],b=pos[x.t];const xx=gx-(i%3)*6;e+=Pth(`M${a.x+a.w},${a.cy} C${xx},${a.cy} ${xx},${b.cy} ${b.x+b.w+2},${b.cy}`,x.k);});
+  ids.forEach(id=>{const n=pos[id];const ins=E.filter(x=>x.t===id&&!set.has(x.s)),outs=E.filter(x=>x.s===id&&!set.has(x.t));
+   if(ins.length)t+=`<text class="cnt k-${domKind(ins)}" x="${bx-10}" y="${n.cy+3.5}" text-anchor="end">${ins.length} →</text>`;
+   if(outs.length)t+=`<text class="cnt k-${domKind(outs)}" x="${bx+bw+10}" y="${n.cy+3.5}">→ ${outs.length}</text>`;});
+  return svgWrap(top+H+10,bg+e+nodes(Object.values(pos))+t,430);},
+ test(m){const gid=m||'fx';const ids=membersOf(gid);const set=new Set(ids);const n=ids.length,N_=NODES.length;
+  const inner=E.filter(e=>set.has(e.s)&&set.has(e.t)).length,crossE=E.filter(e=>set.has(e.s)!==set.has(e.t));
+  const verified=crossE.filter(e=>e.bus&&e.p==='s');const rest=crossE.length-verified.length;
+  const dIn=inner/(n*(n-1)),r=c=>c?dIn/(c/(2*n*(N_-n))):Infinity,fmt=x=>isFinite(x)?x.toFixed(1)+'×':'∞×';
+  const rAll=r(crossE.length),rCore=r(rest),pass=rCore>=2,leans=pass&&rAll<2;
+  return {name:'Cohesion, with verified bus edges counted separately',st:!pass?'fail':leans?'warn':'pass',
+   res:`${inner} edges inside, ${crossE.length} crossing, of which ${verified.length} travel on verified buses. Per possible connection, the inside is ${fmt(rCore)} denser than the boundary without those, and ${fmt(rAll)} with them.${leans?' The box only passes because of its buses, so it is flagged.':''}`};},
+ q:'Decided (0010): verified bus edges are reported separately instead of counted against the box, and a box that passes only because of its buses is flagged. Does that flag feel right once you see it on real repos?'},
+
+{id:'overlap',r1:{v:'keep',note:'Creating new sets for this is acceptable. I\'ll decide through use once the system is running whether it feels right in practice.'},name:'Overlap region',kind:'Euler / Venn',claim:'This file belongs to two groups at once, for example a cross-cutting concern.',
+ modes:[['good','quantum_morph'],['bad','lfo_env (bad placement)']],
+ draw(m){const bad=m==='bad';
+  let bg=`<ellipse class="setA" cx="150" cy="112" rx="145" ry="98"/><ellipse class="setB" cx="295" cy="112" rx="130" ry="98"/>`;
+  const ib=N(40,46,'intent_bus'),mm=N(40,82,'mod_matrix'),inr=N(40,118,'inertia'),q=N(178,92,'quantum_morph',bad?'':'hot'),st=N(330,92,'state_io');
+  const lf=bad?N(196,140,'lfo_env','badn'):N(44,154,'lfo_env');
+  let e=C(ib.r,[q.x-2,q.cy-4],'mod')+Pth(`M${q.x+24},${q.y+20} C${q.x+24},${inr.cy} ${inr.x+inr.w+40},${inr.cy} ${inr.x+inr.w+2},${inr.cy}`,'call')+C(st.l,[q.x+q.w+2,q.cy],'call')+C(mm.t,[ib.cx,ib.y+22],'mod','',true);
+  e+=bad?C(lf.l,[mm.x+mm.w+2,mm.cy+4],'mod'):Pth(`M${lf.x},${lf.cy} C${lf.x-26},${lf.cy} ${mm.x-26},${mm.cy} ${mm.x-2},${mm.cy}`,'mod');
+  let t=T(80,34,'MODULATION','gl')+T(328,44,'PRESETS','gl');if(bad)t+=T(228,182,'no edge into Presets','capb','middle');
+  return svgWrap(222,bg+e+nodes([ib,mm,inr,q,st,lf])+t,440);},
+ test(m){const id=m==='bad'?'lfoenv':'qmorph';const A=new Set(membersOf('mod')),B=new Set(['state','qmorph']);A.delete(id);B.delete(id);
+  const a=edgesTouching(id,A).length,b=edgesTouching(id,B).length;const ok=a>0&&b>0;
+  return {name:'Real edges into every set it overlaps',st:ok?'pass':'fail',res:`${base(id)} has ${a} edge${a===1?'':'s'} into Modulation and ${b} into Presets.${ok?'':' The overlap claim is unsupported.'}`};},
+ q:'Decided: an overlap may introduce a new set, such as Presets. You will judge in use whether it feels right; the test still requires real edges into every set a file overlaps.'},
+
+{id:'bus',r1:{v:'keep',note:'Probably worth building in, but keep an eye on it during development to see if any problems emerge.'},name:'Bus / rail',kind:'bundle',claim:'These edges share one contract, so they can be drawn as one rail.',
+ modes:[['audio','Audio bus'],['param','Param bus']],
+ draw(m){const k=m==='param'?'param':'audio';const mem=E.filter(e=>e.bus===(k==='param'?'bparam':'baudio'));
+  const srcs=[...new Set(mem.map(e=>e.s))];const tgt=mem[0].t;const rx=250,top=30;const h=Math.max(130,top+srcs.length*28+10);
+  const ns=srcs.map((id,i)=>N(16,top+i*28,stem(id)));let e='',j='';
+  ns.forEach((n,i)=>{const inf=mem.find(x=>x.s===srcs[i]).p==='i';e+=Pth(`M${n.x+n.w},${n.cy} L${rx},${n.cy}`,k,inf?'i':'',false);j+=`<circle cx="${rx}" cy="${n.cy}" r="2.8" style="fill:var(--k-${k})"/>`;});
+  const tn=N(300,(top+ns[ns.length-1].cy)/2,stem(tgt));
+  e+=`<line class="rail" x1="${rx}" y1="${top-4}" x2="${rx}" y2="${ns[ns.length-1].cy+10}" style="stroke:var(--k-${k})"/>`+Pth(`M${rx},${tn.cy} L${tn.x-2},${tn.cy}`,k);
+  return svgWrap(h,e+j+nodes([...ns,tn])+T(rx,16,`${k} bus · ${mem.length}`,'gl','middle'));},
+ test(m){const id=m==='param'?'bparam':'baudio';const mem=E.filter(e=>e.bus===id);const inf=mem.filter(e=>e.p!=='s');
+  const sameKind=mem.every(e=>e.k===mem[0].k),sameTgt=mem.every(e=>e.t===mem[0].t);
+  const st=!(sameKind&&sameTgt)?'fail':inf.length?'warn':'pass';
+  return {name:'Every member satisfies the contract',st,res:`${mem.length} members, all ${mem[0].k} edges into ${base(mem[0].t)}.${inf.length?` ${inf.length} member${inf.length>1?'s are':' is'} only inferred (${inf.map(e=>base(e.s)).join(', ')}), so the contract is unverified for ${inf.length>1?'them':'it'}.`:' All static.'}`};},
+ q:'Decided: the crawler will capture call signatures so bus contracts are checked for real instead of by proxy. Watch for problems during development.'},
+
+{id:'band',name:'Layer band',kind:'strata',claim:'Files sit at abstraction levels. Edges that point upward are surfaced as findings, not hidden or forbidden.',
+ r1:{v:'revise',note:'Keep discussing. Could be useful for seeing where complications or inefficiencies exist in the code, or our assumptions could be incomplete or incorrect.'},
+ modes:[['real','As placed'],['moved','voice_alloc moved up'],['dispatch','Dispatch exempted']],
+ lv(m){const band={ui:0,shell:1,mod:1,dyn:1,eng:1,saw:1,choir:1,station:1,warp:1,fx:1,fnd:2};return id=>id==='voicealloc'&&m==='moved'?1:band[NI[id].group];},
+ isDispatch:e=>e.s==='voicealloc'&&['sawvoice','fof','pmop','simplex'].includes(e.t),
+ draw(m){const moved=m==='moved',disp=m==='dispatch';
+  let bg=`<rect class="band" x="6" y="8" width="438" height="44" rx="6"/><rect class="band2" x="6" y="58" width="438" height="84" rx="6"/><rect class="band" x="6" y="148" width="438" height="44" rx="6"/>`;
+  let t=T(16,33,'INTERFACE','gl')+T(16,103,'LOGIC','gl')+T(16,173,'FOUNDATIONS','gl');
+  const ed=N(110,20,'editor'),pr=N(110,70,'processor'),sv=N(230,110,'saw_voice'),kc=N(330,110,'kuramoto_core'),ps=N(230,160,'param_store'),dm=N(350,160,'dsp_math');
+  const va=moved?N(230,70,'voice_alloc'):N(110,160,'voice_alloc',disp?'':'badn');
+  let e=C(ed.b,[pr.cx,pr.y-2],'call','',true)+C(sv.r,[kc.x-2,kc.cy],'call')+C([kc.x+26,kc.y+20],[ps.cx,ps.y-2],'param','',true)+C([kc.x+kc.w-24,kc.y+20],[dm.cx,dm.y-2],'include','',true);
+  if(moved)e+=C(pr.r,[va.x-2,va.cy],'call')+C(va.b,[sv.cx,sv.y-2],'call','',true);
+  else{e+=C(pr.b,[va.cx-6,va.y-2],'call','',true);
+   const up=[va.x+va.w-12,va.y],to=[sv.cx,sv.y+22];
+   if(disp){e+=C(up,to,'call','dispatch',true);t+=T(225,212,'dispatch into engines: drawn apart, exempt from the rule','cap','middle');}
+   else{e+=C(up,to,'call','bad',true);t+=`<g class="flag"><rect x="16" y="202" width="92" height="16" rx="8"/><text x="62" y="213.5" text-anchor="middle">↑ counterflow</text></g>`;
+    t+=T(118,213,'finding: voice_alloc calls up into every engine','capb');}}
+  return svgWrap(moved?200:220,bg+e+nodes([ed,pr,va,sv,kc,ps,dm])+t,450);},
+ test(m){const lvl=this.lv(m);const all=E.filter(e=>lvl(e.s)!=null&&lvl(e.t)!=null&&lvl(e.s)>lvl(e.t));
+  const ex=m==='dispatch'?all.filter(this.isDispatch):[];const up=all.filter(e=>!ex.includes(e)).map(e=>`${base(e.s)} → ${base(e.t)}`);
+  const un=NODES.filter(n=>lvl(n.id)==null).map(n=>base(n.id));
+  return {name:'Counterflow edges surfaced as findings',st:up.length?'warn':'pass',res:`${up.length?`${up.length} counterflow edge${up.length>1?'s':''} to review: ${up.join(', ')}.`:'No counterflow edges.'}${ex.length?` ${ex.length} dispatch edges exempted (this needs the crawler to recognise registration tables).`:''} ${un.length} files sit in no band (${un.join(', ')}).`};},
+ q:'Round 2 framing: an upward edge is a finding, never a failure of the map. Auditors give each one of three readings: a real design smell, a file placed in the wrong band, or a legitimate pattern (dispatch, callbacks, registration) the rule does not model yet. Should exemptions like the dispatch toggle need your sign-off before they apply?'},
+
+{id:'lane',name:'Lane',kind:'sequence',claim:'These files run as ordered stages, and the order matches the edges.',
+ r1:{v:'revise',note:'Should be more visually distinct from section boxes and other objects; convey more of a sense of directionality in how they are designed.'},
+ modes:[['note','Note-on path'],['fx','FX chain']],
+ seq:{note:['clap_entry','processor','voicealloc','sawvoice','kcore'],fx:['fxrouter','filter','phaser','timefx','mshaper']},
+ draw(m){const fx=m==='fx';const ids=this.seq[m||'note'];const sx=150,gap=44,top=40;
+  const ns=ids.map((id,i)=>N(sx+22,top+i*gap,stem(id)));const last=ns[ns.length-1];
+  const L=118,R=318,y0=top-24,y1=last.y+32,cx=(L+R)/2;
+  let bg=`<path class="lanebg" d="M${L},${y0} L${cx},${y0+14} L${R},${y0} L${R},${y1} L${cx},${y1+22} L${L},${y1} Z"/>`;
+  let e='',t=T(L,y0-6,'LANE · RUNS TOP TO BOTTOM','gl'),marks='';
+  for(let i=0;i<ids.length-1;i++){const ed=has(ids[i],ids[i+1]);const a=ns[i].cy+9,b=ns[i+1].cy-9;
+   e+=ed?Pth(`M${sx},${a} L${sx},${b-2}`,ed.k,`spine ${ed.p==='i'?'i':''}`):Pth(`M${sx},${a} L${sx},${b}`,'call','missing',false);
+   if(!ed)t+=T(sx+22,(a+b)/2+3,'no edge','capb');}
+  ns.forEach((n,i)=>{marks+=`<g class="step"><circle cx="${sx}" cy="${n.cy}" r="8"/><text x="${sx}" y="${n.cy+3.4}" text-anchor="middle">${i+1}</text></g>`;});
+  if(fx)ns.slice(1).forEach((b,i)=>{const cx2=342+i*9;e+=Pth(`M${ns[0].x+ns[0].w},${ns[0].cy} C${cx2},${ns[0].cy} ${cx2},${b.cy} ${b.x+b.w+2},${b.cy}`,'audio');});
+  if(fx)t+=T(200,y1+50,'actual edges: fx_router fans out to every stage','capb','middle');
+  return svgWrap(y1+(fx?60:34),bg+e+nodes(ns)+marks+t);},
+ test(m){const ids=this.seq[m||'note'];const gaps=[];for(let i=0;i<ids.length-1;i++)if(!has(ids[i],ids[i+1]))gaps.push(`${base(ids[i])} → ${base(ids[i+1])}`);
+  return {name:'Order matches edge direction',st:gaps.length?'fail':'pass',res:gaps.length?`${gaps.length} consecutive steps have no edge: ${gaps.join(', ')}. Statically, fx_router calls each stage; the running order lives in a routing table the crawler cannot see.`:'Every step has a direct edge to the next, in order.'};},
+ q:'Redrawn: a lane is now an arrow-shaped band with numbered steps on a spine, so it reads as a direction rather than a container. Open from round 1: should a lane be allowed on runtime or config provenance alone (the FX chain case), drawn dotted?'},
+
+{id:'twins',name:'Twins',kind:'small multiples',claim:'These modules are parallel implementations of the same interface.',
+ r1:{v:'revise',note:'Needs a redesign that better establishes the relationship between boxes; now they could be mistaken for several unrelated systems simply sitting near each other.'},
+ modes:[],
+ eng:[['SAW','sawvoice',['sawvoice','kcore','detune']],['CHOIR','fof',['fof','vowel','register']],['STATION','pmop',['pmop','waveram','lfsr']],['WARP','simplex',['simplex','ouwalk']]],
+ iface(){return this.eng.map(([name,entry,files])=>{const f=new Set(files);
+  const pick=pred=>{const e=E.find(pred);return e?e.p:null;};
+  return {name,voice:pick(e=>e.s==='voicealloc'&&f.has(e.t)),audio:pick(e=>f.has(e.s)&&e.t==='fxrouter'),param:pick(e=>f.has(e.s)&&e.t==='pstore')};});},
+ draw(){const rows=this.iface();const labels=['voice in','audio out','param read'];const c0=112,cw=72,cg=8,colX=i=>c0+i*(cw+cg);
+  let s=`<rect class="plate" x="8" y="10" width="424" height="28" rx="6"/>`+T(20,28,'ENGINE INTERFACE','gl')+T(420,28,`${rows.length} implementations`,'cap','end');
+  const combY=48;s+=`<path class="comb" d="M${colX(0)+cw/2},${combY} L${colX(rows.length-1)+cw/2},${combY} M${220},38 L220,${combY}"/>`;
+  rows.forEach((r,i)=>{s+=`<path class="comb" d="M${colX(i)+cw/2},${combY} L${colX(i)+cw/2},58"/>`;});
+  labels.forEach((l,j)=>{const y=96+j*26;s+=`<rect class="rowband${j%2?' alt':''}" x="8" y="${y-15}" width="424" height="24" rx="4"/>`+T(18,y+1,l);});
+  rows.forEach((r,i)=>{const x=colX(i);s+=`<rect class="twin" x="${x}" y="58" width="${cw}" height="116" rx="6"/>`+T(x+cw/2,74,r.name,'gl','middle');
+   [r.voice,r.audio,r.param].forEach((p,j)=>{const y=96+j*26;s+=`<text class="chk ${p==='s'?'ok':p?'inf':'no'}" x="${x+cw/2}" y="${y+1}" text-anchor="middle">${p==='s'?'✓':p?'~':'✕'}</text>`;});});
+  s+=T(8,196,'✓ static    ~ inferred only    ✕ missing');
+  return svgWrap(204,s,440);},
+ test(){const rows=this.iface();const bad=rows.filter(r=>!r.voice||!r.audio||!r.param),inf=rows.filter(r=>[r.voice,r.audio,r.param].some(p=>p&&p!=='s'));
+  return {name:'Members expose the same interface',st:bad.length?'fail':inf.length?'warn':'pass',res:`${rows.length-bad.length} of ${rows.length} engines have all three ports.${inf.length?` ${inf.map(r=>r.name).join(', ')} only matches through inferred edges.`:''}`};},
+ q:'Redrawn: the shared interface is now a plate the twins hang from, with ports listed once and aligned across every twin, so the family reads as one thing. Open from round 1: should twins require a shared base class or header the crawler can see, or is matching edge shape enough?'},
+
+{id:'hub',name:'Hub',kind:'one-to-many',claim:'Many files depend on this one; it is a shared service.',
+ r1:{v:'revise',note:'Consider giving this a more distinct border to better establish visual hierarchy.'},
+ modes:[['pstore','param_store'],['dspmath','dsp_math']],
+ draw(m){const id=m||'pstore';const ins=E.filter(e=>e.t===id);const cx=260,cy=120;const tmp=N(0,0,stem(id));
+  const hw=tmp.w+56;const hub={x:cx-hw/2,y:cy-10,w:hw,h:20,cx,cy};let e='',t='';const step=2*Math.PI/ins.length;
+  ins.forEach((x,i)=>{const a=-Math.PI/2+step/2+i*step;const ca=Math.cos(a),sa=Math.sin(a);
+   const lx=cx+ca*146,ly=cy+sa*96,sx=cx+ca*132,sy=cy+sa*82;const [ex,ey]=border(hub,ca,sa,11);
+   e+=Pth(`M${sx},${sy} L${ex},${ey}`,x.k);
+   const anc=ca>.2?'start':ca<-.2?'end':'middle';t+=T(lx+(anc==='start'?-12:anc==='end'?12:0),ly+(sa>.3?10:sa<-.3?-2:4),stem(x.s),'cap',anc);});
+  const hs=`<g class="hubn"><rect class="halo" x="${hub.x-6}" y="${hub.y-6}" width="${hub.w+12}" height="${hub.h+12}" rx="8"/><rect class="core" x="${hub.x}" y="${hub.y}" width="${hub.w}" height="${hub.h}" rx="4"/><text x="${hub.x+9}" y="${hub.y+13.8}">${esc(stem(id))}</text></g>`;
+  const bw=42,bx=hub.x+hub.w-bw-3,by=hub.y+3;const badge=`<g class="fanbadge"><rect x="${bx}" y="${by}" width="${bw}" height="14" rx="7"/><text x="${bx+bw/2}" y="${by+10.2}" text-anchor="middle">${ins.length} in</text></g>`;
+  return svgWrap(242,e+hs+badge+t,520);},
+ test(m){const id=m||'pstore';const fan={};E.forEach(e=>fan[e.t]=(fan[e.t]||0)+1);const vals=Object.values(fan).sort((a,b)=>b-a);
+  const cut=vals[Math.floor(vals.length*.1)];const n=fan[id]||0;
+  return {name:'Fan-in in the top 10% of files',st:n>=cut?'pass':'fail',res:`${base(id)} has ${n} incoming edges. The top-10% threshold on this graph is ${cut}.`};},
+ q:'Redrawn: a hub now gets a double outline, heavier weight and a fan-in badge, so it outranks ordinary files at a glance. Open from round 1: should hubs also pull to the center of the layout, or stay where their group puts them?'},
+
+{id:'ring',name:'Ring',kind:'circular dependency',claim:'These files depend on each other in a circle: a circular dependency, usually worth untangling.',
+ r1:{v:'keep',note:'Maybe a separate primitive for intentional loops (say, DSP) when it is identified that the ring is not a circular dependency.'},
+ modes:[],
+ cycles(){const adj={};E.forEach(e=>(adj[e.s]=adj[e.s]||[]).push(e.t));const out=[],color={},stack=[];
+  const dfs=u=>{color[u]=1;stack.push(u);(adj[u]||[]).forEach(v=>{if(color[v]===1)out.push(stack.slice(stack.indexOf(v)));else if(!color[v])dfs(v);});stack.pop();color[u]=2;};
+  NODES.forEach(n=>{if(!color[n.id])dfs(n.id);});return out;},
+ draw(){const cyc=this.cycles();const cx=200,cy=100;const labels=cyc.length?cyc[0].map(stem):['a','b','c'];const ghost=!cyc.length;
+  const ns=labels.map((l,i)=>{const a=-Math.PI/2+i*2*Math.PI/labels.length;const n=N(0,0,l,ghost?'ghost':'');return N(cx+Math.cos(a)*120-n.w/2,cy+Math.sin(a)*66-10,l,ghost?'ghost':'');});
+  let e='';ns.forEach((p,i)=>{const q=ns[(i+1)%ns.length];const mx=(p.cx+q.cx)/2,my=(p.cy+q.cy)/2;const ox=mx-cx,oy=my-cy;const L=Math.hypot(ox,oy)||1;
+   const kx=mx+ox/L*34,ky=my+oy/L*34;const s=border(p,kx-p.cx,ky-p.cy,3),f=border(q,kx-q.cx,ky-q.cy,6);
+   e+=Pth(`M${s[0]},${s[1]} Q${kx},${ky} ${f[0]},${f[1]}`,'call',ghost?'i':'bad');});
+  let t=ghost?T(cx,cy+4,'no cycle in the sample','cap','middle')+T(cx,196,'ghost drawing: what a ring would look like','cap','middle'):'';
+  return svgWrap(206,e+nodes(ns)+t);},
+ test(){const c=this.cycles();return {name:'A real cycle exists in the graph',st:c.length?'pass':'warn',res:c.length?`${c.length} cycle(s), e.g. ${c[0].map(base).join(' → ')}.`:'No file-level cycles in the sample, so the agent would not draw a ring here.'};},
+ q:'Decided: Ring means a circular dependency and is drawn as a warning. Loops that are intentional signal feedback get their own primitive, Feedback loop, on the next card.'},
+
+{id:'feedback',name:'Feedback loop',kind:'signal loop · new',claim:'This loop is intentional signal feedback, such as a delay line or the Kuramoto phase update, not a circular dependency.',
+ r1:null,
+ modes:[],
+ draw(){let bg=`<rect class="scope" x="40" y="34" width="360" height="150" rx="10"/>`;
+  let t=T(52,26,'inside kuramoto_core.cpp · symbol level, not crawled yet','cap');
+  const st=N(80,66,'phase_state'),cp=N(264,66,'coupling_term'),up=N(264,136,'phase_update');
+  const dl={x:108,y:132,w:40,h:28,cx:128,cy:146};
+  let e=C(st.r,[cp.x-2,cp.cy],'audio')+C(cp.b,[up.cx,up.y-2],'audio','',true)+C(up.l,[dl.x+dl.w+2,dl.cy],'audio')+C([dl.cx,dl.y],[st.cx-20,st.y+22],'audio','',true);
+  const d=`<g class="delay"><rect x="${dl.x}" y="${dl.y}" width="${dl.w}" height="${dl.h}" rx="3"/><text x="${dl.cx}" y="${dl.cy+4.5}" text-anchor="middle">z⁻¹</text></g>`;
+  t+=T(dl.cx,dl.y+dl.h+14,'one-block delay','cap','middle')+`<g class="loopmark"><circle cx="210" cy="112" r="15"/><text x="210" y="116.5" text-anchor="middle">↻</text></g>`;
+  return svgWrap(200,bg+e+nodes([st,cp,up])+d+t,440);},
+ test(){return {name:'The loop passes through a state element',st:'warn',res:'Not checkable on the sample. The crawl is file-level and this loop lives inside kuramoto_core.cpp. It needs a symbol-level crawl, or an agent annotation marked inferred until a runtime trace confirms it.'};},
+ q:'New in round 2. What should count as proof that a loop is intentional: a state element on the loop (a z⁻¹ delay, a buffer, the previous block), an explicit annotation, or both?'}
+];
+
+/* ---------- verdict state (per-viewer convenience) ---------- */
+let V={};try{V=JSON.parse(localStorage.getItem('loupe-primitives-r2')||'{}');}catch(_){V={};}
+const save=()=>{try{localStorage.setItem('loupe-primitives-r2',JSON.stringify(V));}catch(_){}};
+const modeOf={};P.forEach(p=>modeOf[p.id]=p.modes.length?p.modes[0][0]:null);
+
+function card(p){const m=modeOf[p.id];const t=p.test(m);const v=(V[p.id]||{}).v||'';const note=(V[p.id]||{}).note||'';
+ return `<article class="card ${v?'v-'+v:''}" id="c-${p.id}">
+  <div class="chead"><h2>${p.name}</h2><span class="kind">${p.kind}</span></div>
+  <p class="claim">${esc(p.claim)}</p>
+  <p class="r1">${p.r1?`<span class="pill r1-${p.r1.v}">Round 1 · ${p.r1.v}</span> ${esc(p.r1.note)}`:'<span class="pill r1-new">New in round 2</span>'}</p>
+  ${p.modes.length?`<div class="toggle">${p.modes.map(([k,l])=>`<button data-p="${p.id}" data-m="${k}" aria-pressed="${k===m}">${esc(l)}</button>`).join('')}</div>`:''}
+  <div class="fig">${p.draw(m)}</div>
+  <div class="test"><div class="row"><span class="pill ${t.st}">${t.st}</span><span class="name">${esc(t.name)}</span></div><div class="res">${esc(t.res)}</div></div>
+  <p class="q"><b>Workshop question</b>${esc(p.q)}</p>
+  <div class="verdict"><div class="vbtns">${['keep','revise','cut'].map(k=>`<button data-p="${p.id}" data-v="${k}" aria-pressed="${v===k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div>
+  <textarea id="note-${p.id}" data-note="${p.id}" placeholder="Note (optional)" aria-label="Note on ${esc(p.name)}">${esc(note)}</textarea></div>
+ </article>`;}
+function renderAll(){document.getElementById('grid').innerHTML=P.map(card).join('');tally();}
+function rerender(id){const p=P.find(x=>x.id===id);const el=document.getElementById('c-'+id);const tmp=document.createElement('div');tmp.innerHTML=card(p);el.replaceWith(tmp.firstElementChild);tally();}
+function tally(){const c={keep:0,revise:0,cut:0};P.forEach(p=>{const v=(V[p.id]||{}).v;if(v)c[v]++;});
+ document.getElementById('tally').innerHTML=`<span><b>${P.length}</b> primitives</span><span>· <b>${c.keep}</b> keep</span><span>· <b>${c.revise}</b> revise</span><span>· <b>${c.cut}</b> cut</span><span>· <b>${P.length-c.keep-c.revise-c.cut}</b> undecided</span>`;}
+document.getElementById('grid').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.p;
+ if(b.dataset.m){modeOf[id]=b.dataset.m;rerender(id);}
+ else if(b.dataset.v){V[id]=V[id]||{};V[id].v=V[id].v===b.dataset.v?'':b.dataset.v;save();rerender(id);}});
+document.getElementById('grid').addEventListener('input',e=>{const id=e.target.dataset.note;if(!id)return;V[id]=V[id]||{};V[id].note=e.target.value;save();});
+document.getElementById('copy').onclick=async()=>{
+ const txt='Loupe primitive verdicts, round 2\n'+P.map(p=>{const x=V[p.id]||{};return `- ${p.name}: ${x.v?x.v.toUpperCase():'undecided'}${x.note?` — ${x.note.trim()}`:''}`;}).join('\n');
+ const out=document.getElementById('out');const ok=document.getElementById('copied');
+ try{await navigator.clipboard.writeText(txt);ok.hidden=false;setTimeout(()=>ok.hidden=true,1800);out.hidden=true;}
+ catch(_){out.textContent=txt;out.hidden=false;const r=document.createRange();r.selectNodeContents(out);const s=getSelection();s.removeAllRanges();s.addRange(r);}};
+renderAll();
+</script>
+
+</body>
+</html>

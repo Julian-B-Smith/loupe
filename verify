@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# verify — oracle dispatcher. The harness's only interface to project QC.
+# Usage: ./verify fast | full | report
+# Contract: exit 0 = green, nonzero = red. Writes .harness/last-verify.json.
+#
+# (This is the template a new or retrofitted project copies as its ./verify.
+# It carries NO gate code: until 2.4.0 it shipped an inline `leak_gate`, and
+# every repo born from it got a private copy that then drifted — ten variants,
+# nine missing the Windows pattern. The gate now lives in kit/vendor/kit-gates.sh,
+# which is canonical, vendored into .kit/, and pinned by sha256.)
+#
+# THIS FILE IS PROJECT-OWNED: edit `fast` and `full` freely, add project gates,
+# wire your test commands. The kit-owned gates live in `.kit/kit-gates.sh`,
+# which is vendored and checksummed — do not edit that one, and do not copy its
+# contents here. Update it with:  python3 <kit>/kit_sync.py .
+set -uo pipefail
+
+TARGET="${1:-fast}"
+HARNESS_DIR=".harness"
+mkdir -p "$HARNESS_DIR"
+
+# Kit-owned gates: record, leak_gate, kit_integrity. A repo missing this file
+# is not a lesser repo, it is an UNGATED one, so failing loudly beats degrading
+# quietly — a silently skipped privacy gate is exactly the shape of bug the
+# gate exists to prevent.
+if [ -r .kit/kit-gates.sh ]; then
+  . .kit/kit-gates.sh
+else
+  echo "verify: .kit/kit-gates.sh missing — run kit_sync.py (gates cannot be skipped)" >&2
+  exit 1
+fi
+
+fast() {
+  # ---- Layer-0: seconds, not minutes. CI-blocking. -------------------------
+  local ok=0
+  kit_integrity || ok=1      # kit-owned files must match .kit/MANIFEST
+  leak_gate     || ok=1      # privacy gate: kit-core, keep it first
+  # Mutation tests: each case plants one known-bad snapshot and asserts the
+  # checker refuses it — proves loupe-check FIRES, not merely that it exists.
+  node tools/loupe-check.test.mjs || ok=1
+  # loupe-check on every example snapshot, with schema validation REQUIRED.
+  # The checker silently skips JSON Schema when ajv is missing and still says
+  # OK; that is a declared-not-effective gate, so the skip note is fatal here.
+  local d out
+  for d in schema/examples/*/; do
+    out="$(node tools/loupe-check.mjs "$d" 2>&1)"; local rc=$?
+    printf '%s\n' "$out" | tail -1 | sed "s|^|loupe-check ${d}: |"
+    [ $rc -eq 0 ] || { printf '%s\n' "$out" >&2; ok=1; }
+    if printf '%s' "$out" | grep -q 'schema validation skipped'; then
+      echo "verify[fast]: ajv missing — run npm ci; schema validation cannot be skipped" >&2; ok=1
+    fi
+  done
+  # Not yet gated (ROADMAP P0/P1): crawl-twice byte equality needs the P1
+  # crawler; the probe is regex-based and not a determinism reference.
+  return $ok
+}
+
+full() {
+  fast || return $?
+  # ---- Layer-E: the whole gate. Run before closing a queue item. -----------
+  # Planned (ROADMAP P1/P2): crawl HORDE at a pinned commit vs its golden
+  # graph; render the stress cases with the conservation meter balanced.
+  # Until those exist, full == fast, stated rather than faked.
+  echo "verify[full]: no Layer-E gates yet (see ROADMAP P1/P2); full == fast" >&2
+  return 0
+}
+
+case "$TARGET" in
+  fast)   fast;  record fast  $? ;;
+  full)   full;  record full  $? ;;
+  report) cat "$HARNESS_DIR/last-verify.json" 2>/dev/null || { echo '{"target":null,"exit":null}'; exit 1; } ;;
+  *)      echo "usage: ./verify fast|full|report" >&2; exit 64 ;;
+esac

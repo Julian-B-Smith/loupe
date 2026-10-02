@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://loupe.dev/schema/loupe-spec-0.1.json",
+  "title": "loupe-spec block",
+  "description": "One fenced loupe-spec block per primitive or base glyph, inside its component README in the Loupe design system. Every styling value is a token name; only `notes` is free text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["primitive", "version", "parts", "states", "layout"],
+  "properties": {
+    "primitive": {
+      "enum": ["section", "set", "overlap", "bus", "band", "lane", "twins", "hub", "loop",
+               "node", "group-header", "edge", "count-badge", "question-pin", "audit-pin", "tour-step", "conservation-meter"]
+    },
+    "version": { "type": "integer", "minimum": 1 },
+    "parts": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/definitions/style" }
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per state: part name -> style overrides. Each state family owns one channel (see the handoff's state table).",
+      "properties": {
+        "hover": { "$ref": "#/definitions/override" }, "selected": { "$ref": "#/definitions/override" },
+        "related": { "$ref": "#/definitions/override" }, "dimmed": { "$ref": "#/definitions/override" },
+        "collapsed": { "$ref": "#/definitions/override" },
+        "audit-pass": { "$ref": "#/definitions/override" }, "audit-warn": { "$ref": "#/definitions/override" }, "audit-fail": { "$ref": "#/definitions/override" },
+        "diff-added": { "$ref": "#/definitions/override" }, "diff-removed": { "$ref": "#/definitions/override" },
+        "diff-changed": { "$ref": "#/definitions/override" }, "diff-stale": { "$ref": "#/definitions/override" },
+        "unclassified": { "$ref": "#/definitions/override" }, "pending": { "$ref": "#/definitions/override" }, "established": { "$ref": "#/definitions/override" }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "orientation": { "type": "array", "items": { "enum": ["vertical", "horizontal", "radial"] }, "minItems": 1, "uniqueItems": true },
+        "padding": { "$ref": "#/definitions/length" },
+        "memberGap": { "$ref": "#/definitions/length" },
+        "headerHeight": { "$ref": "#/definitions/length" },
+        "minMembers": { "type": "integer", "minimum": 1 },
+        "foldAbove": { "type": "integer", "minimum": 2 },
+        "labelPlacement": { "enum": ["inside-start", "inside-center", "above", "below", "start", "end"] },
+        "labelMaxChars": { "type": "integer", "minimum": 4 },
+        "truncate": { "enum": ["end", "middle"] }
+      }
+    },
+    "overflow": { "enum": ["fold-middle", "fold-end", "scroll", "wrap", "none"] },
+    "notes": { "type": "string", "description": "For people only. Never parsed." }
+  },
+  "definitions": {
+    "token": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$" },
+    "length": { "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "string", "pattern": "^space-[0-9]+$" }] },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fill": { "$ref": "#/definitions/colorRef" },
+        "stroke": { "$ref": "#/definitions/colorRef" },
+        "strokeWidth": { "$ref": "#/definitions/token" },
+        "dash": { "enum": ["provenance", "solid", "gap"], "description": "provenance = use the edge's provenance pattern from loupe-dash" },
+        "radius": { "$ref": "#/definitions/token" },
+        "opacity": { "$ref": "#/definitions/token" },
+        "textStyle": { "$ref": "#/definitions/token", "description": "A type style name, e.g. count, node-label" },
+        "textColor": { "$ref": "#/definitions/colorRef" },
+        "halo": { "$ref": "#/definitions/colorRef" },
+        "glyph": { "enum": ["none", "arrow-filled", "arrow-hollow", "dot", "bar", "delay", "loop-mark", "counterflow"] },
+        "shape": { "$ref": "#/definitions/shape" }
+      }
+    },
+    "colorRef": {
+      "anyOf": [
+        { "$ref": "#/definitions/token" },
+        { "enum": ["edge-kind", "none"], "description": "edge-kind = the color slot of the edge's role, else its kind" }
+      ]
+    },
+    "shape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["rect", "pill", "ellipse", "chevron", "plate", "circle"] },
+        "notch": { "type": "number", "minimum": 0, "description": "chevron: depth of the entry notch, px" },
+        "point": { "type": "number", "minimum": 0, "description": "chevron: depth of the exit point, px" },
+        "inset": { "type": "number", "minimum": 0, "description": "plate or double outline gap, px" }
+      }
+    },
+    "override": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "$ref": "#/definitions/style" }
+    }
+  }
+}

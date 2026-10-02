@@ -1,0 +1,46 @@
+{
+  "schema": "project-manifest.0 (draft — kit v2 will formalize)",
+  "kit_version": "2.6.5",
+  "status": "PROVISIONAL — survey 2026-10-01; awaiting ratification poll. Phase state: see ROADMAP.md",
+  "spinup_note": "Spun up over existing content (docs, ADRs 0001-0019, schema, tools, prototype); answers inferred from docs/spinup-brief.md and confirmed by poll.",
+  "survey": {
+    "what_is_it": "app/tool — a Claude Code skill run in a target repo: deterministic crawler, checker and viewer plus agent stages (structure, audit, explain, navigate)",
+    "architecture_rung": {
+      "choice": 2,
+      "menu": [
+        "1: single thread",
+        "2: thread + subagents/verifier",
+        "3: organ fleet"
+      ],
+      "earned_by": "the main session is the Structure agent and runs the dialogue; the audit swarm (one test per visual primitive) is parallelizable, verifiable read-only work. No parallel writers or seams that justify a fleet."
+    },
+    "domain_core_llm_must_not_own": "crawler, canonical JSON and ids, overlay merge, conservation check (loupe-check), graph diffs. Agents write overlay and view only, never graph.json.",
+    "oracle_shape": {
+      "goldens": "invariants plus small goldens: fast = schema validation, loupe-check on every example, mutation tests, crawl-twice byte equality; full = HORDE at a pinned commit vs its golden graph, stress-case renders",
+      "ci": "single-version Node smoke on Linux"
+    },
+    "second_implementation": false,
+    "consumers_and_providers": {
+      "consumes": [],
+      "consumed_by": [
+        "horde (first client; Loupe writes only .loupe/current/ and the loupe-history branch there; .loupe/config.json is human-owned)"
+      ]
+    },
+    "parallel_audit_thread": false,
+    "knowledge_loop_tags": [
+      "crawler-parsing",
+      "graph-schema-conservation",
+      "visual-grammar-rendering",
+      "agent-orchestration"
+    ],
+    "lifespan_autonomy": {
+      "lifespan": "long-lived",
+      "autonomy_tier": "supervised: interactive sessions with Julian; no unattended runs"
+    }
+  },
+  "lanes": {
+    "design/": "design agent (Claude Design) only; infrastructure may write design/tokens.css and design/primitives.json, which are generated",
+    "schema/, tools/, docs/": "infrastructure sessions"
+  },
+  "remote": "github.com/Julian-B-Smith/loupe (public)"
+}
