@@ -25,3 +25,8 @@ the one list of ADRs; this file does not copy it, so the two cannot drift.
 - **H5 (2026-10-01, ratification poll).** Manifest ratified. First push to `main` is Julian's (the harness
   keeps denying agent pushes to main). HORDE intake brief loupe-001 drafted at
   `docs/briefs/horde-loupe-001.draft.md`; filing deferred to the start of P6.
+- **H6 (2026-10-02, poll; supersedes the brief-timing part of H5).** The HORDE brief is filed now, not at P6,
+  at autonomous' request (`integrations/autonomous/notice-intake.md`). Reading chosen: the Loupe skill runs
+  inside a HORDE session and HORDE's resident makes every write in HORDE's tree; a Loupe session never writes
+  there. Filed as `HYPERSAW/integrations/loupe/brief-001.md` (id loupe-001); closing notice in
+  `autonomous/integrations/loupe/notice-001.md`.

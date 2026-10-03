@@ -6,7 +6,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 
 ## Status
 
-- **Phase:** P0 (spinup) closing → PA (prior-art landscape) next.
+- **Phase:** P0 done 2026-10-02 (green locally and in CI; manifest ratified). PA ← current.
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
   `full` == `fast` until P1/P2 add Layer-E gates. **Known gaps:** no crawl
@@ -38,14 +38,14 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 
 | Phase | Builds | Gate |
 | --- | --- | --- |
-| **P0** Spinup | Harness, `./verify`, CI, manifest | `./verify fast` green locally and in CI; manifest ratified |
-| **PA** Prior-art landscape (agent swarm, Decision 30) | `docs/prior-art.md`: existing code-map / dependency-visualization tools, dated and cited | Doc exists with ≥1 cited source per competitor; reviewed by Julian before P1 design is committed |
+| **P0** Spinup (done 2026-10-02) | Harness, `./verify`, CI, manifest | `./verify fast` green locally and in CI; manifest ratified |
+| **PA** ← current. Prior-art landscape (agent swarm, Decision 30) | `docs/prior-art.md`: existing code-map / dependency-visualization tools, dated and cited | Doc exists with ≥1 cited source per competitor; reviewed by Julian before P1 design is committed |
 | **P1** Multi-language crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018: include paths and defines from `compile_commands.json` with search fallback marked; symbols in headers; signatures on call sites; dsp-plugin dialect incl. GUI bridge rule (`web.bind` → JS calls) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo (gate in `fast`); HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`) |
 | **P2** Flow view renderer reading tokens and specs; `conserve()` | Meter balanced on HORDE; the 10 stress cases render (`full`) |
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit swarm; one test per primitive | Each test reproduces the gallery's results on the sample |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
-| **P6** Re-run diff, `.loupe/current/`, `loupe-history`. First step: file `docs/briefs/horde-loupe-001.draft.md` as `horde/integrations/loupe/brief.md` (PR on horde) and wait for HORDE's response | Brief accepted by HORDE; diff of two real HORDE commits renders; history branch written |
+| **P6** Re-run diff, `.loupe/current/`, `loupe-history`. Precondition: HORDE has accepted brief loupe-001 (filed 2026-10-02 in `HYPERSAW/integrations/loupe/brief-001.md`); the skill runs in HORDE's sessions | Brief loupe-001 accepted; diff of two real HORDE commits renders; history branch written |
 | **P7** Design system integration | `tokens.css` and `primitives.json` generated from the design agent's artifact; `design/prototype/` wired to real data |
 | **PX** Pre-ship prior-art & IP re-scan (Decision 30) | Before any public release: `docs/prior-art.md` refreshed with a patent/IP pass |
 
@@ -71,7 +71,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 ## Open questions (blocking — ask Julian)
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
-- **First push to main** of the empty remote is Julian's (spinup poll): `git push -u origin main`.
+- **HORDE brief loupe-001** (filed 2026-10-02, respond-by 2026-10-31). Its response lands in HORDE's tree, not here: pull `HYPERSAW/integrations/loupe/` at each wakeup.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
 - **0007, 0019** are Proposed; P1 and P3 depend on them.
 
