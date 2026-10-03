@@ -44,7 +44,14 @@ Decisions: [DECISIONS.md](DECISIONS.md) → `docs/decisions/`.
 
 P0 (spinup) closing. Next: prior-art landscape, then the multi-language crawler (P1).
 
-## Run
+## See it running
+
+- **Hosted (any device):** [Loupe Testbench](https://claude.ai/artifact/K4sfLzhhWGTj2GoXAAyuJN), a private artifact. It is republished from `main` after each merge that changes a viewer or a snapshot; its build line names the commit.
+- **Local:** `npm run view`, then open http://127.0.0.1:4173/ (or start `loupe-view` in the Claude app's browser pane).
+
+Both open the same landing page (`viewer/index.html`): every viewer on every snapshot, including the real HORDE crawl, with the known issues listed first.
+
+## Run the checks
 
 ```bash
 npm ci

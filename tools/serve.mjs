@@ -18,6 +18,11 @@ const PORT = Number(process.env.PORT || process.argv[2] || 4173);
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.md': 'text/plain; charset=utf-8', '.svg': 'image/svg+xml' };
 
+// Published paths differ from repo paths in one place: the artifact host reserves
+// "prototype" as a path segment, so both viewers publish under neutral names. The
+// landing page links the published names; these aliases make them work locally too.
+export const ALIASES = { 'design/proto/': 'design/prototype/', 'v1/': 'prototype/' };
+
 export const SKELETON = (body) => `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>
 ${body}</body></html>`;
@@ -37,7 +42,8 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/build.json') return send(200, TYPES['.json'], JSON.stringify(buildInfo()));
   // Path traversal guard: the normalized path must stay inside ROOT, and
   // dot-directories (.git, .harness, .claude, .kit) are never served.
-  const rel = normalize(decodeURIComponent(url.pathname)).replace(/^[/\\]+/, '');
+  let rel = normalize(decodeURIComponent(url.pathname)).replace(/^[/\\]+/, '');
+  for (const [pub, src] of Object.entries(ALIASES)) if (rel === pub.slice(0, -1) || rel.startsWith(pub)) { rel = src + rel.slice(pub.length); break; }
   const file = join(ROOT, rel);
   if (!file.startsWith(ROOT) || rel.split(sep).some((p) => p.startsWith('.') || p === 'node_modules')) return send(403, 'text/plain', 'forbidden');
   try {

@@ -76,7 +76,7 @@
         <div class="name">All six stages on the invented sample</div>
         <div class="meta">prototype/index.html · data/sample-horde.js</div>
         <div class="note">Stable reference. Sample data only.</div>
-        <a class="open" href="prototype/index.html">Open v1</a>
+        <a class="open" href="v1/index.html">Open v1</a>
       </div>
     </div>
   </section>
@@ -105,11 +105,11 @@
   const SNAPSHOTS = [
     { name: 'Real HORDE crawl', path: 'schema/examples/horde-probe/', note: 'Probe crawl of github.com/Julian-B-Smith/horde. The real thing, at real size. No stage data yet.' },
     { name: 'HORDE sample, current schema', path: 'schema/examples/horde-sample/', note: 'The invented sample at schema 0.2. No stage data yet, so stages 3 to 6 are empty.' },
-    { name: 'HORDE sample with stage stand-ins', path: 'design/prototype/snapshots/horde-sample/', note: 'Design’s copy at schema 0.1, with dialogue, audit, explain and diff stand-ins. Use this one for stages 3 to 6.', chip: ['warn', 'old schema'] },
-    { name: 'Loops (synthetic)', path: 'design/prototype/snapshots/loops-synthetic/', note: 'Made-up snapshot with all three loop kinds. Its view is bound to the wrong graph hash, so it should show as stale.', chip: ['bad', 'fails check'] },
+    { name: 'HORDE sample with stage stand-ins', path: 'design/proto/snapshots/horde-sample/', note: 'Design’s copy at schema 0.1, with dialogue, audit, explain and diff stand-ins. Use this one for stages 3 to 6.', chip: ['warn', 'old schema'] },
+    { name: 'Loops (synthetic)', path: 'design/proto/snapshots/loops-synthetic/', note: 'Made-up snapshot with all three loop kinds. Its view is bound to the wrong graph hash, so it should show as stale.', chip: ['bad', 'fails check'] },
   ];
-  // design/prototype/index.html resolves ?snapshot= relative to its own folder.
-  const rel = (p) => p.startsWith('design/prototype/') ? p.slice('design/prototype/'.length) : '../../' + p;
+  // The v4 viewer (design/prototype/, published as design/proto/; see ALIASES in tools/serve.mjs) resolves ?snapshot= relative to its own folder.
+  const rel = (p) => p.startsWith('design/proto/') ? p.slice('design/proto/'.length) : '../../' + p;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const rows = document.getElementById('v4rows');
   rows.innerHTML = SNAPSHOTS.map((s, i) => `
@@ -117,7 +117,7 @@
       <div class="name">${esc(s.name)}${s.chip ? `<span class="chip ${s.chip[0]}">${esc(s.chip[1])}</span>` : ''}</div>
       <div class="meta" id="m${i}">${esc(s.path)} · reading…</div>
       <div class="note">${esc(s.note)}</div>
-      <a class="open" href="design/prototype/index.html?snapshot=${encodeURIComponent(rel(s.path))}">Open map</a>
+      <a class="open" href="design/proto/index.html?snapshot=${encodeURIComponent(rel(s.path))}">Open map</a>
     </div>`).join('');
   SNAPSHOTS.forEach(async (s, i) => {
     const el = document.getElementById('m' + i);
