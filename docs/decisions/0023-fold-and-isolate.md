@@ -38,6 +38,6 @@ renderer records every stand-in it draws (`map.drawn`), closing review v4 B1 and
 - 12 and 2 are placeholders in `layout.js` `L.foldAt` / `L.foldSlack`; move them to `loupe-spec` once settled.
 - Should isolate be reachable from the map directly (double-click a header) as well as the inspector?
 - Search: a folded file is not yet findable except by unfolding. When one is selected (from an inspector list), its
-  fold row or port is highlighted; whether selection should also open the fold is Julian's call.
+  fold row or port is highlighted. Resolved 2026-10-03 (Julian, poll): highlight only; selection never opens a fold.
 - No fixture yet exercises fold with lanes, buses, hubs, a band, a diff or nested sections together (critic,
   2026-10-03). The stress cases (Q-008, P2) should add one.
