@@ -1,0 +1,107 @@
+{
+  "conditions": [
+    {
+      "condition": "Only when ROAM is enabled",
+      "edge": "e:03e876ff30111039",
+      "evidence": {
+        "observed": 1,
+        "trace": "trace:sample-001",
+        "type": "trace"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "dst": "file:src/engines/saw/kuramoto_core.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "No direct reference; reached through a function pointer or engine table (sample).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:03e876ff30111039",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:src/dynamics/roam.cpp"
+    },
+    {
+      "dst": "file:src/plugin/processor.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:sample-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:6e5b743b384c02b9",
+      "kind": "call",
+      "provenance": "runtime",
+      "src": "file:src/ui/scope_view.cpp"
+    },
+    {
+      "dst": "file:src/engines/saw/detune_law.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "No direct reference; reached through a function pointer or engine table (sample).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:732ea7111104c406",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/mod/intent_bus.cpp"
+    },
+    {
+      "dst": "file:src/engines/station/pm_operator.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "No direct reference; reached through a function pointer or engine table (sample).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:77a6919e53cbab42",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/mod/mod_matrix.cpp"
+    },
+    {
+      "dst": "file:src/fx/fx_router.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "No direct reference; reached through a function pointer or engine table (sample).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9e67d2cb0198a3c5",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:src/engines/warp/simplex_shaper.cpp"
+    },
+    {
+      "dst": "file:src/engines/warp/simplex_shaper.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "No direct reference; reached through a function pointer or engine table (sample).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ce552738ed70c309",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:foundations/voice_alloc.cpp"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:a0726dc87a24a59c08336f272dedcaa061c808778509524036fe932118e50740"
+  },
+  "roles": [],
+  "schema": "loupe.overlay/0.1"
+}

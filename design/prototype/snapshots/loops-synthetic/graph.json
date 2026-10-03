@@ -1,0 +1,142 @@
+{
+ "schema": "loupe.graph/0.1",
+ "crawler": {
+  "name": "synthetic",
+  "version": "0",
+  "granularity": "file",
+  "dialect": {
+   "name": "dsp-plugin",
+   "version": "0.1"
+  },
+  "languages": [
+   "cpp"
+  ]
+ },
+ "nodes": [
+  {
+   "id": "file:src/loops/a_bus.cpp",
+   "kind": "file",
+   "path": "src/loops/a_bus.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/b_bus.cpp",
+   "kind": "file",
+   "path": "src/loops/b_bus.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/c_bus.cpp",
+   "kind": "file",
+   "path": "src/loops/c_bus.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/comb.cpp",
+   "kind": "file",
+   "path": "src/loops/comb.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/delay_line.cpp",
+   "kind": "file",
+   "path": "src/loops/delay_line.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/allpass.cpp",
+   "kind": "file",
+   "path": "src/loops/allpass.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/shaper.cpp",
+   "kind": "file",
+   "path": "src/loops/shaper.cpp",
+   "hash": "none"
+  },
+  {
+   "id": "file:src/loops/feedback_amt.cpp",
+   "kind": "file",
+   "path": "src/loops/feedback_amt.cpp",
+   "hash": "none"
+  }
+ ],
+ "edges": [
+  {
+   "id": "e:a_bus-b_bus",
+   "src": "file:src/loops/a_bus.cpp",
+   "dst": "file:src/loops/b_bus.cpp",
+   "kind": "include",
+   "provenance": "static",
+   "count": 1,
+   "evidence": []
+  },
+  {
+   "id": "e:b_bus-c_bus",
+   "src": "file:src/loops/b_bus.cpp",
+   "dst": "file:src/loops/c_bus.cpp",
+   "kind": "include",
+   "provenance": "static",
+   "count": 1,
+   "evidence": []
+  },
+  {
+   "id": "e:c_bus-a_bus",
+   "src": "file:src/loops/c_bus.cpp",
+   "dst": "file:src/loops/a_bus.cpp",
+   "kind": "include",
+   "provenance": "static",
+   "count": 1,
+   "evidence": []
+  },
+  {
+   "id": "e:comb-delay_line",
+   "src": "file:src/loops/comb.cpp",
+   "dst": "file:src/loops/delay_line.cpp",
+   "kind": "call",
+   "provenance": "static",
+   "count": 1,
+   "evidence": [],
+   "role": "audio"
+  },
+  {
+   "id": "e:delay_line-allpass",
+   "src": "file:src/loops/delay_line.cpp",
+   "dst": "file:src/loops/allpass.cpp",
+   "kind": "call",
+   "provenance": "static",
+   "count": 1,
+   "evidence": [],
+   "role": "audio"
+  },
+  {
+   "id": "e:allpass-comb",
+   "src": "file:src/loops/allpass.cpp",
+   "dst": "file:src/loops/comb.cpp",
+   "kind": "call",
+   "provenance": "static",
+   "count": 1,
+   "evidence": [],
+   "role": "audio"
+  },
+  {
+   "id": "e:shaper-feedback_amt",
+   "src": "file:src/loops/shaper.cpp",
+   "dst": "file:src/loops/feedback_amt.cpp",
+   "kind": "call",
+   "provenance": "static",
+   "count": 1,
+   "evidence": []
+  },
+  {
+   "id": "e:feedback_amt-shaper",
+   "src": "file:src/loops/feedback_amt.cpp",
+   "dst": "file:src/loops/shaper.cpp",
+   "kind": "call",
+   "provenance": "static",
+   "count": 1,
+   "evidence": []
+  }
+ ]
+}
