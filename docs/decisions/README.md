@@ -14,7 +14,7 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0008](0008-project-context-lives-in-this-folder.md) | Project context lives in this folder | Accepted |
 | [0009](0009-ship-first-as-a-claude-code-skill.md) | Ship first as a Claude Code skill | Accepted (direction); mechanics Proposed |
 | [0010](0010-bus-edges-in-section-cohesion.md) | Bus edges in section cohesion | Accepted |
-| [0011](0011-where-snapshots-live.md) | Where map snapshots live | Accepted |
+| [0011](0011-where-snapshots-live.md) | Where map snapshots live | Accepted; current-map part superseded by 0021 |
 | [0012](0012-primitive-verdicts-round-1.md) | Primitive verdicts, round 1 | Accepted |
 | [0013](0013-design-work-goes-to-claude-design.md) | Visual design goes to Claude Design | Accepted (direction); handoff format Proposed |
 | [0014](0014-primitive-verdicts-round-2.md) | Primitive verdicts, round 2 | Accepted |
@@ -24,3 +24,4 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0018](0018-schema-0-2-from-the-first-real-crawl.md) | Graph schema 0.2, from the first real crawl | Accepted; scope moved to 0019 |
 | [0019](0019-crawl-config-and-focus-lenses.md) | Crawl config and focus lenses | Proposed |
 | [0020](0020-drag-offsets-live-in-the-view.md) | Drag offsets live in the view | Accepted |
+| [0021](0021-the-current-map-stays-out-of-main.md) | The current map stays out of the target repo's main branch | Accepted |

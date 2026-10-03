@@ -23,7 +23,7 @@
     "consumers_and_providers": {
       "consumes": [],
       "consumed_by": [
-        "horde (first client; Loupe writes only .loupe/current/ and the loupe-history branch there; .loupe/config.json is human-owned)"
+        "horde (first client; the skill runs in horde's own sessions; .loupe/current/ gitignored there, snapshots only on loupe-history; .loupe/config.json human-owned (ADR 0021))"
       ]
     },
     "parallel_audit_thread": false,
