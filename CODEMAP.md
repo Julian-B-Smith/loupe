@@ -34,3 +34,8 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `design/`: the Claude Design agent's lane, copied in unchanged. `HANDOFF.md` (delivery note), `prototype/` (v4),
   `system/` (design-system snapshot: tokens.json, one README per primitive), `tokens.css` (hand-made until Q-007).
 - `docs/design-review-v4.md`: infrastructure's review of delivery v4.
+- `viewer/index.html`: the testbench landing page (no doctype; wrapped by the artifact host and by `tools/serve.mjs`).
+- `tools/serve.mjs`: `npm run view`. Zero-dependency, read-only, loopback-only server. `ALIASES` maps the published
+  paths `design/proto/` and `v1/`, because the artifact host reserves `prototype` as a path segment.
+- `.claude/launch.json`: `loupe-view` for the app's browser pane.
+

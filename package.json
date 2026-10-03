@@ -8,7 +8,8 @@
     "check": "node tools/loupe-check.mjs schema/examples/horde-sample && node tools/loupe-check.mjs schema/examples/horde-probe",
     "test": "node tools/loupe-check.test.mjs",
     "sample": "node tools/convert-sample.mjs",
-    "probe": "node tools/probe-crawl.mjs"
+    "probe": "node tools/probe-crawl.mjs",
+    "view": "node tools/serve.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1"
