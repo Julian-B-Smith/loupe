@@ -31,7 +31,7 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
   block per primitive, screens, stress cases. Published doc: https://claude.ai/code/artifact/090409e4-c614-47e7-aa44-cebbea549775
 - `docs/design-links.md`: pinned links and versions of the design agent's artifacts.
 - `prototype/data/sample-horde.js`: invented HORDE-shaped sample graph. Not crawled. Shared by both pages.
-- `design/`: the Claude Design agent's lane, copied in unchanged. `HANDOFF.md` (delivery note), `prototype/` (v4),
+- `design/`: in-house since ADR 0022 (was the Claude Design agent's lane). `HANDOFF.md` (delivery note), `prototype/` (v4),
   `system/` (design-system snapshot: tokens.json, one README per primitive), `tokens.css` (hand-made until Q-007).
 - `docs/design-review-v4.md`: infrastructure's review of delivery v4.
 - `viewer/index.html`: the testbench landing page (no doctype; wrapped by the artifact host and by `tools/serve.mjs`).

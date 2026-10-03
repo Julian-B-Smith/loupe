@@ -16,7 +16,7 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0010](0010-bus-edges-in-section-cohesion.md) | Bus edges in section cohesion | Accepted |
 | [0011](0011-where-snapshots-live.md) | Where map snapshots live | Accepted; current-map part superseded by 0021 |
 | [0012](0012-primitive-verdicts-round-1.md) | Primitive verdicts, round 1 | Accepted |
-| [0013](0013-design-work-goes-to-claude-design.md) | Visual design goes to Claude Design | Accepted (direction); handoff format Proposed |
+| [0013](0013-design-work-goes-to-claude-design.md) | Visual design goes to Claude Design | Superseded by 0022 |
 | [0014](0014-primitive-verdicts-round-2.md) | Primitive verdicts, round 2 | Accepted |
 | [0015](0015-graph-schema.md) | Graph schema 0.1 | Accepted |
 | [0016](0016-five-provenances-and-roles.md) | Five provenances; roles separate from kinds | Accepted (legend always on screen) |
@@ -25,3 +25,4 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0019](0019-crawl-config-and-focus-lenses.md) | Crawl config and focus lenses | Proposed |
 | [0020](0020-drag-offsets-live-in-the-view.md) | Drag offsets live in the view | Accepted |
 | [0021](0021-the-current-map-stays-out-of-main.md) | The current map stays out of the target repo's main branch | Accepted |
+| [0022](0022-design-moves-in-house.md) | Design moves in-house | Accepted (direction); subagent setup Proposed |

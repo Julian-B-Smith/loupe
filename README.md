@@ -34,7 +34,7 @@ Agents write the overlay and view, never the graph. Every edge carries provenanc
 | `tools/loupe-check.mjs` | Snapshot checker (conservation, ids, provenance) + 20 mutation cases | Built |
 | `tools/probe-crawl.mjs` | Regex probe crawler that shaped schema 0.2 | Reference only; not the P1 crawler |
 | `prototype/` | Viewer v1 and primitives gallery (open `index.html` in a browser) | Built, on sample data |
-| `design/` | Claude Design agent's lane | Not yet present |
+| `design/` | Design system snapshot and prototype v4, designed in-house since ADR 0022 | Built; known issues in `docs/design-review-v4.md` |
 | Crawler, renderer, agents, skill | P1–P7 | **Not built** |
 
 Full file map: [CODEMAP.md](CODEMAP.md). Plan and phase gates: [ROADMAP.md](ROADMAP.md).

@@ -46,7 +46,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **P4** Audit swarm; one test per primitive | Each test reproduces the gallery's results on the sample |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
 | **P6** Re-run diff, `.loupe/current/` (gitignored in the target), `loupe-history` (ADR 0021). Opens with the P6 notice to HORDE (`.gitignore` line, leak-check step); HORDE lands its side in one PR | HORDE's PR merged; a planted private name blocks a history commit (leak check fails closed); diff of two real HORDE commits renders; history branch written |
-| **P7** Design system integration | `tokens.css` and `primitives.json` generated from the design agent's artifact; `design/prototype/` wired to real data |
+| **P7** Design system integration | `tokens.css` and `primitives.json` generated from `design/system/`; `design/prototype/` wired to real data |
 | **PX** Pre-ship prior-art & IP re-scan (Decision 30) | Before any public release: `docs/prior-art.md` refreshed with a patent/IP pass |
 
 ## Queue
@@ -68,9 +68,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
-### Q-004 — Design prototype v5 (ball: design)
-- **Status:** blocked on design; review sent as `docs/design-review-v4.md` (2026-10-02)
-- **Scope:** `design/` (design lane; infrastructure copies deliveries in, never edits them)
+### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
+- **Status:** open; worklist `docs/design-review-v4.md`
+- **Scope:** `design/`
 - **Acceptance criteria:** 1. B1 to B3 of the review fixed; 2. on every `schema/examples/*` snapshot the meter
   balances AND every node and edge counted as placed or drawn has a drawn element (to be checked by the P2
   render gate, not by eye); 3. addenda v2.2 and v2.3 items drawn.
@@ -107,7 +107,6 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
 - **0007, 0019** are Proposed; P1 and P3 depend on them.
-- **Design packet links are stale:** the doc copy and the data kit are pinned at v2.1 / schema 0.1 (`docs/design-links.md`). Republish them with addenda v2.2, v2.3 and schema 0.2 before design starts v5.
 
 ## Graduation criteria
 
