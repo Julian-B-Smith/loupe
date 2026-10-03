@@ -1,6 +1,8 @@
 // One-off, reproducible: turns prototype/data/sample-horde.js into schema-shaped example files.
 // The sample is invented. Its evidence sites are placeholders (line 1) and its commit is "sample".
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from './canon.mjs';
 
 const src = readFileSync(new URL('../prototype/data/sample-horde.js', import.meta.url), 'utf8');
@@ -110,7 +112,11 @@ const view = {
   exemptions: [{ id: 'exempt:dispatch', rule: 'band.downward', pattern: { src: N('voicealloc'), dstIn: 'sec:eng', kind: 'call' }, status: 'pending', approvals: [] }],
 };
 
-const out = new URL('../schema/examples/horde-sample/', import.meta.url);
+// Optional output dir (argv[2]) lets ./verify regenerate into a temp dir and byte-compare against the
+// committed example without touching the tree. Default stays the committed location.
+const out = process.argv[2]
+  ? pathToFileURL(resolve(process.argv[2]) + '/')
+  : new URL('../schema/examples/horde-sample/', import.meta.url);
 mkdirSync(out, { recursive: true });
 writeFileSync(new URL('graph.json', out), graphText);
 writeFileSync(new URL('overlay.json', out), overlayText);

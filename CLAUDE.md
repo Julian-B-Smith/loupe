@@ -108,7 +108,7 @@ regenerating `schema/examples/*`, or editing an Accepted ADR. Writes into a targ
 `DECISIONS.md` points at their index (docs/decisions/README.md) and holds harness decisions.
 
 **Verify targets.** `fast` (~2 s): kit integrity, leak gate, 20 mutation tests, loupe-check with schema
-validation required on every `schema/examples/*`. `full`: currently == fast; P1/P2 add HORDE golden crawl
+validation required on every `schema/examples/*`, `horde-sample` regenerated and byte-compared. `full`: currently == fast; P1/P2 add HORDE golden crawl
 and stress-case renders.
 
 ## Mailbox
