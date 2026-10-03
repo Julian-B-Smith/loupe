@@ -1,0 +1,400 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Host-facing entry. CLAP is native; VST3 and AUv2 come through clap-wrapper. processor.cpp owns the audio callback.",
+      "id": "sec:shell",
+      "label": "Plugin shell",
+      "members": [
+        "ext:clap-wrapper",
+        "file:src/plugin/clap_entry.cpp",
+        "file:src/plugin/processor.cpp",
+        "file:src/plugin/param_registry.cpp",
+        "file:src/plugin/state_io.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The editor and its views. The XY pad and morph panel write into Modulation, never straight to parameters.",
+      "id": "sec:ui",
+      "label": "Editor UI",
+      "members": [
+        "file:src/ui/editor.cpp",
+        "file:src/ui/xy_pad_view.cpp",
+        "file:src/ui/morph_panel_view.cpp",
+        "file:src/ui/scope_view.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Two-tier modulation. Macros and the XY pad write intents, quantum morph resolves corners, and inertia smooths anything that moves.",
+      "id": "sec:mod",
+      "label": "Modulation",
+      "members": [
+        "file:src/mod/mod_matrix.cpp",
+        "file:src/mod/intent_bus.cpp",
+        "file:src/mod/quantum_morph.cpp",
+        "file:src/mod/inertia.cpp",
+        "file:src/mod/macros.cpp",
+        "file:src/mod/lfo_env.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Coupling laws acting on the Kuramoto ring: topology, Sakaguchi phase lag, consonance gravity and ROAM chord wander.",
+      "id": "sec:dyn",
+      "label": "Dynamics",
+      "members": [
+        "file:src/dynamics/topology.cpp",
+        "file:src/dynamics/sakaguchi.cpp",
+        "file:src/dynamics/consonance_gravity.cpp",
+        "file:src/dynamics/roam.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Sound sources. Each engine renders into the Audio bus and reads its parameters through the Param bus.",
+      "id": "sec:eng",
+      "label": "Engines",
+      "members": [],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The core instrument. Per-voice Kuramoto oscillators, with detune governed by the same coupling law.",
+      "id": "sec:saw",
+      "label": "SAW",
+      "members": [
+        "file:src/engines/saw/kuramoto_core.cpp",
+        "file:src/engines/saw/saw_voice.cpp",
+        "file:src/engines/saw/detune_law.cpp"
+      ],
+      "parent": "sec:eng",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Pulsar/FOF formant engine. The vowel field is a quantum-morph surface.",
+      "id": "sec:choir",
+      "label": "CHOIR",
+      "members": [
+        "file:src/engines/choir/fof_grain.cpp",
+        "file:src/engines/choir/vowel_field.cpp",
+        "file:src/engines/choir/register_ctl.cpp"
+      ],
+      "parent": "sec:eng",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Lightweight phase-modulation engine: three operators, 4-bit wave RAM and LFSR noise.",
+      "id": "sec:station",
+      "label": "STATION",
+      "members": [
+        "file:src/engines/station/pm_operator.cpp",
+        "file:src/engines/station/wave_ram.cpp",
+        "file:src/engines/station/lfsr_noise.cpp"
+      ],
+      "parent": "sec:eng",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Distortion engine: a 7-curve simplex blend walked by an Ornstein-Uhlenbeck process.",
+      "id": "sec:warp",
+      "label": "WARP",
+      "members": [
+        "file:src/engines/warp/simplex_shaper.cpp",
+        "file:src/engines/warp/ou_walk.cpp"
+      ],
+      "parent": "sec:eng",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Shared effects after the engines, routed by fx_router.",
+      "id": "sec:fx",
+      "label": "FX chain",
+      "members": [
+        "file:src/fx/fx_router.cpp",
+        "file:src/fx/filter.cpp",
+        "file:src/fx/phaser.cpp",
+        "file:src/fx/time_fx.cpp",
+        "file:src/fx/multistage_shaper.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The shared plumbing library: voice allocation, smoothing, oversampling, ADAA and parameter storage.",
+      "id": "sec:fnd",
+      "label": "FOUNDATIONS",
+      "members": [
+        "file:foundations/voice_alloc.cpp",
+        "file:foundations/smoother.hpp",
+        "file:foundations/oversampler.cpp",
+        "file:foundations/adaa.hpp",
+        "file:foundations/dsp_math.hpp",
+        "file:foundations/param_store.hpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The parity oracle. ./verify checks C++ output against goldens from the browser prototypes.",
+      "id": "sec:ver",
+      "label": "Verification",
+      "members": [
+        "file:verify",
+        "file:tests/parity_tests.cpp",
+        "art:tests/goldens/*.bin",
+        "art:.github/workflows/ci.yml"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Engines render into fx_router through one audio contract.",
+      "contract": {
+        "dst": "file:src/fx/fx_router.cpp",
+        "role": "audio",
+        "signature": "render(AudioBlock&)"
+      },
+      "edges": [
+        "e:177af86570a9f8fa",
+        "e:b452e107b0429a6e",
+        "e:38fd05eddc2e902f",
+        "e:c886799cfceaa206",
+        "e:9e67d2cb0198a3c5"
+      ],
+      "id": "bus:audio",
+      "label": "Audio bus",
+      "primitive": "bus",
+      "status": "confirmed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Every stage reads parameters through param_store.",
+      "contract": {
+        "dst": "file:foundations/param_store.hpp",
+        "role": "param",
+        "signature": "ParamStore::read(ParamId)"
+      },
+      "edges": [
+        "e:d09146e7d79f8f0b",
+        "e:df019ce9845cb1f0",
+        "e:d8ac593bd204fc04",
+        "e:b8d99972ee98a2ba",
+        "e:74bfbacd5a1eedd7",
+        "e:cc1eb61aca939cd6",
+        "e:ca4637b38b5c8744",
+        "e:aa9b21afc99171ec",
+        "e:53ab7d22c7727aff",
+        "e:9e6a123a7d600da0"
+      ],
+      "id": "bus:param",
+      "label": "Param bus",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Global modulation reaches its targets through one contract.",
+      "contract": {
+        "role": "mod",
+        "signature": "ModTarget::apply(IntentId, depth)"
+      },
+      "edges": [
+        "e:29d1a3611fd22a90",
+        "e:5ca0a3c8a93e2c2f",
+        "e:77a6919e53cbab42",
+        "e:f684d53142272fb5",
+        "e:e7ce5df5a672094d",
+        "e:77f6631a3b5c26b4",
+        "e:732ea7111104c406"
+      ],
+      "id": "bus:mod",
+      "label": "Mod bus",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "These files read and write corner presets.",
+      "id": "set:presets",
+      "label": "Presets",
+      "members": [
+        "file:src/plugin/state_io.cpp",
+        "file:src/mod/quantum_morph.cpp"
+      ],
+      "primitive": "set",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "quantum_morph is both modulation and preset handling.",
+      "id": "overlap:qmorph",
+      "members": [
+        "file:src/mod/quantum_morph.cpp"
+      ],
+      "primitive": "overlap",
+      "sets": [
+        "sec:mod",
+        "set:presets"
+      ],
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "A note travels host → processor → voice allocation → SAW voice → Kuramoto core.",
+      "id": "lane:note-on",
+      "label": "Note-on path",
+      "primitive": "lane",
+      "source": {
+        "provenance": "static"
+      },
+      "status": "proposed",
+      "steps": [
+        "file:src/plugin/clap_entry.cpp",
+        "file:src/plugin/processor.cpp",
+        "file:foundations/voice_alloc.cpp",
+        "file:src/engines/saw/saw_voice.cpp",
+        "file:src/engines/saw/kuramoto_core.cpp"
+      ]
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Audio runs filter → phaser → time → shaper.",
+      "id": "lane:fx-chain",
+      "label": "FX chain order",
+      "primitive": "lane",
+      "source": {
+        "evidence": "src/fx/fx_router.cpp: chain table (sample)",
+        "provenance": "config"
+      },
+      "status": "proposed",
+      "steps": [
+        "file:src/fx/filter.cpp",
+        "file:src/fx/phaser.cpp",
+        "file:src/fx/time_fx.cpp",
+        "file:src/fx/multistage_shaper.cpp"
+      ]
+    },
+    {
+      "by": "agent:structure",
+      "claim": "SAW, CHOIR, STATION and WARP implement the same engine interface.",
+      "id": "twins:engines",
+      "interface": [
+        {
+          "direction": "in",
+          "kind": "call",
+          "name": "voice in",
+          "peer": "file:foundations/voice_alloc.cpp"
+        },
+        {
+          "direction": "out",
+          "name": "audio out",
+          "peer": "file:src/fx/fx_router.cpp",
+          "role": "audio"
+        },
+        {
+          "direction": "out",
+          "name": "param read",
+          "peer": "file:foundations/param_store.hpp",
+          "role": "param"
+        }
+      ],
+      "label": "Engine interface",
+      "members": [
+        "sec:saw",
+        "sec:choir",
+        "sec:station",
+        "sec:warp"
+      ],
+      "primitive": "twins",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "param_store is the shared parameter service.",
+      "id": "hub:pstore",
+      "node": "file:foundations/param_store.hpp",
+      "primitive": "hub",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Interface sits above plugin logic, which sits above FOUNDATIONS.",
+      "id": "band:layers",
+      "levels": [
+        {
+          "label": "Interface",
+          "members": [
+            "sec:ui"
+          ]
+        },
+        {
+          "label": "Plugin logic",
+          "members": [
+            "sec:shell",
+            "sec:mod",
+            "sec:dyn",
+            "sec:eng",
+            "sec:fx"
+          ]
+        },
+        {
+          "label": "Foundations",
+          "members": [
+            "sec:fnd"
+          ]
+        }
+      ],
+      "primitive": "band",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [
+    {
+      "approvals": [],
+      "id": "exempt:dispatch",
+      "pattern": {
+        "dstIn": "sec:eng",
+        "kind": "call",
+        "src": "file:foundations/voice_alloc.cpp"
+      },
+      "rule": "band.downward",
+      "status": "pending"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:a0726dc87a24a59c08336f272dedcaa061c808778509524036fe932118e50740"
+  },
+  "overlay": {
+    "hash": "sha256:37b32f513d78d1b4a2c2d274bb4c1790709e4c5ac6c7e99dd72ed5ba5d9a1289"
+  },
+  "schema": "loupe.view/0.1",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}
