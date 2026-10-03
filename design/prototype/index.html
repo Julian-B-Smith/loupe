@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loupe</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--loupe-surface-page);color:var(--loupe-ink);font:var(--loupe-type-panel-body)}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:2px solid var(--loupe-focus-ring);outline-offset:2px;border-radius:4px}
+a{color:var(--loupe-accent)}a:hover{color:var(--loupe-ink)}
+.mono{font:var(--loupe-type-node-label);letter-spacing:var(--loupe-tracking-node-label)}
+.eyebrow{font:var(--loupe-type-eyebrow);letter-spacing:var(--loupe-tracking-eyebrow);text-transform:uppercase;color:var(--loupe-ink-faint)}
+.app{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--loupe-rule)}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.brand b{font:700 19px/24px var(--loupe-font-ui);letter-spacing:-.02em}
+.brand span{font:var(--loupe-type-count);color:var(--loupe-ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.meter{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;text-align:left}
+.meter i{width:9px;height:9px;border-radius:50%;flex:none}
+.meter b{font:500 13px/16px var(--loupe-font-ui)}
+.meter small{font:var(--loupe-type-count);color:var(--loupe-ink-faint)}
+.seg{display:flex;padding:2px;gap:2px;border-radius:7px;background:var(--loupe-surface-group-nested)}
+.seg button{padding:4px 10px;border-radius:5px;font:500 12.5px/16px var(--loupe-font-ui);color:var(--loupe-ink-muted)}
+.seg button[aria-pressed="true"]{background:var(--loupe-surface-node);color:var(--loupe-ink);box-shadow:0 0 0 1px var(--loupe-rule)}
+.seg .lbl{padding:4px 6px 4px 8px;font:var(--loupe-type-caption);color:var(--loupe-ink-faint);align-self:center}
+.stages{display:flex;gap:2px;padding:6px 12px;border-bottom:1px solid var(--loupe-rule);overflow-x:auto;scrollbar-width:none}
+.stages::-webkit-scrollbar{display:none}
+.stg{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:6px;white-space:nowrap;font:500 13px/16px var(--loupe-font-ui);color:var(--loupe-ink-muted)}
+.stg i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;font:var(--loupe-type-count);font-style:normal;border:1px solid var(--loupe-rule);color:var(--loupe-ink-faint)}
+.stg:hover{background:var(--loupe-surface-group-nested)}
+.stg[aria-current="step"]{background:var(--loupe-surface-group);color:var(--loupe-ink)}
+.stg[aria-current="step"] i{background:var(--loupe-ink);border-color:var(--loupe-ink);color:var(--loupe-surface-node)}
+main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
+.canvas{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--loupe-surface-canvas);touch-action:none;cursor:grab}
+.canvas.dragging{cursor:grabbing}
+.canvas.can-move{cursor:move}
+.canvas.moving{cursor:move}
+.float{position:absolute;display:flex;gap:6px;background:var(--loupe-surface-panel);border-radius:var(--loupe-radius-panel);box-shadow:0 0 0 1px var(--loupe-rule)}
+.legend{left:12px;bottom:12px;padding:10px 12px;gap:14px;flex-wrap:wrap;max-width:calc(100% - 96px)}
+.legend .col{display:grid;gap:3px;align-content:start}
+.legend .col+.col{padding-left:14px;border-left:1px solid var(--loupe-rule)}
+.lk{display:flex;align-items:center;gap:7px;font:var(--loupe-type-caption);color:var(--loupe-ink-muted);text-align:left}
+.lk[aria-pressed="false"]{opacity:.35}
+.legend.closed .col{display:none}
+.legend .kt{font:var(--loupe-type-eyebrow);letter-spacing:var(--loupe-tracking-eyebrow);text-transform:uppercase;color:var(--loupe-ink-faint);align-self:flex-start}
+.legend.closed{padding:6px 10px}
+.zoom{right:12px;bottom:12px;flex-direction:column;gap:0;overflow:hidden}
+.zoom button{width:36px;height:34px;font:500 16px/1 var(--loupe-font-ui);color:var(--loupe-ink-muted)}
+.zoom button+button{border-top:1px solid var(--loupe-rule)}
+.zoom .lod{font:var(--loupe-type-count);padding:6px 0;text-align:center;color:var(--loupe-ink-faint);border-top:1px solid var(--loupe-rule);width:36px;white-space:nowrap}
+.settings{right:12px;top:12px;padding:3px}
+.panel{border-left:1px solid var(--loupe-rule);background:var(--loupe-surface-panel);min-height:0;display:flex;flex-direction:column}
+.handle{display:none}
+.pbody{overflow-y:auto;padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px;min-height:0;flex:1}
+.pbody h2{margin:0;font:var(--loupe-type-panel-title);letter-spacing:-.015em;overflow-wrap:anywhere;text-wrap:balance}
+.pbody p{margin:0;color:var(--loupe-ink-muted);text-wrap:pretty}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.path{font:var(--loupe-type-count);color:var(--loupe-ink-faint);overflow-wrap:anywhere}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px;font:var(--loupe-type-caption);color:var(--loupe-ink-faint)}
+.crumbs button{color:var(--loupe-accent)}
+.list{display:flex;flex-direction:column;gap:6px}
+.card{display:flex;flex-direction:column;gap:5px;padding:10px 12px;border-radius:8px;background:var(--loupe-surface-group);box-shadow:inset 0 0 0 1px var(--loupe-rule);text-align:left;width:100%}
+button.card:hover{box-shadow:inset 0 0 0 1px var(--loupe-ink-faint)}
+.card.on{box-shadow:inset 0 0 0 2px var(--loupe-accent)}
+.card .t{font:500 13px/17px var(--loupe-font-ui)}
+.card .s{font:var(--loupe-type-caption);color:var(--loupe-ink-muted);text-wrap:pretty}
+.card .m{font:var(--loupe-type-count);color:var(--loupe-ink-faint)}
+.chip{font:var(--loupe-type-eyebrow);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.erow{display:grid;grid-template-columns:30px 14px minmax(0,1fr) auto;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid var(--loupe-rule);text-align:left;width:100%}
+.erow:hover{background:var(--loupe-surface-group)}
+.erow .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erow .m{font:var(--loupe-type-caption);color:var(--loupe-ink-faint);white-space:nowrap}
+.btn{padding:6px 12px;border-radius:6px;box-shadow:inset 0 0 0 1px var(--loupe-rule);font:500 13px/16px var(--loupe-font-ui)}
+.btn.primary{background:var(--loupe-ink);color:var(--loupe-surface-node);box-shadow:none}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font:var(--loupe-type-caption)}
+.kv dt{color:var(--loupe-ink-faint)}.kv dd{margin:0;color:var(--loupe-ink);overflow-wrap:anywhere}
+table.t{border-collapse:collapse;width:100%;font:var(--loupe-type-caption);font-variant-numeric:tabular-nums}
+table.t th,table.t td{padding:5px 4px;border-bottom:1px solid var(--loupe-rule);text-align:right}
+table.t th:first-child,table.t td:first-child{text-align:left}
+table.t th{color:var(--loupe-ink-faint);font-weight:500}
+.err{padding:24px;color:var(--loupe-state-bad)}
+@media (max-width:720px){
+  .top{padding:8px 12px}.brand span{display:none}
+  main{grid-template-columns:minmax(0,1fr)}
+  .settings{top:8px;right:8px}
+  .panel{position:fixed;left:0;right:0;bottom:0;height:62vh;border-left:0;border-top:1px solid var(--loupe-rule);border-radius:14px 14px 0 0;transform:translateY(calc(100% - 76px));transition:transform .25s cubic-bezier(.2,.7,.2,1);z-index:5}
+  .panel.open{transform:none}
+  .handle{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 16px 4px;width:100%}
+  .handle::before{content:"";width:36px;height:4px;border-radius:2px;background:var(--loupe-rule)}
+  .handle span{font:500 13px/16px var(--loupe-font-ui);align-self:stretch;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pbody{padding-top:6px}
+  .zoom{bottom:88px}
+}
+@media (prefers-reduced-motion: reduce){.panel{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><b>Loupe</b><span id="repo"></span></div>
+    <div class="tools">
+      <button class="meter" id="meter" title="Conservation check"></button>
+      <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button></div>
+      <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
+      <div class="seg"><button id="theme">Dark</button></div>
+    </div>
+  </header>
+  <nav class="stages" id="stages" aria-label="Pipeline stages"></nav>
+  <main>
+    <section class="canvas" id="canvas" aria-label="Map">
+      <div class="float settings" style="gap:6px;background:none;box-shadow:none"><div class="seg" id="hubSeg" title="Hub placement" style="box-shadow:0 0 0 1px var(--loupe-rule)"><span class="lbl">Hubs</span><button data-hub="group">With group</button><button data-hub="center">Centered</button></div><div class="seg" id="resetSeg" style="box-shadow:0 0 0 1px var(--loupe-rule)" hidden><button id="resetLayout" title="Put moved sections and levels back">Reset layout</button></div></div>
+      <div class="float legend" id="legend"></div>
+      <div class="float zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="lod"></div></div>
+    </section>
+    <aside class="panel" id="panel"><button class="handle" id="handle"><span id="handleText"></span></button><div class="pbody" id="pbody"></div></aside>
+  </main>
+</div>
+<script type="module">
+import { loadSnapshot } from './snapshot.js';
+import { createStore, STAGES } from './state.js';
+import { render, SPEC, slotOf, glyphOf } from './render.js';
+import { conserve, conformity } from './standins.js';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const v = n => `var(--loupe-${n})`;
+const params = new URLSearchParams(location.search);
+const SNAP = params.get('snapshot') || 'snapshots/horde-sample/';
+const canvas = $('canvas');
+const phone = () => matchMedia('(max-width:720px)').matches;
+
+let data;
+try { data = await loadSnapshot(SNAP); }
+catch (err) { canvas.innerHTML = `<div class="err">${esc(err.message)}</div>`; throw err; }
+
+const saved = JSON.parse(localStorage.getItem('loupe-proto') || '{}');
+const savedOffsets = (saved.offsets || {})[SNAP] || {};
+const store = createStore({ stage: saved.stage || 2, view: STAGES[(saved.stage || 2) - 1].view, theme: saved.theme || 'light', offsets: savedOffsets });
+const A = store.actions;
+const PRIM = { section: 'Section', set: 'Set', overlap: 'Overlap', bus: 'Bus', band: 'Band', lane: 'Lane', twins: 'Twins', hub: 'Hub', loop: 'Loop' };
+const STATUS = { confirmed: 'state-ok', challenged: 'state-bad', proposed: 'ink-faint', open: 'state-warn', pending: 'state-warn', established: 'ink-muted', answered: 'state-ok' };
+const chip = (text, tok) => `<span class="chip" style="color:${v(tok || STATUS[text] || 'ink-faint')}">${esc(text)}</span>`;
+const label = id => (data.nodes[id] && data.nodes[id].label) || (data.elements[id] && (data.elements[id].label || id)) || id;
+const crumbs = sec => { const out = []; while (sec) { out.unshift(sec); sec = data.parentOf[sec]; } return out; };
+const swatch = e => {
+  const s = slotOf(e), g = glyphOf(e), c = v('edge-' + s), d = SPEC.dash[e.provenance] || 'none', cap = SPEC.cap[e.provenance] || 'butt';
+  const head = g === 'dot' ? `<circle cx="24" cy="5" r="2.8" style="fill:${c}"/>` : `<path d="M19 1.4L27 5L19 8.6z" style="fill:${g === 'arrow-hollow' ? v('surface-panel') : c};stroke:${c};stroke-width:${g === 'arrow-hollow' ? 1.2 : 0}px"/>`;
+  return `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="${g === 'dot' ? 21 : 20}" y2="5" style="stroke:${c};stroke-width:1.5px;stroke-dasharray:${d};stroke-linecap:${cap}"/>${head}</svg>`;
+};
+
+// ---------- render loop
+let map = null, pending = false;
+let lastSize = '';
+function paint() {
+  pending = false;
+  if (!canvas.clientWidth || !canvas.clientHeight) return;
+  lastSize = canvas.clientWidth + 'x' + canvas.clientHeight;
+  const s = store.get();
+  document.documentElement.dataset.theme = s.theme;
+  const st = { ...s, zoom: { ...s.zoom, padBottom: phone() ? 76 : 96 } };
+  map = render(canvas, data, st);
+  const c = conserve(data, s, map);
+  meter(c);
+  $('lod').textContent = { overview: 'ovw', structure: 'str', detail: 'det' }[map.lod]; $('lod').title = 'Level of detail: ' + map.lod;
+  chrome(s);
+  panel(s, c);
+}
+const schedule = () => { if (!pending) { pending = true; setTimeout(paint, 0); } };
+store.on(schedule);
+new ResizeObserver(schedule).observe(canvas);
+// Hidden or throttled frames may never deliver resize or animation callbacks: poll until sized, then on size change.
+const sizeChanged = () => (canvas.clientWidth + 'x' + canvas.clientHeight) !== lastSize;
+let polls = 0;
+const poll = () => { if (sizeChanged()) paint(); if (++polls < 30) setTimeout(poll, 100); };
+setTimeout(poll, 0);
+addEventListener('resize', () => { if (sizeChanged()) schedule(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) paint(); });
+if (document.fonts) document.fonts.ready.then(schedule);
+
+// ---------- flow-to-design transition
+let lastView = store.get().view, anim = null;
+store.on(s => {
+  if (s.view === lastView) return;
+  lastView = s.view;
+  const from = s.morph != null ? s.morph : s.view === 'design' ? 0 : 1, to = s.view === 'design' ? 1 : 0;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (anim) clearTimeout(anim);
+  const total = reduce ? 150 : SPEC.motion.maxTotal, t0 = performance.now();
+  const step = () => {
+    const p = Math.min(1, (performance.now() - t0) / total);
+    const m = reduce ? (p < 0.5 ? from : to) : from + (to - from) * p;
+    if (p >= 1) { anim = null; store.set({ morph: undefined }); return; }
+    store.set({ morph: m }); anim = setTimeout(step, 16);
+  };
+  step();
+});
+
+// ---------- chrome
+$('stages').innerHTML = STAGES.map(st => `<button class="stg" data-stage="${st.n}"><i>${st.n}</i>${st.label}</button>`).join('');
+$('stages').onclick = e => { const b = e.target.closest('[data-stage]'); if (b) A.setStage(+b.dataset.stage); };
+$('viewSeg').onclick = e => { const b = e.target.closest('[data-view]'); if (b) A.setView(b.dataset.view); };
+$('diffSeg').onclick = e => { const b = e.target.closest('[data-diff]'); if (b) A.setDiff(b.dataset.diff === 'off' ? null : { side: b.dataset.diff }); };
+$('hubSeg').onclick = e => { const b = e.target.closest('[data-hub]'); if (b) A.setHubPlacement(b.dataset.hub); };
+$('theme').onclick = () => A.setTheme(store.get().theme === 'dark' ? 'light' : 'dark');
+$('handle').onclick = () => $('panel').classList.toggle('open');
+$('repo').textContent = `${data.graph.source && data.graph.source.repo || 'HORDE sample'} · ${data.view.dialect.name} · not crawled`;
+if (!data.diff) $('diffSeg').hidden = true;
+if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
+store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); localStorage.setItem('loupe-proto', JSON.stringify({ stage: s.stage, theme: s.theme, offsets: { ...(prev.offsets || {}), [SNAP]: s.offsets } })); });
+$('resetLayout').onclick = () => A.resetLayout();
+
+function chrome(s) {
+  document.querySelectorAll('[data-stage]').forEach(b => b.setAttribute('aria-current', +b.dataset.stage === s.stage ? 'step' : 'false'));
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === s.view));
+  document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', (s.diff ? s.diff.side : 'off') === b.dataset.diff));
+  const hp = s.settings.hubPlacement || data.settings.hubPlacement || 'group';
+  document.querySelectorAll('[data-hub]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hub === hp));
+  $('hubSeg').style.display = s.view === 'design' ? '' : 'none';
+  $('resetSeg').hidden = !(s.view === 'design' && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
+  $('theme').textContent = s.theme === 'dark' ? 'Light' : 'Dark';
+  legend(s);
+}
+
+function meter(c) {
+  const col = { balanced: 'state-ok', broken: 'state-bad', stale: 'state-warn' }[c.status];
+  const main = c.status === 'broken' ? `${c.unaccounted.length} not accounted for` : `${c.accounted} of ${c.edges.total} edges accounted`;
+  const sub = c.status === 'stale' ? 'view made for an older graph' : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} files`;
+  $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
+  $('meter').dataset.status = c.status;
+  $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
+}
+
+function legend(s) {
+  const seen = {};
+  data.edges.forEach(e => { const k = e.role || e.kind; if (!seen[k]) seen[k] = e; });
+  const kinds = Object.entries(seen).sort((a, b) => slotOf(a[1]) - slotOf(b[1]));
+  const provs = ['static', 'config', 'runtime', 'annotated', 'inferred'];
+  $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button><div class="col" style="grid-template-columns:repeat(${kinds.length > 4 ? 2 : 1},auto);column-gap:14px">${kinds.map(([k, e]) => `<button class="lk" data-kind="${k}" aria-pressed="${!s.dimmedKinds.includes(k)}" title="Dim or show ${k} edges">${swatch({ ...e, provenance: 'static' })}${k}</button>`).join('')}</div>
+    <div class="col">${provs.map(p => `<div class="lk">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}${p}</div>`).join('')}</div>`;
+}
+$('legend').onclick = e => { if (e.target.closest('[data-keytoggle]')) { $('legend').classList.toggle('closed'); legend(store.get()); return; } const b = e.target.closest('[data-kind]'); if (b) A.toggleKind(b.dataset.kind); };
+if (canvas.clientWidth < 760) $('legend').classList.add('closed');
+
+// ---------- canvas interaction
+const hit = t => {
+  const c = t.closest && t.closest('[data-collapse],[data-node],[data-el],[data-edge]');
+  if (!c) return null;
+  if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
+  if (c.dataset.node) return { type: 'node', id: c.dataset.node };
+  if (c.dataset.el) return { type: 'element', id: c.dataset.el };
+  return { type: 'edge', id: c.dataset.edge };
+};
+let drag = null;
+const movableSection = t => {
+  const s = store.get();
+  if (s.view !== 'design' || s.morph != null) return null;
+  const lvEl = t.closest && t.closest('[data-level]');
+  if (lvEl) return lvEl.dataset.level === 'gutter' ? 'gutter' : 'level:' + lvEl.dataset.level;
+  const h = hit(t); if (!h) return null;
+  let sec = h.type === 'node' ? data.home[h.id] : h.type === 'element' && data.elements[h.id] && data.elements[h.id].primitive === 'section' ? h.id : null;
+  if (h.type === 'element' && data.elements[h.id] && ['lane', 'twins'].includes(data.elements[h.id].primitive)) sec = data.elements[h.id].primitive === 'twins' ? data.parentOf[data.elements[h.id].members[0]] : (map.layout.lanes[h.id] || {}).section;
+  return sec ? data.topOf(sec) : null;
+};
+canvas.addEventListener('pointerdown', e => {
+  if (e.target.closest('.float')) return;
+  const sec = movableSection(e.target);
+  drag = { x: e.clientX, y: e.clientY, z: { ...map.zoom }, moved: false, sec, o0: sec ? { dx: 0, dy: 0, ...(store.get().offsets[sec] || {}) } : null };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (drag) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    if (drag.moved && drag.sec) { canvas.classList.add('moving'); A.hover(null); A.moveSection(drag.sec, drag.o0.dx + dx / drag.z.k, drag.o0.dy + dy / drag.z.k); if (store.get().zoom.auto) A.setZoom({ auto: false, ...drag.z }); }
+    else if (drag.moved) { canvas.classList.add('dragging'); A.setZoom({ auto: false, k: drag.z.k, x: drag.z.x + dx, y: drag.z.y + dy }); }
+    return;
+  }
+  canvas.classList.toggle('can-move', !!movableSection(e.target));
+  const h = hit(e.target);
+  A.hover(h && h.type !== 'collapse' ? h : null);
+});
+canvas.addEventListener('pointerleave', () => A.hover(null));
+canvas.addEventListener('pointerup', e => {
+  canvas.classList.remove('dragging', 'moving');
+  const d = drag; drag = null;
+  if (!d || d.moved || e.target.closest('.float')) return;
+  const h = hit(document.elementFromPoint(e.clientX, e.clientY) || e.target);
+  if (!h) return A.clear();
+  if (h.type === 'collapse') return A.toggleCollapsed(h.id);
+  A.select(h);
+  if (phone()) $('panel').classList.add('open');
+});
+const zoomAt = (f, cx, cy) => {
+  const z = map.zoom, k = Math.max(0.12, Math.min(4, z.k * f));
+  if (cx == null) { cx = canvas.clientWidth / 2; cy = canvas.clientHeight / 2; }
+  A.setZoom({ auto: false, k, x: cx - (cx - z.x) * (k / z.k), y: cy - (cy - z.y) * (k / z.k) });
+};
+canvas.addEventListener('wheel', e => { e.preventDefault(); const r = canvas.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+$('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
+addEventListener('keydown', e => { if (e.key === 'Escape') A.clear(); });
+
+// ---------- inspector
+const pb = $('pbody');
+pb.onclick = e => {
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  const [type, id] = [b.dataset.type, b.dataset.go];
+  if (type === 'collapse') return A.toggleCollapsed(id);
+  if (type === 'tour') return A.setTour({ step: +id });
+  if (type === 'tourpick') return A.setTour({ index: +id, step: 0 });
+  if (type === 'hub') return A.setHubPlacement(id);
+  store.set({ selection: { type, id } });
+};
+const go = (type, id, inner, cls = '') => `<button class="${cls}" data-type="${type}" data-go="${esc(id)}">${inner}</button>`;
+
+function claimsFor(id) {
+  const out = [];
+  const home = data.home[id];
+  crumbs(home).forEach(s => out.push(s));
+  data.order.forEach(eid => {
+    const el = data.elements[eid];
+    if (out.includes(eid)) return;
+    const p = el.primitive;
+    if ((p === 'set' || p === 'overlap') && el.members.includes(id)) out.push(eid);
+    if (p === 'lane' && el.steps.includes(id)) out.push(eid);
+    if (p === 'hub' && el.node === id) out.push(eid);
+    if (p === 'loop' && el.cycle.includes(id)) out.push(eid);
+    if (p === 'twins' && crumbs(home).some(s => el.members.includes(s))) out.push(eid);
+    if (p === 'band' && el.levels.some(l => l.members.includes(data.topOf(home)))) out.push(eid);
+    if (p === 'bus' && el.edges.some(x => { const e = data.edgeById[x]; return e && (e.src === id || e.dst === id); })) out.push(eid);
+  });
+  return out;
+}
+const elCard = eid => { const el = data.elements[eid]; return go('element', eid, `<div class="row"><span class="t">${PRIM[el.primitive]} · ${esc(el.label || eid)}</span>${chip(el.status)}</div><span class="s">${esc(el.claim)}</span><span class="m">${esc(el.by)}</span>`, 'card'); };
+const edgeRow = (e, from) => {
+  const out = e.src === from, other = out ? e.dst : e.src;
+  return go('edge', e.id, `${swatch(e)}<span class="m">${out ? '→' : '←'}</span><span class="n mono">${esc(label(other))}</span><span class="m">${esc(e.role || e.kind)} · ${e.provenance}</span>`, 'erow');
+};
+
+function nodePanel(id) {
+  const n = data.nodes[id] || ((data.diff && data.diff.removed) || []).find(r => r.id === id);
+  if (!n) return '';
+  const outs = data.edges.filter(e => e.src === id), ins = data.edges.filter(e => e.dst === id);
+  const note = data.stages && data.stages.explain.notes[id];
+  const home = data.home[id];
+  const d = data.diff && store.get().diff ? ['added', 'changed', 'stale'].find(k => (data.diff[k] || []).includes(id)) || ((data.diff.removed || []).some(r => r.id === id) ? 'removed' : null) : null;
+  return `<div class="crumbs">${crumbs(home).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>
+    <div><h2>${esc(label(id) || n.path.split('/').pop())}</h2><div class="path">${esc(n.path)}${n.loc ? ' · ' + n.loc + ' lines' : ''}${n.lang ? ' · ' + n.lang : ''}</div></div>
+    ${d ? `<div>${chip('diff · ' + d, 'diff-' + d)}</div>` : ''}
+    <p>${esc(note || (d === 'removed' ? 'Removed since the last run. Drawn as a ghost until the diff is accepted.' : 'No explainer yet.'))}</p>
+    ${claimsFor(id).length ? `<div class="list"><span class="eyebrow">Claims about this file</span>${claimsFor(id).map(elCard).join('')}</div>` : ''}
+    ${outs.length + ins.length ? `<div><span class="eyebrow">Edges · ${outs.length} out · ${ins.length} in</span>${outs.concat(ins).map(e => edgeRow(e, id)).join('')}</div>` : ''}`;
+}
+
+function edgePanel(id) {
+  const e = data.edgeById[id]; if (!e) return '';
+  const bus = (data.byPrimitive.bus || []).find(b => data.elements[b].edges.includes(id));
+  return `<span class="eyebrow">Edge · ${e.origin === 'graph' ? 'crawled' : 'overlay'}</span>
+    <div style="display:flex;flex-direction:column;gap:6px">${go('node', e.src, `<span class="mono">${esc(label(e.src))}</span>`)}<span class="row" style="justify-content:flex-start">${swatch(e)}<span class="path">${esc(e.kind)}${e.role ? ' / ' + esc(e.role) : ''}</span></span>${go('node', e.dst, `<span class="mono">${esc(label(e.dst))}</span>`)}</div>
+    <dl class="kv"><dt>Provenance</dt><dd>${e.provenance}</dd><dt>Kind</dt><dd>${e.kind}</dd><dt>Role</dt><dd>${e.role || 'none'}${e.roleRule ? ' · ' + esc(e.roleRule) : ''}</dd>${e.count ? `<dt>Sites</dt><dd>${e.count}</dd>` : ''}${bus ? `<dt>Bus</dt><dd>${go('element', bus, esc(data.elements[bus].label))}</dd>` : ''}${e.condition ? `<dt>Condition</dt><dd>${esc(e.condition.condition)}</dd>` : ''}<dt>Id</dt><dd class="path">${e.id}</dd></dl>
+    <div class="list"><span class="eyebrow">Evidence</span>${(e.evidence || []).map(x => `<div class="card"><span class="t">${esc(x.type)}</span><span class="s">${esc(x.rationale || x.signature || x.trace || x.key || '')}</span><span class="m">${esc([x.path, x.line && 'line ' + x.line, x.agent && 'agent:' + x.agent].filter(Boolean).join(' · '))}</span></div>`).join('') || '<p>None recorded.</p>'}</div>`;
+}
+
+function elementPanel(id) {
+  const ex = (data.view.exemptions || []).find(x => x.id === id);
+  if (ex) return `<span class="eyebrow">Exemption · band rule</span><h2>${esc(label(ex.pattern.src))} → ${esc(label(ex.pattern.dstIn))}</h2><div>${chip(ex.status)}</div>
+    <p>Upward ${esc(ex.pattern.kind || '')} edges from ${esc(label(ex.pattern.src))} into ${esc(label(ex.pattern.dstIn))}. ${ex.status === 'pending' ? `Raised in dialogue. Becomes established after 3 approvals (${(ex.approvals || []).length} so far) or one explicit approval.` : 'Established: drawn but no longer raised as a question.'}</p>`;
+  const el = data.elements[id]; if (!el) return '';
+  const p = el.primitive;
+  let body = '';
+  if (p === 'section') {
+    const files = el.members.filter(m => data.nodes[m]);
+    const collapsed = store.get().collapsed.includes(id);
+    body = `<div class="row"><span class="path">${data.filesIn(id)} files${data.children[id].length ? ' · ' + data.children[id].length + ' subsections' : ''}</span>${go('collapse', id, collapsed ? 'Expand' : 'Collapse', 'btn')}</div>
+      ${data.children[id].length ? `<div class="list">${data.children[id].map(elCard).join('')}</div>` : ''}
+      ${files.length ? `<div><span class="eyebrow">Files</span>${files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m">${data.edges.filter(e => e.src === f || e.dst === f).length} edges</span>`, 'erow')).join('')}</div>` : ''}`;
+  } else if (p === 'bus') {
+    const es = el.edges.map(x => data.edgeById[x]).filter(Boolean);
+    body = `<dl class="kv"><dt>Contract</dt><dd class="mono">${esc(el.contract.signature)}</dd><dt>Role</dt><dd>${esc(el.contract.role)}</dd>${el.contract.dst ? `<dt>Target</dt><dd>${go('node', el.contract.dst, esc(label(el.contract.dst)))}</dd>` : ''}</dl>
+      <div><span class="eyebrow">Members · ${es.length}</span>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${e.provenance}</span>`, 'erow')).join('')}</div>`;
+  } else if (p === 'lane') {
+    const src = el.source || {};
+    body = `<dl class="kv"><dt>Order from</dt><dd>${esc(src.provenance)}${src.evidence ? ' · ' + esc(src.evidence) : ''}</dd></dl>
+      <div><span class="eyebrow">Steps · ${el.steps.length}</span>${el.steps.map((s, i) => go('node', s, `<span class="m">${i + 1}</span><span></span><span class="n mono">${esc(label(s))}</span><span class="m"></span>`, 'erow')).join('')}</div>`;
+  } else if (p === 'twins') {
+    const conf = conformity(data, id), g = { ok: ['✓', 'state-ok'], warn: ['~', 'state-warn'], bad: ['✕', 'state-bad'] };
+    body = `<table class="t"><thead><tr><th>Twin</th>${el.interface.map(pt => `<th>${esc(pt.name)}</th>`).join('')}</tr></thead><tbody>${el.members.map(m => `<tr><td>${go('element', m, esc(label(m)))}</td>${conf[m].map(c => `<td style="color:${v(g[c][1])};font-weight:700">${g[c][0]}</td>`).join('')}</tr>`).join('')}</tbody></table>
+      <p>✓ a static edge matches · ~ only overlay edges match · ✕ no matching edge.</p>`;
+  } else if (p === 'hub') {
+    const fi = data.edges.filter(e => e.dst === el.node).length, hp = store.get().settings.hubPlacement || data.settings.hubPlacement || 'group';
+    body = `<dl class="kv"><dt>File</dt><dd>${go('node', el.node, esc(label(el.node)))}</dd><dt>Fan-in</dt><dd>${fi}</dd><dt>Fan-out</dt><dd>${data.edges.filter(e => e.src === el.node).length}</dd></dl>
+      <div class="seg" style="align-self:flex-start"><span class="lbl">Placement</span>${['group', 'center'].map(x => `<button data-type="hub" data-go="${x}" aria-pressed="${hp === x}">${x === 'group' ? 'With group' : 'Centered'}</button>`).join('')}</div>`;
+  } else if (p === 'set' || p === 'overlap') {
+    body = `${p === 'overlap' ? `<dl class="kv"><dt>Sets</dt><dd>${el.sets.map(s => go('element', s, esc(label(s)))).join(' ∩ ')}</dd></dl>` : ''}<div><span class="eyebrow">Members · ${el.members.length}</span>${el.members.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m"></span>`, 'erow')).join('')}</div>`;
+  } else if (p === 'band') {
+    body = `<div class="list">${el.levels.map((l, i) => `<div class="card"><span class="t">${i + 1}. ${esc(l.label)}</span><span class="s">${l.members.map(m => esc(label(m))).join(', ')}</span></div>`).join('')}</div>
+      <div class="list"><span class="eyebrow">Exemptions</span>${(data.view.exemptions || []).map(x => go('element', x.id, `<div class="row"><span class="t">${esc(label(x.pattern.src))} → ${esc(label(x.pattern.dstIn))}</span>${chip(x.status)}</div><span class="m">${(x.approvals || []).length} of 3 approvals</span>`, 'card')).join('') || '<p>None.</p>'}</div>`;
+  } else if (p === 'loop') {
+    body = `<dl class="kv"><dt>Classification</dt><dd>${esc(el.classification)}</dd>${el.evidence ? `<dt>Evidence</dt><dd>${esc(el.evidence)}</dd>` : ''}</dl><div><span class="eyebrow">Cycle</span>${el.cycle.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m"></span>`, 'erow')).join('')}</div>`;
+  }
+  const crumb = p === 'section' && el.parent ? `<div class="crumbs">${crumbs(el.parent).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>` : '';
+  return `${crumb}<div class="row"><span class="eyebrow">${PRIM[p]}</span>${chip(el.status)}</div><h2>${esc(el.label || id)}</h2><p>${esc(el.claim)}</p><span class="path">${esc(el.by)} · ${esc(id)}</span>${body}`;
+}
+
+function stagePanel(s, c) {
+  const st = STAGES[s.stage - 1], S = data.stages;
+  let h = `<span class="eyebrow">Stage ${st.n}</span><h2>${st.label}</h2>`;
+  if (s.diff && data.diff) {
+    const D = data.diff;
+    h = `<span class="eyebrow">Re-run · ${s.diff.side}</span><h2>Changes since the last run</h2><p>${s.diff.side === 'after' ? 'The current map, with what changed marked. Removed files stay as ghosts until the diff is accepted.' : 'The previous map. Files added since then are drawn as outlines.'}</p>
+      <div class="list">${[['added', D.added], ['changed', D.changed], ['stale', D.stale], ['removed', (D.removed || []).map(r => r.id)]].map(([k, ids]) => `<div class="card"><div class="row"><span class="t">${ids.length} ${k}</span>${chip(k, 'diff-' + k)}</div>${ids.map(id => go('node', id, `<span class="mono">${esc(label(id) || id.split('/').pop())}</span>`)).join('')}</div>`).join('')}</div>`;
+    return h;
+  }
+  if (s.stage === 1) {
+    const kinds = {}; data.edges.forEach(e => { const k = e.kind; kinds[k] = kinds[k] || { graph: 0, overlay: 0 }; kinds[k][e.origin]++; });
+    const provs = {}; data.edges.forEach(e => { provs[e.provenance] = (provs[e.provenance] || 0) + 1; });
+    const cr = data.graph.crawler;
+    h += `<p>The crawler's output, laid out by dependency rank with no interpretation. This is the reference the design view is checked against.</p>
+      <dl class="kv"><dt>Crawler</dt><dd>${esc(cr.name)} ${esc(cr.version)}</dd><dt>Granularity</dt><dd>${esc(cr.granularity)}</dd><dt>Dialect</dt><dd>${esc(cr.dialect.name)} ${esc(cr.dialect.version)}</dd><dt>Files</dt><dd>${data.nodeIds.length}</dd></dl>
+      <table class="t"><thead><tr><th>Kind</th><th>Crawled</th><th>Overlay</th></tr></thead><tbody>${Object.entries(kinds).map(([k, n]) => `<tr><td>${k}</td><td>${n.graph}</td><td>${n.overlay}</td></tr>`).join('')}</tbody></table>
+      <table class="t"><thead><tr><th>Provenance</th><th>Edges</th></tr></thead><tbody>${Object.entries(provs).map(([k, n]) => `<tr><td>${k}</td><td>${n}</td></tr>`).join('')}</tbody></table>`;
+  } else if (s.stage === 2) {
+    h += `<p>Dialect ${esc(data.view.dialect.name)}. The structure agent composed this view from ${data.order.length} elements. Each one makes a claim the audit can test.</p>`;
+    Object.keys(PRIM).forEach(p => { const ids = data.byPrimitive[p]; if (ids) h += `<div class="list"><span class="eyebrow">${PRIM[p]} · ${ids.length}</span>${ids.map(elCard).join('')}</div>`; });
+  } else if (s.stage === 3 && S) {
+    const open = S.dialogue.filter(q => !q.answer).length;
+    h += `<p>${S.dialogue.length} questions from the structure agent, ${open} open. Pins mark the file each one is about.</p><div class="list">${S.dialogue.map(q => go('node', q.node, `<div class="row"><span class="t mono">${esc(label(q.node))}</span>${chip(q.answer ? 'answered' : 'open')}</div><span class="s">${esc(q.question)}</span>${q.answer ? `<span class="s" style="color:${v('ink')}">Julian: ${esc(q.answer)}</span>` : ''}${q.effect ? `<span class="m">${esc(q.effect)}</span>` : ''}`, 'card')).join('')}</div>`;
+  } else if (s.stage === 4 && S) {
+    const V = { confirmed: 'pass', challenged: 'fail', open: 'warn' };
+    h += `<p>${S.audit.length} findings. Element verdicts show as badges on the map; proposed elements have none yet.</p><div class="list">${S.audit.map(a => go(a.element ? 'element' : 'node', a.element || a.nodes[0], `<div class="row"><span class="t">${esc(a.nodes.map(label).join(', '))}</span>${chip(a.verdict, { confirmed: 'state-ok', challenged: 'state-bad', open: 'state-warn' }[a.verdict])}</div><span class="s">${esc(a.text)}</span><span class="m">${esc(a.by)}${a.reply ? ' · Reply: ' + esc(a.reply) : ''}</span>`, 'card')).join('')}</div>`;
+  } else if (s.stage === 5 && S) {
+    h += `<p>How a block of audio moves through the plugin.</p><div class="list">${S.explain.flow.map((t, i) => `<div class="card"><span class="m">${i + 1}</span><span class="s" style="color:${v('ink')}">${esc(t)}</span></div>`).join('')}</div><span class="path">${Object.keys(S.explain.notes).length} files have explainers. Select a file to read its note.</span>`;
+  } else if (s.stage === 6 && S) {
+    const ti = s.tour.index, t = S.tours[ti], i = Math.min(s.tour.step, t.steps.length - 1);
+    h = `<span class="eyebrow">Stage 6 · tour · step ${i + 1} of ${t.steps.length}</span><h2>${esc(t.title)}</h2>
+      <div class="seg" style="align-self:flex-start;flex-wrap:wrap">${S.tours.map((x, j) => `<button data-type="tourpick" data-go="${j}" aria-pressed="${j === ti}">${j + 1}</button>`).join('')}</div>
+      <p style="color:${v('ink')}">${esc(t.steps[i].text)}</p>
+      <div class="row" style="justify-content:flex-start"><button class="btn" data-type="tour" data-go="${Math.max(0, i - 1)}">Back</button><button class="btn primary" data-type="tour" data-go="${Math.min(t.steps.length - 1, i + 1)}">Next step</button></div>
+      <div class="list">${t.steps.map((x, j) => `<button class="card${j === i ? ' on' : ''}" data-type="tour" data-go="${j}"><span class="t">${j + 1}. <span class="mono">${esc(label(x.node))}</span></span><span class="s">${esc(x.text)}</span></button>`).join('')}</div>`;
+  } else h += '<p>No stage data in this snapshot yet.</p>';
+  return h;
+}
+
+function unaccountedPanel(c) {
+  return `<span class="eyebrow">Conservation</span><h2>${c.unaccounted.length} not accounted for</h2><p>These ids are neither drawn, in a bus, folded nor inside a collapsed group.</p><div>${c.unaccounted.map(id => `<div class="erow"><span></span><span></span><span class="n path">${esc(id)}</span><span></span></div>`).join('')}</div>`;
+}
+
+let lastTourNode = null;
+function panel(s, c) {
+  // tour step drives the selection highlight
+  if (s.stage === 6 && data.stages && !s.selection) {
+    const t = data.stages.tours[s.tour.index], node = t && t.steps[Math.min(s.tour.step, t.steps.length - 1)].node;
+    if (node !== lastTourNode) { lastTourNode = node; }
+  }
+  const sel = s.selection;
+  let html = '', title = '';
+  if (sel && sel.type === 'node') { html = nodePanel(sel.id); title = label(sel.id); }
+  else if (sel && sel.type === 'element') { html = elementPanel(sel.id); title = label(sel.id); }
+  else if (sel && sel.type === 'edge') { html = edgePanel(sel.id); title = 'Edge'; }
+  else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
+  if (!html) { html = stagePanel(s, c); title = s.diff ? 'Re-run diff' : `Stage ${s.stage} · ${STAGES[s.stage - 1].label}`; }
+  else html = `<div class="row"><span></span><button class="path" data-type="clear" data-go="x" style="color:${v('ink-muted')}">Back to stage</button></div>` + html;
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings]);
+  if (pb.dataset.key !== key) { pb.innerHTML = html; pb.dataset.key = key; pb.scrollTop = 0; }
+  $('handleText').textContent = title;
+}
+pb.addEventListener('click', e => { const b = e.target.closest('[data-type="clear"]'); if (b) { e.stopPropagation(); A.clear(); } }, true);
+
+window.loupe = { store, data, render: () => paint(), get map() { return map; } };
+paint();
+</script>
+</body>
+</html>

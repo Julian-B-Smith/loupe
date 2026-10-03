@@ -1,0 +1,23 @@
+{
+ "schema": "loupe.diff-sample/0",
+ "note": "Stand-in re-run diff for the before/after switch. Real diffs come from comparing two snapshots by node hash.",
+ "added": [
+  "file:src/engines/warp/ou_walk.cpp"
+ ],
+ "changed": [
+  "file:src/engines/warp/simplex_shaper.cpp",
+  "file:src/fx/fx_router.cpp"
+ ],
+ "stale": [
+  "art:tests/goldens/*.bin",
+  "file:src/engines/choir/vowel_field.cpp"
+ ],
+ "removed": [
+  {
+   "id": "file:src/engines/warp/legacy_fold.cpp",
+   "kind": "file",
+   "path": "src/engines/warp/legacy_fold.cpp",
+   "home": "sec:warp"
+  }
+ ]
+}

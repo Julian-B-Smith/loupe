@@ -1,0 +1,93 @@
+{
+ "schema": "loupe.view/0.1",
+ "graph": {
+  "hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+ },
+ "dialect": {
+  "name": "dsp-plugin",
+  "version": "0.1"
+ },
+ "settings": {
+  "hubPlacement": "group"
+ },
+ "exemptions": [],
+ "elements": [
+  {
+   "id": "sec:headers",
+   "primitive": "section",
+   "label": "Header ring",
+   "members": [
+    "file:src/loops/a_bus.cpp",
+    "file:src/loops/b_bus.cpp",
+    "file:src/loops/c_bus.cpp"
+   ],
+   "claim": "Three headers that include each other.",
+   "by": "agent:structure",
+   "status": "proposed"
+  },
+  {
+   "id": "sec:reverb",
+   "primitive": "section",
+   "label": "Comb reverb",
+   "members": [
+    "file:src/loops/comb.cpp",
+    "file:src/loops/delay_line.cpp",
+    "file:src/loops/allpass.cpp"
+   ],
+   "claim": "Comb, delay and allpass stages.",
+   "by": "agent:structure",
+   "status": "proposed"
+  },
+  {
+   "id": "sec:sat",
+   "primitive": "section",
+   "label": "Saturator",
+   "members": [
+    "file:src/loops/shaper.cpp",
+    "file:src/loops/feedback_amt.cpp"
+   ],
+   "claim": "Shaper with a feedback amount.",
+   "by": "agent:structure",
+   "status": "proposed"
+  },
+  {
+   "id": "loop:headers",
+   "primitive": "loop",
+   "cycle": [
+    "file:src/loops/a_bus.cpp",
+    "file:src/loops/b_bus.cpp",
+    "file:src/loops/c_bus.cpp"
+   ],
+   "classification": "circular",
+   "claim": "Include cycle.",
+   "by": "agent:structure",
+   "status": "proposed"
+  },
+  {
+   "id": "loop:reverb",
+   "primitive": "loop",
+   "cycle": [
+    "file:src/loops/comb.cpp",
+    "file:src/loops/delay_line.cpp",
+    "file:src/loops/allpass.cpp"
+   ],
+   "classification": "intentional",
+   "evidence": "delay_line holds the previous block",
+   "claim": "Signal feedback through a delay line.",
+   "by": "agent:structure",
+   "status": "proposed"
+  },
+  {
+   "id": "loop:sat",
+   "primitive": "loop",
+   "cycle": [
+    "file:src/loops/shaper.cpp",
+    "file:src/loops/feedback_amt.cpp"
+   ],
+   "classification": "unclassified",
+   "claim": "A loop not yet confirmed as intentional.",
+   "by": "agent:structure",
+   "status": "proposed"
+  }
+ ]
+}

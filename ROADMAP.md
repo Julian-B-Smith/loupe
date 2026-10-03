@@ -68,12 +68,46 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
+### Q-004 — Design prototype v5 (ball: design)
+- **Status:** blocked on design; review sent as `docs/design-review-v4.md` (2026-10-02)
+- **Scope:** `design/` (design lane; infrastructure copies deliveries in, never edits them)
+- **Acceptance criteria:** 1. B1 to B3 of the review fixed; 2. on every `schema/examples/*` snapshot the meter
+  balances AND every node and edge counted as placed or drawn has a drawn element (to be checked by the P2
+  render gate, not by eye); 3. addenda v2.2 and v2.3 items drawn.
+- **Out of scope:** layout engine (P2).
+
+### Q-005 — Schemas for audit, dialogue, explain and re-run diff
+- **Status:** open
+- **Scope:** `schema/`, `docs/graph-schema.md` (human gate: schema change)
+- **Acceptance criteria:** 1. JSON Schemas covering every field `design/prototype/snapshots/horde-sample/stages.sample.json`
+  and `diff.sample.json` use; 2. both stand-ins validate; 3. loupe-check validates them when present.
+
+### Q-006 — Schema 0.3: `settings.offsets` (0020)
+- **Status:** open
+- **Scope:** `schema/view.schema.json`, `tools/loupe-check.mjs`, mutation tests
+- **Acceptance criteria:** 1. `settings.offsets` in the view schema; 2. loupe-check refuses offsets that make two
+  top-level sections overlap, proven by a new mutation case; 3. ships together with 0019's `lens` if accepted.
+
+### Q-007 — Generate `design/tokens.css` from `tokens.json`
+- **Status:** open
+- **Scope:** `tools/`, `design/tokens.css` (generated), `verify`
+- **Acceptance criteria:** 1. a deterministic generator emits every `--loupe-<name>`, `--loupe-type-<name>`,
+  `--loupe-tracking-<name>`, `--loupe-font-ui`, `--loupe-font-mono`; 2. no network import: local font files or a
+  system fallback; 3. `./verify fast` fails if the committed `tokens.css` differs from the generator's output.
+
+### Q-008 — Regenerate the prototype snapshots at schema 0.2
+- **Status:** open
+- **Scope:** `design/prototype/snapshots/` (generated copies)
+- **Acceptance criteria:** 1. `horde-sample` equals `schema/examples/horde-sample/`; 2. `loops-synthetic` rebound to
+  its graph hash; 3. `./verify fast` runs loupe-check on both.
+
 ## Open questions (blocking — ask Julian)
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
 - **HORDE brief loupe-001** (filed 2026-10-02, respond-by 2026-10-31). Its response lands in HORDE's tree, not here: pull `HYPERSAW/integrations/loupe/` at each wakeup.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
 - **0007, 0019** are Proposed; P1 and P3 depend on them.
+- **Design packet links are stale:** the doc copy and the data kit are pinned at v2.1 / schema 0.1 (`docs/design-links.md`). Republish them with addenda v2.2, v2.3 and schema 0.2 before design starts v5.
 
 ## Graduation criteria
 

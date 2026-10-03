@@ -23,3 +23,4 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0017](0017-design-delivers-a-working-prototype.md) | Design delivers a working prototype | Accepted |
 | [0018](0018-schema-0-2-from-the-first-real-crawl.md) | Graph schema 0.2, from the first real crawl | Accepted; scope moved to 0019 |
 | [0019](0019-crawl-config-and-focus-lenses.md) | Crawl config and focus lenses | Proposed |
+| [0020](0020-drag-offsets-live-in-the-view.md) | Drag offsets live in the view | Accepted |
