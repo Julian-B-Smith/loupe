@@ -38,6 +38,17 @@ data, not new code.
 Venn/Euler diagrams stop being readable past three sets. Fall back to tags or a membership strip (a row of set chips on the node), and have
 auditors flag any overlap that exceeds three sets.
 
+## View mechanics (0023)
+
+Fold and isolate make no claim about the code. They change how much is shown, and each makes a claim about
+what it hides, which an auditor can test.
+
+| Mechanic | Claim about what it hides | Audit test |
+|-----------|---------------------------|------------|
+| Fold row (`+N more · M edges`) | N files of this section, each less connected than every file shown; M edges touch them | Counts match the graph; no folded file outranks a shown, unpinned one |
+| Isolate ports | Every edge crossing the section boundary, grouped by peer section | Port counts + inside edges + elsewhere = all edges |
+| Elsewhere chip | The edges and files that never touch the isolated section | Its counts close the meter |
+
 ## Dialects
 
 A dialect is a subset of primitives plus layout rules. The Structure agent picks one in Stage 2 and names

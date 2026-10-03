@@ -53,12 +53,11 @@
   </header>
 
   <section class="issues" aria-labelledby="known">
-    <h2 id="known">Known issues in prototype v4 (already reported to design)</h2>
+    <h2 id="known">Known issues in the prototype</h2>
     <ol>
-      <li><b>Nodes outside any section are not drawn</b>, but the meter still counts them as placed. A balanced meter can hide them.</li>
       <li><b>A bus edge can be counted as drawn without being drawn</b> when its section is collapsed and it is alone in its bundle.</li>
       <li><b>The provenance key can disappear.</b> It closes itself on narrow screens (under 760 px of map). It should shrink to a strip, never vanish.</li>
-      <li>The layout is a placeholder. On the real HORDE crawl it stacks everything into one narrow column.</li>
+      <li>The layout is still a placeholder: sections are placed in simple columns, with no attempt to shorten edges.</li>
       <li>Not drawn yet: missing files, the <code>generates</code> and <code>embeds</code> edge kinds, file roles, focus lenses.</li>
     </ol>
     <p>Full review: <a href="https://github.com/Julian-B-Smith/loupe/blob/main/docs/design-review-v4.md">design-review-v4.md</a>. Anything else you find is new: tell Claude in chat, with the snapshot name.</p>
@@ -84,6 +83,8 @@
   <section aria-labelledby="try">
     <h2 id="try">Things worth trying</h2>
     <ul class="checks">
+      <li><b>New: fold.</b> On the real HORDE crawl, <code>tools</code> shows its 12 busiest files and a dashed <code>+108 more</code> row. Click the row to show all; select the section and use "Fold again" to put it back.</li>
+      <li><b>New: isolate.</b> Select a section (try <code>src</code>) and press Isolate. Inputs sit on the left rail, outputs on the right, one port per section; click a port to list its files. Esc or "Back to full map" returns.</li>
       <li>Collapse a section, then expand it: the meter should stay balanced and the counts should match.</li>
       <li>Zoom out to overview and back: nothing should vanish that the meter still counts.</li>
       <li>Narrow the window: the provenance key should stay on screen (issue 3 says it doesn't yet).</li>
