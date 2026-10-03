@@ -81,7 +81,8 @@ representation is split (0006): a **canonical flow view** with no interpretation
 agent composes from visual primitives (docs/visual-grammar.md).
 
 **Delivery** (0009, 0011): first call runs the full pipeline; later calls show a visual diff, then update.
-Current map in the target repo at `.loupe/current/`; past snapshots on an orphan `loupe-history` branch.
+The skill runs inside the target repo's own session (0021): `.loupe/current/` is generated and gitignored
+there; snapshots are committed only to an orphan `loupe-history` branch, after the target's leak check.
 
 **Stack & entrypoints.** TypeScript on Node (crawler, checker, skill scripts); web-tree-sitter (WASM);
 static HTML/CSS/JS viewer, no build step; JSON Schema (draft-07) as the contract. Today: `tools/*.mjs`,
@@ -101,8 +102,8 @@ static HTML/CSS/JS viewer, no build step; JSON Schema (draft-07) as the contract
 **Lanes & protected paths.** `design/` belongs to the Claude Design agent, which works in this folder at the
 same time: never write there except the generated `design/tokens.css` and `design/primitives.json`.
 Infrastructure owns `schema/`, `tools/`, `docs/`. Human gate before: changing `schema/*.schema.json`,
-regenerating `schema/examples/*`, or editing an Accepted ADR. Writes into a target repo are limited to
-`.loupe/current/` and `loupe-history`; `.loupe/config.json` there is human-owned (Loupe proposes).
+regenerating `schema/examples/*`, or editing an Accepted ADR. Loupe sessions never write into a target
+repo; its own session runs the skill (0021). `.loupe/config.json` there is human-owned (Loupe proposes).
 
 **Decisions.** ADRs in `docs/decisions/` (numbered, Accepted only when Julian agrees, else Proposed).
 `DECISIONS.md` points at their index (docs/decisions/README.md) and holds harness decisions.

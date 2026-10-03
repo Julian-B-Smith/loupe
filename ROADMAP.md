@@ -45,7 +45,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit swarm; one test per primitive | Each test reproduces the gallery's results on the sample |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
-| **P6** Re-run diff, `.loupe/current/`, `loupe-history`. Precondition: HORDE has accepted brief loupe-001 (filed 2026-10-02 in `HYPERSAW/integrations/loupe/brief-001.md`); the skill runs in HORDE's sessions | Brief loupe-001 accepted; diff of two real HORDE commits renders; history branch written |
+| **P6** Re-run diff, `.loupe/current/` (gitignored in the target), `loupe-history` (ADR 0021). Opens with the P6 notice to HORDE (`.gitignore` line, leak-check step); HORDE lands its side in one PR | HORDE's PR merged; a planted private name blocks a history commit (leak check fails closed); diff of two real HORDE commits renders; history branch written |
 | **P7** Design system integration | `tokens.css` and `primitives.json` generated from the design agent's artifact; `design/prototype/` wired to real data |
 | **PX** Pre-ship prior-art & IP re-scan (Decision 30) | Before any public release: `docs/prior-art.md` refreshed with a patent/IP pass |
 
@@ -104,7 +104,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 ## Open questions (blocking — ask Julian)
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
-- **HORDE brief loupe-001** (filed 2026-10-02, respond-by 2026-10-31). Its response lands in HORDE's tree, not here: pull `HYPERSAW/integrations/loupe/` at each wakeup.
+- **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
 - **0007, 0019** are Proposed; P1 and P3 depend on them.
 - **Design packet links are stale:** the doc copy and the data kit are pinned at v2.1 / schema 0.1 (`docs/design-links.md`). Republish them with addenda v2.2, v2.3 and schema 0.2 before design starts v5.
