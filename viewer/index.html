@@ -1,0 +1,135 @@
+<title>Loupe Testbench</title>
+<!-- Authored without doctype/head/body: the artifact host and tools/serve.mjs both wrap it in the same skeleton.
+     Paths are relative to the repo root, which is the layout both places serve. -->
+<link rel="stylesheet" href="design/tokens.css">
+<style>
+  /* Layout: one column of viewer rows; known issues sit above them because they change what "a bug" means. */
+  :root {
+    --bg: var(--loupe-surface-page, #f6f7f5);
+    --panel: var(--loupe-surface-panel, #ffffff);
+    --fg: var(--loupe-ink, #1b1d1c);
+    --muted: var(--loupe-ink-muted, #5b605d);
+    --faint: var(--loupe-ink-faint, #8a8f8c);
+    --rule: var(--loupe-rule, #d9dcd8);
+    --accent: var(--loupe-accent, #2457d6);
+    --warn: var(--loupe-state-warn, #b7791f);
+    --bad: var(--loupe-state-bad, #c0392b);
+    --ok: var(--loupe-state-ok, #2f855a);
+    --ui: var(--loupe-font-ui, ui-sans-serif, system-ui, sans-serif);
+    --mono: var(--loupe-font-mono, ui-monospace, Menlo, monospace);
+  }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font: 15px/1.5 var(--ui); padding-inline: 16px; padding-block: 24px 48px; }
+  main { max-width: 860px; margin: 0 auto; display: grid; gap: 28px; }
+  header { display: grid; gap: 4px; }
+  h1 { font: 700 26px/1.15 var(--ui); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+  h2 { font: 600 12px/1.3 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+  p { margin: 0; max-width: 65ch; }
+  .build { font: 12px/1.4 var(--mono); color: var(--faint); }
+  .issues { border: 1px solid var(--rule); border-left: 3px solid var(--warn); background: var(--panel); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
+  .issues ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  .issues li { max-width: 70ch; }
+  .rows { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: center; background: var(--panel);
+         border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+  .row .name { font-weight: 600; }
+  .row .meta { grid-column: 1; font: 12px/1.4 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .row .note { grid-column: 1; font-size: 13px; color: var(--muted); }
+  .row a.open { grid-row: 1 / span 3; grid-column: 2; font: 600 13px/1 var(--ui); color: var(--panel); background: var(--accent);
+                padding: 9px 14px; border-radius: 999px; text-decoration: none; white-space: nowrap; }
+  .row a.open:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chip { display: inline-block; font: 600 11px/1 var(--mono); padding: 3px 6px; border-radius: 4px; border: 1px solid currentColor; margin-left: 6px; vertical-align: 1px; }
+  .chip.warn { color: var(--warn); } .chip.bad { color: var(--bad); } .chip.ok { color: var(--ok); }
+  ul.checks { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 70ch; }
+  code { font: 13px var(--mono); }
+  @media (max-width: 520px) { .row { grid-template-columns: minmax(0, 1fr); } .row a.open { grid-row: auto; grid-column: 1; justify-self: start; } }
+</style>
+
+<main>
+  <header>
+    <h1>Loupe Testbench</h1>
+    <p>Every viewer Loupe has, open on every snapshot it has. The conservation meter at the top of each map must read balanced: every node and edge accounted for.</p>
+    <div class="build" id="build">build: loading…</div>
+  </header>
+
+  <section class="issues" aria-labelledby="known">
+    <h2 id="known">Known issues in prototype v4 (already reported to design)</h2>
+    <ol>
+      <li><b>Nodes outside any section are not drawn</b>, but the meter still counts them as placed. A balanced meter can hide them.</li>
+      <li><b>A bus edge can be counted as drawn without being drawn</b> when its section is collapsed and it is alone in its bundle.</li>
+      <li><b>The provenance key can disappear.</b> It closes itself on narrow screens (under 760 px of map). It should shrink to a strip, never vanish.</li>
+      <li>The layout is a placeholder. On the real HORDE crawl it stacks everything into one narrow column.</li>
+      <li>Not drawn yet: missing files, the <code>generates</code> and <code>embeds</code> edge kinds, file roles, focus lenses.</li>
+    </ol>
+    <p>Full review: <a href="https://github.com/Julian-B-Smith/loupe/blob/main/docs/design-review-v4.md">design-review-v4.md</a>. Anything else you find is new: tell Claude in chat, with the snapshot name.</p>
+  </section>
+
+  <section aria-labelledby="v4">
+    <h2 id="v4">Prototype v4 (design agent, 2026-10-02)</h2>
+    <div class="rows" id="v4rows"></div>
+  </section>
+
+  <section aria-labelledby="v1">
+    <h2 id="v1">Viewer v1 (first prototype)</h2>
+    <div class="rows">
+      <div class="row">
+        <div class="name">All six stages on the invented sample</div>
+        <div class="meta">prototype/index.html · data/sample-horde.js</div>
+        <div class="note">Stable reference. Sample data only.</div>
+        <a class="open" href="prototype/index.html">Open v1</a>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="try">
+    <h2 id="try">Things worth trying</h2>
+    <ul class="checks">
+      <li>Collapse a section, then expand it: the meter should stay balanced and the counts should match.</li>
+      <li>Zoom out to overview and back: nothing should vanish that the meter still counts.</li>
+      <li>Narrow the window: the provenance key should stay on screen (issue 3 says it doesn't yet).</li>
+      <li>Switch Flow and Design: same nodes, same edges, only arrangement changes.</li>
+      <li>On the real HORDE crawl, read the section list on the right against what you know of HORDE.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+  // The host sets data-theme only on an explicit choice; under "system" nothing is set and the Loupe tokens
+  // (which key on data-theme) would stay light. Mirror the OS preference in that case.
+  (function () {
+    const root = document.documentElement;
+    if (!root.dataset.theme && window.matchMedia) root.dataset.theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  })();
+
+  // Snapshot rows. Counts and schema are read from each graph.json at load, so this page never goes stale.
+  const SNAPSHOTS = [
+    { name: 'Real HORDE crawl', path: 'schema/examples/horde-probe/', note: 'Probe crawl of github.com/Julian-B-Smith/horde. The real thing, at real size. No stage data yet.' },
+    { name: 'HORDE sample, current schema', path: 'schema/examples/horde-sample/', note: 'The invented sample at schema 0.2. No stage data yet, so stages 3 to 6 are empty.' },
+    { name: 'HORDE sample with stage stand-ins', path: 'design/prototype/snapshots/horde-sample/', note: 'Design’s copy at schema 0.1, with dialogue, audit, explain and diff stand-ins. Use this one for stages 3 to 6.', chip: ['warn', 'old schema'] },
+    { name: 'Loops (synthetic)', path: 'design/prototype/snapshots/loops-synthetic/', note: 'Made-up snapshot with all three loop kinds. Its view is bound to the wrong graph hash, so it should show as stale.', chip: ['bad', 'fails check'] },
+  ];
+  // design/prototype/index.html resolves ?snapshot= relative to its own folder.
+  const rel = (p) => p.startsWith('design/prototype/') ? p.slice('design/prototype/'.length) : '../../' + p;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const rows = document.getElementById('v4rows');
+  rows.innerHTML = SNAPSHOTS.map((s, i) => `
+    <div class="row">
+      <div class="name">${esc(s.name)}${s.chip ? `<span class="chip ${s.chip[0]}">${esc(s.chip[1])}</span>` : ''}</div>
+      <div class="meta" id="m${i}">${esc(s.path)} · reading…</div>
+      <div class="note">${esc(s.note)}</div>
+      <a class="open" href="design/prototype/index.html?snapshot=${encodeURIComponent(rel(s.path))}">Open map</a>
+    </div>`).join('');
+  SNAPSHOTS.forEach(async (s, i) => {
+    const el = document.getElementById('m' + i);
+    try {
+      const g = await (await fetch(s.path + 'graph.json')).json();
+      const nodes = (g.nodes || []).length, edges = (g.edges || []).length;
+      el.textContent = `${s.path} · ${g.schema || 'schema ?'} · ${nodes} nodes · ${edges} crawled edges` + (g.source && g.source.commit ? ` · commit ${String(g.source.commit).slice(0, 8)}` : '');
+    } catch { el.textContent = `${s.path} · could not read graph.json`; }
+  });
+
+  fetch('build.json').then((r) => r.json()).then((b) => {
+    document.getElementById('build').textContent =
+      `build: ${b.branch} @ ${b.commit}${b.dirty ? ' (uncommitted changes)' : ''} · ${b.where === 'hosted' ? 'hosted copy' : 'running locally'}`;
+  }).catch(() => { document.getElementById('build').textContent = 'build: unknown'; });
+</script>
