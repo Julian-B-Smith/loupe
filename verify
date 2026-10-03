@@ -50,6 +50,19 @@ fast() {
       echo "verify[fast]: ajv missing — run npm ci; schema validation cannot be skipped" >&2; ok=1
     fi
   done
+  # horde-sample is GENERATED from prototype/data/sample-horde.js. Regenerate
+  # into a temp dir and byte-compare, so an edit to the sample (or to canon.mjs)
+  # without a re-run is caught instead of shipping a stale example (Q-002).
+  local fresh; fresh="$(mktemp -d)"
+  if node tools/convert-sample.mjs "$fresh" >/dev/null \
+     && diff -r "$fresh" schema/examples/horde-sample >/dev/null; then
+    echo "horde-sample: fresh (matches convert-sample.mjs output)"
+  else
+    echo "verify[fast]: schema/examples/horde-sample is stale — run: node tools/convert-sample.mjs" >&2
+    diff -r "$fresh" schema/examples/horde-sample 2>&1 | head -20 >&2
+    ok=1
+  fi
+  rm -r "$fresh"
   # Not yet gated (ROADMAP P0/P1): crawl-twice byte equality needs the P1
   # crawler; the probe is regex-based and not a determinism reference.
   return $ok

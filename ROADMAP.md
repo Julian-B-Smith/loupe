@@ -9,9 +9,9 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 - **Phase:** P0 done 2026-10-02 (green locally and in CI; manifest ratified). PA ← current.
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
-  `full` == `fast` until P1/P2 add Layer-E gates. **Known gaps:** no crawl
-  determinism gate (no P1 crawler yet); `schema/examples/horde-sample` freshness
-  vs `tools/convert-sample.mjs` not checked.
+  `full` == `fast` until P1/P2 add Layer-E gates.
+  `fast` also regenerates `horde-sample` and byte-compares it (Q-002). **Known gaps:** no crawl
+  determinism gate (no P1 crawler yet); nothing under `design/` is gated (Q-007, Q-008).
 - **Last human ratification:** 2026-10-01 (manifest ratified by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
@@ -58,7 +58,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** phase work.
 
 ### Q-002 — Gate `horde-sample` freshness
-- **Status:** open
+- **Status:** done 2026-10-03 (trace: traces/2026-10-03-q-002-sample-freshness.md)
 - **Scope:** `tools/convert-sample.mjs`, `verify`
 - **Acceptance criteria:** 1. `convert-sample.mjs` accepts an output dir; 2. `./verify fast` regenerates into a temp dir and fails on any byte difference from `schema/examples/horde-sample/`; 3. proven by planting an edit in `prototype/data/sample-horde.js`.
 - **Out of scope:** changing the sample's content.
