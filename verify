@@ -38,6 +38,8 @@ fast() {
   # Mutation tests: each case plants one known-bad snapshot and asserts the
   # checker refuses it — proves loupe-check FIRES, not merely that it exists.
   node tools/loupe-check.test.mjs || ok=1
+  # History rules of the viewer (ADR 0024): one stack, a drag is one step, two pointers never freeze it.
+  node tools/history.test.mjs || ok=1
   # loupe-check on every example snapshot, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.

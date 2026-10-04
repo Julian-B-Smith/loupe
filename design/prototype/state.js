@@ -67,3 +67,44 @@ export function createStore(init) {
   };
   return store;
 }
+
+// ---------- history: one stack serves Back/Forward and Undo/Redo (ADR 0024).
+// The viewer never edits data, only the view, so a step is a change to these keys. Hover, zoom, pan, the morph and
+// the theme are not steps. A drag is one step: pause() at pointerdown, resume() at pointerup. pause is a flag, not a
+// counter: with two pointers a counter could be raised twice and lowered once, freezing history silently (critic, 0024).
+export const HISTORY_KEYS = ['view', 'stage', 'selection', 'collapsed', 'unfolded', 'isolate', 'isoOpen', 'settings', 'dimmedKinds', 'offsets', 'diff', 'tour'];
+const LIMIT = 200;
+
+export function createHistory(store, describe = () => '') {
+  const pick = s => Object.fromEntries(HISTORY_KEYS.map(k => [k, s[k]]));
+  const key = s => JSON.stringify(pick(s));
+  const past = [], future = [], subs = new Set();
+  let last = pick(store.get()), lastKey = key(store.get()), paused = false, restoring = false;
+  const notify = () => subs.forEach(fn => fn(h));
+  store.on(s => {
+    if (restoring || paused) return;
+    const k = key(s); if (k === lastKey) return;
+    past.push({ snap: last, label: describe(last, pick(s)) }); if (past.length > LIMIT) past.shift();
+    future.length = 0; last = pick(s); lastKey = k; notify();
+  });
+  const restore = (snap) => {
+    const cur = store.get();
+    // Leaving or entering an isolate, or switching flow/design, re-fits: the old zoom would point at empty space.
+    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view;
+    restoring = true;
+    store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null } } : {}) });
+    restoring = false; last = pick(store.get()); lastKey = key(store.get()); notify();
+  };
+  const h = {
+    back() { if (paused) return; const step = past.pop(); if (!step) return; future.push({ snap: last, label: step.label }); restore(step.snap); },
+    forward() { if (paused) return; const step = future.pop(); if (!step) return; past.push({ snap: last, label: step.label }); restore(step.snap); },
+    pause() { paused = true; },
+    resume() { if (paused) { paused = false; const s = store.get(), k = key(s); if (k !== lastKey) { past.push({ snap: last, label: describe(last, pick(s)) }); future.length = 0; last = pick(s); lastKey = k; notify(); } } },
+    get canBack() { return past.length > 0; }, get canForward() { return future.length > 0; },
+    get backLabel() { return past.length ? past[past.length - 1].label : ''; },
+    get forwardLabel() { return future.length ? future[future.length - 1].label : ''; },
+    on(fn) { subs.add(fn); return () => subs.delete(fn); }
+  };
+  return h;
+}
+
