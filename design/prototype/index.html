@@ -26,6 +26,7 @@ a{color:var(--loupe-accent)}a:hover{color:var(--loupe-ink)}
 .meter small{font:var(--loupe-type-count);color:var(--loupe-ink-faint)}
 .seg{display:flex;padding:2px;gap:2px;border-radius:7px;background:var(--loupe-surface-group-nested)}
 .seg button{padding:4px 10px;border-radius:5px;font:500 12.5px/16px var(--loupe-font-ui);color:var(--loupe-ink-muted)}
+.seg button:disabled{opacity:.35;cursor:default}
 .seg button[aria-pressed="true"]{background:var(--loupe-surface-node);color:var(--loupe-ink);box-shadow:0 0 0 1px var(--loupe-rule)}
 .seg .lbl{padding:4px 6px 4px 8px;font:var(--loupe-type-caption);color:var(--loupe-ink-faint);align-self:center}
 .stages{display:flex;gap:2px;padding:6px 12px;border-bottom:1px solid var(--loupe-rule);overflow-x:auto;scrollbar-width:none}
@@ -56,6 +57,14 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
 .settings{right:12px;top:12px;padding:3px}
 .iso{left:12px;top:12px;padding:6px 8px 6px 12px;align-items:center;gap:10px}
 .iso[hidden]{display:none}
+.ctx{position:absolute;z-index:10;min-width:230px;max-width:320px;max-height:calc(100% - 8px);overflow-y:auto;padding:4px;background:var(--loupe-surface-panel);border-radius:var(--loupe-radius-panel);box-shadow:0 0 0 1px var(--loupe-rule),0 8px 24px rgb(0 0 0 / .18);display:flex;flex-direction:column}
+.ctx button{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 10px;border-radius:6px;text-align:left;font:500 13px/16px var(--loupe-font-ui)}
+.ctx button:hover:not(:disabled),.ctx button:focus-visible{background:var(--loupe-surface-group-nested);outline:none}
+.ctx button:disabled{opacity:.4;cursor:default}
+.ctx .l{display:flex;flex-direction:column;min-width:0}
+.ctx small{font:var(--loupe-type-caption);color:var(--loupe-ink-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctx kbd{font:var(--loupe-type-count);color:var(--loupe-ink-faint)}
+.ctx .sep{height:1px;margin:4px 6px;background:var(--loupe-rule)}
 .iso b{font:600 13px/16px var(--loupe-font-ui)}
 .panel{border-left:1px solid var(--loupe-rule);background:var(--loupe-surface-panel);min-height:0;display:flex;flex-direction:column}
 .handle{display:none}
@@ -108,6 +117,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
     <div class="brand"><b>Loupe</b><span id="repo"></span></div>
     <div class="tools">
       <button class="meter" id="meter" title="Conservation check"></button>
+      <div class="seg" id="histSeg"><button id="hBack" aria-label="Back">←</button><button id="hFwd" aria-label="Forward">→</button></div>
       <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button></div>
       <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
       <div class="seg"><button id="theme">Dark</button></div>
@@ -126,7 +136,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
 </div>
 <script type="module">
 import { loadSnapshot } from './snapshot.js';
-import { createStore, STAGES } from './state.js';
+import { createStore, createHistory, STAGES } from './state.js';
 import { render, SPEC, slotOf, glyphOf } from './render.js';
 import { conserve, conformity } from './standins.js';
 
@@ -156,6 +166,29 @@ const swatch = e => {
   const head = g === 'dot' ? `<circle cx="24" cy="5" r="2.8" style="fill:${c}"/>` : `<path d="M19 1.4L27 5L19 8.6z" style="fill:${g === 'arrow-hollow' ? v('surface-panel') : c};stroke:${c};stroke-width:${g === 'arrow-hollow' ? 1.2 : 0}px"/>`;
   return `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="${g === 'dot' ? 21 : 20}" y2="5" style="stroke:${c};stroke-width:1.5px;stroke-dasharray:${d};stroke-linecap:${cap}"/>${head}</svg>`;
 };
+
+// ---------- history (ADR 0024): Back/Forward = Undo/Redo. Labels name the step a Back would undo.
+const portName = k => { const id = k.split(/:(?:s|all|f):/)[1] || k; return label(id); };
+function describe(a, b) {
+  const added = (x, y) => (y || []).filter(i => !(x || []).includes(i)), removed = (x, y) => (x || []).filter(i => !(y || []).includes(i));
+  if (a.isolate !== b.isolate) return b.isolate ? `isolate ${label(b.isolate)}` : `back to full map from ${label(a.isolate)}`;
+  if (added(a.unfolded, b.unfolded).length) return `show folded files in ${label(added(a.unfolded, b.unfolded)[0])}`;
+  if (removed(a.unfolded, b.unfolded).length) return `fold ${label(removed(a.unfolded, b.unfolded)[0])} again`;
+  if (added(a.collapsed, b.collapsed).length) return `collapse ${label(added(a.collapsed, b.collapsed)[0])}`;
+  if (removed(a.collapsed, b.collapsed).length) return `expand ${label(removed(a.collapsed, b.collapsed)[0])}`;
+  if (added(a.isoOpen, b.isoOpen).length) return `open ${portName(added(a.isoOpen, b.isoOpen)[0])} port`;
+  if (removed(a.isoOpen, b.isoOpen).length) return `close ${portName(removed(a.isoOpen, b.isoOpen)[0])} port`;
+  if (a.stage !== b.stage) return `stage ${b.stage}`;
+  if (a.view !== b.view) return `switch to ${b.view}`;
+  if (JSON.stringify(a.offsets) !== JSON.stringify(b.offsets)) return 'move a section';
+  if (JSON.stringify(a.diff) !== JSON.stringify(b.diff)) return b.diff ? `re-run diff, ${b.diff.side}` : 'hide re-run diff';
+  if (JSON.stringify(a.selection) !== JSON.stringify(b.selection)) return b.selection && b.selection.id ? `select ${label(b.selection.id)}` : 'clear selection';
+  if (JSON.stringify(a.dimmedKinds) !== JSON.stringify(b.dimmedKinds)) return 'dim or show an edge kind';
+  if (JSON.stringify(a.settings) !== JSON.stringify(b.settings)) return 'hub placement';
+  return 'tour step';
+}
+const H = createHistory(store, describe);
+const mac = /Mac|iPhone|iPad/.test(navigator.platform);
 
 // ---------- render loop
 let map = null, pending = false;
@@ -218,6 +251,8 @@ if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
 store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); localStorage.setItem('loupe-proto', JSON.stringify({ stage: s.stage, theme: s.theme, offsets: { ...(prev.offsets || {}), [SNAP]: s.offsets } })); });
 $('resetLayout').onclick = () => A.resetLayout();
 $('isoExit').onclick = () => A.isolate(null);
+$('hBack').onclick = () => H.back(); $('hFwd').onclick = () => H.forward();
+H.on(() => { closeMenu(); chrome(store.get()); });
 
 function chrome(s) {
   document.querySelectorAll('[data-stage]').forEach(b => b.setAttribute('aria-current', +b.dataset.stage === s.stage ? 'step' : 'false'));
@@ -225,9 +260,13 @@ function chrome(s) {
   document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', (s.diff ? s.diff.side : 'off') === b.dataset.diff));
   const hp = s.settings.hubPlacement || data.settings.hubPlacement || 'group';
   document.querySelectorAll('[data-hub]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hub === hp));
-  $('hubSeg').style.display = s.view === 'design' ? '' : 'none';
+  $('hubSeg').style.display = s.view === 'design' && !s.isolate ? '' : 'none'; // hub placement needs the band, which isolate drops
   $('resetSeg').hidden = !(s.view === 'design' && !s.isolate && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
   $('theme').textContent = s.theme === 'dark' ? 'Light' : 'Dark';
+  const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
+  $('hBack').disabled = !H.canBack; $('hFwd').disabled = !H.canForward;
+  $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
+  $('hFwd').title = H.canForward ? `Forward: ${H.forwardLabel} (${kf})` : 'Nothing to go forward to';
   $('isoBar').hidden = !s.isolate || s.view !== 'design';
   if (s.isolate) { const ew = map && map.elsewhere; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere` : ''; }
   legend(s);
@@ -277,15 +316,21 @@ const movableSection = t => {
   return sec ? data.topOf(sec) : null;
 };
 canvas.addEventListener('pointerdown', e => {
-  if (e.target.closest('.float')) return;
+  if (e.button !== 0 || e.target.closest('.float, .ctx')) return;
+  if (mac && e.ctrlKey) return; // a right click on macOS: the contextmenu handler takes it
+  closeMenu();
+  if (drag) endDrag(); // a second pointer: finish the first drag so history is never left paused
   const sec = movableSection(e.target);
+  if (sec) H.pause();
+  // iOS Safari fires no contextmenu on long-press: open the menu after 550 ms of a still touch.
+  if (e.pointerType === 'touch') { const x = e.clientX, y = e.clientY, t = e.target; longPress = setTimeout(() => { longPress = null; if (drag && !drag.moved) { drag.menu = true; showMenu(t, x, y); } }, 550); }
   drag = { x: e.clientX, y: e.clientY, z: { ...map.zoom }, moved: false, sec, o0: sec ? { dx: 0, dy: 0, ...(store.get().offsets[sec] || {}) } : null };
   canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener('pointermove', e => {
   if (drag) {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-    if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    if (Math.abs(dx) + Math.abs(dy) > 3) { drag.moved = true; if (longPress) { clearTimeout(longPress); longPress = null; } }
     if (drag.moved && drag.sec) { canvas.classList.add('moving'); A.hover(null); A.moveSection(drag.sec, drag.o0.dx + dx / drag.z.k, drag.o0.dy + dy / drag.z.k); if (store.get().zoom.auto) A.setZoom({ auto: false, ...drag.z }); }
     else if (drag.moved) { canvas.classList.add('dragging'); A.setZoom({ auto: false, k: drag.z.k, x: drag.z.x + dx, y: drag.z.y + dy }); }
     return;
@@ -295,10 +340,14 @@ canvas.addEventListener('pointermove', e => {
   A.hover(h && ['node', 'element', 'edge'].includes(h.type) ? h : null);
 });
 canvas.addEventListener('pointerleave', () => A.hover(null));
+let longPress = null;
+const endDrag = () => { if (longPress) { clearTimeout(longPress); longPress = null; } const d = drag; drag = null; if (d && d.sec) H.resume(); return d; };
+canvas.addEventListener('pointercancel', () => { canvas.classList.remove('dragging', 'moving'); endDrag(); });
+canvas.addEventListener('lostpointercapture', () => { if (drag) { canvas.classList.remove('dragging', 'moving'); endDrag(); } });
 canvas.addEventListener('pointerup', e => {
   canvas.classList.remove('dragging', 'moving');
-  const d = drag; drag = null;
-  if (!d || d.moved || e.target.closest('.float')) return;
+  const d = endDrag();
+  if (!d || d.moved || d.menu || e.target.closest('.float, .ctx')) return;
   const h = hit(document.elementFromPoint(e.clientX, e.clientY) || e.target);
   if (!h) return A.clear();
   if (h.type === 'collapse') return A.toggleCollapsed(h.id);
@@ -314,8 +363,94 @@ const zoomAt = (f, cx, cy) => {
   A.setZoom({ auto: false, k, x: cx - (cx - z.x) * (k / z.k), y: cy - (cy - z.y) * (k / z.k) });
 };
 canvas.addEventListener('wheel', e => { e.preventDefault(); const r = canvas.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+// ---------- right-click menu: actions for whatever is under the pointer, plus Back/Forward and Back to full map.
+let menu = null, menuReturn = null;
+const menuOpen = () => !!menu;
+function closeMenu() { if (!menu) return; menu.remove(); menu = null; if (menuReturn && menuReturn.focus) menuReturn.focus({ preventScroll: true }); menuReturn = null; }
+addEventListener('resize', () => closeMenu()); addEventListener('blur', () => closeMenu());
+function openMenu(x, y, items) {
+  closeMenu();
+  menuReturn = document.activeElement;
+  menu = document.createElement('div'); menu.className = 'ctx'; menu.setAttribute('role', 'menu');
+  items.forEach(it => {
+    if (!it) { const hr = document.createElement('div'); hr.className = 'sep'; hr.setAttribute('role', 'separator'); menu.appendChild(hr); return; }
+    const b = document.createElement('button'); b.setAttribute('role', 'menuitem'); b.disabled = !!it.disabled;
+    b.innerHTML = `<span class="l">${esc(it.label)}${it.sub ? `<small>${esc(it.sub)}</small>` : ''}</span>${it.hint ? `<kbd>${esc(it.hint)}</kbd>` : ''}`;
+    b.onclick = () => { closeMenu(); it.run(); };
+    menu.appendChild(b);
+  });
+  canvas.appendChild(menu);
+  const r = canvas.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = Math.max(4, Math.min(x - r.left, r.width - mw - 4)) + 'px';
+  menu.style.top = Math.max(4, Math.min(y - r.top, r.height - mh - 4)) + 'px';
+  const first = menu.querySelector('button:not(:disabled)'); if (first) first.focus();
+}
+document.addEventListener('pointerdown', e => { if (menu && !menu.contains(e.target)) closeMenu(); }, true);
+canvas.addEventListener('wheel', () => closeMenu(), { passive: true });
+addEventListener('keydown', e => {
+  if (!menu || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+  e.preventDefault();
+  const bs = [...menu.querySelectorAll('button:not(:disabled)')], i = bs.indexOf(document.activeElement);
+  bs[(i + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length].focus();
+});
+canvas.addEventListener('contextmenu', e => {
+  if (e.target.closest('.float, .ctx')) return;
+  e.preventDefault();
+  if (drag) drag.menu = true; // the press that opened the menu must not also select or clear on pointerup
+  showMenu(e.target, e.clientX, e.clientY);
+});
+function showMenu(target, cx, cy) {
+  const s = store.get(), h = hit(target), items = [];
+  const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
+  items.push({ label: 'Back', sub: H.backLabel, hint: kb, disabled: !H.canBack, run: H.back });
+  items.push({ label: 'Forward', sub: H.forwardLabel, hint: kf, disabled: !H.canForward, run: H.forward });
+  const forSection = (id, skipFold) => {
+    if (!data.elements[id]) return;
+    items.push(null);
+    if (s.isolate !== id) items.push({ label: `Isolate ${label(id)}`, run: () => A.isolate(id) });
+    items.push({ label: `${s.collapsed.includes(id) ? 'Expand' : 'Collapse'} ${label(id)}`, run: () => A.toggleCollapsed(id) });
+    const fold = map && map.layout.folds[id];
+    if (!skipFold && (fold || s.unfolded.includes(id))) items.push({ label: s.unfolded.includes(id) ? `Fold ${label(id)} again` : `Show ${fold.members.length} folded files`, run: () => A.toggleUnfold(id) });
+  };
+  if (h && h.type === 'node') {
+    items.push(null, { label: `Select ${label(h.id)}`, run: () => A.select({ type: 'node', id: h.id }) });
+    forSection(data.home[h.id]);
+  } else if (h && h.type === 'unfold') {
+    const f = map.layout.folds[h.id];
+    items.push(null, { label: `Show ${f ? f.members.length : ''} folded files`, run: () => A.toggleUnfold(h.id) });
+    forSection(h.id, true);
+  } else if (h && h.type === 'port') {
+    const all = h.id.includes(':all:'), open = s.isoOpen.includes(h.id), peer = h.id.split(/:(?:s|all):/)[1];
+    items.push(null, { label: all ? (open ? 'Fold these files again' : 'Show every file') : (open ? `Close ${label(peer)} port` : `List files in ${label(peer)} port`), run: () => A.togglePort(h.id) });
+    if (data.elements[peer] && peer !== s.isolate) items.push({ label: `Isolate ${label(peer)}`, sub: 'walk to this section; Back returns', run: () => A.isolate(peer) });
+  } else if (h && (h.type === 'element' || h.type === 'collapse')) {
+    const el = data.elements[h.id];
+    if (el && el.primitive === 'section') forSection(h.id);
+    else if (el) items.push(null, { label: `Select ${PRIM[el.primitive] || el.primitive} · ${el.label || h.id}`, run: () => A.select({ type: 'element', id: h.id }) });
+  } else if (h && h.type === 'edge') {
+    items.push(null, { label: 'Select this edge', run: () => A.select({ type: 'edge', id: h.id }) });
+  }
+  items.push(null);
+  if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
+  items.push({ label: 'Fit to screen', run: () => A.fit() });
+  openMenu(cx, cy, items);
+}
+
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
-addEventListener('keydown', e => { if (e.key !== 'Escape') return; const s = store.get(); if (s.selection) A.clear(); else if (s.isolate) A.isolate(null); });
+addEventListener('keydown', e => {
+  const mod = mac ? e.metaKey : e.ctrlKey, k = e.key.toLowerCase();
+  if (mod && k === 'z') { e.preventDefault(); return e.shiftKey ? H.forward() : H.back(); }
+  if (!mac && e.ctrlKey && k === 'y') { e.preventDefault(); return H.forward(); }
+  if ((e.altKey || e.metaKey) && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); return e.key === 'ArrowLeft' ? H.back() : H.forward(); }
+  // Safari has no native side-button navigation; mouse drivers send ⌘[ and ⌘] instead.
+  if (e.metaKey && (e.key === '[' || e.key === ']')) { e.preventDefault(); return e.key === '[' ? H.back() : H.forward(); }
+  if (e.key === 'Tab' && menuOpen()) return closeMenu();
+  if (e.key !== 'Escape') return;
+  if (menuOpen()) return closeMenu();
+  const s = store.get(); if (s.selection) A.clear(); else if (s.isolate) A.isolate(null);
+});
+// Mouse side buttons (3 = back, 4 = forward). preventDefault on both events stops the browser leaving the page.
+['mousedown', 'mouseup'].forEach(t => addEventListener(t, e => { if (e.button !== 3 && e.button !== 4) return; e.preventDefault(); if (t === 'mouseup') (e.button === 3 ? H.back : H.forward)(); }));
 
 // ---------- inspector
 const pb = $('pbody');
@@ -410,7 +545,7 @@ function elementPanel(id) {
   } else if (p === 'hub') {
     const fi = data.edges.filter(e => e.dst === el.node).length, hp = store.get().settings.hubPlacement || data.settings.hubPlacement || 'group';
     body = `<dl class="kv"><dt>File</dt><dd>${go('node', el.node, esc(label(el.node)))}</dd><dt>Fan-in</dt><dd>${fi}</dd><dt>Fan-out</dt><dd>${data.edges.filter(e => e.src === el.node).length}</dd></dl>
-      <div class="seg" style="align-self:flex-start"><span class="lbl">Placement</span>${['group', 'center'].map(x => `<button data-type="hub" data-go="${x}" aria-pressed="${hp === x}">${x === 'group' ? 'With group' : 'Centered'}</button>`).join('')}</div>`;
+      <div class="seg" style="align-self:flex-start"${store.get().isolate ? ' hidden' : ''}><span class="lbl">Placement</span>${['group', 'center'].map(x => `<button data-type="hub" data-go="${x}" aria-pressed="${hp === x}">${x === 'group' ? 'With group' : 'Centered'}</button>`).join('')}</div>`;
   } else if (p === 'set' || p === 'overlap') {
     body = `${p === 'overlap' ? `<dl class="kv"><dt>Sets</dt><dd>${el.sets.map(s => go('element', s, esc(label(s)))).join(' ∩ ')}</dd></dl>` : ''}<div><span class="eyebrow">Members · ${el.members.length}</span>${el.members.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m"></span>`, 'erow')).join('')}</div>`;
   } else if (p === 'band') {

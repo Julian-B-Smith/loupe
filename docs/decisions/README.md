@@ -27,3 +27,4 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0021](0021-the-current-map-stays-out-of-main.md) | The current map stays out of the target repo's main branch | Accepted |
 | [0022](0022-design-moves-in-house.md) | Design moves in-house | Accepted (direction); subagent setup Proposed |
 | [0023](0023-fold-and-isolate.md) | Fold long sections; isolate a section as a sub-patch | Accepted (behaviour); thresholds Proposed |
+| [0024](0024-one-history-and-a-context-menu.md) | One history for Back/Forward and Undo/Redo; a right-click menu | Accepted |
