@@ -99,9 +99,9 @@ static HTML/CSS/JS viewer, no build step; JSON Schema (draft-07) as the contract
 - Visuals and UI are prototyped before schema changes; graph and view spec are plain data, separate from
   the renderer.
 
-**Lanes & protected paths.** `design/` belongs to the Claude Design agent, which works in this folder at the
-same time: never write there except the generated `design/tokens.css` and `design/primitives.json`.
-Infrastructure owns `schema/`, `tools/`, `docs/`. Human gate before: changing `schema/*.schema.json`,
+**Lanes & protected paths.** Design is in-house (0022): `design/` is ordinary project code; visual values come
+from `design/system/tokens.json` and the `loupe-spec` blocks, never hard-coded. Visual changes get a `critic` review
+with screenshots. Human gate before: changing `schema/*.schema.json`,
 regenerating `schema/examples/*`, or editing an Accepted ADR. Loupe sessions never write into a target
 repo; its own session runs the skill (0021). `.loupe/config.json` there is human-owned (Loupe proposes).
 

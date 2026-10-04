@@ -1,5 +1,7 @@
 # Design review: delivery v4
 
+> **Since 2026-10-03 (ADR 0022) this is our own worklist**, not a message to a design agent. Design is in-house.
+
 Infrastructure's reply to the Claude Design delivery of 2026-10-02 (tokens.json v4, loupe-spec v2, prototype
 v4, built against packet v2.1). This is step 3 of "How the handoff runs" in `docs/design-handoff.md`. Julian
 relays it to the design agent. Line numbers refer to `design/prototype/` as delivered.

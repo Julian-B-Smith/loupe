@@ -9,6 +9,8 @@ export const L = {
   levelGap: 110, hubGap: 140, bandHead: 34, bandPadX: 20, flowGap: 44,
   laneHead: 54, laneGutter: 34, laneNotch: 10, lanePoint: 16,
   plateH: 56, twinGap: 18, stackSlack: 1.15,
+  foldAt: 12, foldSlack: 2,                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
+  railGap: 170, portW: 250, portGap: 10,    // isolate: side rails of ports
   flow: { colGap: 56, rowGap: 8 }
 };
 
@@ -25,6 +27,21 @@ function membersOf(data, state, sec) {
     .concat(removedNodes(data, state).filter(r => r.home === sec).map(r => r.id));
 }
 
+// Files some element makes a claim about (lane step, hub, set, overlap, loop) are never folded away:
+// hiding them would hide the claim. Degree ranks the rest so a fold keeps the busiest files visible.
+const foldInfo = new WeakMap();
+function foldMeta(data) {
+  let m = foldInfo.get(data); if (m) return m;
+  const pinned = new Set(), deg = {};
+  data.order.forEach(id => { const el = data.elements[id];
+    (el.steps || []).concat(el.node ? [el.node] : [], el.primitive === 'section' ? [] : el.members || [], el.cycle || []).forEach(n => pinned.add(n));
+    // Bus endpoints too: a bus edge landing on a fold row would leave its rail without an end.
+    (el.primitive === 'bus' ? el.edges : []).forEach(x => { const e = data.edgeById[x]; if (e) { pinned.add(e.src); pinned.add(e.dst); } }); });
+  data.edges.forEach(e => { deg[e.src] = (deg[e.src] || 0) + 1; deg[e.dst] = (deg[e.dst] || 0) + 1; });
+  foldInfo.set(data, (m = { pinned, deg }));
+  return m;
+}
+
 export function hubPlacement(data, state) {
   return (state.settings && state.settings.hubPlacement) || data.settings.hubPlacement || 'group';
 }
@@ -34,11 +51,17 @@ function designLayout(data, state) {
   const els = id => data.elements[id];
   const lanes = (data.byPrimitive.lane || []).map(els);
   const twinsEls = (data.byPrimitive.twins || []).map(els);
-  const band = (data.byPrimitive.band || []).map(els)[0] || null;
+  // Isolate (state.isolate = section id): lay out only that section's subtree; everything else becomes ports.
+  const iso = state.isolate && data.elements[state.isolate] ? state.isolate : null;
+  const band = iso ? null : (data.byPrimitive.band || []).map(els)[0] || null;
   const hubs = (data.byPrimitive.hub || []).map(els);
   const centered = hubPlacement(data, state) === 'center' && band ? new Set(hubs.map(h => h.node)) : new Set();
 
-  const P = { view: 'design', nodes: {}, proxy: {}, sections: {}, lanes: {}, plates: {}, levels: [], gutter: null, rails: {}, tethers: [], colOf: {}, levelOf: {}, bounds: null };
+  const unfolded = new Set(state.unfolded || []), FM = foldMeta(data);
+  // While a re-run diff is shown, changed, added, stale and removed files keep their own rows (their marks are the point).
+  const D0 = state.diff && data.diff ? data.diff : null;
+  const pinned = D0 ? new Set([...FM.pinned, ...(D0.added || []), ...(D0.changed || []), ...(D0.stale || []), ...(D0.removed || []).map(r => r.id)]) : FM.pinned;
+  const P = { view: 'design', nodes: {}, proxy: {}, folds: {}, foldOf: {}, sections: {}, lanes: {}, plates: {}, levels: [], gutter: null, rails: {}, tethers: [], colOf: {}, levelOf: {}, bounds: null, iso: null };
 
   // ---- one section, returns {w,h}; target is P or a scratch object for measuring
   function place(T, sec, x, y, depth, flowWidth) {
@@ -66,7 +89,20 @@ function designLayout(data, state) {
       w = flowWidth;
     } else {
       const steps = lane ? lane.steps : [];
-      mem.filter(m => !steps.includes(m)).forEach(m => { T.nodes[m] = { x: x + L.pad, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap; });
+      let rows = mem.filter(m => !steps.includes(m)), hidden = [];
+      if (!unfolded.has(sec) && rows.length > L.foldAt) {
+        const free = rows.filter(m => !pinned.has(m));
+        const keepN = Math.max(0, L.foldAt - (rows.length - free.length));
+        const keep = new Set(free.slice().sort((a, b) => (FM.deg[b] || 0) - (FM.deg[a] || 0) || (a < b ? -1 : a > b ? 1 : 0)).slice(0, keepN));
+        const h = free.filter(m => !keep.has(m));
+        if (h.length > L.foldSlack) { hidden = h; rows = rows.filter(m => pinned.has(m) || keep.has(m)); }
+      }
+      rows.forEach(m => { T.nodes[m] = { x: x + L.pad, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap; });
+      if (hidden.length) {
+        T.folds[sec] = { x: x + L.pad, y: cy, w: N.w, h: N.h, members: hidden };
+        hidden.forEach(m => { T.foldOf[m] = sec; });
+        cy += N.h + L.rowGap;
+      }
       if (lane) {
         const top = cy; cy += L.laneHead;
         steps.forEach(m => { T.nodes[m] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap; });
@@ -105,11 +141,11 @@ function designLayout(data, state) {
     T.sections[sec] = { x, y, w, h, depth };
     return { w, h };
   }
-  const scratch = () => ({ nodes: {}, proxy: {}, sections: {}, lanes: {}, plates: {} });
+  const scratch = () => ({ nodes: {}, proxy: {}, folds: {}, foldOf: {}, sections: {}, lanes: {}, plates: {} });
   const measure = sec => place(scratch(), sec, 0, 0, 0);
 
   // ---- levels and columns
-  const tops = data.sections.filter(s => !data.parentOf[s]);
+  const tops = iso ? [iso] : data.sections.filter(s => !data.parentOf[s]);
   const levelDefs = band ? band.levels.map(l => ({ label: l.label, members: l.members.filter(m => tops.includes(m)) })) : [{ label: null, members: tops }];
   const inLevel = new Set(levelDefs.flatMap(l => l.members));
   const outside = band ? tops.filter(t => !inLevel.has(t)) : [];
@@ -178,7 +214,7 @@ function designLayout(data, state) {
   // ---- manual offsets (state.offsets: top-level section id -> {dx, dy}, world units). A view preference, not structure.
   // Keys: a top-level section id, 'level:<index>' for a band level, or 'gutter' for Outside layers.
   // A level or gutter offset carries every section in it.
-  const raw = state.offsets || {};
+  const raw = iso ? {} : state.offsets || {};
   const offs = {};
   tops.forEach(t => { offs[t] = { dx: (raw[t] || {}).dx || 0, dy: (raw[t] || {}).dy || 0 }; });
   const carry = (o, members) => members.forEach(m => { if (offs[m]) { offs[m].dx += o.dx || 0; offs[m].dy += o.dy || 0; } });
@@ -193,7 +229,7 @@ function designLayout(data, state) {
     tops.forEach(t => {
       const o = offs[t]; if (!o || (!o.dx && !o.dy)) return;
       const subtree = data.descendants(t), sh = r => { if (r) { r.x += o.dx; r.y += o.dy; } };
-      subtree.forEach(s => { sh(P.sections[s]); membersOf(data, state, s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
+      subtree.forEach(s => { sh(P.sections[s]); sh(P.folds[s]); membersOf(data, state, s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
       Object.values(P.lanes).forEach(ln => { if (ln.section && subtree.includes(ln.section)) sh(ln); });
       twinsEls.forEach(tw => { if (tw.members.every(m => subtree.includes(m))) { const p = P.plates[tw.id]; if (p) { sh(p); p.rowTops = p.rowTops.map(y => y + o.dy); } } });
     });
@@ -261,7 +297,8 @@ function designLayout(data, state) {
   // ---- lanes across sections: a route through their steps
   lanes.forEach(l => { if (!P.lanes[l.id]) P.lanes[l.id] = { mode: 'route' }; });
 
-  const allR = Object.values(P.nodes).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
+  if (iso) P.iso = isolatePorts(data, state, iso, P.sections[iso]);
+  const allR = Object.values(P.nodes).concat(P.iso ? Object.values(P.iso.ports) : []).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
   const minX = Math.min(0, ...allR.map(r => r.x)), minY = Math.min(0, ...allR.map(r => r.y));
   const maxX = Math.max(right, ...allR.map(r => r.x + r.w)), maxY = Math.max(levelsBottom, ...allR.map(r => r.y + r.h));
   P.bounds = { x: minX - 8, y: minY - 24, w: maxX - minX + 64, h: maxY - minY + 48 };
@@ -301,3 +338,51 @@ function flowLayout(data, state) {
   P.bounds = { x: -16, y: -16, w: keys.length * (N.w + F.colGap) - F.colGap + 32, h: maxY + 32 };
   return P;
 }
+
+// Ports for an isolated section. An edge with one end inside becomes an input (left rail) or output (right rail)
+// on a port for the outside file's home section; an open port (state.isoOpen holds its key) lists one port per file.
+// Edges with neither end inside are not drawn but are counted by the renderer as "elsewhere".
+// Order is deterministic: most edges first, then id.
+function isolatePorts(data, state, iso, box) {
+  const subtree = new Set(data.descendants(iso));
+  // Members, plus any id homed in the subtree: re-run ghosts of removed files are homed but are not members.
+  const inside = new Set([...subtree].flatMap(s => data.elements[s].members).concat(Object.keys(data.home).filter(id => subtree.has(data.home[id]))));
+  const open = new Set(state.isoOpen || []);
+  const groups = { in: {}, out: {} };
+  data.edges.forEach(e => {
+    const si = inside.has(e.src), di = inside.has(e.dst);
+    if (si === di) return;
+    const side = di ? 'in' : 'out', file = di ? e.src : e.dst, sec = data.home[file] || '(none)';
+    const g = groups[side][sec] = groups[side][sec] || { sec, edges: 0, files: {} };
+    g.edges++; g.files[file] = (g.files[file] || 0) + 1;
+  });
+  const ports = {}, portOf = { in: {}, out: {} };
+  const byCount = (a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  ['in', 'out'].forEach(side => {
+    const x = side === 'in' ? box.x - L.railGap - L.portW : box.x + box.w + L.railGap;
+    let y = box.y;
+    Object.values(groups[side]).map(g => [g.sec, g.edges, g]).sort(byCount).forEach(([sec, edges, g]) => {
+      const key = side + ':s:' + sec, isOpen = open.has(key), files = Object.entries(g.files).sort(byCount);
+      ports[key] = { key, side, kind: 'section', sec, x, y, w: L.portW, h: L.node.h, edges, files: files.length, open: isOpen };
+      y += L.node.h + L.portGap;
+      // An open port folds like a long section: its busiest files get their own ports, the rest stay in one
+      // "+N more" port until that is opened too (key side:all:sec).
+      const allKey = side + ':all:' + sec, showAll = open.has(allKey);
+      const listed = !isOpen ? [] : showAll || files.length <= L.foldAt + L.foldSlack ? files : files.slice(0, L.foldAt);
+      const rest = isOpen ? files.slice(listed.length) : files;
+      listed.forEach(([f, n]) => {
+        const fk = side + ':f:' + f;
+        ports[fk] = { key: fk, side, kind: 'file', file: f, parent: key, x: x + (side === 'in' ? 0 : 14), y, w: L.portW - 14, h: L.node.h, edges: n, files: 1 };
+        portOf[side][f] = fk; y += L.node.h + 4;
+      });
+      if (isOpen && rest.length) {
+        ports[allKey] = { key: allKey, side, kind: 'rest', sec, parent: key, x: x + (side === 'in' ? 0 : 14), y, w: L.portW - 14, h: L.node.h,
+          edges: rest.reduce((a, [, n]) => a + n, 0), files: rest.length };
+        rest.forEach(([f]) => { portOf[side][f] = allKey; }); y += L.node.h + 4;
+      } else if (!isOpen) rest.forEach(([f]) => { portOf[side][f] = key; });
+      if (isOpen) y += L.portGap;
+    });
+  });
+  return { sec: iso, inside, ports, portOf };
+}
+

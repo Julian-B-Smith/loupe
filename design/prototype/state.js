@@ -17,6 +17,9 @@ export function initialState(over = {}) {
     selection: null,           // { type: 'node'|'element'|'edge', id }
     hover: null,               // same shape as selection
     collapsed: [],             // section ids
+    unfolded: [],              // section ids shown in full past the fold (layout L.foldAt)
+    isolate: null,             // section id shown alone, with inputs and outputs as ports on side rails
+    isoOpen: [],               // port keys listing their files
     offsets: {},               // top-level section id -> {dx, dy} in world units; user drags, a view preference
     dimmedKinds: [],           // role or kind names
     zoom: { auto: true, k: 1, x: 0, y: 0, focus: null },
@@ -48,6 +51,10 @@ export function createStore(init) {
     setStage: n => store.set(s => ({ stage: n, view: STAGES[n - 1].view, selection: null, tour: { ...s.tour, step: 0 }, zoom: s.view !== STAGES[n - 1].view ? { ...s.zoom, auto: true } : s.zoom })),
     setView: view => store.set(s => ({ view, zoom: { ...s.zoom, auto: true } })),
     toggleCollapsed: id => store.set(s => ({ collapsed: s.collapsed.includes(id) ? s.collapsed.filter(x => x !== id) : s.collapsed.concat(id) })),
+    toggleUnfold: id => store.set(s => ({ unfolded: s.unfolded.includes(id) ? s.unfolded.filter(x => x !== id) : s.unfolded.concat(id) })),
+    isolate: id => store.set(s => ({ isolate: id, isoOpen: [], selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
+    // Closing a section port also forgets its show-all key (side:all:sec), so reopening starts folded.
+    togglePort: k => store.set(s => ({ isoOpen: s.isoOpen.includes(k) ? s.isoOpen.filter(x => x !== k && x !== k.replace(':s:', ':all:')) : s.isoOpen.concat(k) })),
     toggleKind: k => store.set(s => ({ dimmedKinds: s.dimmedKinds.includes(k) ? s.dimmedKinds.filter(x => x !== k) : s.dimmedKinds.concat(k) })),
     setZoom: z => store.set(s => ({ zoom: { ...s.zoom, ...z } })),
     fit: () => store.set(s => ({ zoom: { ...s.zoom, auto: true, focus: null } })),

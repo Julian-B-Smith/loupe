@@ -39,7 +39,7 @@
     }
   },
   "lanes": {
-    "design/": "design agent (Claude Design) only; infrastructure may write design/tokens.css and design/primitives.json, which are generated",
+    "design/": "in-house since ADR 0022 (2026-10-03); ordinary project code, critic-reviewed with screenshots",
     "schema/, tools/, docs/": "infrastructure sessions"
   },
   "remote": "github.com/Julian-B-Smith/loupe (public)"

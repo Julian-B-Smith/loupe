@@ -43,7 +43,8 @@ function memo(data, key, fn) {
   return c[key] || (c[key] = fn());
 }
 function getLayout(data, state, view) {
-  const key = ['L', view, (state.collapsed || []).join(','), hubPlacement(data, state), state.diff ? 'd' : '', view === 'design' ? JSON.stringify(state.offsets || {}) : ''].join('|');
+  const key = ['L', view, (state.collapsed || []).join(','), hubPlacement(data, state), state.diff ? 'd' : '', view === 'design' ? JSON.stringify(state.offsets || {}) : '',
+    view === 'design' ? [(state.unfolded || []).join(','), state.isolate || '', (state.isoOpen || []).join(',')].join('/') : ''].join('|');
   return memo(data, key, () => layout(data, { ...state, view }));
 }
 
@@ -157,6 +158,8 @@ export function render(container, data, state) {
   } else z = { k: zs.k, x: zs.x, y: zs.y };
   const lod = lodFor(z.k);
   const ovw = designish && lod === 'overview', detail = lod === 'detail';
+  // At overview a node is stood in for by its top section, or, when isolated, by its nearest ancestor that is laid out.
+  const drawnTop = id => { let s = data.home[id], best = null; while (s) { if (D.sections[s]) best = s; s = data.parentOf[s]; } return best; };
   const S = r => ({ x: r.x * z.k + z.x, y: r.y * z.k + z.y, w: r.w * z.k, h: r.h * z.k });
   const cw = charW();
 
@@ -203,7 +206,9 @@ export function render(container, data, state) {
   const removedById = {}; ((df && df.removed) || []).forEach(n => { removedById[n.id] = n; });
   const nodeInfo = id => data.nodes[id] || (removedById[id] && { ...removedById[id], label: removedById[id].path.split('/').pop().replace(/\.(cpp|hpp|h)$/, '') });
 
-  const map = { zoom: z, lod, nodes: {}, edges: {}, elements: {}, layout: D };
+  // drawn: every stand-in this frame actually draws (section ids, fold:<sec>, port keys, 'elsewhere'). conserve() checks node
+  // proxies against it, so a proxy pointing at something not on screen reads as broken instead of balanced.
+  const map = { zoom: z, lod, nodes: {}, edges: {}, elements: {}, layout: D, drawn: new Set(), settled: morph <= 0 || morph >= 1 };
   const bg = [], eg = [], ng = [], lg = [];
   const routeStep = {};
   const setMarks = [];
@@ -224,7 +229,7 @@ export function render(container, data, state) {
   if (decor > 0) {
     bg.push(`<g style="opacity:${decor}">`);
     const band = (data.byPrimitive.band || []).map(id => data.elements[id])[0];
-    if (band && D.levels.length) {
+    if (band && D.levels.length && !D.iso) {
       map.elements[band.id] = 'drawn';
       D.levels.forEach((lv, i) => {
         const r = S(lv);
@@ -266,7 +271,7 @@ export function render(container, data, state) {
     secs.forEach(([id, s]) => {
       const el = data.elements[id], r = S(s);
       if (!el) return;
-      map.elements[id] = 'drawn';
+      map.elements[id] = 'drawn'; map.drawn.add(id);
       const on = focEl === id, fillC = s.depth % 2 ? 'surface-group-nested' : 'surface-group';
       const tn = tierOf(id), strokeC = on ? 'accent' : s.depth ? 'none' : 'tier-' + tn;
       bg.push(`<rect data-el="${id}" x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${s.depth ? 6 : 8}" style="fill:${v(fillC)};stroke:${strokeC === 'none' ? 'none' : v(strokeC)};stroke-width:${on ? v('stroke-hub') : v('stroke-group')}"/>`);
@@ -373,23 +378,32 @@ export function render(container, data, state) {
 
   // ---------- 2. edges
   const endpoint = id => {
-    if (ovw) { const t = data.topOf(data.home[id]); if (t && D.sections[t]) return { key: 's:' + t, rect: S(D.sections[t]) }; }
+    if (ovw) { const t = drawnTop(id); if (t) return { key: 's:' + t, rect: S(D.sections[t]) }; }
     if (designish) {
       if (D.nodes[id]) return { key: 'n:' + id, rect: nodeRect(id), node: id };
+      const fs = D.foldOf[id]; if (fs) return { key: 'f:' + fs, rect: S(D.folds[fs]) };
       const p = D.proxy[id]; if (p) return { key: 's:' + p, rect: S(D.sections[p]) };
       return null;
     }
     const r = nodeRect(id); return r ? { key: 'n:' + id, rect: r, node: id } : null;
   };
   const singles = [], bundles = {}, onRail = [];
+  const iso = designish ? D.iso : null, elsewhere = { edges: 0, files: 0 };
+  const portEnd = (side, id) => { const k = iso.portOf[side][id], P = k && iso.ports[k]; return P ? { key: 'p:' + k, rect: S(P) } : null; };
   data.edges.forEach(e => {
-    const a = endpoint(e.src), b = endpoint(e.dst);
+    let a, b;
+    if (iso) {
+      const si = iso.inside.has(e.src), di = iso.inside.has(e.dst);
+      // One rule: an edge with no end in the isolated section is not drawn, so it is folded into the elsewhere count.
+      if (!si && !di) { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere' }; elsewhere.edges++; return; }
+      a = si ? endpoint(e.src) : portEnd('in', e.src); b = di ? endpoint(e.dst) : portEnd('out', e.dst);
+    } else { a = endpoint(e.src); b = endpoint(e.dst); }
     if (!a || !b) return;
     if (a.key === b.key) { map.edges[e.id] = { via: 'collapsed', group: a.key.slice(2) }; return; }
     const bus = busOf[e.id];
     if (designish && bus && D.rails[bus] && a.node && b.node) { onRail.push(e); map.edges[e.id] = { via: 'bus', bus }; return; }
     let key = null, ra = a.rect, rb = b.rect;
-    if (a.key[0] === 's' || b.key[0] === 's') key = a.key + '>' + b.key;
+    if ('sfp'.includes(a.key[0]) || 'sfp'.includes(b.key[0])) key = a.key + '>' + b.key;
     else if (designish && lod === 'structure' && data.home[e.src] !== data.home[e.dst]) {
       key = 's:' + data.home[e.src] + '>s:' + data.home[e.dst];
       ra = S(D.sections[data.home[e.src]]); rb = S(D.sections[data.home[e.dst]]);
@@ -416,11 +430,10 @@ export function render(container, data, state) {
     return { emph: nodeF, dim: !nodeF };
   };
   singles.forEach(({ e, ra, rb }) => {
-    map.edges[e.id] = { via: 'drawn' };
     const { emph, dim } = edgeFocus(e), off = dimK.has(e.role || e.kind);
-    const busFade = busOf[e.id] && D.rails[busOf[e.id]] ? 1 - decor : 1;
-    if (busFade <= 0) return;
-    const op = (dim || off ? 0.22 : 1) * busFade;
+    // No bus fade here: a single always draws. (A fade to 0 once counted an edge as drawn that was invisible; review v4 B2.)
+    const op = dim || off ? 0.22 : 1;
+    map.edges[e.id] = { via: 'drawn' };
     eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}" marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"><title>${esc(edgeTitle(e))}</title></path>`);
   });
   // rails
@@ -503,8 +516,14 @@ export function render(container, data, state) {
   const ids = data.nodeIds.concat(df ? (df.removed || []).map(n => n.id) : []);
   ids.forEach(id => {
     const n = nodeInfo(id);
+    if (iso && !iso.inside.has(id)) {
+      const k = iso.portOf.in[id] || iso.portOf.out[id];
+      if (!k) elsewhere.files++;
+      map.nodes[id] = { state: k ? 'port' : 'elsewhere', proxy: k || 'elsewhere' }; return;
+    }
+    if (ovw && !D.proxy[id]) { map.nodes[id] = { state: 'lod', proxy: drawnTop(id) }; return; }
+    if (designish && !D.nodes[id] && D.foldOf[id]) { map.nodes[id] = { state: 'folded', proxy: 'fold:' + D.foldOf[id] }; return; }
     if (designish && !D.nodes[id]) { map.nodes[id] = { state: 'collapsed', proxy: D.proxy[id] || null }; return; }
-    if (ovw) { map.nodes[id] = { state: 'lod', proxy: data.topOf(data.home[id]) }; return; }
     const r = nodeRect(id); if (!r) return;
     const dm = diffOf[id];
     const ghost = dm === 'removed' || dm === 'ghost-added';
@@ -562,12 +581,44 @@ export function render(container, data, state) {
   }
   Object.entries(pins).forEach(([id, list]) => {
     let r = null;
-    if (designish && !D.nodes[id]) { const p = ovw ? data.topOf(data.home[id]) : D.proxy[id]; if (p && D.sections[p]) r = S(D.sections[p]); }
-    else if (ovw) { const t = data.topOf(data.home[id]); r = t && S(D.sections[t]); }
+    if (iso && !iso.inside.has(id)) { const k = iso.portOf.in[id] || iso.portOf.out[id]; r = k ? S(iso.ports[k]) : null; }
+    else if (designish && !D.nodes[id] && !ovw && D.foldOf[id]) r = S(D.folds[D.foldOf[id]]);
+    else if (designish && !D.nodes[id]) { const p = ovw ? drawnTop(id) : D.proxy[id]; if (p && D.sections[p]) r = S(D.sections[p]); }
+    else if (ovw) { const t = drawnTop(id); r = t && S(D.sections[t]); }
     else r = nodeRect(id);
     if (!r) return;
     list.forEach((fn, i) => lg.push(fn(r.x + r.w - 4 - i * 18, r.y - 1)));
   });
+
+  // ---------- 5. fold rows, isolate rails
+  if (designish && !ovw) Object.entries(D.folds).forEach(([sec, f]) => {
+    const r = S(f), n = f.members.length, ins = new Set(f.members);
+    const ec = data.edges.filter(e => ins.has(e.src) || ins.has(e.dst)).length;
+    const text = fit(`+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
+    map.drawn.add('fold:' + sec);
+    ng.push(`<g data-unfold="${esc(sec)}" style="cursor:pointer"><title>${esc(`${n} less-connected files folded here, with ${ec} edges. Click to show all.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
+  });
+  if (iso) {
+    const box = S(D.sections[iso.sec]);
+    Object.values(iso.ports).forEach(P => {
+      const r = S(P), lab = P.kind === 'section' ? (data.elements[P.sec] ? data.elements[P.sec].label : P.sec) : P.kind === 'rest' ? `+${P.files} more files` : (nodeInfo(P.file) || {}).label || P.file;
+      const tail = String(P.edges); // file count lives in the tooltip; the name gets the room
+      const mark = P.kind === 'section' ? (P.open ? '−' : '+') : '';
+      const cnt = `${tail}`, room = r.w - 16 - cnt.length * cw * 0.92 - (mark ? 14 : 0);
+      const on = !!(selNode && (iso.portOf.in[selNode] === P.key || iso.portOf.out[selNode] === P.key));
+      map.drawn.add(P.key);
+      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : 'surface-node')};stroke:${v(on ? 'accent' : P.kind === 'file' ? 'rule' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
+    });
+    ['in', 'out'].forEach(side => {
+      const ps = Object.values(iso.ports).filter(p => p.side === side); if (!ps.length) return;
+      const r = S(ps[0]);
+      lg.push(`<text x="${f1(side === 'in' ? r.x : r.x + r.w)}" y="${f1(r.y - 10)}" text-anchor="${side === 'in' ? 'start' : 'end'}" style="font:${v('type-eyebrow')};letter-spacing:${v('tracking-eyebrow')};text-transform:uppercase;fill:${v('ink-faint')}">${side === 'in' ? 'Inputs' : 'Outputs'} · ${ps.filter(p => p.kind === 'section').length}</text>`);
+    });
+    if (elsewhere.edges || elsewhere.files) map.drawn.add('elsewhere');
+    if (elsewhere.edges || elsewhere.files)
+      lg.push(`<g data-exit="isolate" style="cursor:pointer">${pill(box.x + box.w / 2, box.y - 30, `Elsewhere: ${elsewhere.files} files · ${elsewhere.edges} edges not shown`, { anchor: 'middle', stroke: v('rule'), dash: '3 3', title: 'Files and edges that do not touch this section. Click to go back to the full map.' })}</g>`);
+    map.elsewhere = elsewhere;
+  }
 
   svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="set-marks" style="opacity:${decor}">${setMarks.join('')}</g><g data-layer="edges">${eg.join('')}</g><g data-layer="nodes">${ng.join('')}</g><g data-layer="labels">${lg.join('')}</g>`;
   return map;

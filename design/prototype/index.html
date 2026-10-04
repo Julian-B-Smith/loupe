@@ -54,6 +54,9 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
 .zoom button+button{border-top:1px solid var(--loupe-rule)}
 .zoom .lod{font:var(--loupe-type-count);padding:6px 0;text-align:center;color:var(--loupe-ink-faint);border-top:1px solid var(--loupe-rule);width:36px;white-space:nowrap}
 .settings{right:12px;top:12px;padding:3px}
+.iso{left:12px;top:12px;padding:6px 8px 6px 12px;align-items:center;gap:10px}
+.iso[hidden]{display:none}
+.iso b{font:600 13px/16px var(--loupe-font-ui)}
 .panel{border-left:1px solid var(--loupe-rule);background:var(--loupe-surface-panel);min-height:0;display:flex;flex-direction:column}
 .handle{display:none}
 .pbody{overflow-y:auto;padding:18px 20px 28px;display:flex;flex-direction:column;gap:14px;min-height:0;flex:1}
@@ -114,6 +117,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
   <main>
     <section class="canvas" id="canvas" aria-label="Map">
       <div class="float settings" style="gap:6px;background:none;box-shadow:none"><div class="seg" id="hubSeg" title="Hub placement" style="box-shadow:0 0 0 1px var(--loupe-rule)"><span class="lbl">Hubs</span><button data-hub="group">With group</button><button data-hub="center">Centered</button></div><div class="seg" id="resetSeg" style="box-shadow:0 0 0 1px var(--loupe-rule)" hidden><button id="resetLayout" title="Put moved sections and levels back">Reset layout</button></div></div>
+      <div class="float iso" id="isoBar" hidden><span class="eyebrow">Isolated</span><b id="isoName"></b><span class="eyebrow" id="isoElse" style="text-transform:none;letter-spacing:0"></span><button class="btn" id="isoExit">Back to full map</button></div>
       <div class="float legend" id="legend"></div>
       <div class="float zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="lod"></div></div>
     </section>
@@ -213,6 +217,7 @@ if (!data.diff) $('diffSeg').hidden = true;
 if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
 store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); localStorage.setItem('loupe-proto', JSON.stringify({ stage: s.stage, theme: s.theme, offsets: { ...(prev.offsets || {}), [SNAP]: s.offsets } })); });
 $('resetLayout').onclick = () => A.resetLayout();
+$('isoExit').onclick = () => A.isolate(null);
 
 function chrome(s) {
   document.querySelectorAll('[data-stage]').forEach(b => b.setAttribute('aria-current', +b.dataset.stage === s.stage ? 'step' : 'false'));
@@ -221,8 +226,10 @@ function chrome(s) {
   const hp = s.settings.hubPlacement || data.settings.hubPlacement || 'group';
   document.querySelectorAll('[data-hub]').forEach(b => b.setAttribute('aria-pressed', b.dataset.hub === hp));
   $('hubSeg').style.display = s.view === 'design' ? '' : 'none';
-  $('resetSeg').hidden = !(s.view === 'design' && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
+  $('resetSeg').hidden = !(s.view === 'design' && !s.isolate && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
   $('theme').textContent = s.theme === 'dark' ? 'Light' : 'Dark';
+  $('isoBar').hidden = !s.isolate || s.view !== 'design';
+  if (s.isolate) { const ew = map && map.elsewhere; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere` : ''; }
   legend(s);
 }
 
@@ -248,9 +255,12 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-collapse],[data-node],[data-el],[data-edge]');
+  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-node],[data-el],[data-edge]');
   if (!c) return null;
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
+  if (c.dataset.unfold) return { type: 'unfold', id: c.dataset.unfold };
+  if (c.dataset.port) return { type: 'port', id: c.dataset.port };
+  if (c.dataset.exit) return { type: 'exit', id: c.dataset.exit };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
   if (c.dataset.el) return { type: 'element', id: c.dataset.el };
   return { type: 'edge', id: c.dataset.edge };
@@ -258,7 +268,7 @@ const hit = t => {
 let drag = null;
 const movableSection = t => {
   const s = store.get();
-  if (s.view !== 'design' || s.morph != null) return null;
+  if (s.view !== 'design' || s.morph != null || s.isolate) return null;
   const lvEl = t.closest && t.closest('[data-level]');
   if (lvEl) return lvEl.dataset.level === 'gutter' ? 'gutter' : 'level:' + lvEl.dataset.level;
   const h = hit(t); if (!h) return null;
@@ -282,7 +292,7 @@ canvas.addEventListener('pointermove', e => {
   }
   canvas.classList.toggle('can-move', !!movableSection(e.target));
   const h = hit(e.target);
-  A.hover(h && h.type !== 'collapse' ? h : null);
+  A.hover(h && ['node', 'element', 'edge'].includes(h.type) ? h : null);
 });
 canvas.addEventListener('pointerleave', () => A.hover(null));
 canvas.addEventListener('pointerup', e => {
@@ -292,6 +302,9 @@ canvas.addEventListener('pointerup', e => {
   const h = hit(document.elementFromPoint(e.clientX, e.clientY) || e.target);
   if (!h) return A.clear();
   if (h.type === 'collapse') return A.toggleCollapsed(h.id);
+  if (h.type === 'unfold') return A.toggleUnfold(h.id);
+  if (h.type === 'port') return A.togglePort(h.id);
+  if (h.type === 'exit') return A.isolate(null);
   A.select(h);
   if (phone()) $('panel').classList.add('open');
 });
@@ -302,7 +315,7 @@ const zoomAt = (f, cx, cy) => {
 };
 canvas.addEventListener('wheel', e => { e.preventDefault(); const r = canvas.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
-addEventListener('keydown', e => { if (e.key === 'Escape') A.clear(); });
+addEventListener('keydown', e => { if (e.key !== 'Escape') return; const s = store.get(); if (s.selection) A.clear(); else if (s.isolate) A.isolate(null); });
 
 // ---------- inspector
 const pb = $('pbody');
@@ -310,6 +323,8 @@ pb.onclick = e => {
   const b = e.target.closest('[data-go]'); if (!b) return;
   const [type, id] = [b.dataset.type, b.dataset.go];
   if (type === 'collapse') return A.toggleCollapsed(id);
+  if (type === 'unfold') return A.toggleUnfold(id);
+  if (type === 'isolate') return A.isolate(id === '-' ? null : id);
   if (type === 'tour') return A.setTour({ step: +id });
   if (type === 'tourpick') return A.setTour({ index: +id, step: 0 });
   if (type === 'hub') return A.setHubPlacement(id);
@@ -375,7 +390,9 @@ function elementPanel(id) {
   if (p === 'section') {
     const files = el.members.filter(m => data.nodes[m]);
     const collapsed = store.get().collapsed.includes(id);
+    const iso = store.get().isolate === id, fold = map && map.layout.folds[id], unf = store.get().unfolded.includes(id);
     body = `<div class="row"><span class="path">${data.filesIn(id)} files${data.children[id].length ? ' · ' + data.children[id].length + ' subsections' : ''}</span>${go('collapse', id, collapsed ? 'Expand' : 'Collapse', 'btn')}</div>
+      <div class="row" style="justify-content:flex-start;gap:8px">${go('isolate', iso ? '-' : id, iso ? 'Back to full map' : 'Isolate', 'btn primary')}${fold || unf ? go('unfold', id, unf ? 'Fold again' : `Show ${fold.members.length} folded files`, 'btn') : ''}</div>
       ${data.children[id].length ? `<div class="list">${data.children[id].map(elCard).join('')}</div>` : ''}
       ${files.length ? `<div><span class="eyebrow">Files</span>${files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m">${data.edges.filter(e => e.src === f || e.dst === f).length} edges</span>`, 'erow')).join('')}</div>` : ''}`;
   } else if (p === 'bus') {
@@ -464,7 +481,7 @@ function panel(s, c) {
   else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
   if (!html) { html = stagePanel(s, c); title = s.diff ? 'Re-run diff' : `Stage ${s.stage} · ${STAGES[s.stage - 1].label}`; }
   else html = `<div class="row"><span></span><button class="path" data-type="clear" data-go="x" style="color:${v('ink-muted')}">Back to stage</button></div>` + html;
-  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings]);
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate]);
   if (pb.dataset.key !== key) { pb.innerHTML = html; pb.dataset.key = key; pb.scrollTop = 0; }
   $('handleText').textContent = title;
 }

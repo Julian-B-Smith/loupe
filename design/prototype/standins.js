@@ -10,7 +10,11 @@ export function conserve(data, state, map) {
     if (m && edges[m.via] != null && m.via !== 'total') edges[m.via]++; else unaccounted.push(e.id);
   });
   const nodes = { total: data.nodeIds.length, placed: 0 };
-  data.nodeIds.forEach(id => { if (map.nodes[id]) nodes.placed++; else unaccounted.push(id); });
+  // A node counts only if it is drawn, or stands in something that is (a section, fold row, port, elsewhere chip).
+  // An entry with no proxy is a node the renderer lost: count it as unaccounted (review v4, B1).
+  // Once settled (not mid-transition), the proxy must also be something the frame actually drew (map.drawn).
+  const shown = p => !map.drawn || !map.settled || map.drawn.has(p);
+  data.nodeIds.forEach(id => { const m = map.nodes[id]; if (m && (m.state === 'drawn' || m.state === 'ghost' || (m.proxy && shown(m.proxy)))) nodes.placed++; else unaccounted.push(id); });
   const accounted = edges.drawn + edges.bus + edges.folded + edges.collapsed;
   const status = unaccounted.length || accounted !== edges.total ? 'broken' : data.stale ? 'stale' : 'balanced';
   return { status, nodes, edges, accounted, unaccounted };
