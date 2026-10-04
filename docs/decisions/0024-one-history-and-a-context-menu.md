@@ -19,11 +19,12 @@
   browser's own history is untouched, because it is unreliable inside the hosted artifact frame.
 - **Right-click menu** for what is under the pointer: a section (Isolate, Collapse/Expand, show or refold folded
   files), a file (Select, plus its section's actions), a fold row, a port (list files; Isolate that peer section,
-  so one can walk from sub-patch to sub-patch and come back with Back), an edge or element (Select). "Back to full
+  so one can walk from sub-patch to sub-patch and come back with Back), an edge (Select, and Isolate either end's
+  section: Julian, 2026-10-03), an element (Select). "Back to full
   map" is always there while isolated, plus "Fit to screen". While isolated, hub placement controls are hidden (it
   needs the layer band, which isolate drops).
 
 ## Evidence
 
-`tools/history.test.mjs` (13 cases, in `npm test`) pins the rules; a planted bug (a new step not clearing Forward)
+`tools/history.test.mjs` (15 cases, in `npm test` and `./verify fast`) pins the rules; a planted bug (a new step not clearing Forward)
 makes it fail.

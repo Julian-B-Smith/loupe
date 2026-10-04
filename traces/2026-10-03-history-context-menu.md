@@ -12,3 +12,4 @@
   ⌘[ ⌘], step labels); most notes fixed.
 - **Not proven:** real mouse side buttons in Safari, Firefox and the hosted iframe; iOS long-press on a device.
 - **Verify:** `./verify fast` exit 0.
+- **Follow-up (Julian, poll):** edges offer Isolate for both ends' sections; `./verify fast` now runs the history tests.

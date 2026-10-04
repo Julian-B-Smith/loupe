@@ -429,6 +429,10 @@ function showMenu(target, cx, cy) {
     else if (el) items.push(null, { label: `Select ${PRIM[el.primitive] || el.primitive} · ${el.label || h.id}`, run: () => A.select({ type: 'element', id: h.id }) });
   } else if (h && h.type === 'edge') {
     items.push(null, { label: 'Select this edge', run: () => A.select({ type: 'edge', id: h.id }) });
+    // Isolate either end's section (Julian, 2026-10-03). Deduplicated; the section already isolated is skipped.
+    const e = data.edgeById[h.id];
+    [...new Set(e ? [data.home[e.src], data.home[e.dst]] : [])].filter(sec => sec && data.elements[sec] && sec !== s.isolate)
+      .forEach(sec => items.push({ label: `Isolate ${label(sec)}`, run: () => A.isolate(sec) }));
   }
   items.push(null);
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
