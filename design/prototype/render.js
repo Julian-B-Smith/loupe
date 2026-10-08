@@ -44,7 +44,7 @@ function memo(data, key, fn) {
 }
 function getLayout(data, state, view) {
   const key = ['L', view, (state.collapsed || []).join(','), hubPlacement(data, state), state.diff ? 'd' : '', view === 'design' ? JSON.stringify(state.offsets || {}) : '',
-    view === 'design' ? [(state.unfolded || []).join(','), state.isolate || '', (state.isoOpen || []).join(',')].join('/') : ''].join('|');
+    view === 'design' ? [(state.unfolded || []).join(','), state.isolate || '', (state.isoOpen || []).join(','), state.lens || ''].join('/') : ''].join('|');
   return memo(data, key, () => layout(data, { ...state, view }));
 }
 
@@ -378,6 +378,7 @@ export function render(container, data, state) {
 
   // ---------- 2. edges
   const endpoint = id => {
+    if (designish && D.lens && !D.lens.inside.has(id)) return { key: 'o:lens', rect: S(D.lensOut) };
     if (ovw) { const t = drawnTop(id); if (t) return { key: 's:' + t, rect: S(D.sections[t]) }; }
     if (designish) {
       if (D.nodes[id]) return { key: 'n:' + id, rect: nodeRect(id), node: id };
@@ -389,6 +390,7 @@ export function render(container, data, state) {
   };
   const singles = [], bundles = {}, onRail = [];
   const iso = designish ? D.iso : null, elsewhere = { edges: 0, files: 0 };
+  const lensSeen = designish && D.lens ? { in: 0, cross: 0, out: 0 } : null;
   const portEnd = (side, id) => { const k = iso.portOf[side][id], P = k && iso.ports[k]; return P ? { key: 'p:' + k, rect: S(P) } : null; };
   data.edges.forEach(e => {
     let a, b;
@@ -398,12 +400,14 @@ export function render(container, data, state) {
       if (!si && !di) { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere' }; elsewhere.edges++; return; }
       a = si ? endpoint(e.src) : portEnd('in', e.src); b = di ? endpoint(e.dst) : portEnd('out', e.dst);
     } else { a = endpoint(e.src); b = endpoint(e.dst); }
+    // Record how this frame routed the edge relative to the lens box; conserve() checks it against the lens's own counts.
+    if (lensSeen && a && b) { const oa = a.key === 'o:lens', ob = b.key === 'o:lens'; lensSeen[oa && ob ? 'out' : oa || ob ? 'cross' : 'in']++; }
     if (!a || !b) return;
     if (a.key === b.key) { map.edges[e.id] = { via: 'collapsed', group: a.key.slice(2) }; return; }
     const bus = busOf[e.id];
     if (designish && bus && D.rails[bus] && a.node && b.node) { onRail.push(e); map.edges[e.id] = { via: 'bus', bus }; return; }
     let key = null, ra = a.rect, rb = b.rect;
-    if ('sfp'.includes(a.key[0]) || 'sfp'.includes(b.key[0])) key = a.key + '>' + b.key;
+    if ('sfpo'.includes(a.key[0]) || 'sfpo'.includes(b.key[0])) key = a.key + '>' + b.key;
     else if (designish && lod === 'structure' && data.home[e.src] !== data.home[e.dst]) {
       key = 's:' + data.home[e.src] + '>s:' + data.home[e.dst];
       ra = S(D.sections[data.home[e.src]]); rb = S(D.sections[data.home[e.dst]]);
@@ -521,6 +525,8 @@ export function render(container, data, state) {
       if (!k) elsewhere.files++;
       map.nodes[id] = { state: k ? 'port' : 'elsewhere', proxy: k || 'elsewhere' }; return;
     }
+    // Lens before overview: an outside file's home section is not laid out, so only the outside box can stand in.
+    if (designish && D.lens && !D.lens.inside.has(id)) { map.nodes[id] = { state: 'outside', proxy: 'lens-outside' }; return; }
     if (ovw && !D.proxy[id]) { map.nodes[id] = { state: 'lod', proxy: drawnTop(id) }; return; }
     if (designish && !D.nodes[id] && D.foldOf[id]) { map.nodes[id] = { state: 'folded', proxy: 'fold:' + D.foldOf[id] }; return; }
     if (designish && !D.nodes[id]) { map.nodes[id] = { state: 'collapsed', proxy: D.proxy[id] || null }; return; }
@@ -582,6 +588,7 @@ export function render(container, data, state) {
   Object.entries(pins).forEach(([id, list]) => {
     let r = null;
     if (iso && !iso.inside.has(id)) { const k = iso.portOf.in[id] || iso.portOf.out[id]; r = k ? S(iso.ports[k]) : null; }
+    else if (designish && D.lens && !D.lens.inside.has(id)) r = S(D.lensOut);
     else if (designish && !D.nodes[id] && !ovw && D.foldOf[id]) r = S(D.folds[D.foldOf[id]]);
     else if (designish && !D.nodes[id]) { const p = ovw ? drawnTop(id) : D.proxy[id]; if (p && D.sections[p]) r = S(D.sections[p]); }
     else if (ovw) { const t = drawnTop(id); r = t && S(D.sections[t]); }
@@ -598,6 +605,21 @@ export function render(container, data, state) {
     map.drawn.add('fold:' + sec);
     ng.push(`<g data-unfold="${esc(sec)}" style="cursor:pointer"><title>${esc(`${n} less-connected files folded here, with ${ec} edges. Click to show all.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
   });
+  if (designish && D.lens) {
+    const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;
+    const on = !!(state.selection && state.selection.type === 'lensout');
+    let g = `<g data-lensout="${esc(Z.name)}" style="cursor:pointer"><title>${esc(`Outside the ${Z.label} lens: ${c.outsideFiles} files and the ${c.outsideEdges} edges among them. ${c.crossing} edges cross into the lens, drawn with counts.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="8" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:5 4"/>`;
+    if (r.h >= 40) {
+      g += ln(r.y + 18, `Outside ${Z.label.toLowerCase()} · ${c.outsideFiles} files`, 'type-group-label-compact', 'ink');
+      g += ln(r.y + 34, `${c.outsideEdges} edges inside · ${c.crossing} crossing`, 'type-count', 'ink-faint');
+      // Text keeps a fixed screen size while the box scales with zoom: draw only the role lines that fit.
+      Object.entries(Z.outsideRoles).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).forEach(([role, n], i) => { const y = r.y + 52 + i * 16; if (y < r.y + r.h - 6) g += ln(y, `${role} · ${n}`, 'type-count', 'ink-muted'); });
+    }
+    ng.push(g + '</g>');
+    map.drawn.add('lens-outside');
+    map.lens = { ...c, name: Z.name, label: Z.label };
+    map.lensCheck = lensSeen;
+  }
   if (iso) {
     const box = S(D.sections[iso.sec]);
     Object.values(iso.ports).forEach(P => {

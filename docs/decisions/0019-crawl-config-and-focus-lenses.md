@@ -65,3 +65,26 @@ reads both. The expected first proposal is two lenses, "horde 2" (seeds `h2/**`,
 - Design: the outside container, the crossing count and the lens switcher are new design work.
 - The probe's hardcoded scope rules and `tools/probe-config/horde.json` become the defaults and a sample
   `.loupe/config.json`.
+
+## Update 2026-10-08: the Operational lens, prototyped
+
+Julian asked whether operational code can be separated from labs and tests deterministically; by poll he chose to
+build the lens now and take its seeds from the build in P1, and defined **operational = reachable from the plugin's
+entry points**. Status stays Proposed.
+
+- **Built:** `design/prototype/lens.js`, lens `operational`. Seeds: entry files found by name (`*_entry.cpp/.h`,
+  `*_clap.cpp`) until P1 reads the build target. Rule `upstream` over **crawled edges only** (static, config): agent
+  edges never change membership. `embeds` is followed backwards (a header depends on what is compiled into it); a
+  reached header pulls in its same-stem `.cpp`. Outside files collapse into one counted box that lists every crossing
+  edge; the meter cross-checks the renderer's routing against the lens partition.
+- **First attempt, withdrawn:** seeding from path roles (product, gui) made the check self-confirming: reachability
+  added no file beyond the seeds, so "path roles and reachability agree" was the roles agreeing with themselves
+  (critic, 2026-10-08). Seeds must never come from the signal they are checked against.
+- **HORDE (c64cfdbc):** 38 files in focus, including the compiled-in factory presets and GUI HTML. No file the path
+  rules call test, tool, probe or bench is reachable. **11 files named as product are not shipped**: all of
+  `h2/cores/*` (h2 has no product build yet), five `src/` engines reached only by tests (`station_core`,
+  `strata_core`, `svf_core`, `swarmalator_core`, `osc_preset`), and `hypersaw_gui_win.cpp` (platform-specific; the
+  crawl cannot see build conditions yet). Three `tools/` files are **build-time** code: the product depends on what
+  they generate (`build_stamp.cmake`, `embed_file.py`, `gen_depends_header.py`).
+- **Tests:** `tools/lens.test.mjs` (16 cases, in `./verify fast`): partition, entry seeds, HORDE counts, input-order
+  independence, planted crawled vs agent edges, layout in every mode. A planted `embeds`-direction bug fails it.
