@@ -118,6 +118,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
     <div class="tools">
       <button class="meter" id="meter" title="Conservation check"></button>
       <div class="seg" id="histSeg"><button id="hBack" aria-label="Back">←</button><button id="hFwd" aria-label="Forward">→</button></div>
+      <div class="seg" id="lensSeg" title="Focus lens (ADR 0019): show only what the product depends on; the rest is one counted box"><span class="lbl">Lens</span><button data-lens="">All</button><button data-lens="operational">Operational</button></div>
       <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button></div>
       <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
       <div class="seg"><button id="theme">Dark</button></div>
@@ -139,6 +140,7 @@ import { loadSnapshot } from './snapshot.js';
 import { createStore, createHistory, STAGES } from './state.js';
 import { render, SPEC, slotOf, glyphOf } from './render.js';
 import { conserve, conformity } from './standins.js';
+import { LENSES } from './lens.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -172,6 +174,7 @@ const portName = k => { const id = k.split(/:(?:s|all|f):/)[1] || k; return labe
 function describe(a, b) {
   const added = (x, y) => (y || []).filter(i => !(x || []).includes(i)), removed = (x, y) => (x || []).filter(i => !(y || []).includes(i));
   if (a.isolate !== b.isolate) return b.isolate ? `isolate ${label(b.isolate)}` : `back to full map from ${label(a.isolate)}`;
+  if (a.lens !== b.lens) return b.lens ? `${LENSES[b.lens].label.toLowerCase()} lens` : 'show everything';
   if (added(a.unfolded, b.unfolded).length) return `show folded files in ${label(added(a.unfolded, b.unfolded)[0])}`;
   if (removed(a.unfolded, b.unfolded).length) return `fold ${label(removed(a.unfolded, b.unfolded)[0])} again`;
   if (added(a.collapsed, b.collapsed).length) return `collapse ${label(added(a.collapsed, b.collapsed)[0])}`;
@@ -251,6 +254,7 @@ if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
 store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); localStorage.setItem('loupe-proto', JSON.stringify({ stage: s.stage, theme: s.theme, offsets: { ...(prev.offsets || {}), [SNAP]: s.offsets } })); });
 $('resetLayout').onclick = () => A.resetLayout();
 $('isoExit').onclick = () => A.isolate(null);
+$('lensSeg').onclick = e => { const b = e.target.closest('[data-lens]'); if (b) A.setLens(b.dataset.lens || null); };
 $('hBack').onclick = () => H.back(); $('hFwd').onclick = () => H.forward();
 H.on(() => { closeMenu(); chrome(store.get()); });
 
@@ -267,6 +271,9 @@ function chrome(s) {
   $('hBack').disabled = !H.canBack; $('hFwd').disabled = !H.canForward;
   $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
   $('hFwd').title = H.canForward ? `Forward: ${H.forwardLabel} (${kf})` : 'Nothing to go forward to';
+  // The lens applies to the design view only (the flow view stays uninterpreted, 0006), and isolate overrides it.
+  $('lensSeg').style.display = s.view === 'design' && !s.isolate ? '' : 'none';
+  document.querySelectorAll('[data-lens]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.lens || null) === (s.lens || null)));
   $('isoBar').hidden = !s.isolate || s.view !== 'design';
   if (s.isolate) { const ew = map && map.elsewhere; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere` : ''; }
   legend(s);
@@ -275,7 +282,10 @@ function chrome(s) {
 function meter(c) {
   const col = { balanced: 'state-ok', broken: 'state-bad', stale: 'state-warn' }[c.status];
   const main = c.status === 'broken' ? `${c.unaccounted.length} not accounted for` : `${c.accounted} of ${c.edges.total} edges accounted`;
-  const sub = c.status === 'stale' ? 'view made for an older graph' : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} files`;
+  const lz = map && map.lens;
+  const sub = c.status === 'stale' ? 'view made for an older graph' : lz
+    ? `${lz.label} lens · in focus ${lz.insideFiles} files, ${lz.insideEdges} edges · outside ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} files`
+    : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} files`;
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
@@ -294,12 +304,13 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-node],[data-el],[data-edge]');
+  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-node],[data-el],[data-edge]');
   if (!c) return null;
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
   if (c.dataset.unfold) return { type: 'unfold', id: c.dataset.unfold };
   if (c.dataset.port) return { type: 'port', id: c.dataset.port };
   if (c.dataset.exit) return { type: 'exit', id: c.dataset.exit };
+  if (c.dataset.lensout) return { type: 'lensout', id: c.dataset.lensout };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
   if (c.dataset.el) return { type: 'element', id: c.dataset.el };
   return { type: 'edge', id: c.dataset.edge };
@@ -435,6 +446,7 @@ function showMenu(target, cx, cy) {
       .forEach(sec => items.push({ label: `Isolate ${label(sec)}`, run: () => A.isolate(sec) }));
   }
   items.push(null);
+  if (s.view === 'design' && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
   items.push({ label: 'Fit to screen', run: () => A.fit() });
   openMenu(cx, cy, items);
@@ -580,6 +592,16 @@ function stagePanel(s, c) {
       <table class="t"><thead><tr><th>Kind</th><th>Crawled</th><th>Overlay</th></tr></thead><tbody>${Object.entries(kinds).map(([k, n]) => `<tr><td>${k}</td><td>${n.graph}</td><td>${n.overlay}</td></tr>`).join('')}</tbody></table>
       <table class="t"><thead><tr><th>Provenance</th><th>Edges</th></tr></thead><tbody>${Object.entries(provs).map(([k, n]) => `<tr><td>${k}</td><td>${n}</td></tr>`).join('')}</tbody></table>`;
   } else if (s.stage === 2) {
+    const lz = s.lens && !s.isolate && map.layout.lens;
+    if (lz) {
+      const p = id => esc(data.nodes[id] ? data.nodes[id].path : id);
+      h += `<div class="card"><div class="row"><span class="t">${esc(lz.label)} lens</span>${chip('computed', 'ink-faint')}</div>
+        <span class="s">Seeds: the ${lz.seeds.length} plugin entry files (${lz.seeds.map(p).join(', ')}), found by file name in this prototype. Everything they depend on through crawled edges is in focus: ${lz.counts.insideFiles} files. P1 takes seeds from the build target instead.</span>
+        <span class="s">${lz.leaks.length ? `<b>${lz.leaks.length} leak${lz.leaks.length > 1 ? 's' : ''}:</b> the entry points reach files the path rules call test or lab code: ${lz.leaks.map(p).join(', ')}` : 'No file the path rules call test, tool, probe or bench is reachable from the entry points.'}</span>
+        ${lz.unshipped.length ? `<span class="s"><b>${lz.unshipped.length} not shipped:</b> named as product by the path rules, but not reachable from the entry points: ${lz.unshipped.map(p).join(', ')}. Platform-specific files may only be unreachable because the crawl cannot see build conditions yet.</span>` : ''}
+        ${lz.ignoredAgentEdges ? `<span class="s">${lz.ignoredAgentEdges} agent-written edges were not followed; only crawled edges decide membership.</span>` : ''}
+        ${lz.buildTime.length ? `<span class="s"><b>Build-time:</b> the product depends on output generated by ${lz.buildTime.map(p).join(', ')}. Outside the lens, but not lab code.</span>` : ''}</div>`;
+    }
     h += `<p>Dialect ${esc(data.view.dialect.name)}. The structure agent composed this view from ${data.order.length} elements. Each one makes a claim the audit can test.</p>`;
     Object.keys(PRIM).forEach(p => { const ids = data.byPrimitive[p]; if (ids) h += `<div class="list"><span class="eyebrow">${PRIM[p]} · ${ids.length}</span>${ids.map(elCard).join('')}</div>`; });
   } else if (s.stage === 3 && S) {
@@ -601,6 +623,19 @@ function stagePanel(s, c) {
   return h;
 }
 
+function lensPanel() {
+  const lz = map && map.layout.lens; if (!lz) return '';
+  const p = id => esc(data.nodes[id] ? data.nodes[id].path : id), out = id => !lz.inside.has(id);
+  const files = data.nodeIds.filter(out);
+  const byRole = {}; files.forEach(id => { const r = data.nodes[id].role || 'other'; (byRole[r] = byRole[r] || []).push(id); });
+  const roles = Object.keys(byRole).sort((a, b) => byRole[b].length - byRole[a].length || (a < b ? -1 : 1));
+  const cross = lz.crossing.map(id => data.edgeById[id]).filter(Boolean);
+  return `<span class="eyebrow">Outside the ${esc(lz.label)} lens</span><h2>${files.length} files · ${lz.counts.crossing} crossing edges</h2>
+    <p>Not deleted: these files and the ${lz.counts.outsideEdges} edges among them are folded into one box. Every edge that crosses into the lens is listed below and drawn onto the box with a count.</p>
+    <div><span class="eyebrow">Crossing edges · ${cross.length}</span>${cross.map(e => go('edge', e.id, `${swatch(e)}<span class="m">${lz.inside.has(e.src) ? '→' : '←'}</span><span class="n mono">${esc(label(lz.inside.has(e.src) ? e.dst : e.src))}</span><span class="m">${esc(label(lz.inside.has(e.src) ? e.src : e.dst))}</span>`, 'erow')).join('')}</div>
+    ${roles.map(r => `<div><span class="eyebrow">${esc(r)} · ${byRole[r].length}</span>${byRole[r].map(f => go('node', f, `<span></span><span></span><span class="n mono">${p(f)}</span><span class="m"></span>`, 'erow')).join('')}</div>`).join('')}`;
+}
+
 function unaccountedPanel(c) {
   return `<span class="eyebrow">Conservation</span><h2>${c.unaccounted.length} not accounted for</h2><p>These ids are neither drawn, in a bus, folded nor inside a collapsed group.</p><div>${c.unaccounted.map(id => `<div class="erow"><span></span><span></span><span class="n path">${esc(id)}</span><span></span></div>`).join('')}</div>`;
 }
@@ -618,9 +653,10 @@ function panel(s, c) {
   else if (sel && sel.type === 'element') { html = elementPanel(sel.id); title = label(sel.id); }
   else if (sel && sel.type === 'edge') { html = edgePanel(sel.id); title = 'Edge'; }
   else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
+  else if (sel && sel.type === 'lensout') { html = lensPanel(); title = 'Outside the lens'; }
   if (!html) { html = stagePanel(s, c); title = s.diff ? 'Re-run diff' : `Stage ${s.stage} · ${STAGES[s.stage - 1].label}`; }
   else html = `<div class="row"><span></span><button class="path" data-type="clear" data-go="x" style="color:${v('ink-muted')}">Back to stage</button></div>` + html;
-  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate]);
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.lens]);
   if (pb.dataset.key !== key) { pb.innerHTML = html; pb.dataset.key = key; pb.scrollTop = 0; }
   $('handleText').textContent = title;
 }

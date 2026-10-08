@@ -16,6 +16,12 @@ export function conserve(data, state, map) {
   const shown = p => !map.drawn || !map.settled || map.drawn.has(p);
   data.nodeIds.forEach(id => { const m = map.nodes[id]; if (m && (m.state === 'drawn' || m.state === 'ghost' || (m.proxy && shown(m.proxy)))) nodes.placed++; else unaccounted.push(id); });
   const accounted = edges.drawn + edges.bus + edges.folded + edges.collapsed;
+  // With a lens on, the edges this frame routed inside, across and outside the lens box must equal the lens's own
+  // partition. Without this the meter's lens line would only restate lens.js (critic, 2026-10-08).
+  if (map.lens && map.lensCheck && map.settled) {
+    const k = map.lensCheck, l = map.lens;
+    if (k.in !== l.insideEdges || k.cross !== l.crossing || k.out !== l.outsideEdges) unaccounted.push(`lens partition: drawn ${k.in}/${k.cross}/${k.out}, lens ${l.insideEdges}/${l.crossing}/${l.outsideEdges}`);
+  }
   const status = unaccounted.length || accounted !== edges.total ? 'broken' : data.stale ? 'stale' : 'balanced';
   return { status, nodes, edges, accounted, unaccounted };
 }

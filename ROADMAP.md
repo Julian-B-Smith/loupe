@@ -68,6 +68,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
+### Q-009 — Operational lens: seeds from the build (P1)
+- **Status:** open (prototype lens done 2026-10-08, ADR 0019 update; operational = reachable from entry points)
+- **Scope:** P1 crawler, `design/prototype/lens.js`
+- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (`compile_commands.json` / CMake
+  target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files
+  are classified by target, not reported as unshipped; 3. build-time code (sources of `generates` edges into the lens,
+  followed transitively) is its own class in the view; 4. on HORDE, the 11 product-named-but-unshipped files are
+  re-checked against the build and each is confirmed or cleared.
+
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`
 - **Scope:** `design/`

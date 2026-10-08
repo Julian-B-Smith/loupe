@@ -14,6 +14,15 @@ export const L = {
   flow: { colGap: 56, rowGap: 8 }
 };
 
+import { computeLens } from './lens.js';
+
+const lensCache = new WeakMap();
+export function lensFor(data, name) {
+  if (!name) return null;
+  let c = lensCache.get(data); if (!c) lensCache.set(data, (c = {}));
+  return c[name] || (c[name] = computeLens(data, name));
+}
+
 export function layout(data, state) {
   return state.view === 'flow' ? flowLayout(data, state) : designLayout(data, state);
 }
@@ -49,13 +58,18 @@ export function hubPlacement(data, state) {
 function designLayout(data, state) {
   const N = L.node, collapsed = new Set(state.collapsed || []);
   const els = id => data.elements[id];
-  const lanes = (data.byPrimitive.lane || []).map(els);
-  const twinsEls = (data.byPrimitive.twins || []).map(els);
   // Isolate (state.isolate = section id): lay out only that section's subtree; everything else becomes ports.
   const iso = state.isolate && data.elements[state.isolate] ? state.isolate : null;
+  // A lens (0019) shows only its files; isolate takes precedence and always shows the section against the whole graph.
+  const LZ = iso ? null : lensFor(data, state.lens);
+  // Diff ghosts (removed files) are not graph nodes, so the lens cannot place them; they stay with their section.
+  const memIn = sec => membersOf(data, state, sec).filter(m => !LZ || !data.nodes[m] || LZ.inside.has(m));
+  const secHas = sec => !LZ || data.descendants(sec).some(d => memIn(d).length > 0);
+  const lanes = (data.byPrimitive.lane || []).map(els);
+  const twinsEls = LZ ? [] : (data.byPrimitive.twins || []).map(els); // twins compare whole sections; a lens would hollow them
   const band = iso ? null : (data.byPrimitive.band || []).map(els)[0] || null;
   const hubs = (data.byPrimitive.hub || []).map(els);
-  const centered = hubPlacement(data, state) === 'center' && band ? new Set(hubs.map(h => h.node)) : new Set();
+  const centered = hubPlacement(data, state) === 'center' && band ? new Set(hubs.map(h => h.node).filter(n => !LZ || LZ.inside.has(n))) : new Set();
 
   const unfolded = new Set(state.unfolded || []), FM = foldMeta(data);
   // While a re-run diff is shown, changed, added, stale and removed files keep their own rows (their marks are the point).
@@ -69,10 +83,10 @@ function designLayout(data, state) {
     if (collapsed.has(sec)) {
       const w = N.w + 2 * L.pad;
       T.sections[sec] = { x, y, w, h: L.header, depth, collapsed: true };
-      data.descendants(sec).forEach(s => membersOf(data, state, s).forEach(m => { T.proxy[m] = sec; }));
+      data.descendants(sec).forEach(s => memIn(s).forEach(m => { T.proxy[m] = sec; }));
       return { w, h: L.header };
     }
-    const mem = membersOf(data, state, sec).filter(m => !centered.has(m));
+    const mem = memIn(sec).filter(m => !centered.has(m));
     const twins = twinsEls.find(t => t.members.every(m => data.parentOf[m] === sec));
     const lane = lanes.find(l => l.steps.length >= 2 && l.steps.every(s => mem.includes(s)));
     let cy = y + L.header, w = N.w + 2 * L.pad;
@@ -114,7 +128,7 @@ function designLayout(data, state) {
       if (mem.length || lane) cy -= L.rowGap;
     }
 
-    const kids = data.children[sec] || [];
+    const kids = (data.children[sec] || []).filter(secHas);
     if (twins) {
       const n = twins.members.length, cols = n <= 3 ? n : Math.ceil(Math.sqrt(n));
       const cw = N.w + 2 * L.pad, innerW = cols * cw + (cols - 1) * L.twinGap;
@@ -145,7 +159,7 @@ function designLayout(data, state) {
   const measure = sec => place(scratch(), sec, 0, 0, 0);
 
   // ---- levels and columns
-  const tops = iso ? [iso] : data.sections.filter(s => !data.parentOf[s]);
+  const tops = iso ? [iso] : data.sections.filter(s => !data.parentOf[s] && secHas(s));
   const levelDefs = band ? band.levels.map(l => ({ label: l.label, members: l.members.filter(m => tops.includes(m)) })) : [{ label: null, members: tops }];
   const inLevel = new Set(levelDefs.flatMap(l => l.members));
   const outside = band ? tops.filter(t => !inLevel.has(t)) : [];
@@ -229,7 +243,7 @@ function designLayout(data, state) {
     tops.forEach(t => {
       const o = offs[t]; if (!o || (!o.dx && !o.dy)) return;
       const subtree = data.descendants(t), sh = r => { if (r) { r.x += o.dx; r.y += o.dy; } };
-      subtree.forEach(s => { sh(P.sections[s]); sh(P.folds[s]); membersOf(data, state, s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
+      subtree.forEach(s => { sh(P.sections[s]); sh(P.folds[s]); memIn(s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
       Object.values(P.lanes).forEach(ln => { if (ln.section && subtree.includes(ln.section)) sh(ln); });
       twinsEls.forEach(tw => { if (tw.members.every(m => subtree.includes(m))) { const p = P.plates[tw.id]; if (p) { sh(p); p.rowTops = p.rowTops.map(y => y + o.dy); } } });
     });
@@ -298,7 +312,14 @@ function designLayout(data, state) {
   lanes.forEach(l => { if (!P.lanes[l.id]) P.lanes[l.id] = { mode: 'route' }; });
 
   if (iso) P.iso = isolatePorts(data, state, iso, P.sections[iso]);
-  const allR = Object.values(P.nodes).concat(P.iso ? Object.values(P.iso.ports) : []).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
+  if (LZ) {
+    // One container for everything outside the lens: a header, a counts line, then one line per role.
+    const roles = Object.keys(LZ.outsideRoles).length;
+    P.lens = LZ;
+    P.lensOut = { x: right + L.colGap, y: band ? L.bandHead : 0, w: L.portW + 110, h: L.header + 22 + roles * 18 + L.pad };
+    right = P.lensOut.x + P.lensOut.w;
+  }
+  const allR = Object.values(P.nodes).concat(P.iso ? Object.values(P.iso.ports) : [], P.lensOut ? [P.lensOut] : []).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
   const minX = Math.min(0, ...allR.map(r => r.x)), minY = Math.min(0, ...allR.map(r => r.y));
   const maxX = Math.max(right, ...allR.map(r => r.x + r.w)), maxY = Math.max(levelsBottom, ...allR.map(r => r.y + r.h));
   P.bounds = { x: minX - 8, y: minY - 24, w: maxX - minX + 64, h: maxY - minY + 48 };
