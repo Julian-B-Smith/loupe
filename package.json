@@ -6,7 +6,7 @@
   "description": "Codebase legibility: deterministic dependency graph plus agent-built, audited visual maps.",
   "scripts": {
     "check": "node tools/loupe-check.mjs schema/examples/horde-sample && node tools/loupe-check.mjs schema/examples/horde-probe",
-    "test": "node tools/loupe-check.test.mjs && node tools/history.test.mjs && node tools/lens.test.mjs",
+    "test": "node tools/loupe-check.test.mjs && node tools/history.test.mjs && node tools/lens.test.mjs && node tools/story.test.mjs",
     "sample": "node tools/convert-sample.mjs",
     "probe": "node tools/probe-crawl.mjs",
     "view": "node tools/serve.mjs"

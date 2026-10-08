@@ -1,0 +1,640 @@
+{
+  "schema": "loupe.stories/0.0-standin",
+  "about": "Stand-in until a schema exists (ADR 0025). Written by the Structure agent from HORDE's source at the crawled commit; every step cites file:line evidence. Revised 2026-10-08 after critic review: two steps were false (velocity, scope) and four misleading (bass mono, GUI edits, morph intents, the note-on paths). Step provenance is 'inferred'; Julian's edits become 'annotated'.",
+  "graph": {
+    "repo": "github.com/Julian-B-Smith/horde",
+    "commit": "c64cfdbc366073e2b4b63c5bc933c29d93f03af2"
+  },
+  "stories": [
+    {
+      "id": "story:audio-block",
+      "title": "One audio block",
+      "question": "What happens each time the host asks the plugin for audio?",
+      "by": "agent:structure",
+      "steps": [
+        {
+          "id": "s1",
+          "concept": "host",
+          "label": "Host asks for a block",
+          "does": "The DAW calls the CLAP process callback with the block's events, transport and output buffers.",
+          "files": [
+            "file:src/hypersaw_clap_entry.cpp",
+            "file:src/hypersaw_clap.cpp",
+            "ext:clap"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 9046,
+              "note": "plug_process forwards to Plugin::process"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8715,
+              "note": "process(const clap_process_t*)"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "concept": "tempo",
+          "label": "Read host tempo",
+          "does": "The host's tempo becomes the grid tempo (ADR-022); with none, the last known tempo stays.",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8720
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "concept": "gui-edits",
+          "label": "Apply GUI edits",
+          "does": "Edits queued by the editor are applied directly to the parameters and echoed to the host as parameter events. They do not pass through the event loop.",
+          "files": [
+            "file:src/hypersaw_clap.cpp",
+            "file:src/gui/hypersaw_gui.mm",
+            "file:src/gui/hypersaw_gui.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8722,
+              "note": "drainQueue(p->out_events)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 5520,
+              "note": "applyParam(m.id, m.value)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 5537,
+              "note": "CLAP_EVENT_PARAM_VALUE pushed to the host"
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "concept": "events",
+          "label": "Handle events at their exact frame",
+          "does": "The block is split at each host event's timestamp, so notes and the host's parameter changes land on the right sample.",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8763,
+              "note": "handleEvent(ev) inside the per-frame loop"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8195,
+              "note": "handleEvent: notes, parameter values"
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "concept": "morph",
+          "label": "Step morph and modulation",
+          "does": "When Morph is on, parameters drift between four corner presets. Modulation (LFOs, envelopes, the matrix) steps every span. Intent resolution exists behind a dev flag that ships off.",
+          "files": [
+            "file:src/morph_core.h",
+            "file:src/mod_core.h",
+            "file:src/intent_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8772,
+              "note": "if (morphOn > 0.5) morphStep(...)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8773,
+              "note": "modStep(...), every span"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 4515,
+              "note": "intentStep only when the dev flag intentBusOn is on"
+            }
+          ]
+        },
+        {
+          "id": "s6",
+          "concept": "bend-grid",
+          "label": "Step the pitch-bend grid",
+          "does": "When a bend law is engaged, the span is cut into grid steps and every note's tuning is updated on the grid clock.",
+          "files": [
+            "file:src/glide_core.h",
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8774,
+              "note": "if (bendActive() && !spectraMode())"
+            }
+          ]
+        },
+        {
+          "id": "s7",
+          "concept": "oscillators",
+          "label": "Render the oscillators",
+          "does": "Oscillator 0 renders straight into the output; the others render into their own source buffers. The engine is either the SAW swarm or SPECTRA; the sub oscillator follows the notes in both.",
+          "files": [
+            "file:src/swarm_core.h",
+            "file:src/force_core.h",
+            "file:src/spectra_core.h",
+            "file:src/subosc_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8805,
+              "note": "renderSpan(...)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8489,
+              "note": "core.render(outL + at, outR + at, n)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8800,
+              "note": "spectra.render in SPECTRA mode"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8595,
+              "note": "renderSubSpan"
+            }
+          ]
+        },
+        {
+          "id": "s8",
+          "concept": "bass-mono",
+          "label": "Bass mono (off by default)",
+          "does": "When switched on, low frequencies are folded to mono, per source. Its position is pre (before FX, the default), post, or both (B146).",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 230,
+              "note": "param 40 bassMono, default 0 (off)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 122,
+              "note": "positions: pre, post, both"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8819,
+              "note": "pre placement"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8893,
+              "note": "post placement"
+            }
+          ]
+        },
+        {
+          "id": "s9",
+          "concept": "fx",
+          "label": "FX rack through the routing matrix",
+          "does": "Sources feed four effect slots through a crosspoint matrix (ADR-088). The default topology is a serial chain, bit-exact with the old hardcoded series.",
+          "files": [
+            "file:src/fx_rack.h",
+            "file:src/routing_core.h",
+            "file:src/filter_core.h",
+            "file:src/delay_core.h",
+            "file:src/time_core.h",
+            "file:src/notch_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8880,
+              "note": "routing.processBlock(...)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 2310,
+              "note": "hypersaw::FxRack rack"
+            }
+          ]
+        },
+        {
+          "id": "s10",
+          "concept": "master",
+          "label": "Master volume",
+          "does": "Last gain in the chain, smoothed over about 8 ms and snapped to exactly 1.0 at unity so old patches stay byte-identical.",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8895
+            }
+          ]
+        },
+        {
+          "id": "s11",
+          "concept": "visualizer",
+          "label": "Feed the meters and scope",
+          "does": "Peak meters and the spectrum read the master output after volume. The waveform scope taps each oscillator separately (ADR-100); the master scope feed is retired.",
+          "files": [
+            "file:src/hypersaw_clap.cpp",
+            "file:src/gui/hypersaw_gui.mm"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8918,
+              "note": "spectrum ring from the master output"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8925,
+              "note": "scope follows the VIZ oscillator; master fill retired"
+            }
+          ]
+        },
+        {
+          "id": "s12",
+          "concept": "note-ends",
+          "label": "Tell the host which notes ended",
+          "does": "Voices that finished their release are reported back to the host as note-end events.",
+          "files": [
+            "file:src/hypersaw_clap.cpp",
+            "ext:clap"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8930,
+              "note": "emitNoteEnds"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 5421
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "from": "s1",
+          "to": "s2",
+          "carries": "control",
+          "reason": "Sequence inside process(), lines 8715-8720."
+        },
+        {
+          "from": "s2",
+          "to": "s3",
+          "carries": "control",
+          "reason": "Sequence inside process(), lines 8720-8722."
+        },
+        {
+          "from": "s3",
+          "to": "s4",
+          "carries": "control"
+        },
+        {
+          "from": "s4",
+          "to": "s5",
+          "carries": "control",
+          "label": "per span"
+        },
+        {
+          "from": "s5",
+          "to": "s6",
+          "carries": "control"
+        },
+        {
+          "from": "s6",
+          "to": "s7",
+          "carries": "control",
+          "label": "tuning"
+        },
+        {
+          "from": "s7",
+          "to": "s8",
+          "carries": "audio",
+          "label": "per-source buffers"
+        },
+        {
+          "from": "s8",
+          "to": "s9",
+          "carries": "audio"
+        },
+        {
+          "from": "s9",
+          "to": "s10",
+          "carries": "audio"
+        },
+        {
+          "from": "s10",
+          "to": "s11",
+          "carries": "audio",
+          "label": "master output",
+          "reason": "Same file (hypersaw_clap.cpp): the meter feed reads the buffers process() just scaled; the GUI reads them on its own thread."
+        },
+        {
+          "from": "s10",
+          "to": "s12",
+          "carries": "events"
+        }
+      ]
+    },
+    {
+      "id": "story:note-on",
+      "title": "A note arrives",
+      "question": "What happens between a key going down and a voice sounding?",
+      "by": "agent:structure",
+      "steps": [
+        {
+          "id": "n1",
+          "concept": "event",
+          "label": "Note-on in the block's events",
+          "does": "The host delivers the note inside a process() call; it is handled at its exact frame.",
+          "files": [
+            "file:src/hypersaw_clap.cpp",
+            "ext:clap"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8200,
+              "note": "case CLAP_EVENT_NOTE_ON"
+            }
+          ]
+        },
+        {
+          "id": "n2",
+          "concept": "velocity",
+          "label": "Velocity 0 is a release",
+          "does": "MIDI 1.0 sends releases as note-on with velocity 0 (ADR-038); those take the note-off path.",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8211
+            }
+          ]
+        },
+        {
+          "id": "n3",
+          "concept": "pitch",
+          "label": "Key to frequency",
+          "does": "Twelve-tone equal temperament from A440.",
+          "files": [
+            "file:src/hypersaw_clap.cpp"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8216
+            }
+          ]
+        },
+        {
+          "id": "n4",
+          "concept": "comb",
+          "label": "Tell the FX rack's comb",
+          "does": "The rack's per-note comb is retuned to the note, whichever engine plays it (ADR-071).",
+          "files": [
+            "file:src/fx_rack.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8219,
+              "note": "rack.noteOn(n->key, freq)"
+            }
+          ]
+        },
+        {
+          "id": "n5",
+          "concept": "engine",
+          "label": "SPECTRA, SAW poly or SAW mono?",
+          "does": "SPECTRA is plain polyphony. SAW is polyphonic unless Voice Mode is mono, which goes through the held-key logic first.",
+          "files": [
+            "file:src/spectra_core.h",
+            "file:src/swarm_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8220,
+              "note": "if (spectraMode())"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8243,
+              "note": "if (voiceMono != 0)"
+            }
+          ]
+        },
+        {
+          "id": "n10",
+          "concept": "spectra-voice",
+          "label": "Start a SPECTRA voice",
+          "does": "SPECTRA allocates a slot for the note (no mono or glide; those are SAW features, ADR-037).",
+          "files": [
+            "file:src/spectra_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8225,
+              "note": "spectra.noteOn(n->key, freq)"
+            }
+          ]
+        },
+        {
+          "id": "n6",
+          "concept": "voice-mode",
+          "label": "Mono: held keys, legato, glide",
+          "does": "A held-key stack gives last-note priority. With another key still held and the voice gated, the voice retargets (glide or legato) instead of striking anew. Overflow drops the oldest key (ADR-126).",
+          "files": [
+            "file:src/hypersaw_clap.cpp",
+            "file:src/glide_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8243,
+              "note": "if (voiceMono != 0)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8301,
+              "note": "retargetAll(monoSlot, ...)"
+            }
+          ]
+        },
+        {
+          "id": "n7",
+          "concept": "voice",
+          "label": "Start voices on every oscillator",
+          "does": "The SAW core and each further oscillator start a voice at the note's frequency. Velocity scales each voice's gain (ADR-084) and is a modulation-matrix source.",
+          "files": [
+            "file:src/swarm_core.h",
+            "file:src/force_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8342,
+              "note": "core.noteOn(n->key, freq)"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8343,
+              "note": "core.setNoteVelocity(slot, n->velocity)"
+            },
+            {
+              "path": "src/swarm_core.h",
+              "line": 1228,
+              "note": "gain = ... * s.vel * s.pressSm"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8239,
+              "note": "srcVel: matrix source 14"
+            }
+          ]
+        },
+        {
+          "id": "n8",
+          "concept": "sub",
+          "label": "Sub oscillator follows",
+          "does": "The sub is a routing source beside the engines, so it follows the note in SPECTRA and SAW alike (B172).",
+          "files": [
+            "file:src/subosc_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8230,
+              "note": "subNoteOn in the SPECTRA branch"
+            },
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8344,
+              "note": "subNoteOn in the SAW branch"
+            }
+          ]
+        },
+        {
+          "id": "n9",
+          "concept": "sound",
+          "label": "Heard from its frame onward",
+          "does": "The voice is rendered by the oscillator stage of the same block, from the note's frame onward (see 'One audio block').",
+          "files": [
+            "file:src/swarm_core.h",
+            "file:src/spectra_core.h"
+          ],
+          "evidence": [
+            {
+              "path": "src/hypersaw_clap.cpp",
+              "line": 8805,
+              "note": "renderSpan"
+            }
+          ]
+        }
+      ],
+      "links": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "carries": "events"
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "carries": "control",
+          "label": "velocity > 0",
+          "reason": "Same function (handleEvent), lines 8211-8216."
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "carries": "data",
+          "label": "key, frequency"
+        },
+        {
+          "from": "n4",
+          "to": "n5",
+          "carries": "control",
+          "reason": "Sequence in handleEvent: rack.noteOn at 8219, then the engine test at 8220."
+        },
+        {
+          "from": "n5",
+          "to": "n10",
+          "carries": "control",
+          "label": "SPECTRA",
+          "reason": "Same function: the spectraMode() test at 8220 leads to spectra.noteOn at 8225."
+        },
+        {
+          "from": "n5",
+          "to": "n7",
+          "carries": "control",
+          "label": "SAW poly"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "carries": "control",
+          "label": "SAW mono"
+        },
+        {
+          "from": "n6",
+          "to": "n7",
+          "carries": "control",
+          "label": "fresh strike"
+        },
+        {
+          "from": "n6",
+          "to": "n9",
+          "carries": "control",
+          "label": "retarget (legato, glide)",
+          "reason": "retargetAll (8301) changes the sounding voice's pitch; no new voice starts."
+        },
+        {
+          "from": "n10",
+          "to": "n8",
+          "carries": "control",
+          "reason": "Same branch of handleEvent, lines 8225-8230."
+        },
+        {
+          "from": "n7",
+          "to": "n8",
+          "carries": "control"
+        },
+        {
+          "from": "n8",
+          "to": "n9",
+          "carries": "control",
+          "label": "voices gated",
+          "reason": "The started voices are rendered by renderSpan in the same process() call."
+        }
+      ]
+    }
+  ]
+}

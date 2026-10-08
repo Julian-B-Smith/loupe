@@ -42,6 +42,9 @@ fast() {
   node tools/history.test.mjs || ok=1
   # Focus lenses (ADR 0019): deterministic membership from entry points, crawler edges only; layout in every mode.
   node tools/lens.test.mjs || ok=1
+  # 'How it works' stories (ADR 0025): files exist in the graph, unsupported links state a reason, edits never
+  # invent links, accounting partitions.
+  node tools/story.test.mjs || ok=1
   # loupe-check on every example snapshot, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.
