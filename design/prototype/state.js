@@ -21,6 +21,8 @@ export function initialState(over = {}) {
     isolate: null,             // section id shown alone, with inputs and outputs as ports on side rails
     isoOpen: [],               // port keys listing their files
     lens: null,                // focus lens name (lens.js LENSES), design view only; everything outside is one counted box
+    story: null,               // 'How it works' view (ADR 0025): story id shown; null = the first
+    storyEdits: {},            // Julian's edits per story id (annotated): {steps, added, pos, requests}
     offsets: {},               // top-level section id -> {dx, dy} in world units; user drags, a view preference
     dimmedKinds: [],           // role or kind names
     zoom: { auto: true, k: 1, x: 0, y: 0, focus: null },
@@ -56,6 +58,9 @@ export function createStore(init) {
     isolate: id => store.set(s => ({ isolate: id, isoOpen: [], selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
     // Closing a section port also forgets its show-all key (side:all:sec), so reopening starts folded.
     togglePort: k => store.set(s => ({ isoOpen: s.isoOpen.includes(k) ? s.isoOpen.filter(x => x !== k && x !== k.replace(':s:', ':all:')) : s.isoOpen.concat(k) })),
+    setStory: id => store.set(s => ({ story: id, selection: null, zoom: { ...s.zoom, auto: true, focus: null } })),
+    // Story edits are copied, changed by f, and stored whole: history snapshots must never share a mutated object.
+    editStory: (id, f) => store.set(s => ({ storyEdits: { ...s.storyEdits, [id]: f(JSON.parse(JSON.stringify(s.storyEdits[id] || {}))) } })),
     setLens: name => store.set(s => ({ lens: name || null, zoom: { ...s.zoom, auto: true, focus: null } })),
     toggleKind: k => store.set(s => ({ dimmedKinds: s.dimmedKinds.includes(k) ? s.dimmedKinds.filter(x => x !== k) : s.dimmedKinds.concat(k) })),
     setZoom: z => store.set(s => ({ zoom: { ...s.zoom, ...z } })),
@@ -74,7 +79,7 @@ export function createStore(init) {
 // The viewer never edits data, only the view, so a step is a change to these keys. Hover, zoom, pan, the morph and
 // the theme are not steps. A drag is one step: pause() at pointerdown, resume() at pointerup. pause is a flag, not a
 // counter: with two pointers a counter could be raised twice and lowered once, freezing history silently (critic, 0024).
-export const HISTORY_KEYS = ['view', 'stage', 'selection', 'collapsed', 'unfolded', 'isolate', 'isoOpen', 'lens', 'settings', 'dimmedKinds', 'offsets', 'diff', 'tour'];
+export const HISTORY_KEYS = ['view', 'stage', 'selection', 'collapsed', 'unfolded', 'isolate', 'isoOpen', 'lens', 'story', 'storyEdits', 'settings', 'dimmedKinds', 'offsets', 'diff', 'tour'];
 const LIMIT = 200;
 
 export function createHistory(store, describe = () => '') {
@@ -92,7 +97,7 @@ export function createHistory(store, describe = () => '') {
   const restore = (snap) => {
     const cur = store.get();
     // Leaving or entering an isolate, or switching flow/design, re-fits: the old zoom would point at empty space.
-    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens;
+    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story;
     restoring = true;
     store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null } } : {}) });
     restoring = false; last = pick(store.get()); lastKey = key(store.get()); notify();

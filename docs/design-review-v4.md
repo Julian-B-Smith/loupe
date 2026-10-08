@@ -83,3 +83,8 @@ view is bound to a different graph hash. Infrastructure will regenerate both at 
    starting from the fields your stand-in files read.
 3. **Placement constraints** (hubs above their level, the gutter, the twins plate): infrastructure takes them
    into the layout engine in P2. Keep stating them in the specs.
+
+## Status 2026-10-08
+
+B1 and B2 fixed with fold and isolate (ADR 0023, PR #7). B3 fixed on 2026-10-08: a closed key keeps a strip of the five provenance patterns.
+

@@ -38,4 +38,7 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `tools/serve.mjs`: `npm run view`. Zero-dependency, read-only, loopback-only server. `ALIASES` maps the published
   paths `design/proto/` and `v1/`, because the artifact host reserves `prototype` as a path segment.
 - `.claude/launch.json`: `loupe-view` for the app's browser pane.
+- `design/prototype/story.js`, `works.js`, `stories/`: the "How it works" view (ADR 0025). `stories/<repo>-<commit>.json`
+  holds agent-written stories (stand-in format); `story.js` applies Julian's edits and does the accounting;
+  `works.js` draws it. `lens.js`: focus lenses (ADR 0019). Tests: `tools/{history,lens,story}.test.mjs`.
 

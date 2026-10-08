@@ -28,3 +28,4 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0022](0022-design-moves-in-house.md) | Design moves in-house | Accepted (direction); subagent setup Proposed |
 | [0023](0023-fold-and-isolate.md) | Fold long sections; isolate a section as a sub-patch | Accepted (behaviour); thresholds Proposed |
 | [0024](0024-one-history-and-a-context-menu.md) | One history for Back/Forward and Undo/Redo; a right-click menu | Accepted |
+| [0025](0025-how-it-works-view.md) | A third view, "How it works", told as stories | Accepted (direction); format Proposed |
