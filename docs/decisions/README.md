@@ -29,3 +29,12 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0023](0023-fold-and-isolate.md) | Fold long sections; isolate a section as a sub-patch | Accepted (behaviour); thresholds Proposed |
 | [0024](0024-one-history-and-a-context-menu.md) | One history for Back/Forward and Undo/Redo; a right-click menu | Accepted |
 | [0025](0025-how-it-works-view.md) | A third view, "How it works", told as stories | Accepted (direction); format Proposed |
+| [0026](0026-one-graph-per-build-configuration-or-a-union.md) | One graph per build configuration, or a union | Proposed (prior-art pass) |
+| [0027](0027-build-facts-from-the-cmake-file-api.md) | Build facts come from the CMake File API, which means running configure | Proposed (prior-art pass) |
+| [0028](0028-say-how-each-edge-was-resolved.md) | Say how each edge was resolved, not only where it came from | Proposed (prior-art pass) |
+| [0029](0029-every-bundle-opens-and-a-matrix-lens.md) | Every bundle opens to its edges; a matrix lens for dense sections | Proposed (prior-art pass) |
+| [0030](0030-side-by-side-as-well-as-the-transition.md) | Side by side as well as the animated transition | Proposed (prior-art pass) |
+| [0031](0031-overlaps-as-marks-not-regions.md) | Overlaps are marks on members, not rectangular regions | Proposed (prior-art pass) |
+| [0032](0032-symbol-level-crawling-is-gated.md) | Symbol-level crawling is gated on evidence, not assumed | Proposed (prior-art pass) |
+| [0033](0033-audit-independence.md) | The audit swarm must not be the author reviewing itself | Proposed (prior-art pass) |
+| [0034](0034-the-map-earns-a-second-job.md) | The map earns a second job: on demand, and as rules | Proposed (prior-art pass) |

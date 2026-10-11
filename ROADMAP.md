@@ -6,7 +6,8 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 
 ## Status
 
-- **Phase:** P0 done 2026-10-02 (green locally and in CI; manifest ratified). PA ← current.
+- **Phase:** P0 done 2026-10-02. PA ← current: `docs/prior-art.md` written 2026-10-10; **awaiting Julian's review
+  and rulings on Proposed ADRs 0026 to 0034** before the P1 design is committed.
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
   `full` == `fast` until P1/P2 add Layer-E gates.
@@ -82,14 +83,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** changing the sample's content.
 
 ### Q-003 — Prior-art landscape (PA)
-- **Status:** open
+- **Status:** written 2026-10-10 (`docs/prior-art.md`, trace: traces/2026-10-10-prior-art.md); open until Julian has
+  reviewed it and ruled on ADRs 0026 to 0034
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
 ### Q-009 — Operational lens: seeds from the build (P1)
 - **Status:** open (prototype lens done 2026-10-08, ADR 0019 update; operational = reachable from entry points)
 - **Scope:** P1 crawler, `design/prototype/lens.js`
-- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (`compile_commands.json` / CMake
+- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, per ADR 0027 once ruled; `compile_commands.json` names no targets / CMake
   target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files
   are classified by target, not reported as unshipped; 3. build-time code (sources of `generates` edges into the lens,
   followed transitively) is its own class in the view; 4. on HORDE, the 11 product-named-but-unshipped files are
@@ -129,6 +131,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   its graph hash; 3. `./verify fast` runs loupe-check on both.
 
 ## Open questions (blocking — ask Julian)
+
+- **Prior-art rulings:** Proposed ADRs 0026 (build configurations), 0027 (run `cmake` configure; amends what HORDE was
+  told), 0028 (how each edge was resolved) and 0032 (symbol-level crawling gated) block the P1 design. 0029 to 0031, 0033
+  and 0034 shape P2 to P4.
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
 - **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.
