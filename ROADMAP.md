@@ -6,12 +6,15 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 
 ## Status
 
-- **Phase:** P0 done 2026-10-02 (green locally and in CI; manifest ratified). PA ← current.
+- **Phase:** P0 done 2026-10-02. PA ← current: `docs/prior-art.md` written 2026-10-10; **awaiting Julian's review
+  and rulings on Proposed ADRs 0026 to 0034** before the P1 design is committed.
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
   `full` == `fast` until P1/P2 add Layer-E gates.
-  `fast` also regenerates `horde-sample` and byte-compares it (Q-002). **Known gaps:** no crawl
-  determinism gate (no P1 crawler yet); nothing under `design/` is gated (Q-007, Q-008).
+  `fast` also regenerates `horde-sample` and byte-compares it (Q-002), and runs the viewer's history, lens and
+  story tests. **Known gaps:** no crawl determinism gate (no P1 crawler yet); the renderer itself has no automated
+  test (its conservation is checked in the browser by `conserve()`, not in CI); `design/tokens.css` and the
+  prototype snapshots are not generated or gated yet (Q-007, Q-008).
 - **Last human ratification:** 2026-10-01 (manifest ratified by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
@@ -26,6 +29,22 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 - Visual design and a working prototype handed to a Claude Design agent (0013, 0017); packet v2 answers
   its 18 review points.
 
+## Viewer track (built 2026-10-03 to 2026-10-08, outside the phase plan)
+
+Julian asked for these directly while PA was the current phase; they are prototype work in `design/prototype/`
+that P2 (renderer) and P3 (Structure agent) will build on. Recorded here so the plan matches the repo.
+
+| Built | Decision | Checked by |
+| --- | --- | --- |
+| Design moved in-house; `design/` is project code | 0022 | critic review per visual change |
+| Fold long sections; isolate a section as a sub-patch with port rails | 0023 | `conserve()` in the browser; critic |
+| One history (Back/Forward = Undo/Redo); right-click menu | 0024 | `tools/history.test.mjs` in `./verify fast` |
+| Operational lens: reachable from entry points | 0019 (Proposed, updated) | `tools/lens.test.mjs` in `./verify fast` |
+| "How it works" view: behaviour stories, editable | 0025 | `tools/story.test.mjs` in `./verify fast` |
+| Testbench: `npm run view` and the hosted artifact | README | republished after each viewer merge |
+
+All three blockers of the v4 review are fixed (`docs/design-review-v4.md`). Its should-fix list is still Q-004.
+
 ## Invariants under active protection
 
 See CLAUDE.md §Domain. At risk in P1: crawler determinism (no wall-clock, no
@@ -39,7 +58,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | Phase | Builds | Gate |
 | --- | --- | --- |
 | **P0** Spinup (done 2026-10-02) | Harness, `./verify`, CI, manifest | `./verify fast` green locally and in CI; manifest ratified |
-| **PA** ← current. Prior-art landscape (agent swarm, Decision 30) | `docs/prior-art.md`: existing code-map / dependency-visualization tools, dated and cited | Doc exists with ≥1 cited source per competitor; reviewed by Julian before P1 design is committed |
+| **PA** ← current. Prior-art landscape (agent swarm, Decision 30), run as an **amendment pass** (Decision 40; DECISIONS H8) because the design was committed first | `docs/prior-art.md`: code-map products, LLM-era codebase tools, software-visualization research, graph extraction; dated and cited | Doc exists with ≥1 cited source per tool; **every contradiction with a committed decision is filed as a Proposed ADR, never absorbed or discarded**; reviewed by Julian before the P1 design is committed |
 | **P1** Multi-language crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018: include paths and defines from `compile_commands.json` with search fallback marked; symbols in headers; signatures on call sites; dsp-plugin dialect incl. GUI bridge rule (`web.bind` → JS calls) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo (gate in `fast`); HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`) |
 | **P2** Flow view renderer reading tokens and specs; `conserve()` | Meter balanced on HORDE; the 10 stress cases render (`full`) |
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
@@ -64,14 +83,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** changing the sample's content.
 
 ### Q-003 — Prior-art landscape (PA)
-- **Status:** open
+- **Status:** written 2026-10-10 (`docs/prior-art.md`, trace: traces/2026-10-10-prior-art.md); open until Julian has
+  reviewed it and ruled on ADRs 0026 to 0034
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
 ### Q-009 — Operational lens: seeds from the build (P1)
 - **Status:** open (prototype lens done 2026-10-08, ADR 0019 update; operational = reachable from entry points)
 - **Scope:** P1 crawler, `design/prototype/lens.js`
-- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (`compile_commands.json` / CMake
+- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, per ADR 0027 once ruled; `compile_commands.json` names no targets / CMake
   target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files
   are classified by target, not reported as unshipped; 3. build-time code (sources of `generates` edges into the lens,
   followed transitively) is its own class in the view; 4. on HORDE, the 11 product-named-but-unshipped files are
@@ -111,6 +131,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   its graph hash; 3. `./verify fast` runs loupe-check on both.
 
 ## Open questions (blocking — ask Julian)
+
+- **Prior-art rulings:** Proposed ADRs 0026 (build configurations), 0027 (run `cmake` configure; amends what HORDE was
+  told), 0028 (how each edge was resolved) and 0032 (symbol-level crawling gated) block the P1 design. 0029 to 0031, 0033
+  and 0034 shape P2 to P4.
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
 - **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.

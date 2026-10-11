@@ -43,7 +43,7 @@ Decisions: [DECISIONS.md](DECISIONS.md) → `docs/decisions/`.
 
 ## Status
 
-P0 (spinup) closing. Next: prior-art landscape, then the multi-language crawler (P1).
+P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Current phase: prior-art landscape (PA), then the multi-language crawler (P1).
 
 ## See it running
 
