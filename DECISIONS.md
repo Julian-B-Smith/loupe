@@ -37,3 +37,7 @@ the one list of ADRs; this file does not copy it, so the two cannot drift.
   kit's `gate` helper (2.9.0, optional) was declined for now by poll; `./verify` is unchanged. The plan was polled
   at 2.9.0; the kit released 2.9.1 during the session (one-word fix inside `kit-gates.sh`) and the sync carried it.
   `kit_version` in the manifest is provenance since 2.6.0, not a gate.
+- **H8 (2026-10-10).** The prior-art phase runs as an amendment pass (autonomous Decision 40): Loupe arrived with
+  its design committed (ADRs 0001-0025 and a working viewer), so "before the design" was not available. The phase
+  is not dropped or silently reordered. Extra acceptance criterion: every contradiction the research finds with a
+  committed decision becomes a Proposed ADR for Julian, never absorbed or discarded.

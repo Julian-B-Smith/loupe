@@ -10,8 +10,10 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
   `full` == `fast` until P1/P2 add Layer-E gates.
-  `fast` also regenerates `horde-sample` and byte-compares it (Q-002). **Known gaps:** no crawl
-  determinism gate (no P1 crawler yet); nothing under `design/` is gated (Q-007, Q-008).
+  `fast` also regenerates `horde-sample` and byte-compares it (Q-002), and runs the viewer's history, lens and
+  story tests. **Known gaps:** no crawl determinism gate (no P1 crawler yet); the renderer itself has no automated
+  test (its conservation is checked in the browser by `conserve()`, not in CI); `design/tokens.css` and the
+  prototype snapshots are not generated or gated yet (Q-007, Q-008).
 - **Last human ratification:** 2026-10-01 (manifest ratified by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
@@ -26,6 +28,22 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 - Visual design and a working prototype handed to a Claude Design agent (0013, 0017); packet v2 answers
   its 18 review points.
 
+## Viewer track (built 2026-10-03 to 2026-10-08, outside the phase plan)
+
+Julian asked for these directly while PA was the current phase; they are prototype work in `design/prototype/`
+that P2 (renderer) and P3 (Structure agent) will build on. Recorded here so the plan matches the repo.
+
+| Built | Decision | Checked by |
+| --- | --- | --- |
+| Design moved in-house; `design/` is project code | 0022 | critic review per visual change |
+| Fold long sections; isolate a section as a sub-patch with port rails | 0023 | `conserve()` in the browser; critic |
+| One history (Back/Forward = Undo/Redo); right-click menu | 0024 | `tools/history.test.mjs` in `./verify fast` |
+| Operational lens: reachable from entry points | 0019 (Proposed, updated) | `tools/lens.test.mjs` in `./verify fast` |
+| "How it works" view: behaviour stories, editable | 0025 | `tools/story.test.mjs` in `./verify fast` |
+| Testbench: `npm run view` and the hosted artifact | README | republished after each viewer merge |
+
+All three blockers of the v4 review are fixed (`docs/design-review-v4.md`). Its should-fix list is still Q-004.
+
 ## Invariants under active protection
 
 See CLAUDE.md §Domain. At risk in P1: crawler determinism (no wall-clock, no
@@ -39,7 +57,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | Phase | Builds | Gate |
 | --- | --- | --- |
 | **P0** Spinup (done 2026-10-02) | Harness, `./verify`, CI, manifest | `./verify fast` green locally and in CI; manifest ratified |
-| **PA** ← current. Prior-art landscape (agent swarm, Decision 30) | `docs/prior-art.md`: existing code-map / dependency-visualization tools, dated and cited | Doc exists with ≥1 cited source per competitor; reviewed by Julian before P1 design is committed |
+| **PA** ← current. Prior-art landscape (agent swarm, Decision 30), run as an **amendment pass** (Decision 40; DECISIONS H8) because the design was committed first | `docs/prior-art.md`: code-map products, LLM-era codebase tools, software-visualization research, graph extraction; dated and cited | Doc exists with ≥1 cited source per tool; **every contradiction with a committed decision is filed as a Proposed ADR, never absorbed or discarded**; reviewed by Julian before the P1 design is committed |
 | **P1** Multi-language crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018: include paths and defines from `compile_commands.json` with search fallback marked; symbols in headers; signatures on call sites; dsp-plugin dialect incl. GUI bridge rule (`web.bind` → JS calls) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo (gate in `fast`); HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`) |
 | **P2** Flow view renderer reading tokens and specs; `conserve()` | Meter balanced on HORDE; the 10 stress cases render (`full`) |
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
