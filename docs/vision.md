@@ -26,8 +26,10 @@ flow. It is the reference that everything else is checked against.
 visual-grammar.md) chosen to give a human intuition for relationships. Every element in it maps back to
 nodes in the flow view.
 
-The two views are linked. The conservation check runs between them, and an animated transition that moves
-each box between its canonical and designed position is the main tool for auditing what the agent did.
+The two views are linked. **The audit is the conservation check and the claim tests** (decision 0030): they
+decide whether the design view is faithful. Two ways to look at the result: an animated transition that moves each
+box between its canonical and designed position, and a side-by-side mode showing both views at once with linked
+selection. Neither is the audit itself.
 
 ## Edge provenance
 

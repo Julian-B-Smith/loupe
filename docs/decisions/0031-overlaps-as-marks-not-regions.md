@@ -1,8 +1,8 @@
 # 0031. Overlaps are marks on members, not rectangular regions
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C6). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C6). 
 
 ## Problem
 
@@ -16,3 +16,7 @@ each member, because a hull swept across unrelated boxes.
 Make that the rule: membership in a second set is a mark on the member (halo and chip), never an overlapping
 rectangular region. The three-set limit becomes a limit on chips per file before a membership strip is used.
 No empirical source was found for "three"; treat it as a default to test.
+
+## Ruling (2026-10-11)
+
+The proposal: membership in a further set is a mark on the member (halo and chip), never an overlapping rectangular region. The three-set limit becomes a chip limit to test. `docs/visual-grammar.md` updated.

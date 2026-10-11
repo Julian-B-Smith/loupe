@@ -1,8 +1,8 @@
 # 0029. Every bundle opens to its edges; a matrix lens for dense sections
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C4). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C4). 
 
 ## Problem
 
@@ -23,3 +23,7 @@ plain `×N` bundle cannot be opened. Separately, past about 20 nodes matrices be
 ## Consequence
 
 Becomes a P2 gate item. The first half is a small change to the prototype.
+
+## Ruling (2026-10-11)
+
+Both parts: every element that stands for more than one edge opens to its exact edge list (with the audit test), and a matrix lens for dense sections. A P2 gate item; the first half is a prototype change (ROADMAP Q-011).

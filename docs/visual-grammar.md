@@ -26,7 +26,7 @@ data, not new code.
 | Primitive | Claim | Audit test |
 |-----------|-------|------------|
 | Section box with header | Ownership or module boundary | More edges inside than across the boundary (cohesion vs coupling) |
-| Overlap region (Euler/Venn) | Shared membership or cross-cutting concern | The node has real edges into every set it overlaps |
+| Overlap (membership marks) | Shared membership or cross-cutting concern. Drawn as a halo and a set chip on each member, never as an overlapping rectangular region (decision 0031: rectangles are the worst shape for Euler diagrams) | The node has real edges into every set it overlaps |
 | Bus / rail | Shared contract | Every member edge satisfies the contract's signature |
 | Layer band | Abstraction level (UI / logic / foundation) | Upward (counterflow) edges are surfaced as findings, each read as a smell, a misplaced file, or a pattern the rule does not model |
 | Lane | Ordered stages | Order matches edge direction |
@@ -35,8 +35,7 @@ data, not new code.
 | Ring | Circular dependency (drawn as a warning) | A real cycle exists in the graph |
 | Feedback loop | Intentional signal feedback | The loop passes through a state element (delay, buffer, previous block); needs a symbol-level crawl or an annotation |
 
-Venn/Euler diagrams stop being readable past three sets. Fall back to tags or a membership strip (a row of set chips on the node), and have
-auditors flag any overlap that exceeds three sets.
+Past three sets on one file, chips give way to a membership strip (a row of set chips on the node), and auditors flag any file in more than three sets. "Three" is a default to test: the prior-art pass found no study behind it (docs/prior-art.md).
 
 ## View mechanics (0023)
 

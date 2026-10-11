@@ -1,8 +1,8 @@
 # 0028. Say how each edge was resolved, not only where it came from
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C3). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C3). 
 
 ## Problem
 
@@ -25,3 +25,7 @@ run where a toolchain exists, as separate evidence, never as a requirement.
 
 Whether `syntactic` call edges should instead be overlay edges with provenance `inferred`. That would keep `static`
 meaning "certain", at the cost of putting crawler output in the overlay, which 0016 reserves for agents and traces.
+
+## Ruling (2026-10-11)
+
+The proposal as written: provenance is unchanged; `resolution` is extended with `build` and `syntactic`, required on every crawled edge, and drawn. The open question is settled by the same ruling ("keep provenance as it is"): a call matched by name stays a crawler edge with resolution `syntactic`; it does not move to the overlay.

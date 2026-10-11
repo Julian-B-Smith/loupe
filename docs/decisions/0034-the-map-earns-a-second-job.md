@@ -1,8 +1,8 @@
 # 0034. The map earns a second job: on demand, and as rules
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C9). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C9). 
 
 ## Problem
 
@@ -24,3 +24,7 @@ unverified).
 ## Open
 
 Whether exported rules belong in P4 (audit) or a new phase.
+
+## Ruling (2026-10-11)
+
+The proposal: maps on demand inside the workflow; confirmed claims exportable as deterministic rules the target repo can run. Still open, as written: whether exported rules belong in P4 or a phase of their own.
