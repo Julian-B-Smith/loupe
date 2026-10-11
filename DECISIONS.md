@@ -30,3 +30,10 @@ the one list of ADRs; this file does not copy it, so the two cannot drift.
   inside a HORDE session and HORDE's resident makes every write in HORDE's tree; a Loupe session never writes
   there. Filed as `HYPERSAW/integrations/loupe/brief-001.md` (id loupe-001); closing notice in
   `autonomous/integrations/loupe/notice-001.md`.
+- **H7 (2026-10-11, plan poll).** Retrofit to kit 2.9.1. `.kit/` re-synced (contract check, tree fingerprint);
+  the closing gate is now kit-owned (`.kit/stop-gate.sh`) and `.claude/hooks/stop-gate.sh` is the kit's shim. It
+  keeps the two old tests (unverified edits, red record) and adds a third (is this the tree verify judged?), left
+  in the kit default **observe** mode by poll: it logs, it does not block. Wrapping the `./verify` gates with the
+  kit's `gate` helper (2.9.0, optional) was declined for now by poll; `./verify` is unchanged. The plan was polled
+  at 2.9.0; the kit released 2.9.1 during the session (one-word fix inside `kit-gates.sh`) and the sync carried it.
+  `kit_version` in the manifest is provenance since 2.6.0, not a gate.
