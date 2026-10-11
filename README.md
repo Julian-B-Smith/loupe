@@ -8,7 +8,7 @@ conservation check proves it after every agent edit.
 First client: [HORDE](https://github.com/Julian-B-Smith/horde). Ships first as a Claude Code skill
 run inside a target repo.
 
-*Part of the autonomous-paradigm ecosystem (kit 2.6.5). Last verified current: 2026-10-01 (spinup day).*
+*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-11 (kit retrofit; `currency.py` reads CURRENT).*
 
 ## How it works
 
