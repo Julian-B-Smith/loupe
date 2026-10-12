@@ -8,7 +8,7 @@ conservation check proves it after every agent edit.
 First client: [HORDE](https://github.com/Julian-B-Smith/horde). Ships first as a Claude Code skill
 run inside a target repo.
 
-*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-11 (kit retrofit; `currency.py` reads CURRENT).*
+*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-11.*
 
 ## How it works
 
@@ -43,7 +43,7 @@ Decisions: [DECISIONS.md](DECISIONS.md) → `docs/decisions/`.
 
 ## Status
 
-P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Current phase: prior-art landscape (PA), then the multi-language crawler (P1).
+P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Prior-art landscape done 2026-10-11 ([docs/prior-art.md](docs/prior-art.md); ADRs 0026 to 0034 accepted). Current phase: **P1a**, the file-level crawler with build facts from CMake.
 
 ## See it running
 

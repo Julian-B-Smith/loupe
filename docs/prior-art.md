@@ -5,6 +5,9 @@ committed (ADRs 0001–0025 and a working viewer), so this pass checks that desi
 known. Its rule: **every contradiction with a committed decision becomes a Proposed ADR for Julian. None is absorbed
 or discarded.**
 
+> **Rulings, 2026-10-11:** Julian reviewed this document and accepted the recommended option on all nine ADRs
+> (0026 to 0034). Brief loupe-002 to HORDE follows from 0027.
+
 ## How this was made, and how far to trust it
 
 Four research subagents (Sonnet) each surveyed one lane and were told to state contradictions plainly and to mark what
@@ -128,6 +131,8 @@ marked fallback. *Inventory*: `git ls-files` closure and missing nodes.
 
 Each row is a finding that challenges a committed decision, and the Proposed ADR that puts it to Julian.
 
+Each row is now an accepted ADR.
+
 | # | Evidence | Challenges | ADR |
 | --- | --- | --- | --- |
 | C1 | The File API answers per configuration and platform ✅. HORDE has a Windows-only file the probe cannot classify | "Same commit, same config: same bytes" (0018, 0019) says nothing about which platform's build the graph reflects; one configure silently under-reports | [0026](decisions/0026-one-graph-per-build-configuration-or-a-union.md) |
@@ -157,8 +162,7 @@ No study was found on any of these; they are things to test on the testbench, no
 
 ## What changes because of this pass
 
-- Nine Proposed ADRs, 0026 to 0034, for Julian to rule on. P1's design should not be committed before 0026, 0027,
-  0028 and 0032 are settled.
+- Nine ADRs, 0026 to 0034, all accepted on 2026-10-11. P1 is split into P1a (file level) and P1b (symbols, gated).
 - ROADMAP P1 and Q-009 now point at the CMake File API; the P1 gate gains "the graph states which build
   configuration it reflects".
 - A pre-ship re-scan (ROADMAP PX) repeats this pass and adds the patent and IP landscape.

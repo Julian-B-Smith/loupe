@@ -1,8 +1,8 @@
 # 0033. The audit swarm must not be the author reviewing itself
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C8). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C8). 
 
 ## Problem
 
@@ -17,3 +17,7 @@ Order the audit by independence. **First, deterministic tests** (the claim tests
 the lens and story tests): these decide. **Then model auditors**, labelled as measured, not guaranteed, and where
 the human enables it, from a different model family than the author. A claim confirmed only by same-lineage agents
 is shown as "reviewed", never "confirmed". Model choice above the default tiers stays Julian's call per session.
+
+## Ruling (2026-10-11)
+
+The proposal: deterministic tests decide first; model auditors are labelled measured; a claim confirmed only by same-lineage agents reads "reviewed", never "confirmed". Using a different model family remains Julian's call per session (doctrine: model routing).

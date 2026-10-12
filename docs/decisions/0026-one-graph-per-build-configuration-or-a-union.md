@@ -1,8 +1,8 @@
 # 0026. One graph per build configuration, or a union
 
-- **Status:** Proposed
+- **Status:** Accepted (Julian, 2026-10-11: "accept the recommended option on all nine ADRs")
 - **Date:** 2026-10-10
-- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C1). Awaiting Julian.
+- **Source:** Prior-art amendment pass (docs/prior-art.md, contradiction C1). 
 
 ## Problem
 
@@ -25,3 +25,7 @@ silently partial is the failure the one rule exists to prevent, one level down.
 
 Schema 0.3 gains a condition on edges and on target membership (0018 already has `guard` evidence for `#if`); the
 P1 gate gains "the graph states the configurations it covers and those it could not evaluate".
+
+## Ruling (2026-10-11)
+
+Option 1, **union with conditions**. The crawl covers every configuration the repo declares that can be configured on the machine; membership or an edge seen only under some configurations carries that condition; configurations that could not be evaluated (another OS) are listed in the inventory as not evaluated, never as absent.

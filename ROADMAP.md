@@ -6,8 +6,8 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 
 ## Status
 
-- **Phase:** P0 done 2026-10-02. PA ← current: `docs/prior-art.md` written 2026-10-10; **awaiting Julian's review
-  and rulings on Proposed ADRs 0026 to 0034** before the P1 design is committed.
+- **Phase:** P0 done 2026-10-02. PA done 2026-10-11 (Julian reviewed `docs/prior-art.md` and accepted ADRs 0026 to
+  0034). **P1a ← current**, waiting on HORDE's answer to brief loupe-002 before any `cmake` run there.
 - **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
   cases, loupe-check with required schema validation on every `schema/examples/*`.
   `full` == `fast` until P1/P2 add Layer-E gates.
@@ -58,11 +58,12 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | Phase | Builds | Gate |
 | --- | --- | --- |
 | **P0** Spinup (done 2026-10-02) | Harness, `./verify`, CI, manifest | `./verify fast` green locally and in CI; manifest ratified |
-| **PA** ← current. Prior-art landscape (agent swarm, Decision 30), run as an **amendment pass** (Decision 40; DECISIONS H8) because the design was committed first | `docs/prior-art.md`: code-map products, LLM-era codebase tools, software-visualization research, graph extraction; dated and cited | Doc exists with ≥1 cited source per tool; **every contradiction with a committed decision is filed as a Proposed ADR, never absorbed or discarded**; reviewed by Julian before the P1 design is committed |
-| **P1** Multi-language crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018: include paths and defines from `compile_commands.json` with search fallback marked; symbols in headers; signatures on call sites; dsp-plugin dialect incl. GUI bridge rule (`web.bind` → JS calls) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo (gate in `fast`); HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`) |
-| **P2** Flow view renderer reading tokens and specs; `conserve()` | Meter balanced on HORDE; the 10 stress cases render (`full`) |
+| **PA** Prior-art landscape, run as an amendment pass (DECISIONS H8). **Done 2026-10-11** | `docs/prior-art.md`; nine contradictions filed as ADRs 0026 to 0034, all accepted | Met: doc dated and cited; every contradiction filed; reviewed and ruled on by Julian |
+| **P1a** ← current. File-level crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018, 0026 to 0028: **build facts from the CMake File API and JSON trace** (target sources, include paths, defines, generated files, custom commands), with static CMakeLists parsing as the marked fallback; includes resolved from per-source include paths; every edge carries how it was resolved; dsp-plugin dialect incl. the GUI bridge rule (`web.bind` → JS calls); Operational lens seeded from target sources (Q-009) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo with a CMake build (gate in `fast`); **the graph states which build configurations it covers and which it could not evaluate** (0026); no timestamp or absolute path in the output; every crawled edge has a `resolution`; HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`). Precondition for running on HORDE: brief loupe-002 accepted |
+| **P1b** Symbols, call sites with signatures, roles by signature (0032). **Not started until a named question cannot be answered at file level**; first candidates: the audio, parameter and modulation roles | The question is written down first; then: call edges carry resolution `syntactic` unless resolved; no call edge from a parse-error subtree; a **measured precision figure** against a compiler-based index on HORDE (Layer-E, measured not guaranteed) |
+| **P2** Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
-| **P4** Audit swarm; one test per primitive | Each test reproduces the gallery's results on the sample |
+| **P4** Audit: deterministic claim tests first, then model auditors labelled as measured (0033); confirmed claims exportable as rules the target repo can run (0034; may become its own phase) | Each deterministic test reproduces the gallery's results on the sample; a claim confirmed only by same-lineage agents reads "reviewed", never "confirmed"; one exported rule runs green in HORDE's own CI |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
 | **P6** Re-run diff, `.loupe/current/` (gitignored in the target), `loupe-history` (ADR 0021). Opens with the P6 notice to HORDE (`.gitignore` line, leak-check step); HORDE lands its side in one PR | HORDE's PR merged; a planted private name blocks a history commit (leak check fails closed); diff of two real HORDE commits renders; history branch written |
 | **P7** Design system integration | `tokens.css` and `primitives.json` generated from `design/system/`; `design/prototype/` wired to real data |
@@ -83,19 +84,32 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** changing the sample's content.
 
 ### Q-003 — Prior-art landscape (PA)
-- **Status:** written 2026-10-10 (`docs/prior-art.md`, trace: traces/2026-10-10-prior-art.md); open until Julian has
-  reviewed it and ruled on ADRs 0026 to 0034
+- **Status:** done 2026-10-11 (`docs/prior-art.md`; traces: 2026-10-10-prior-art.md, 2026-10-11-prior-art-rulings.md)
 - **Scope:** `docs/prior-art.md`
 - **Acceptance criteria:** see PA gate.
 
 ### Q-009 — Operational lens: seeds from the build (P1)
 - **Status:** open (prototype lens done 2026-10-08, ADR 0019 update; operational = reachable from entry points)
 - **Scope:** P1 crawler, `design/prototype/lens.js`
-- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, per ADR 0027 once ruled; `compile_commands.json` names no targets / CMake
+- **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, ADR 0027; `compile_commands.json` names no targets / CMake
   target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files
   are classified by target, not reported as unshipped; 3. build-time code (sources of `generates` edges into the lens,
   followed transitively) is its own class in the view; 4. on HORDE, the 11 product-named-but-unshipped files are
   re-checked against the build and each is confirmed or cleared.
+
+### Q-010 — Schema 0.3 (human gate: schema change)
+- **Status:** open; decisions accepted, fields not yet written
+- **Scope:** `schema/*.schema.json`, `docs/graph-schema.md`, `tools/loupe-check.mjs`, mutation tests, examples
+- **Acceptance criteria:** 1. conditions on edges and on target membership, and the list of configurations covered
+  and not evaluated (0026); 2. `resolution` extended with `build` and `syntactic` and required on crawled edges
+  (0028); 3. `settings.offsets` with the no-overlap check (0020; replaces Q-006); 4. `lens` once 0019 is accepted;
+  5. a mutation case for each new rule; 6. Julian approves the schema diff before it lands.
+
+### Q-011 — Every bundle opens to its edges (0029, first half)
+- **Status:** open
+- **Scope:** `design/prototype/`
+- **Acceptance criteria:** 1. clicking a `×N` bundle lists its member edges in the inspector; 2. a test or
+  `conserve()` check that the listed edges equal the edges the meter attributes to that bundle; 3. critic review.
 
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`
@@ -112,7 +126,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   and `diff.sample.json` use; 2. both stand-ins validate; 3. loupe-check validates them when present.
 
 ### Q-006 — Schema 0.3: `settings.offsets` (0020)
-- **Status:** open
+- **Status:** folded into Q-010 (2026-10-11)
 - **Scope:** `schema/view.schema.json`, `tools/loupe-check.mjs`, mutation tests
 - **Acceptance criteria:** 1. `settings.offsets` in the view schema; 2. loupe-check refuses offsets that make two
   top-level sections overlap, proven by a new mutation case; 3. ships together with 0019's `lens` if accepted.
@@ -132,9 +146,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 
 ## Open questions (blocking — ask Julian)
 
-- **Prior-art rulings:** Proposed ADRs 0026 (build configurations), 0027 (run `cmake` configure; amends what HORDE was
-  told), 0028 (how each edge was resolved) and 0032 (symbol-level crawling gated) block the P1 design. 0029 to 0031, 0033
-  and 0034 shape P2 to P4.
+- **HORDE brief loupe-002** (filed 2026-10-11, respond-by 2026-10-25): may the skill run `cmake` configure in a
+  HORDE session (0027)? The answer lands in HORDE's tree; pull `horde/integrations/loupe/` at each wakeup. P1a's
+  fixture and crawler work do not wait on it; only the first run on HORDE does.
+- **0034:** do exported rules belong in P4 or a phase of their own?
 
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
 - **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.
