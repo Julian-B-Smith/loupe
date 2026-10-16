@@ -166,7 +166,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** calls and symbols (P1b), emitting graph.json (next slice), the inventory layer, running on HORDE.
 
 ### Q-016 — P1a slice 3: graph.json, the inventory, and build-target conformance
-- **Status:** current (started 2026-10-16)
+- **Status:** done 2026-10-16, merged as PR #21 (trace: traces/2026-10-16-p1a-graph-emit.md)
 - **Decisions (Julian, by poll 2026-10-16):** every tracked file except binaries is a node (hiding is a view lens,
   0019); `via` goes into the graph as schema 0.3.1 (additive; the schema diff is approved in this item's PR);
   declared-versus-observed findings start here, for build targets. Julian's framing: Loupe can expose where a client's
@@ -189,8 +189,21 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      equal committed goldens, gated in `./verify fast`; a planted change fails.
 - **Out of scope:** roles (path rules), symbols (P1b), viewer changes, a HORDE crawl.
 
+### Q-018 — The first crawl of HORDE
+- **Status:** current. HORDE answered (response-003, on horde main): `--trace-expand` accepted; Loupe runs the crawl
+  on a `git clone --local` of commit 1e6aae79 (the one adding `.loupe/config.json`) in its own scratch, deletes the
+  clone, runs the leak check before any snapshot, names the commit, and sends the findings in a notice.
+  Julian asked to start the crawl; HORDE's response-002 accepted configure "inside a horde session" with a named
+  command, so three answers come first: the added `--trace-expand` flag, who runs it (HORDE's resident, or Loupe on
+  a clone of a named commit), and HORDE's own `.loupe/config.json` (Loupe proposed release / Unix Makefiles / Release).
+- **Acceptance criteria:** 1. the crawl runs as HORDE answered, at a named commit, nothing written in HORDE's tree;
+  2. loupe-check passes on the snapshot with schema validation; 3. it opens in the testbench with the meter
+  balanced in the flow view (and the design view once Q-017 lands); 4. `conformance.json`'s findings are reported to
+  HORDE in a notice, as leads with their evidence, never acted on in HORDE's tree; 5. what the run reveals about the
+  crawler (time, census, notEvaluated) is recorded in the trace.
+
 ### Q-017 — The design view draws loose nodes
-- **Status:** open (found 2026-10-16 while emitting graph.json, Q-016)
+- **Status:** done 2026-10-16 (trace: traces/2026-10-16-q017-loose-nodes.md); a large loose block folds (Julian, poll)
 - **Problem:** `docs/graph-schema.md` says a node homed in no section is "loose (shown at top level)", and loupe-check
   allows it, but `design/prototype/layout.js`'s design layout places no loose node. A fresh crawl has an empty view,
   so in the design view every node is undrawn and the meter cannot balance. The flow view places them all.
@@ -198,6 +211,16 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Acceptance criteria:** 1. the design layout places every loose node at top level; 2. a fresh crawl's snapshot
   (empty view) lays out with every node placed in both views, tested; 3. the meter balances on it in the browser;
   4. critic review with screenshots.
+
+### Q-019 — Node kinds are visible in the viewer
+- **Status:** open (found 2026-10-16 viewing the first crawler snapshot, Q-017)
+- **Problem:** the viewer draws every node as a file box with its basename, so a build target (`target:engine`) and
+  a file (`src/engine.h`) read the same, and a missing node (`miss:vector`, an angle include) looks like a file that
+  exists. A legibility tool must not make different kinds of thing look alike.
+- **Scope:** `design/prototype/`, `design/system/tokens.json` (visual values come from tokens).
+- **Acceptance criteria:** 1. targets, files, missing nodes (by reason) and externals are told apart at a glance, and
+  the key says how; 2. a label never shows two nodes as the same text without a kind cue; 3. critic review with
+  screenshots.
 
 ### Q-014 — Map HORDE's engine2 from its spec (inferred; parked)
 - **Status:** parked 2026-10-16 on branch `q014/engine2-inferred-map` (rebuildable, spec-pure, not on the testbench).

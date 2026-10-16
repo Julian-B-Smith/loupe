@@ -1,0 +1,21 @@
+{
+  "findings": [
+    {
+      "evidence": [
+        "e:895d0b484dcc384d"
+      ],
+      "from": "target:plugin",
+      "kind": "used-not-declared",
+      "to": "target:lut",
+      "weakestResolution": "syntactic"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:ceb580835cebab6a8803645742e6782eee3ada34a316d436f53896b8be41a483"
+  },
+  "schema": "loupe.conformance/0.0-internal",
+  "unattributedIncludes": {
+    "extra": 10,
+    "release": 10
+  }
+}

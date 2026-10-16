@@ -238,6 +238,12 @@ export function render(container, data, state) {
       });
       const a = auditOf(band); if (a) { const r = S(D.levels[0]); lg.push(badge(r.x + r.w - 10, r.y + 10, a)); }
     }
+    if (D.loose) {
+      const r = S(D.loose);
+      map.drawn.add('loose');
+      bg.push(`<g data-loose="1"><title>Files homed in no section: the view has not placed them yet</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="rx:${v('radius-group')};fill:transparent;stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
+      if (L.header * z.k >= 15) lg.push(`<text x="${f1(r.x + 12)}" y="${f1(r.y + 16)}" style="font:${v('type-eyebrow')};letter-spacing:${v('tracking-eyebrow')};text-transform:uppercase;fill:${v('ink-faint')}">${esc(D.loose.label)}</text>`);
+    }
     if (D.gutter) {
       const r = S(D.gutter);
       bg.push(`<g data-level="gutter" style="cursor:move"><title>Outside layers · drag to move</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="fill:transparent"/><line x1="${f1(r.x)}" x2="${f1(r.x)}" y1="${f1(r.y)}" y2="${f1(r.y + r.h)}" style="stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
@@ -380,6 +386,7 @@ export function render(container, data, state) {
   const endpoint = id => {
     if (designish && D.lens && !D.lens.inside.has(id)) return { key: 'o:lens', rect: S(D.lensOut) };
     if (ovw) { const t = drawnTop(id); if (t) return { key: 's:' + t, rect: S(D.sections[t]) }; }
+    if (ovw && D.foldOf[id] === 'loose' && D.loose) return { key: 'o:loose', rect: S(D.loose) };
     if (designish) {
       if (D.nodes[id]) return { key: 'n:' + id, rect: nodeRect(id), node: id };
       const fs = D.foldOf[id]; if (fs) return { key: 'f:' + fs, rect: S(D.folds[fs]) };
@@ -408,7 +415,8 @@ export function render(container, data, state) {
     if (designish && bus && D.rails[bus] && a.node && b.node) { onRail.push(e); map.edges[e.id] = { via: 'bus', bus }; return; }
     let key = null, ra = a.rect, rb = b.rect;
     if ('sfpo'.includes(a.key[0]) || 'sfpo'.includes(b.key[0])) key = a.key + '>' + b.key;
-    else if (designish && lod === 'structure' && data.home[e.src] !== data.home[e.dst]) {
+    // Both ends need a laid-out home section: a loose node (Q-017) has none and is routed as itself (critic).
+    else if (designish && lod === 'structure' && data.home[e.src] !== data.home[e.dst] && D.sections[data.home[e.src]] && D.sections[data.home[e.dst]]) {
       key = 's:' + data.home[e.src] + '>s:' + data.home[e.dst];
       ra = S(D.sections[data.home[e.src]]); rb = S(D.sections[data.home[e.dst]]);
     }
@@ -527,7 +535,10 @@ export function render(container, data, state) {
     }
     // Lens before overview: an outside file's home section is not laid out, so only the outside box can stand in.
     if (designish && D.lens && !D.lens.inside.has(id)) { map.nodes[id] = { state: 'outside', proxy: 'lens-outside' }; return; }
-    if (ovw && !D.proxy[id]) { map.nodes[id] = { state: 'lod', proxy: drawnTop(id) }; return; }
+    // A loose node has no section to stand in for it when zoomed out, so it stays drawn as itself (Q-017).
+    if (ovw && !D.proxy[id] && data.home[id]) { map.nodes[id] = { state: 'lod', proxy: drawnTop(id) }; return; }
+    // Zoomed out, fold rows are not drawn: a folded loose file is stood in for by the loose block itself.
+    if (ovw && !D.nodes[id] && D.foldOf[id] === 'loose') { map.nodes[id] = { state: 'lod', proxy: 'loose' }; return; }
     if (designish && !D.nodes[id] && D.foldOf[id]) { map.nodes[id] = { state: 'folded', proxy: 'fold:' + D.foldOf[id] }; return; }
     if (designish && !D.nodes[id]) { map.nodes[id] = { state: 'collapsed', proxy: D.proxy[id] || null }; return; }
     const r = nodeRect(id); if (!r) return;

@@ -42,6 +42,8 @@ fast() {
   node tools/history.test.mjs || ok=1
   # Focus lenses (ADR 0019): deterministic membership from entry points, crawler edges only; layout in every mode.
   node tools/lens.test.mjs || ok=1
+  # Headless render (Q-017): the design view renders and the conservation meter balances at every level of detail.
+  node tools/render.test.mjs || ok=1
   # 'How it works' stories (ADR 0025): files exist in the graph, unsupported links state a reason, edits never
   # invent links, accounting partitions.
   node tools/story.test.mjs || ok=1

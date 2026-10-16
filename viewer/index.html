@@ -109,6 +109,7 @@
   // Snapshot rows. Counts and schema are read from each graph.json at load, so this page never goes stale.
   const SNAPSHOTS = [
     { name: 'Real HORDE crawl', path: 'schema/examples/horde-probe/', note: 'Probe crawl of github.com/Julian-B-Smith/horde. The real thing, at real size. No stage data yet.' },
+    { name: 'Crawler output: the cmake-basic fixture', path: 'design/proto/snapshots/cmake-basic-crawl/', note: 'Made by the P1a crawler (node crawler/cli.ts crawl), not the probe: build targets, include edges with their conditions, schema 0.3.1. Its view is empty, so the design view shows every file loose until a Structure agent composes sections. conformance.json beside it lists one finding: plugin uses lut without declaring it.' },
     { name: 'HORDE sample, current schema', path: 'schema/examples/horde-sample/', note: 'The invented sample at schema 0.2. No stage data yet, so stages 3 to 6 are empty.' },
     { name: 'HORDE sample with stage stand-ins', path: 'design/proto/snapshots/horde-sample/', note: 'Design’s copy at schema 0.1, with dialogue, audit, explain and diff stand-ins. Use this one for stages 3 to 6.', chip: ['warn', 'old schema'] },
     { name: 'Loops (synthetic)', path: 'design/proto/snapshots/loops-synthetic/', note: 'Made-up snapshot with all three loop kinds. Its view is bound to the wrong graph hash, so it should show as stale.', chip: ['bad', 'fails check'] },

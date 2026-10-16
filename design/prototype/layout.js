@@ -9,7 +9,8 @@ export const L = {
   levelGap: 110, hubGap: 140, bandHead: 34, bandPadX: 20, flowGap: 44,
   laneHead: 54, laneGutter: 34, laneNotch: 10, lanePoint: 16,
   plateH: 56, twinGap: 18, stackSlack: 1.15,
-  foldAt: 12, foldSlack: 2,                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
+  foldAt: 12, foldSlack: 2,
+  looseKeep: 60,                            // the loose block shows this many files (most connected first) before folding the rest                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
   railGap: 170, portW: 250, portGap: 10,    // isolate: side rails of ports
   flow: { colGap: 56, rowGap: 8 }
 };
@@ -209,7 +210,35 @@ function designLayout(data, state) {
     const hubNext = next && hubs.some(hb => centered.has(hb.node) && next.members.includes(data.topOf(data.home[hb.node])));
     y = bottom + (hubNext ? L.hubGap : L.levelGap);
   });
-  const levelsBottom = y - L.levelGap;
+  let levelsBottom = y - L.levelGap;
+
+  // ---- loose nodes: homed in no section (allowed, docs/graph-schema.md: "shown at top level"). A fresh crawl's view
+  // is empty, so this block is where everything sits until the Structure agent composes sections (Q-017). Not under
+  // isolate (everything outside the isolated section is a port there) and, under a lens, only the lens's files.
+  // Removed files that were loose keep their ghost here. At a fresh crawl's size (~1,000 files) the block is a
+  // square-ish grid and folds like a big section: the most connected files stay, the rest are one '+N more' row
+  // (Julian, 2026-10-16). Folded files are accounted for by that row, so the meter stays exact.
+  const loose = iso ? [] : data.nodeIds.filter(id => !data.home[id] && (!LZ || LZ.inside.has(id)))
+    .concat(removedNodes(data, state).filter(r => !r.home).map(r => r.id));
+  if (loose.length) {
+    let shown = loose, hidden = [];
+    if (!unfolded.has('loose') && loose.length > L.looseKeep + L.foldSlack) {
+      const free = loose.filter(m => !pinned.has(m));
+      const keepN = Math.max(0, L.looseKeep - (loose.length - free.length));
+      const keep = new Set(free.slice().sort((a, b) => (FM.deg[b] || 0) - (FM.deg[a] || 0) || (a < b ? -1 : a > b ? 1 : 0)).slice(0, keepN));
+      hidden = free.filter(m => !keep.has(m)); shown = loose.filter(m => pinned.has(m) || keep.has(m));
+    }
+    const cells = shown.length + (hidden.length ? 1 : 0);
+    const perRow = tops.length ? Math.max(1, Math.floor((contentW - 2 * L.pad + L.flowGap) / (N.w + L.flowGap))) : Math.max(3, Math.ceil(Math.sqrt(cells)));
+    const lw = tops.length ? contentW : perRow * (N.w + L.flowGap) - L.flowGap + 2 * L.pad;
+    const ly = levelsBottom + (tops.length ? L.levelGap : 0);
+    const cell = i => ({ x: x0 + L.pad + (i % perRow) * (N.w + L.flowGap), y: ly + L.header + Math.floor(i / perRow) * (N.h + L.rowGap), w: N.w, h: N.h });
+    shown.forEach((m, i) => { P.nodes[m] = cell(i); });
+    if (hidden.length) { P.folds.loose = { ...cell(shown.length), members: hidden }; hidden.forEach(m => { P.foldOf[m] = 'loose'; }); }
+    const rows = Math.ceil(cells / perRow);
+    P.loose = { x: x0, y: ly, w: lw, h: L.header + rows * (N.h + L.rowGap) - L.rowGap + L.pad, label: `Not in a section · ${loose.length}`, members: loose };
+    levelsBottom = P.loose.y + P.loose.h;
+  }
 
   // ---- outside layers gutter
   let right = contentW + 2 * x0;
@@ -284,6 +313,7 @@ function designLayout(data, state) {
   hubs.filter(hb => centered.has(hb.node) && P.nodes[hb.node]).forEach(hb => tops.forEach(t => {
     if (hit(P.sections[t], P.nodes[hb.node])) P.overlaps.push([t, hb.node]);
   }));
+  if (P.loose) tops.forEach(t => { if (hit(P.sections[t], P.loose)) P.overlaps.push([t, 'the Not-in-a-section block']); });
 
   // ---- bus rails
   const rectOf = id => P.nodes[id] || (P.proxy[id] && P.sections[P.proxy[id]]);
@@ -330,7 +360,7 @@ function designLayout(data, state) {
     P.lensOut = { x: right + L.colGap, y: band ? L.bandHead : 0, w: L.portW + 110, h: L.header + 22 + roles * 18 + L.pad };
     right = P.lensOut.x + P.lensOut.w;
   }
-  const allR = Object.values(P.nodes).concat(P.iso ? Object.values(P.iso.ports) : [], P.lensOut ? [P.lensOut] : []).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
+  const allR = Object.values(P.nodes).concat(P.iso ? Object.values(P.iso.ports) : [], P.lensOut ? [P.lensOut] : [], P.loose ? [P.loose] : []).concat(Object.values(P.sections), P.levels, P.gutter ? [P.gutter] : []);
   const minX = Math.min(0, ...allR.map(r => r.x)), minY = Math.min(0, ...allR.map(r => r.y));
   const maxX = Math.max(right, ...allR.map(r => r.x + r.w)), maxY = Math.max(levelsBottom, ...allR.map(r => r.y + r.h));
   P.bounds = { x: minX - 8, y: minY - 24, w: maxX - minX + 64, h: maxY - minY + 48 };

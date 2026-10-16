@@ -54,10 +54,12 @@ check('via reaches the graph (0.3.1)', JSON.stringify(G.edges.find((e: any) => e
 { // the viewer can draw a real crawl: every node placed in both views
   const d = indexSnapshot({ graph: G, overlay: JSON.parse(s1.overlay), view: JSON.parse(s1.view), stages: null, diff: null, hashes: {} });
   const placed = (P: any) => d.nodeIds.every((id: string) => P.nodes[id] || P.proxy[id]);
-  // Flow only: the design view does not yet place loose nodes, so a fresh crawl (empty view) draws nothing there.
-  // That is a viewer gap, ROADMAP Q-017, not something this slice may paper over by writing a view.
-  check('the viewer\'s flow view lays out the crawled graph, every node placed', placed(layout(d, { view: 'flow', settings: {} })));
+  // Both views: a fresh crawl has an empty view, so in the design view every node is loose (Q-017).
+  check('the viewer lays out the crawled graph, every node placed, in both views', placed(layout(d, { view: 'design', settings: {} })) && placed(layout(d, { view: 'flow', settings: {} })));
 }
+// The testbench copy of this crawl must stay what the crawler makes, or the testbench shows a stale crawler (critic).
+check('the testbench snapshot cmake-basic-crawl equals the crawler\'s output (regenerate: node crawler/cli.ts crawl fixtures/cmake-basic --out design/prototype/snapshots/cmake-basic-crawl)',
+  unsourced(readFileSync('design/prototype/snapshots/cmake-basic-crawl/graph.json', 'utf8')) === g);
 const C = JSON.parse(conf);
 check('an include holds where its file is compiled: extra.cpp is compiled in extra only (Julian, 2026-10-16)', JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.configs) === '["extra"]'
   && JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.evidence[0].configs) === '["extra"]');
