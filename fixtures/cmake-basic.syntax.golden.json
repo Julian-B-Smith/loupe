@@ -1,0 +1,242 @@
+{
+  "computed": [],
+  "files": [
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "lib/lut.cpp"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/dsp/filter.h"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/engine.cpp"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/engine.h"
+    },
+    {
+      "configs": [
+        "extra"
+      ],
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/extra.cpp"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/platform.h"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/platform_mac.h"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "src/plugin_entry.cpp"
+    },
+    {
+      "grammar": "cpp",
+      "inCompile": false,
+      "parseErrors": 0,
+      "path": "src/win_only.cpp"
+    },
+    {
+      "grammar": "cpp",
+      "parseErrors": 0,
+      "path": "tests/engine_test.cpp"
+    }
+  ],
+  "grammars": {
+    "c": {
+      "package": "tree-sitter-c",
+      "sha256": "c852c2a85ebf2beb636aa3b0ef7f7e70458684d74f6741b20dcb296885bed9f9",
+      "version": "0.24.1"
+    },
+    "cpp": {
+      "package": "tree-sitter-cpp",
+      "sha256": "174eb0deb75b2ec7881bcacda9f995648d8e683956e5c2267e69ab6dc503fcbf",
+      "version": "0.23.4"
+    }
+  },
+  "includes": [
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "lib/lut.cpp",
+      "line": 1,
+      "resolution": "build",
+      "spelled": "lut.h",
+      "to": "miss:${build}/lib/lut.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/dsp/filter.h",
+      "line": 3,
+      "resolution": "build",
+      "spelled": "platform.h",
+      "to": "file:src/platform.h",
+      "via": [
+        "src/engine.cpp"
+      ]
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/engine.cpp",
+      "line": 1,
+      "resolution": "exact",
+      "spelled": "engine.h",
+      "to": "file:src/engine.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/engine.cpp",
+      "line": 2,
+      "resolution": "build",
+      "spelled": "table.h",
+      "to": "miss:${build}/generated/table.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/engine.cpp",
+      "line": 3,
+      "resolution": "exact",
+      "spelled": "dsp/filter.h",
+      "to": "file:src/dsp/filter.h"
+    },
+    {
+      "angle": true,
+      "directive": "include",
+      "from": "src/engine.cpp",
+      "line": 4,
+      "missing": "external",
+      "resolution": "syntactic",
+      "spelled": "vector",
+      "to": "miss:vector"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/engine.cpp",
+      "guard": "defined(FIX_EXTRA)",
+      "line": 6,
+      "missing": "unknown",
+      "resolution": "syntactic",
+      "spelled": "missing_extra.h",
+      "to": "miss:missing_extra.h"
+    },
+    {
+      "angle": true,
+      "directive": "include",
+      "from": "src/engine.h",
+      "line": 4,
+      "missing": "external",
+      "resolution": "syntactic",
+      "spelled": "cstdint",
+      "to": "miss:cstdint"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/engine.h",
+      "line": 5,
+      "resolution": "exact",
+      "spelled": "platform.h",
+      "to": "file:src/platform.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/extra.cpp",
+      "line": 1,
+      "resolution": "exact",
+      "spelled": "engine.h",
+      "to": "file:src/engine.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/platform.h",
+      "guard": "defined(__APPLE__)",
+      "line": 4,
+      "resolution": "exact",
+      "spelled": "platform_mac.h",
+      "to": "file:src/platform_mac.h"
+    },
+    {
+      "angle": true,
+      "directive": "include",
+      "from": "src/platform.h",
+      "guard": "!(defined(__APPLE__)) && (defined(_WIN32))",
+      "line": 6,
+      "missing": "external",
+      "resolution": "syntactic",
+      "spelled": "windows.h",
+      "to": "miss:windows.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/platform.h",
+      "guard": "!(defined(__APPLE__)) && !(defined(_WIN32))",
+      "line": 8,
+      "missing": "unknown",
+      "resolution": "syntactic",
+      "spelled": "platform_posix.h",
+      "to": "miss:platform_posix.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/plugin_entry.cpp",
+      "line": 1,
+      "resolution": "exact",
+      "spelled": "engine.h",
+      "to": "file:src/engine.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/plugin_entry.cpp",
+      "line": 3,
+      "missing": "generated",
+      "resolution": "syntactic",
+      "spelled": "lut.h",
+      "to": "miss:${build}/lib/lut.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "src/win_only.cpp",
+      "line": 1,
+      "resolution": "exact",
+      "spelled": "engine.h",
+      "to": "file:src/engine.h"
+    },
+    {
+      "angle": false,
+      "directive": "include",
+      "from": "tests/engine_test.cpp",
+      "line": 1,
+      "resolution": "build",
+      "spelled": "engine.h",
+      "to": "file:src/engine.h"
+    }
+  ],
+  "problems": [],
+  "schema": "loupe.syntaxfacts/0.0-internal",
+  "skipped": []
+}

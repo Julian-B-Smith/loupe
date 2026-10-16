@@ -44,8 +44,12 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
   holds agent-written stories (stand-in format); `story.js` applies Julian's edits and does the accounting;
   `works.js` draws it. `lens.js`: focus lenses (ADR 0019). Tests: `tools/{history,lens,story}.test.mjs`.
 - `crawler/`: the P1a crawler, TypeScript run natively by Node 24 (no compiler). `build.ts` is the build layer
-  (CMake File API + expanded JSON trace, scratch dir outside the tree, always deleted); `cli.ts` (`npm run crawl --
-  build <repo>`); `build.test.ts` (gated in `./verify fast`).
-- `fixtures/cmake-basic/`: crawler fixture with two declared configurations; its golden build facts are
-  `fixtures/cmake-basic.facts.golden.json` (rewrite only with `node crawler/build.test.ts --update`, reviewed).
+  (CMake File API + expanded JSON trace, scratch dir outside the tree, always deleted); `syntax.ts` is the syntax
+  layer (a line scanner for includes and their `#if` conditions, with a census; tree-sitter for parse-error counts;
+  resolution per site); `cli.ts` (`npm run crawl --
+  build|syntax <repo>`); `build.test.ts`, `syntax.test.ts` (gated in `./verify fast`). `grammars/`: the C and C++
+  grammar .wasm files, vendored and pinned by sha256 in `GRAMMARS.json` (refresh steps in its README).
+- `fixtures/cmake-basic/`: crawler fixture with two declared configurations; its goldens are
+  `fixtures/cmake-basic.facts.golden.json` and `fixtures/cmake-basic.syntax.golden.json` (rewrite only with
+  `--update` on the matching test, reviewed).
 
