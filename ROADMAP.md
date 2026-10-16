@@ -150,10 +150,12 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      found through the include paths the build layer gives that file's targets, in order, is `build` (also when the
      dir is a build dir and the file a build output it declares); anything else becomes a `miss:` node with reason
      `generated` (it matches a generated build output), `external` (angle brackets) or `unknown` (quotes), resolution
-     `syntactic`; a missing include's id never collides with a repo path. A file no target lists searches the
-     include paths of the files that include it, as a real compile does; each resolution found that way records the
-     includer whose path found it (`via`), and only real resolutions propagate, never a miss (ratified by Julian
-     2026-10-16 after the critic flagged it as a criterion moved mid-build). Absolute include paths are never
+     `syntactic`; a missing include's id never collides with a repo path. Compiles are the roots: only a compiled
+     source has include dirs of its own; every other file, a header a target lists included, is resolved in each
+     compile that reaches it, as a real compiler does, taking only the contexts in which an include resolved to it;
+     a listed header no compile reaches falls back to its target's include dirs. A resolution found through another
+     file's compile records that compiled source (`via`); a miss propagates nothing; any include cycle terminates
+     (ratified by Julian 2026-10-16, refined the same day after the second critic review). Absolute include paths are never
      resolved against the repo and never echoed. `configs` is narrowed against the configurations the including file
      is compiled in.
   4. Deterministic: two runs give byte-identical output; no absolute path; output does not depend on file order.
