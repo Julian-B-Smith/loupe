@@ -13,10 +13,21 @@ const data = indexSnapshot({ graph: j(dir + 'graph.json'), overlay: j(dir + 'ove
 check('stories path is derived from repo and commit', storiesPath(data.graph) === 'stories/horde-c64cfdbc.json');
 check('the sample (commit "sample") has no stories path', storiesPath({ source: { repo: 'x/y', commit: 'sample' } }) === null);
 
-// Every stories file: well formed, every file in its graph, every link between existing steps, every step cited.
+// Every stories file is checked against ITS OWN snapshot: the one whose repo and commit give that file name, the same
+// rule the viewer uses to find it (storiesPath). A stories file no snapshot names is a failure (Julian, 2026-10-16).
+const SNAP_DIRS = [...readdirSync('schema/examples').map((d) => `schema/examples/${d}/`),
+  ...readdirSync('design/prototype/snapshots').map((d) => `design/prototype/snapshots/${d}/`)];
+const snapFor = (f) => {
+  for (const d of SNAP_DIRS) { let g; try { g = j(d + 'graph.json'); } catch { continue; } if (storiesPath(g) === 'stories/' + f) return d; }
+  return null;
+};
 for (const f of readdirSync('design/prototype/stories')) {
-  const S = j('design/prototype/stories/' + f), ids = new Set(data.nodeIds);
-  let ok = S.graph && S.graph.commit === data.graph.source.commit;
+  const S = j('design/prototype/stories/' + f), d = snapFor(f);
+  check(`${f}: a snapshot names this stories file`, !!d);
+  if (!d) continue;
+  const own = indexSnapshot({ graph: j(d + 'graph.json'), overlay: j(d + 'overlay.json'), view: j(d + 'view.json'), stages: null, diff: null, hashes: {} });
+  const ids = new Set(own.nodeIds);
+  let ok = S.graph && S.graph.commit === own.graph.source.commit;
   for (const st of S.stories) {
     const sids = new Set(st.steps.map((s) => s.id));
     ok = ok && sids.size === st.steps.length && st.title && st.question;

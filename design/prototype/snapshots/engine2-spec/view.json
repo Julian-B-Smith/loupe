@@ -1,0 +1,449 @@
+{
+  "dialect": {
+    "name": "dsp-plugin-spec",
+    "version": "0"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "specs/SPEC-ENGINE.md is the engine's contract and the only reference the builder reads (SPEC-ENGINE.md line 5).",
+      "id": "sec:spec",
+      "label": "The spec",
+      "members": [
+        "file:specs/SPEC-ENGINE.md"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The engine's source tree, organised by concept with one home per concept (SPEC-ENGINE.md §3, line 80; layout proposed at lines 97-109).",
+      "id": "sec:core",
+      "label": "core",
+      "members": [],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The engine's calls, events, state, observation view, GUI snapshot and history (SPEC-ENGINE.md §3, line 100).",
+      "id": "sec:api",
+      "label": "API",
+      "members": [
+        "file:engine2/core/api/engine.cpp",
+        "file:engine2/core/api/engine.h",
+        "file:engine2/core/api/gui_snapshot.h",
+        "file:engine2/core/api/history.h",
+        "file:engine2/core/api/observation.h",
+        "file:engine2/core/api/state.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The parameter manifest, the one source of truth for the parameter table, host parameters, lab controls and manual (SPEC-ENGINE.md §3, line 99; BD-5 line 93).",
+      "id": "sec:manifest",
+      "label": "Manifest",
+      "members": [
+        "file:engine2/core/manifest/manifest.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Allocator and stealing, the pedal, the voice, ENV 1, mono and legato (SPEC-ENGINE.md §3, line 101).",
+      "id": "sec:voice",
+      "label": "Voice",
+      "members": [
+        "file:engine2/core/voice/allocator.h",
+        "file:engine2/core/voice/envelope.h",
+        "file:engine2/core/voice/pedal.h",
+        "file:engine2/core/voice/voice.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Members, placement, detune laws, coupling, drift, onset, start phase, gravity and pan (SPEC-ENGINE.md §3, line 102).",
+      "id": "sec:swarm",
+      "label": "Swarm",
+      "members": [
+        "file:engine2/core/swarm/coupling.h",
+        "file:engine2/core/swarm/detune.h",
+        "file:engine2/core/swarm/drift.h",
+        "file:engine2/core/swarm/gravity.h",
+        "file:engine2/core/swarm/inertia.h",
+        "file:engine2/core/swarm/onset.h",
+        "file:engine2/core/swarm/pan.h",
+        "file:engine2/core/swarm/placement.h",
+        "file:engine2/core/swarm/swarm.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Geometry, modes, waves, spreads, interplay and DC (SPEC-ENGINE.md §3, line 103).",
+      "id": "sec:blade",
+      "label": "Blade",
+      "members": [
+        "file:engine2/core/blade/blade.h",
+        "file:engine2/core/blade/dc.h",
+        "file:engine2/core/blade/interplay.h",
+        "file:engine2/core/blade/modes.h",
+        "file:engine2/core/blade/spreads.h",
+        "file:engine2/core/blade/waves.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The band-limited step and corner tables (SPEC-ENGINE.md §3, line 104; ED-1 line 408).",
+      "id": "sec:edges",
+      "label": "Edges",
+      "members": [
+        "file:engine2/core/edges/edges.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The source slot, the sub and the noise oscillator (SPEC-ENGINE.md §3, line 105; RC-6 line 616).",
+      "id": "sec:sources",
+      "label": "Sources",
+      "members": [
+        "file:engine2/core/sources/noise.h",
+        "file:engine2/core/sources/slot.h",
+        "file:engine2/core/sources/sub.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Level, non-finite guard and clip latch (SPEC-ENGINE.md §3, line 106; OU-1 line 539).",
+      "id": "sec:output",
+      "label": "Output",
+      "members": [
+        "file:engine2/core/output/output.h"
+      ],
+      "parent": "sec:core",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The invariant suite's runner and registry, empty until the test author writes items from the spec (SPEC-ENGINE.md §3, line 108; §10.1 line 729).",
+      "id": "sec:tests",
+      "label": "Tests",
+      "members": [
+        "file:engine2/tests/controls/failing_item.cpp",
+        "file:engine2/tests/runner.cpp",
+        "file:engine2/tests/suite.h"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The bank and the envelope presets, input data for the build and its tests (SPEC-ENGINE.md §2, lines 70-71; Appendix A line 840, B.1 line 863).",
+      "id": "sec:data",
+      "label": "Input data",
+      "members": [
+        "file:engine2/data/bank/presets.json",
+        "file:engine2/data/envelopes/presets.json"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The WebAssembly build of the same source for the labs (SPEC-ENGINE.md §3, line 83; IF-10 line 572).",
+      "id": "sec:wasm",
+      "label": "WebAssembly",
+      "members": [
+        "file:engine2/wasm/CMakeLists.txt"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The click detector of QS-4, the test author's first deliverable (SPEC-ENGINE.md §8, line 697).",
+      "id": "sec:tools",
+      "label": "Tools",
+      "members": [
+        "file:engine2/tools/click_detector.mjs"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The staged build of the engine and its suite (SPEC-ENGINE.md §10.5 BD-8, line 777).",
+      "id": "sec:build",
+      "label": "Build",
+      "members": [
+        "file:engine2/CMakeLists.txt",
+        "file:engine2/build.sh"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Language runtimes the crawler found includes and imports of; the spec does not name them.",
+      "id": "sec:external",
+      "label": "External",
+      "members": [
+        "ext:node",
+        "ext:std"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Every parameter a concept reads is a row of the one manifest, addressed by key and id with unit, range, law, class and rate (SPEC-ENGINE.md §5.1, line 170; IF-3 line 565).",
+      "contract": {
+        "dst": "file:engine2/core/manifest/manifest.h",
+        "role": "param",
+        "signature": "manifest key → v ∈ [0, 1] (IF-11)"
+      },
+      "edges": [
+        "e:f9ab3ae1dcafc063",
+        "e:39cac0263939f733",
+        "e:5cf060edf7d45362",
+        "e:9c06c85160fde443",
+        "e:9020330e8bcc9aae",
+        "e:541f67b98fe6ae95",
+        "e:cfb34e1a63bb4873",
+        "e:b18608994c349047",
+        "e:c943b10fece63cda",
+        "e:c5e3977398984c84",
+        "e:7a028bd08c98c80d",
+        "e:9504b1773ef3c2f3",
+        "e:470ebec9c4a1b5af"
+      ],
+      "id": "bus:params",
+      "label": "Parameter manifest",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The suite reads per-voice, per-oscillator values through one read-only view that never changes the audio (SPEC-ENGINE.md IF-10, line 572; BD-4 line 92).",
+      "contract": {
+        "dst": "file:engine2/core/api/observation.h",
+        "role": "observe"
+      },
+      "edges": [
+        "e:efb93fe5507cbee1",
+        "e:5b7c5f1473793ec1",
+        "e:89d5c7ffc31c657b",
+        "e:3561b015a872aaf3",
+        "e:5826aa06ca89bf93",
+        "e:ae27183bfbefaff0",
+        "e:100f3d462e54206b",
+        "e:850c8c54e1949dd0",
+        "e:cf30dc03bb75f918"
+      ],
+      "id": "bus:observe",
+      "label": "Observation view",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The GUI reads one lock-free snapshot the audio thread publishes; it is not the observation view (SPEC-ENGINE.md RC-8, line 641; RC-8.3 line 646).",
+      "contract": {
+        "dst": "file:engine2/core/api/gui_snapshot.h",
+        "role": "readout"
+      },
+      "edges": [
+        "e:fa44e1d6148be45a",
+        "e:ebf0ba4faf4c5e44",
+        "e:c332552d5fed7904",
+        "e:bc854d1d078cd720",
+        "e:7ad59fc2a3e4884e"
+      ],
+      "id": "bus:snapshot",
+      "label": "GUI snapshot",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "osc 1, osc 2, the sub and the noise oscillator are instances of one source slot, and the voice's code names no source kind (SPEC-ENGINE.md RC-6.1, line 620).",
+      "contract": {
+        "dst": "file:engine2/core/sources/slot.h",
+        "kind": "inherit",
+        "role": "audio"
+      },
+      "edges": [
+        "e:c101685e47f43dca",
+        "e:06206427283e2f93",
+        "e:3380a2a53f25dd88"
+      ],
+      "id": "bus:slot",
+      "label": "Source slot",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Every file whose purpose the spec states points at the section that states it; each edge cites the spec line (SPEC-ENGINE.md line 5: the spec is the only reference).",
+      "contract": {
+        "dst": "file:specs/SPEC-ENGINE.md",
+        "role": "spec"
+      },
+      "edges": [
+        "e:62a9c5cde680c54c",
+        "e:f4670f43fab5814a",
+        "e:1bc75a99172368be",
+        "e:049e92a383abb6a5",
+        "e:43b8aee2d9e267fc",
+        "e:e0a0dd71219b030c",
+        "e:72190b5715d61b85",
+        "e:5ff3dffb0041d536",
+        "e:aa757d2ceee3591b",
+        "e:b43ee71fdf42d65a",
+        "e:f9535961ecca0788",
+        "e:d48807161cf4c3f0",
+        "e:b33334961138c09e",
+        "e:58d10d6b1085a642",
+        "e:d6721869372f9f1c",
+        "e:1988fde1c99464eb",
+        "e:f52c7a77cdd527b4",
+        "e:a24bf91a73ede828",
+        "e:cf73720f50f7fac7",
+        "e:30e9c9040e9b550b",
+        "e:9a636c608ec44ad3",
+        "e:8cc60c0bc4044c20",
+        "e:a34d636faf866d8c",
+        "e:ad05fc3dfbd46340",
+        "e:d0bf746bbab6d82a",
+        "e:7559300582f3db76",
+        "e:991d46f7da879482",
+        "e:12c7278dacae4054",
+        "e:b08697cf0b791576",
+        "e:1278fbc993d2e2b3",
+        "e:6a45f3f2dcc65cb7",
+        "e:9e6381cca12ace16",
+        "e:d20f20b87e3f2798",
+        "e:7c20fdc4be76ba6a",
+        "e:9d15da3bd097f6c7",
+        "e:0f1c8a03d7a64fd9",
+        "e:78373fbcbb9366f0",
+        "e:2e89b3c2c755853f",
+        "e:b3f4e259b1d58b49"
+      ],
+      "id": "bus:spec",
+      "label": "Specified by",
+      "primitive": "bus",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "A note travels API → allocator → voice → swarm → blades → edge correction → DC removal → pan → source slot → (filter slot) × ENV 1 → output stage, as SPEC-ENGINE.md §4.2 draws it (lines 121-147).",
+      "id": "lane:signal",
+      "label": "Per-voice signal path",
+      "primitive": "lane",
+      "source": {
+        "evidence": "specs/SPEC-ENGINE.md:121-147 (§4.2 the per-voice signal path, the human-owned spec); step-to-file mapping by the structure agent from §3 lines 97-109",
+        "provenance": "annotated"
+      },
+      "status": "proposed",
+      "steps": [
+        "file:engine2/core/api/engine.h",
+        "file:engine2/core/voice/allocator.h",
+        "file:engine2/core/voice/voice.h",
+        "file:engine2/core/swarm/swarm.h",
+        "file:engine2/core/blade/blade.h",
+        "file:engine2/core/edges/edges.h",
+        "file:engine2/core/blade/dc.h",
+        "file:engine2/core/swarm/pan.h",
+        "file:engine2/core/sources/slot.h",
+        "file:engine2/core/voice/envelope.h",
+        "file:engine2/core/output/output.h"
+      ]
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The members' phases set the mean field, the mean field sets the pull, the pull (through inertia) sets the frequencies that advance the phases: a feedback the spec describes as the swarm's design (SPEC-ENGINE.md §C.1, lines 955-961; §C.0, line 946).",
+      "classification": "unclassified",
+      "cycle": [
+        "file:engine2/core/swarm/swarm.h",
+        "file:engine2/core/swarm/coupling.h",
+        "file:engine2/core/swarm/inertia.h"
+      ],
+      "evidence": [
+        "specs/SPEC-ENGINE.md:955 mean field from the members' phases",
+        "specs/SPEC-ENGINE.md:961 coupled frequency g_i = natural + pull",
+        "specs/SPEC-ENGINE.md:996 inertia swings toward g_i",
+        "specs/SPEC-ENGINE.md:946 phase advances by g_i, updated once per control interval (the state element)"
+      ],
+      "id": "loop:coupling",
+      "label": "Coupling feedback",
+      "primitive": "loop",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "The spec is the one reference every concept file answers to (SPEC-ENGINE.md line 5).",
+      "id": "hub:spec",
+      "label": "The spec",
+      "node": "file:specs/SPEC-ENGINE.md",
+      "primitive": "hub",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "These files hold a law Appendix C states as binding math with its constants and units (SPEC-ENGINE.md line 9; Appendix C, line 940).",
+      "id": "set:laws",
+      "label": "Normative laws (Appendix C)",
+      "members": [
+        "file:engine2/core/swarm/coupling.h",
+        "file:engine2/core/swarm/placement.h",
+        "file:engine2/core/swarm/detune.h",
+        "file:engine2/core/swarm/drift.h",
+        "file:engine2/core/swarm/inertia.h",
+        "file:engine2/core/swarm/gravity.h",
+        "file:engine2/core/swarm/onset.h",
+        "file:engine2/core/swarm/pan.h",
+        "file:engine2/core/blade/blade.h",
+        "file:engine2/core/blade/modes.h",
+        "file:engine2/core/blade/waves.h",
+        "file:engine2/core/blade/spreads.h",
+        "file:engine2/core/blade/interplay.h",
+        "file:engine2/core/blade/dc.h",
+        "file:engine2/core/voice/envelope.h"
+      ],
+      "primitive": "set",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:ca3173a09c5e589d384a76d7d27bd4511638e25a405fdb2c0fb257320743ce91"
+  },
+  "overlay": {
+    "hash": "sha256:eea3d7a3b09c52296d2040b7121e362a16250f4f1cf49958182e6b2e1b02d076"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

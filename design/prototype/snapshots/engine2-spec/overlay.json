@@ -1,0 +1,1570 @@
+{
+  "conditions": [],
+  "edges": [
+    {
+      "dst": "file:engine2/core/voice/allocator.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-1, line 563: the API accepts note-on and note-off by note id; §6.4 VO-1, line 422: one allocator serves the whole instrument and notes are addressed by note id.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9ddb7ec88516fbf7",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "events",
+      "src": "file:engine2/core/api/engine.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/voice.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-2, line 423: the voice law decides which voice a new note takes; §4.1, line 117: one instrument-wide voice per played note owns the allocation decision.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ac4b24411fe57a5c",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "events",
+      "src": "file:engine2/core/voice/allocator.h"
+    },
+    {
+      "dst": "file:engine2/core/sources/slot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6, line 616: the voice holds its sources through one contract, the source slot; line 617: the voice hands each source its published sounding pitch, master phase, gate and velocity.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:62874fe1c0daa590",
+      "kind": "instantiate",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/voice/voice.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/envelope.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.1, line 117: the voice owns ENV 1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0044f734234d4161",
+      "kind": "instantiate",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/voice/voice.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/voice.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-12, line 433: a key released while the pedal is down keeps its voice sounding at sustain and makes that voice a tail for VO-2; pedal-up releases every voice held only by the pedal.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ca1290d237c030af",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "events",
+      "src": "file:engine2/core/voice/pedal.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/envelope.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-2, line 423: a new note takes a voice that is not held, quietest envelope level first.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5722a47823db00bc",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/voice/allocator.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/voice.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 128: voice pitch × gravity ratio gives the published voice pitch; §6.1 SW-11, line 370: gravity acts on the voice's pitch, so both oscillators and the sub follow it; §C.6, line 1005: gravity takes the held voices and their settled pitches.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a8684a5cf1d12134",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "pitch",
+      "src": "file:engine2/core/swarm/gravity.h"
+    },
+    {
+      "dst": "file:engine2/core/sources/slot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6.1, line 620: the four sources are instances of the slot; osc 1 and osc 2 are swarm oscillators (§2, line 46).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c101685e47f43dca",
+      "kind": "inherit",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/sources/slot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6.1, line 620: the four sources are instances of the slot; the sub is one of them (RC-6, line 616).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:06206427283e2f93",
+      "kind": "inherit",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/sub.h"
+    },
+    {
+      "dst": "file:engine2/core/sources/slot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6.1, line 620: the four sources are instances of the slot; the noise oscillator is one of them (RC-6, line 616).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:3380a2a53f25dd88",
+      "kind": "inherit",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/noise.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/blade.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 130: osc: swarm of U members, each member: base wave + blade 1 + blade 2; §C.0, line 944: blades read the member's blade phase from its swarm phase.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:3e64b7811c0efddd",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/edges/edges.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 131: the members' waves pass to edge correction; §6.3 ED-1, line 408: every hard step the engine makes (window edges, carrier wraps, Crush steps, noise steps) is band-limited.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a6a4a0f932831f70",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/blade/blade.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/dc.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 131: edge correction, then DC removal.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:3d5d85b65a300603",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/edges/edges.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/pan.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 131: DC removal, then pan (mono member to L/R); §C.8, line 1027: the swarm's output is U^-0.75 times the sum of each member's output under its pan gains.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d586b62390091e3d",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/blade/dc.h"
+    },
+    {
+      "dst": "file:engine2/core/sources/slot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6, line 618: a source hands the voice its per-voice stereo signal, panned by its own law, before its level and gate.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:65067c5f81943313",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/swarm/pan.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/pan.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.8, line 1028: a single source (the sub, the noise oscillator) is panned by the same law; §6.10 SN-1, line 548.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:53b645a32690fb5f",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/sub.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/pan.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.8, line 1028: a single source (the sub, the noise oscillator) is panned by the same law; §6.10 SN-4, line 551.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:eb19334cdce2ee75",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/noise.h"
+    },
+    {
+      "dst": "file:engine2/core/edges/edges.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.10 SN-2, line 549: every step of the sub's saw and pulse is band-limited by the engine's one edge correction (ED-1).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f31c16c106929e7e",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/sub.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/envelope.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 137: the sources' sum passes the per-voice filter slot (no file in the export; RC-1, line 581) and then is multiplied by ENV 1 and velocity (line 139); §6.4 VO-9, line 430.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:e889c79e76989894",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/sources/slot.h"
+    },
+    {
+      "dst": "file:engine2/core/output/output.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §4.2, line 142: after ENV 1 the voices are summed into the output stage (Level, guards); §6.9 OU-1, line 539.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a0f300e78cc0ca0c",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/voice/envelope.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/detune.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.3, line 979: the detune laws read each member's placement x_i of C.2 (x'_i = x_i - anchor·x_min).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0d730d7483c24aa0",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/placement.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/detune.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.3, line 988: then drift (C.4) scales each member's frequency before the natural frequency is floored.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:2275cd987e671f90",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/drift.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/coupling.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.1, line 953: coupling's spread σ is measured on the natural frequencies of C.3; line 961: the coupled frequency is the natural frequency plus the pull.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0d9a6c13f44a4fd1",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/detune.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/inertia.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.5, line 996: inertia swings each member's offset toward its target g_i − f0, g_i the coupled frequency of C.1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:6ceb087c5c2d66b0",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/coupling.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/swarm.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.0, line 946: each member's phase advances by g_i/f_s, g_i its frequency from C.1 and C.5.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:267257c76ac91e84",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/inertia.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/coupling.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.1, line 955: the pull reads the mean field R·e^{iψ} of the members' phases, recomputed each control interval (line 956).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:6fa36e78a39662d9",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/swarm/swarm.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.7, line 1016: each member waits its onset offset, silent with its phase held, then enters by a fade.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d71b9b2279b8bacc",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/onset.h"
+    },
+    {
+      "dst": "file:engine2/core/voice/envelope.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.7, line 1016: the entry fade's time constant reads env1.attack and is multiplied onto the voice's envelope.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c95e3e6e8302d162",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/swarm/onset.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/modes.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9.2, line 1047: the carrier modes play wave(blade wave, ·) of C.9.3; line 1061: the waves' antiderivatives are used by Crush.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:fb20aa8dd90d62b4",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/blade/waves.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/blade.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9 item 1, line 1073: inside the window the output blends from the blade's input toward the mode's hot signal by gate × depth.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a8e82104872250df",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/blade/modes.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/blade.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9.1, line 1040: the window's centre adds the spread offset; §C.9 item 8, line 1080: the per-member effective values come from the spreads of C.10.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b919769c767efe09",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/blade/spreads.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/blade.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.11, line 1115: serial composition evaluates the lower blade's delta and then the upper blade on base + λ·L (line 1121).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:8934560fa85bad9d",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:engine2/core/blade/interplay.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/waves.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.16, line 1181: the DC estimate of a Sync blade uses the antiderivatives of C.9.3 (line 1061: used by crush and DC).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:788f62957e0c0a3a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/blade/dc.h"
+    },
+    {
+      "dst": "file:engine2/core/blade/waves.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.3 ED-1, line 408: step heights are computed from the waveform's closed form at the step.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5f54ddcd48ab57f6",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "control",
+      "src": "file:engine2/core/edges/edges.h"
+    },
+    {
+      "dst": "file:engine2/core/api/state.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §3, line 82: the engine's API covers note ids, pitch input, per-voice modulation, state and observations.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:86b39e68d0996e5f",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "api",
+      "src": "file:engine2/core/api/engine.h"
+    },
+    {
+      "dst": "file:engine2/core/api/history.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §3 proposed layout, line 100: api/ holds the engine's calls, state, observation view, GUI snapshot and history snapshot and gestures (RC-11).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ff9ba11ca38366a6",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "api",
+      "src": "file:engine2/core/api/engine.h"
+    },
+    {
+      "dst": "file:engine2/core/api/state.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-11.2, line 679: the snapshot converts to and from IF-4's text outside the audio thread.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:1269b94be448cc85",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "api",
+      "src": "file:engine2/core/api/history.h"
+    },
+    {
+      "dst": "file:engine2/core/api/engine.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: a WebAssembly build of the same source, with the same API; §3, line 83.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d0d9a5d6ba43760a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "api",
+      "src": "file:engine2/wasm/CMakeLists.txt"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-3, line 565: every continuous parameter is a destination by its manifest key and id.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f9ab3ae1dcafc063",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/api/engine.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-4, line 566: the state document carries params as manifest key → v in ascending manifest id order.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:39cac0263939f733",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/api/state.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-11.1, line 678: every audible value a user can change is a parameter in the manifest; the snapshot holds every parameter's v (RC-11.2, line 679).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5cf060edf7d45362",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/api/history.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.2, line 196: voice.mode (poly, mono, legato) is a manifest row.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9c06c85160fde443",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/voice/voice.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.2, line 197: voice.polyphony sets how many voices exist (VO-5).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9020330e8bcc9aae",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/voice/allocator.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.2, line 198: voice.gravity is a manifest row (SW-11).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:541f67b98fe6ae95",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/swarm/gravity.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.2, line 199: env1.attack to env1.velocity are manifest rows (lines 199-207).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:cfb34e1a63bb4873",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/voice/envelope.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.2, line 212: out.level is a manifest row (OU-1).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b18608994c349047",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/output/output.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.3, line 217: each oscillator's rows exist once per oscillator (osc1.…, osc2.…).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c943b10fece63cda",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.4, line 268: each blade's rows exist once per blade per oscillator.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c5e3977398984c84",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/blade/blade.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.5, line 305: the sub's rows (sub.…).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7a028bd08c98c80d",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/sources/sub.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5.6, line 324: the noise oscillator's rows (noise.…).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9504b1773ef3c2f3",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/sources/noise.h"
+    },
+    {
+      "dst": "file:engine2/core/manifest/manifest.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6, line 618: a source hands the voice its parameters, in the manifest under its own id range (RC-6.1, line 620).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:470ebec9c4a1b5af",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:engine2/core/sources/slot.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the members' phases, natural and coupled frequencies, σ, R and ψ.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:efb93fe5507cbee1",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, S, P and Kenv.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5b7c5f1473793ec1",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/coupling.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the drift values D.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:89d5c7ffc31c657b",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/drift.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the spread positions p.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:3561b015a872aaf3",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/blade/spreads.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the effective blade values (C.9 item 8) and the frame angle.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5826aa06ca89bf93",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/blade/blade.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the pan gains.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ae27183bfbefaff0",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/pan.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, gravity's ratios.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:100f3d462e54206b",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/gravity.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, the onset waits.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:850c8c54e1949dd0",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/swarm/onset.h"
+    },
+    {
+      "dst": "file:engine2/core/api/observation.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view reads, per voice and oscillator, levels; §10.1 item 16 (line 747) reads ENV 1's level through it.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:cf30dc03bb75f918",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "observe",
+      "src": "file:engine2/core/voice/envelope.h"
+    },
+    {
+      "dst": "file:engine2/core/api/gui_snapshot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 641: the snapshot holds per voice and oscillator R and ψ and the members' phases and levels.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:fa44e1d6148be45a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "readout",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:engine2/core/api/gui_snapshot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 641: the snapshot holds each blade's window (position and width) and the frame angle.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ebf0ba4faf4c5e44",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "readout",
+      "src": "file:engine2/core/blade/blade.h"
+    },
+    {
+      "dst": "file:engine2/core/api/gui_snapshot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 641: the snapshot holds per voice its level and ENV 1's stage.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c332552d5fed7904",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "readout",
+      "src": "file:engine2/core/voice/envelope.h"
+    },
+    {
+      "dst": "file:engine2/core/api/gui_snapshot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 641: the snapshot holds the output's clip and non-finite latches and the output meter.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:bc854d1d078cd720",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "readout",
+      "src": "file:engine2/core/output/output.h"
+    },
+    {
+      "dst": "file:engine2/core/api/gui_snapshot.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 641: the snapshot holds each source meter's peak (a source hands the voice its readouts, RC-6, line 618).",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7ad59fc2a3e4884e",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "readout",
+      "src": "file:engine2/core/sources/slot.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §10.5 BD-8, line 777: the build's stages; the file's line 1 names stage 1 of BD-8.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:62a9c5cde680c54c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/engine.cpp"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1, line 557: the engine's interfaces; the header's purpose line cites spec 7.1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f4670f43fab5814a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/engine.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-8, line 639: the GUI readout path; the header cites RC-8.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:1bc75a99172368be",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/gui_snapshot.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-11, line 674: history support; the header cites RC-11.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:049e92a383abb6a5",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/history.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the observation view; the header cites IF-10.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:43b8aee2d9e267fc",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/observation.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-4, line 566: morph and state; the header cites IF-4 and RC-9.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:e0a0dd71219b030c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/api/state.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9.1, line 1032: blade geometry; the header cites C.9.1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:72190b5715d61b85",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/blade.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.16, line 1176: DC removal; the header cites C.16.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:5ff3dffb0041d536",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/dc.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.11, line 1111: interplay; the header cites C.11.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:aa757d2ceee3591b",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/interplay.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9.2, line 1043: the blade's modes; the header cites C.9.2.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b43ee71fdf42d65a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/modes.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.10, line 1083: spreads; the header cites C.10.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f9535961ecca0788",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/spreads.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.9.3, line 1057: waves and modulator shapes; the header cites C.9.3.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d48807161cf4c3f0",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/blade/waves.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.3, line 404: edges and aliasing; the header cites ED.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b33334961138c09e",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/edges/edges.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §5, line 166: every function and parameter; the header cites spec 5 and BD-5.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:58d10d6b1085a642",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/manifest/manifest.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.9, line 533: the output stage; the header cites OU.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d6721869372f9f1c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/output/output.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.10, line 544: the noise oscillator; the header cites SN.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:1988fde1c99464eb",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/sources/noise.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.2 RC-6, line 614: the source slot; the header cites RC-6.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f52c7a77cdd527b4",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/sources/slot.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.10, line 544: the sub; the header cites SN.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a24bf91a73ede828",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/sources/sub.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.1, line 949: coupling; the header cites C.1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:cf73720f50f7fac7",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/coupling.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.3, line 977: detune laws; the header cites C.3.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:30e9c9040e9b550b",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/detune.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.4, line 990: drift; the header cites C.4.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9a636c608ec44ad3",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/drift.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.6, line 1002: gravity; the header cites C.6.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:8cc60c0bc4044c20",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/gravity.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.5, line 994: inertia; the header cites C.5.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a34d636faf866d8c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/inertia.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.7, line 1011: onset scatter; the header cites C.7.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ad05fc3dfbd46340",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/onset.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.8, line 1018: pan and density; the header cites C.8.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d0bf746bbab6d82a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/pan.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.2, line 963: placement; the header cites C.2.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7559300582f3db76",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/placement.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.1, line 356: the swarm; the header cites SW and C.1.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:991d46f7da879482",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/swarm/swarm.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-2, line 423: allocation and stealing; the header cites VO-2 and VO-3.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:12c7278dacae4054",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/voice/allocator.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §C.12, line 1137: ENV 1's curve; the header cites C.12.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b08697cf0b791576",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/voice/envelope.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-12, line 433: the sustain pedal; the header cites VO-12.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:1278fbc993d2e2b3",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/voice/pedal.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §6.4 VO-6, line 427: one voice, mono and legato; the header cites VO-6.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:6a45f3f2dcc65cb7",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/core/voice/voice.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §10.1, line 727: the invariant suite; engine2/README.md line 30 names runner.cpp as the suite's runner.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9e6381cca12ace16",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/tests/runner.cpp"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §10.1, line 727: the invariant suite; engine2/README.md line 30 names suite.h as the items' registry.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d20f20b87e3f2798",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/tests/suite.h"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §10.1, line 729: every check has a must-fail control; this file is the runner's own.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7c20fdc4be76ba6a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/tests/controls/failing_item.cpp"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §8 QS-4, line 697: the click detector; engine2/README.md line 32 names this file as QS-4's detector.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9d15da3bd097f6c7",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/tools/click_detector.mjs"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md Appendix B.1, line 863: the bank format; engine2/data/README.md line 8.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0f1c8a03d7a64fd9",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/data/bank/presets.json"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md Appendix A, line 840: the 12 envelope presets; engine2/data/README.md line 9.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:78373fbcbb9366f0",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/data/envelopes/presets.json"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §7.1 IF-10, line 572: the WebAssembly build; the file's line 1 cites IF-10.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:2e89b3c2c755853f",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/wasm/CMakeLists.txt"
+    },
+    {
+      "dst": "file:specs/SPEC-ENGINE.md",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "SPEC-ENGINE.md §10.5 BD-8, line 777: the staged build; the file's line 18 cites BD-8.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b3f4e259b1d58b49",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "spec",
+      "src": "file:engine2/CMakeLists.txt"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:ca3173a09c5e589d384a76d7d27bd4511638e25a405fdb2c0fb257320743ce91"
+  },
+  "roles": [],
+  "schema": "loupe.overlay/0.2"
+}

@@ -12,7 +12,10 @@ import { canonicalGraph, canonicalDoc, sha256, edgeId } from './canon.mjs';
 
 const [repo, out, cfgPath] = process.argv.slice(2);
 if (!repo || !out) { console.error('usage: probe-crawl.mjs <repo> <out> [config.json]'); process.exit(2); }
-const CFG = { repo: 'repo', siblings: [], externalPrefixes: {}, includeRoots: [], ...(cfgPath ? JSON.parse(readFileSync(cfgPath, 'utf8')) : {}) };
+// crawlPaths: exact repo paths crawled even where a scope rule excludes them (e.g. a spec that IS the design, Q-014),
+// recorded in crawler.scope. source: {commit, commitTime} when the crawled tree is an export of another repo's commit,
+// so the graph names its origin instead of the export's own scratch commit. Both default to nothing: no change.
+const CFG = { repo: 'repo', siblings: [], externalPrefixes: {}, includeRoots: [], crawlPaths: [], source: null, ...(cfgPath ? JSON.parse(readFileSync(cfgPath, 'utf8')) : {}) };
 const git = (a) => execSync(`git ${a}`, { cwd: repo, maxBuffer: 1 << 26 }).toString();
 
 // ---------------------------------------------------------------- inventory
@@ -36,6 +39,7 @@ const SCOPE = [
 ];
 const classify = (p) => {
   const e = extname(p).toLowerCase(), top = p.split('/')[0];
+  if (CFG.crawlPaths.includes(p)) return ['crawl', e === '.md' ? 'markdown' : LANG[e] || 'text'];
   if (top === 'traces') return ['exclude', 'traces'];
   if (e === '.md') return ['exclude', 'docs'];
   if (top === 'docs') return ['exclude', 'docs-assets'];
@@ -263,6 +267,7 @@ for (const e of edges.values()) if (e.kind === 'generates') { const n = nodes.ge
 // ---------------------------------------------------------------- write
 let commit = 'unknown', commitTime = '1970-01-01T00:00:00Z', dirty = false;
 try { commit = git('rev-parse HEAD').trim(); commitTime = git('log -1 --format=%cI').trim(); dirty = git('status --porcelain').trim().length > 0; } catch {}
+if (CFG.source) ({ commit, commitTime } = { commit, commitTime, ...CFG.source });
 const excludedList = Object.values(excludedBy).sort((a, b) => (a.reason < b.reason ? -1 : 1)).map((x) => ({ ...x, byExt: Object.fromEntries(Object.entries(x.byExt).sort()) }));
 const graph = {
   schema: 'loupe.graph/0.2',
@@ -272,7 +277,7 @@ const graph = {
     languages: [...new Set(Object.values(langOf))].sort(),
     dialect: { name: 'none', version: '0' },
     scope: {
-      include: SCOPE.filter((r) => r[0] === 'crawl').map((r) => r[2]),
+      include: [...SCOPE.filter((r) => r[0] === 'crawl').map((r) => r[2]), ...CFG.crawlPaths.map((p) => `${p} (named in the probe config)`)],
       exclude: SCOPE.filter((r) => r[0] === 'exclude').map((r) => `${r[2]} (${r[1]})`),
       resolution: 'heuristic',
       ...(CFG.siblings.length ? { siblings: CFG.siblings } : {}),

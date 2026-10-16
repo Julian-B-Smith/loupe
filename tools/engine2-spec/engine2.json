@@ -1,0 +1,15 @@
+{
+  "repo": "github.com/Julian-B-Smith/horde",
+  "siblings": [],
+  "externalPrefixes": {},
+  "includeRoots": [
+    "engine2/core"
+  ],
+  "crawlPaths": [
+    "specs/SPEC-ENGINE.md"
+  ],
+  "source": {
+    "commit": "595140e7277d7487c77761389597db9d7d0b27a4",
+    "commitTime": "2026-10-16T14:08:36-04:00"
+  }
+}

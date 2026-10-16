@@ -1,0 +1,530 @@
+{
+  "crawler": {
+    "dialect": {
+      "name": "none",
+      "version": "0"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 41,
+      "excluded": [
+        {
+          "byExt": {
+            ".md": 7
+          },
+          "count": 7,
+          "reason": "docs"
+        }
+      ],
+      "files": 48
+    },
+    "languages": [
+      "cmake",
+      "cpp",
+      "js",
+      "json",
+      "markdown",
+      "sh"
+    ],
+    "name": "loupe-probe",
+    "scope": {
+      "exclude": [
+        "traces/** (traces)",
+        "**/*.md (docs)",
+        "docs/** (docs-assets)",
+        "reference/** (reference)",
+        ".claude/** (repo-tooling)",
+        ".github/** (repo-tooling)",
+        ".kit/** (repo-tooling)",
+        ".git* (repo-tooling)",
+        "(binary content) (binary)",
+        "** (other)"
+      ],
+      "include": [
+        "*.{h,hpp,hh,inc,c,cc,cpp,cxx,mm,m}",
+        "*.{py,mjs,js,sh,html}",
+        "(shebang scripts)",
+        "CMakeLists.txt, *.cmake",
+        "*.{tsv,json,txt,yml,yaml}",
+        "specs/SPEC-ENGINE.md (named in the probe config)"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.2"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:engine2/core/api/engine.h",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "engine2/core/api/engine.cpp",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:00f794c95aa6f25d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/core/api/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:engine2/tests/suite.h",
+      "evidence": [
+        {
+          "line": 8,
+          "path": "engine2/tests/runner.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4df3a6ee6af156e0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/tests/runner.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:engine2/tests/suite.h",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "engine2/tests/controls/failing_item.cpp",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:5adbd0388121df26",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/tests/controls/failing_item.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "ext:std",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "engine2/tests/suite.h",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:664340beba241cdc",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/tests/suite.h"
+    },
+    {
+      "count": 3,
+      "dst": "ext:std",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "engine2/tests/runner.cpp",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 5,
+          "path": "engine2/tests/runner.cpp",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 6,
+          "path": "engine2/tests/runner.cpp",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:895ec17a60c837b2",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/tests/runner.cpp"
+    },
+    {
+      "count": 2,
+      "dst": "ext:node",
+      "evidence": [
+        {
+          "line": 104,
+          "path": "engine2/tools/click_detector.mjs",
+          "resolution": "exact",
+          "type": "site"
+        },
+        {
+          "line": 105,
+          "path": "engine2/tools/click_detector.mjs",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:dc6fe020d75da89a",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:engine2/tools/click_detector.mjs"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "ext:node",
+      "kind": "external",
+      "path": "node"
+    },
+    {
+      "hash": "none",
+      "id": "ext:std",
+      "kind": "external",
+      "path": "std"
+    },
+    {
+      "hash": "sha256:4f259413830ced662822e9e978d97e20108dc377e55003f83776308bc2fba224",
+      "id": "file:engine2/CMakeLists.txt",
+      "kind": "file",
+      "lang": "cmake",
+      "loc": 50,
+      "path": "engine2/CMakeLists.txt",
+      "role": "data",
+      "roleRule": "path/data-ext"
+    },
+    {
+      "hash": "sha256:deefbd20ed44c9841d3bda6e32822fdebe1d945d164161d1321b36ce5f2244e2",
+      "id": "file:engine2/build.sh",
+      "kind": "file",
+      "lang": "sh",
+      "loc": 15,
+      "path": "engine2/build.sh",
+      "role": "build",
+      "roleRule": "path/build-file"
+    },
+    {
+      "hash": "sha256:61ab3f9954a44307ded5b2f59afd9efb1073198bb94edfc5582aeab52e9ebff6",
+      "id": "file:engine2/core/api/engine.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/engine.cpp"
+    },
+    {
+      "hash": "sha256:40416c92eb7219572b5cf81ec4dc1416cc4f019ea27fac0cec4af4f154235f30",
+      "id": "file:engine2/core/api/engine.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/engine.h"
+    },
+    {
+      "hash": "sha256:1d641b8743b0c6f8c0790b2eb4f6399bd02922a0ddad5d31475843e43dc94f89",
+      "id": "file:engine2/core/api/gui_snapshot.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/gui_snapshot.h"
+    },
+    {
+      "hash": "sha256:60e6559ff2ad4da649d23fe0c3079fc85e6dd7b005c22bb9356711961811f93f",
+      "id": "file:engine2/core/api/history.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/history.h"
+    },
+    {
+      "hash": "sha256:fb8087c50fcff2d22958a6bfe52d6c093d946b56f4db351ca90b6621321fb7fb",
+      "id": "file:engine2/core/api/observation.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/observation.h"
+    },
+    {
+      "hash": "sha256:81cafb4400065ba7fe4a7d9617cf1eb124b3aca3d2e9e7a71579c46cacbfa78a",
+      "id": "file:engine2/core/api/state.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/api/state.h"
+    },
+    {
+      "hash": "sha256:532eca4f4cb63163efbd9e36e8102c4dd77653cf105ca51b85395d36a93d7600",
+      "id": "file:engine2/core/blade/blade.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/blade.h"
+    },
+    {
+      "hash": "sha256:933d795956be88bf6cd49e28a967d0c0f6257cdcbe5f71440cce1cf4ace1c868",
+      "id": "file:engine2/core/blade/dc.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/dc.h"
+    },
+    {
+      "hash": "sha256:c79bbe37ac4b619603b1954d9d9996c00c4e0c5bc5e844b55cbd1860c2399721",
+      "id": "file:engine2/core/blade/interplay.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/interplay.h"
+    },
+    {
+      "hash": "sha256:f85d7cf0f206be8d7d7c6d149a6f70fc86660f07020ed02603cc0c8f5c4f28d3",
+      "id": "file:engine2/core/blade/modes.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/modes.h"
+    },
+    {
+      "hash": "sha256:98a1f788bdc8f212843a648bfed645f607084bf452bd96f1087f6535f520e019",
+      "id": "file:engine2/core/blade/spreads.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/spreads.h"
+    },
+    {
+      "hash": "sha256:b5574e7c0c0664f8f8d0f38a6b881109daaa9cb1f32a4dbdb41c1ed851896668",
+      "id": "file:engine2/core/blade/waves.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/blade/waves.h"
+    },
+    {
+      "hash": "sha256:9512c95080991aa357a77c3bd99170a6f083e90339bac8601661e27611ba319d",
+      "id": "file:engine2/core/edges/edges.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/edges/edges.h"
+    },
+    {
+      "hash": "sha256:be99e7b67b8f751f4a412bff8a4f8a3af9f179cca8e77032001c9c292888825f",
+      "id": "file:engine2/core/manifest/manifest.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/manifest/manifest.h"
+    },
+    {
+      "hash": "sha256:54a2495cc90f7a6bedea4b1f7149ee661441f629fbb171d09d59e5ea5bba3d27",
+      "id": "file:engine2/core/output/output.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/output/output.h"
+    },
+    {
+      "hash": "sha256:c78670d4dbd9b936e16f3f945189ccefe1cd5d76c7a95339f9f0da7ce6e7720b",
+      "id": "file:engine2/core/sources/noise.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/sources/noise.h"
+    },
+    {
+      "hash": "sha256:621885c8077cdef9b26a33f437878ddd9f47a38864ceb54a3a32b6e08e964d26",
+      "id": "file:engine2/core/sources/slot.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/sources/slot.h"
+    },
+    {
+      "hash": "sha256:c77505df5967d385f93f82e63292a5009118bda380d081d929f677cab913f9a0",
+      "id": "file:engine2/core/sources/sub.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/sources/sub.h"
+    },
+    {
+      "hash": "sha256:b5f4da35d007d02a3a29c5ddf1042e33bb009abd9783bfe212c00e54391495f0",
+      "id": "file:engine2/core/swarm/coupling.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/coupling.h"
+    },
+    {
+      "hash": "sha256:0250b5f7bf1652cb50259dfdef1c94209ff418c6440f8331d732232045398b9d",
+      "id": "file:engine2/core/swarm/detune.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/detune.h"
+    },
+    {
+      "hash": "sha256:f14e85705675f167ce94774412520b6f7d524fe4df4d00e8c990ff79449dc8d3",
+      "id": "file:engine2/core/swarm/drift.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/drift.h"
+    },
+    {
+      "hash": "sha256:86d322c803fa6083d93beb56560b6f8e0b57278026a73e49f154dc071dd42b72",
+      "id": "file:engine2/core/swarm/gravity.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/gravity.h"
+    },
+    {
+      "hash": "sha256:9b4d9dbf2150802f8f182a3fcf6839dcce06607f478d6a3fc2cf27c9ad257bed",
+      "id": "file:engine2/core/swarm/inertia.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/inertia.h"
+    },
+    {
+      "hash": "sha256:4626c2af6b0e371ad301ce51277427b16ca89e80204065cb5ecbd62a25cdb8f5",
+      "id": "file:engine2/core/swarm/onset.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/onset.h"
+    },
+    {
+      "hash": "sha256:a7b5325b3714e42f538ae46eaa4afeef99fc84ea755eef647758e2e050cb612c",
+      "id": "file:engine2/core/swarm/pan.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/pan.h"
+    },
+    {
+      "hash": "sha256:47ef9ba68ac107310e81ecaa6fbbffb40d3cde02463f2d9aee7aba8279ff04b2",
+      "id": "file:engine2/core/swarm/placement.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/placement.h"
+    },
+    {
+      "hash": "sha256:ef92f460f061fdfc72c59ccef268094f8c0495b452d03173f7629485c7d3f9f8",
+      "id": "file:engine2/core/swarm/swarm.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/swarm/swarm.h"
+    },
+    {
+      "hash": "sha256:19730128a0cff044d4afa48e7122e16446b57685a9fa6c461b767601f0daa117",
+      "id": "file:engine2/core/voice/allocator.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/voice/allocator.h"
+    },
+    {
+      "hash": "sha256:197beb19d930270ed5c164371540ba622f33c46031847361894f226f050e89df",
+      "id": "file:engine2/core/voice/envelope.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/voice/envelope.h"
+    },
+    {
+      "hash": "sha256:b7adb5c1bc757285ebe73f2ed551a225466bbb398f6a105f864fa91e8fc46b02",
+      "id": "file:engine2/core/voice/pedal.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/voice/pedal.h"
+    },
+    {
+      "hash": "sha256:31a4d5319d734aa1ffcd91f75d2cc7bc530a70ee3bdef51967719e4a2e58364a",
+      "id": "file:engine2/core/voice/voice.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "engine2/core/voice/voice.h"
+    },
+    {
+      "hash": "sha256:2c2b58b58c77f67617257e9bca76fd515de5b51d840a8971b01d05ed8e728061",
+      "id": "file:engine2/data/bank/presets.json",
+      "kind": "file",
+      "lang": "json",
+      "loc": 6775,
+      "path": "engine2/data/bank/presets.json",
+      "role": "data",
+      "roleRule": "path/data-ext"
+    },
+    {
+      "hash": "sha256:ded078073649ce1d360ef0050599becfe7f84fe450fef178a7248815507cd4eb",
+      "id": "file:engine2/data/envelopes/presets.json",
+      "kind": "file",
+      "lang": "json",
+      "loc": 254,
+      "path": "engine2/data/envelopes/presets.json",
+      "role": "data",
+      "roleRule": "path/data-ext"
+    },
+    {
+      "hash": "sha256:dab167addb0360dd3840abf55ebe1d12240c76f283cd7bc3deffa69539c43767",
+      "id": "file:engine2/tests/controls/failing_item.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 7,
+      "path": "engine2/tests/controls/failing_item.cpp"
+    },
+    {
+      "hash": "sha256:31c7a6d546672d812d2bedff32b24a3536dfbab951187128ad3ad0537faa57d3",
+      "id": "file:engine2/tests/runner.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 27,
+      "path": "engine2/tests/runner.cpp"
+    },
+    {
+      "hash": "sha256:42ddcd15bca5ebd1802908b2c82ffa8af732f41f6cc6c99c4ccf3b190ef10df1",
+      "id": "file:engine2/tests/suite.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 29,
+      "path": "engine2/tests/suite.h"
+    },
+    {
+      "hash": "sha256:eb5453f8fb01d83189bf1b42c8247fa15346892dbe411a785618428c4a191925",
+      "id": "file:engine2/tools/click_detector.mjs",
+      "kind": "file",
+      "lang": "js",
+      "loc": 434,
+      "path": "engine2/tools/click_detector.mjs"
+    },
+    {
+      "hash": "sha256:1a9316a71933ffa33945c24c865acf67cca7365190ffe228896375507160532f",
+      "id": "file:engine2/wasm/CMakeLists.txt",
+      "kind": "file",
+      "lang": "cmake",
+      "loc": 7,
+      "path": "engine2/wasm/CMakeLists.txt",
+      "role": "data",
+      "roleRule": "path/data-ext"
+    },
+    {
+      "hash": "sha256:e3d1e873645c09b550b65fc458f683405aaa165571dad814478497cb14333e93",
+      "id": "file:specs/SPEC-ENGINE.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 1188,
+      "path": "specs/SPEC-ENGINE.md"
+    }
+  ],
+  "schema": "loupe.graph/0.2",
+  "source": {
+    "commit": "595140e7277d7487c77761389597db9d7d0b27a4",
+    "commitTime": "2026-10-16T14:08:36-04:00",
+    "dirty": false,
+    "repo": "github.com/Julian-B-Smith/horde"
+  }
+}
