@@ -41,3 +41,9 @@ the one list of ADRs; this file does not copy it, so the two cannot drift.
   its design committed (ADRs 0001-0025 and a working viewer), so "before the design" was not available. The phase
   is not dropped or silently reordered. Extra acceptance criterion: every contradiction the research finds with a
   committed decision becomes a Proposed ADR for Julian, never absorbed or discarded.
+- **H9 (2026-10-16, lead's default; Julian may overrule).** `.loupe/config.json` configuration args are limited to an
+  allowlist (`-G -T -A -C --toolchain -D -U -W…`). The critic showed that `-B`, `--build`, `-E`, `-P`, `--graphviz`,
+  `--trace-redirect` and `--preset` could move configure out of the scratch directory or make it something else,
+  which would break the contract HORDE accepted (response-002). Safety by construction rather than by review of a
+  human-owned file. The crawler also clears CMake's generator, build-type and toolchain environment variables, which
+  would otherwise silently override a declared configuration.

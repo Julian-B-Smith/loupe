@@ -36,6 +36,42 @@
         "extra",
         "release"
       ],
+      "generated": true,
+      "source": "${build}/lib/lut.h",
+      "target": "lut"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "${external}/outside_a.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "${external}/outside_b.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "lib/lut.cpp",
+      "target": "lut"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
       "generated": false,
       "source": "src/engine.cpp",
       "target": "engine"
@@ -76,6 +112,7 @@
       "target": "engine_test"
     }
   ],
+  "notes": [],
   "perConfiguration": [
     {
       "args": [
@@ -86,10 +123,13 @@
       "buildType": "Release",
       "customCommands": [
         {
-          "command": [
-            "python3",
-            "tools/gen_table.py",
-            "${build}/generated/table.h"
+          "byproducts": [],
+          "commands": [
+            [
+              "python3",
+              "tools/gen_table.py",
+              "${build}/generated/table.h"
+            ]
           ],
           "depends": [
             "tools/gen_table.py"
@@ -98,7 +138,56 @@
           "line": 9,
           "outputs": [
             "${build}/generated/table.h"
-          ]
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [
+            "${build}/lib/lut.log"
+          ],
+          "commands": [
+            [
+              "python3",
+              "lib/gen_lut.py",
+              "lib/lut.csv",
+              "lut.h"
+            ],
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lut.log"
+            ]
+          ],
+          "depends": [
+            "lib/gen_lut.py",
+            "lib/lut.csv"
+          ],
+          "file": "lib/CMakeLists.txt",
+          "line": 3,
+          "outputs": [
+            "${build}/lib/lut.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lib/BUILD_RAN.marker"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 15,
+          "outputs": [],
+          "stage": "POST_BUILD",
+          "target": "lut"
         }
       ],
       "name": "release",
@@ -107,6 +196,7 @@
           "compileGroups": [
             {
               "defines": [
+                "DATA_DIR=\"${source}/data\"",
                 "FIX_RATE=48000"
               ],
               "includes": [
@@ -176,6 +266,44 @@
         {
           "compileGroups": [
             {
+              "defines": [],
+              "includes": [
+                "${build}/lib"
+              ],
+              "language": "CXX",
+              "sources": [
+                "lib/lut.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "lut",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/lib/lut.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "lib/lut.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "dependencies": [],
+          "name": "lut_docs",
+          "sources": [],
+          "type": "UTILITY"
+        },
+        {
+          "compileGroups": [
+            {
               "defines": [
                 "FIX_RATE=48000"
               ],
@@ -185,6 +313,8 @@
               ],
               "language": "CXX",
               "sources": [
+                "${external}/outside_a.cpp",
+                "${external}/outside_b.cpp",
                 "src/plugin_entry.cpp"
               ]
             }
@@ -194,6 +324,18 @@
           ],
           "name": "plugin",
           "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_a.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_b.cpp"
+            },
             {
               "compiled": true,
               "generated": false,
@@ -215,10 +357,13 @@
       "buildType": "Release",
       "customCommands": [
         {
-          "command": [
-            "python3",
-            "tools/gen_table.py",
-            "${build}/generated/table.h"
+          "byproducts": [],
+          "commands": [
+            [
+              "python3",
+              "tools/gen_table.py",
+              "${build}/generated/table.h"
+            ]
           ],
           "depends": [
             "tools/gen_table.py"
@@ -227,7 +372,56 @@
           "line": 9,
           "outputs": [
             "${build}/generated/table.h"
-          ]
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [
+            "${build}/lib/lut.log"
+          ],
+          "commands": [
+            [
+              "python3",
+              "lib/gen_lut.py",
+              "lib/lut.csv",
+              "lut.h"
+            ],
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lut.log"
+            ]
+          ],
+          "depends": [
+            "lib/gen_lut.py",
+            "lib/lut.csv"
+          ],
+          "file": "lib/CMakeLists.txt",
+          "line": 3,
+          "outputs": [
+            "${build}/lib/lut.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lib/BUILD_RAN.marker"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 15,
+          "outputs": [],
+          "stage": "POST_BUILD",
+          "target": "lut"
         }
       ],
       "name": "extra",
@@ -236,6 +430,7 @@
           "compileGroups": [
             {
               "defines": [
+                "DATA_DIR=\"${source}/data\"",
                 "FIX_EXTRA=1",
                 "FIX_RATE=48000"
               ],
@@ -313,6 +508,44 @@
         {
           "compileGroups": [
             {
+              "defines": [],
+              "includes": [
+                "${build}/lib"
+              ],
+              "language": "CXX",
+              "sources": [
+                "lib/lut.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "lut",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/lib/lut.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "lib/lut.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "dependencies": [],
+          "name": "lut_docs",
+          "sources": [],
+          "type": "UTILITY"
+        },
+        {
+          "compileGroups": [
+            {
               "defines": [
                 "FIX_RATE=48000"
               ],
@@ -322,6 +555,8 @@
               ],
               "language": "CXX",
               "sources": [
+                "${external}/outside_a.cpp",
+                "${external}/outside_b.cpp",
                 "src/plugin_entry.cpp"
               ]
             }
@@ -331,6 +566,18 @@
           ],
           "name": "plugin",
           "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_a.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_b.cpp"
+            },
             {
               "compiled": true,
               "generated": false,

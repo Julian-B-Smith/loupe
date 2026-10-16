@@ -13,3 +13,18 @@
   matched to the generated source. `--trace-expand` fixes it but adds a flag to the command HORDE named; recorded
   in Q-012 as "ask HORDE before the first run there".
 - **Verify:** `./verify fast` exit 0.
+
+## Revision after critic review (same day)
+
+- **Critic (opus): REWORK, three blockers, all fixed and each now held by a test:** defines leaked absolute paths
+  (now token-wise normalised; the leak check matches any absolute path, not only after a quote); two external sources
+  collapsed into one row (now `${external}/<name>`); config args could move configure out of the scratch dir (now an
+  allowlist, DECISIONS H9).
+- **Should-fixes fixed:** custom-command parsing (TARGET form and stage, several COMMANDs, unknown keywords, list
+  values, relative OUTPUT in the binary dir, relative DEPENDS against the caller's dir, BYPRODUCTS); Ctrl-C (cleanup,
+  then exit 130); multi-config generators read in full; CMake environment variables cleared and toolchain variable
+  names recorded; a missing git is a note, not an empty list; custom-target stamps filtered; `generated` from any
+  configuration; duplicate configuration names refused; the trace is streamed with a substring pre-filter.
+- **Oracle gaps closed:** the fixture now has a subdirectory, two external sources, a path-valued define, a
+  POST_BUILD command with a marker that must never appear, a list DEPENDS, a custom target, and a CMake file outside
+  the repo whose rule must be filtered. 39 test cases.

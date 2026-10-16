@@ -30,3 +30,13 @@ target_link_libraries(plugin PRIVATE engine)
 
 add_executable(engine_test tests/engine_test.cpp)
 target_link_libraries(engine_test PRIVATE engine)
+
+# --- Cases from the critic review of 2026-10-16 (each one a finding the first fixture could not catch) ---
+# A path-valued define: must come out without a machine path.
+target_compile_definitions(engine PRIVATE DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+# A subdirectory with its own rules (relative OUTPUT/DEPENDS, lists, several COMMANDs, TARGET form).
+add_subdirectory(lib)
+# Two sources outside the repo: must stay two, not collapse into one.
+target_sources(plugin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_a.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_b.cpp)
+# CMake code from outside the repo: its rules are not the project's and must be filtered out.
+include(${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_rules.cmake)
