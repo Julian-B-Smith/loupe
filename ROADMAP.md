@@ -153,9 +153,11 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      `syntactic`; a missing include's id never collides with a repo path. Compiles are the roots: only a compiled
      source has include dirs of its own; every other file, a header a target lists included, is resolved in each
      compile that reaches it, as a real compiler does, taking only the contexts in which an include resolved to it;
-     a listed header no compile reaches falls back to its target's include dirs. A resolution found through another
-     file's compile records that compiled source (`via`); a miss propagates nothing; any include cycle terminates
-     (ratified by Julian 2026-10-16, refined the same day after the second critic review). Absolute include paths are never
+     a listed header falls back to its target's include dirs in each configuration where no compile reaches it; a
+     compiled source included by another compile (a unity build) is resolved in both. A resolution found through
+     another file's compile records that compiled source (`via`); a miss propagates nothing; any include cycle
+     terminates; `#include_next` continues after the dir where its own file was found (ratified by Julian
+     2026-10-16, refined the same day after the second and third critic reviews). Absolute include paths are never
      resolved against the repo and never echoed. `configs` is narrowed against the configurations the including file
      is compiled in.
   4. Deterministic: two runs give byte-identical output; no absolute path; output does not depend on file order.
