@@ -1,0 +1,18 @@
+{
+  "dialect": {
+    "name": "none",
+    "version": "0"
+  },
+  "elements": [],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:a8841ae954302321ed2524320679644769e86d77204210338e3cbc6721fcd25a"
+  },
+  "overlay": {
+    "hash": "sha256:28d1d3f7a77d3dad33033f8888b5ac0c2b7d8e172abb085f52a5872bc7bdb280"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

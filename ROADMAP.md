@@ -190,17 +190,24 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** roles (path rules), symbols (P1b), viewer changes, a HORDE crawl.
 
 ### Q-018 — The first crawl of HORDE
-- **Status:** current. HORDE answered (response-003, on horde main): `--trace-expand` accepted; Loupe runs the crawl
-  on a `git clone --local` of commit 1e6aae79 (the one adding `.loupe/config.json`) in its own scratch, deletes the
-  clone, runs the leak check before any snapshot, names the commit, and sends the findings in a notice.
-  Julian asked to start the crawl; HORDE's response-002 accepted configure "inside a horde session" with a named
-  command, so three answers come first: the added `--trace-expand` flag, who runs it (HORDE's resident, or Loupe on
-  a clone of a named commit), and HORDE's own `.loupe/config.json` (Loupe proposed release / Unix Makefiles / Release).
-- **Acceptance criteria:** 1. the crawl runs as HORDE answered, at a named commit, nothing written in HORDE's tree;
-  2. loupe-check passes on the snapshot with schema validation; 3. it opens in the testbench with the meter
-  balanced in the flow view (and the design view once Q-017 lands); 4. `conformance.json`'s findings are reported to
-  HORDE in a notice, as leads with their evidence, never acted on in HORDE's tree; 5. what the run reveals about the
-  crawler (time, census, notEvaluated) is recorded in the trace.
+- **Status:** done 2026-10-16 (trace: traces/2026-10-16-q018-horde-crawl.md). Crawled on HORDE's terms (response-003):
+  `git clone --local` of 1e6aae79 in Loupe's scratch, its declared Release configuration, submodules filled at their
+  pinned commits from HORDE's local module stores (read only; disclosed in notice-003), clone deleted, leak check
+  (HORDE's PCRE name rule + machine paths) clean with a must-fail control. Findings sent in `notice-003`.
+- **Result:** 1,293 files, 127 targets, 1,719 edges; byte-identical on a second run; loupe-check passes; the meter
+  balances (1,719/1,719 edges, 1,579/1,579 files) in the design view with Q-017's fold. Conformance: one lead
+  (`identity_store_check` reads `presetstore_check`'s generated `factory_bank.h` with no declared dependency) and 94
+  "declared, not seen" that are Loupe's blind spot (Q-020), reported to HORDE as such.
+
+### Q-020 — Attribute headers to targets, so conformance can see includes
+- **Status:** open (found 2026-10-16 by the first HORDE crawl, Q-018)
+- **Problem:** CMake targets list compiled sources, rarely headers. Conformance attributes an include only between
+  files a target `builds`, so on HORDE 1,336 of 1,338 includes were unattributed and 94 "declared, not seen" findings
+  were noise.
+- **Scope:** `crawler/conformance.ts` (and the graph only if a decision needs data it lacks), tests, docs.
+- **Acceptance criteria:** to be set with Julian: how a header is tied to a target (the compiles that reach it, its
+  directory, or both, and how ties are broken), and how a finding says which rule tied it. Until then the 94 are not
+  findings.
 
 ### Q-017 — The design view draws loose nodes
 - **Status:** done 2026-10-16 (trace: traces/2026-10-16-q017-loose-nodes.md); a large loose block folds (Julian, poll)
