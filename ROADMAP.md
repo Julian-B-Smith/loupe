@@ -199,6 +199,18 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   (`identity_store_check` reads `presetstore_check`'s generated `factory_bank.h` with no declared dependency) and 94
   "declared, not seen" that are Loupe's blind spot (Q-020), reported to HORDE as such.
 
+### Q-021 — Conformance: one generated output, several owning targets
+- **Status:** open (2026-10-16, from HORDE's answer to notice-003)
+- **Why:** Loupe's lead on HORDE (`identity_store_check` reads `factory_bank.h` without depending on its maker) was
+  close but not the bug. HORDE found the real one (horde B501): `factory_bank.h`'s generating rule was listed in two
+  independent targets (`presetstore_check` and `HYPERSAW-impl`), so CMake emitted the rule twice and `make -j` can
+  run the generator twice on one file. The crawl already holds this: both targets have a `builds` edge to
+  `miss:${build}/generated/factory_bank.h`. A deterministic check would have named it directly.
+- **Acceptance criteria:** 1. `conformance.json` lists every generated output that two or more targets build, with
+  no dependency path between them, as `generated-by-several` with the `builds` edges as evidence; 2. a fixture case and
+  a test; 3. on the HORDE crawl at 1e6aae79 it names `factory_bank.h` (and nothing HORDE would call noise, checked
+  against the snapshot).
+
 ### Q-020 — Attribute headers to targets, so conformance can see includes
 - **Status:** open (found 2026-10-16 by the first HORDE crawl, Q-018)
 - **Problem:** CMake targets list compiled sources, rarely headers. Conformance attributes an include only between
