@@ -126,12 +126,72 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      fixture makes the gate fail.
 - **Out of scope:** the syntax layer (web-tree-sitter; needs a dependency decision), the inventory layer, graph.json,
   schema 0.3, running on HORDE.
-- **Next (slice 2):** the schema 0.3 diff for Julian's approval (Q-010, PR open); then the syntax layer for C and
-  C++ (web-tree-sitter runtime plus vendored grammar .wasm files pinned by sha256, accepted by Julian 2026-10-16);
-  then graph.json at 0.3 and the inventory layer.
+- **Next:** the syntax layer (Q-013), then graph.json at 0.3 and the inventory layer.
+
+### Q-013 — P1a slice 2: the syntax layer for C and C++
+- **Status:** current (started 2026-10-16)
+- **Decisions (Julian, by poll 2026-10-16):** the web-tree-sitter runtime as a dependency, with the C and C++
+  grammar `.wasm` files vendored in the repo and pinned by sha256; C and C++ first. After the critic review (polls,
+  same day): `#include` lines and their conditions are found by a line-oriented directive scanner, not tree-sitter
+  (preprocessor directives are lines, not C syntax: tree-sitter dropped includes in class bodies and misplaced
+  `__has_include` and `extern "C"` conditions); tree-sitter stays for parse-error counts (0028) and symbols (P1b);
+  Objective-C/C++ (`.m`, `.mm`, `#import`) and `.inc` files are read for includes; header inheritance ratified.
+- **Scope:** `crawler/`, `fixtures/cmake-basic/`, `package.json`, `verify` (one added gate), `CODEMAP.md`.
+- **Acceptance criteria:**
+  1. `web-tree-sitter` is an exact-pinned dependency; the C and C++ grammars live in `crawler/grammars/` with their
+     sha256 and source version recorded, and `./verify fast` fails if a grammar file's hash differs.
+  2. Every tracked C/C++/Objective-C file (sources, headers, `.inc`) is read; each `#include`, `#include_next` and
+     `#import` becomes an include edge with site evidence (path, line) and, under `#if`/`#ifdef`/`#elif`/`#else`, the
+     enclosing condition as `guard`, built from the verbatim conditions (each part parenthesised) and never evaluated
+     (0026: union, not evaluation). Include guards (`#ifndef X`/`#if !defined(X)` + `#define X`) are not conditions.
+     A per-file census proves no include line goes unrecorded: every directive line is an include fact or listed as
+     unparsed. Each C/C++ file's tree-sitter parse records its error count (0028).
+  3. Resolution, recorded per site (0028): a quoted include found relative to the including file is `exact`; one
+     found through the include paths the build layer gives that file's targets, in order, is `build` (also when the
+     dir is a build dir and the file a build output it declares); anything else becomes a `miss:` node with reason
+     `generated` (it matches a generated build output), `external` (angle brackets) or `unknown` (quotes), resolution
+     `syntactic`; a missing include's id never collides with a repo path. A file no target lists searches the
+     include paths of the files that include it, as a real compile does; each resolution found that way records the
+     includer whose path found it (`via`), and only real resolutions propagate, never a miss (ratified by Julian
+     2026-10-16 after the critic flagged it as a criterion moved mid-build). Absolute include paths are never
+     resolved against the repo and never echoed. `configs` is narrowed against the configurations the including file
+     is compiled in.
+  4. Deterministic: two runs give byte-identical output; no absolute path; output does not depend on file order.
+  5. The fixture gains includes that exercise each rule (quoted, angle, via include path, generated header, guarded,
+     unresolved); the result equals a committed golden, gated in `./verify fast`; a planted change makes it fail.
+- **Out of scope:** calls and symbols (P1b), emitting graph.json (next slice), the inventory layer, running on HORDE.
+
+### Q-014 — Map HORDE's engine2 from its spec (inferred; parked)
+- **Status:** parked 2026-10-16 on branch `q014/engine2-inferred-map` (rebuildable, spec-pure, not on the testbench).
+  HORDE then proposed declaring engine2's structure as gated data (brief `integrations/hypersaw/brief-engine-
+  structure.md`); Julian (polls, 2026-10-16): the declaration replaces this inferred map as the diagram (Q-015), and
+  this map is kept as the measured check of Loupe's inference against the declared truth.
+- **What it found:** a critic review confirmed every sampled citation against the spec, and found the agent's edge
+  kinds (`call`, `inherit`) asserting code structure the spec leaves to the builder, a lane whose `annotated`
+  provenance no person gave, and the viewer's layout cramped at this size. Kept unfixed on the branch, as the record
+  of what inference alone produced.
+
+### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
+- **Status:** waiting on HORDE (ball: horde, writing the declaration). Loupe's answer to the brief:
+  `integrations/hypersaw/response-engine-structure.md`.
+- **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
+  spec in its own `./verify`; Loupe reads it through one adapter into a structure graph; no inferred edges.
+- **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
+  a snapshot and the testbench listing.
+- **Acceptance criteria:**
+  1. Schema 0.4 adds a structure layer: block and slot nodes with nesting, edge kinds for audio, event, control,
+     modulation and observation, provenance `declared`, and a spec citation on every node and edge. Julian approves
+     the diff before it lands.
+  2. The adapter reads HORDE's declaration (its format, pinned by version) deterministically: same declaration, same
+     bytes; nothing it drops goes unreported (a census against the declaration's own counts).
+  3. The diagram nests as the declaration does (instrument ⊃ voice ⊃ oscillator ⊃ member); loupe-check passes and
+     the meter balances; listed on the testbench.
+  4. Layer-E (measured, non-blocking): agreement between the parked inferred map (Q-014) and the declaration.
+  5. Critic review with screenshots.
+
 
 ### Q-010 — Schema 0.3 (human gate: schema change)
-- **Status:** drafted on branch `schema/0.3` (2026-10-16), awaiting Julian's approval of the PR. Decided with Julian
+- **Status:** done 2026-10-16, merged as PR #17 (trace: traces/2026-10-16-schema-0.3.md). Decided with Julian
   after the critic review (2026-10-16, polls): the no-overlap check runs in both loupe-check (V9, the viewer's own
   layout run headless on `view.json`) and the viewer's meter (live drags), and the viewer reads offsets from
   `view.json`, not localStorage, as ADR 0020 says; target-to-target edges are `depends`, not `links`; targets carry
