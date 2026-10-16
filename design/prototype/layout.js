@@ -274,6 +274,17 @@ function designLayout(data, state) {
     P.levelOf[hb.node] = lvIdx;
   });
 
+  // ---- no-overlap rule (0020, Q-010): offsets must not make two top-level sections overlap, nor a section cover a
+  // centered hub (hubs are placed between levels, so a dragged section can land on one). Either could hide a node or
+  // an edge. Computed after hubs are placed. loupe-check runs this same layout on view.json (V9); the meter counts
+  // any pair as unaccounted for live drags. Touching edges do not count; area does.
+  P.overlaps = [];
+  const hit = (r, q) => r && q && r.x < q.x + q.w && q.x < r.x + r.w && r.y < q.y + q.h && q.y < r.y + r.h;
+  tops.forEach((a, i) => tops.slice(i + 1).forEach(b => { if (hit(P.sections[a], P.sections[b])) P.overlaps.push([a, b]); }));
+  hubs.filter(hb => centered.has(hb.node) && P.nodes[hb.node]).forEach(hb => tops.forEach(t => {
+    if (hit(P.sections[t], P.nodes[hb.node])) P.overlaps.push([t, hb.node]);
+  }));
+
   // ---- bus rails
   const rectOf = id => P.nodes[id] || (P.proxy[id] && P.sections[P.proxy[id]]);
   const levelOfNode = id => P.levelOf[data.home[id]] ?? P.levelOf[id];

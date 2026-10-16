@@ -1,0 +1,104 @@
+{
+  "dialect": {
+    "name": "none",
+    "version": "0"
+  },
+  "elements": [
+    {
+      "by": "human:example",
+      "claim": "Files at the fixture root.",
+      "id": "sec:root",
+      "label": "(root)",
+      "members": [
+        "file:CMakeLists.txt"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "Files under src.",
+      "id": "sec:src",
+      "label": "src",
+      "members": [
+        "file:src/engine.cpp",
+        "file:src/engine.h",
+        "file:src/extra.cpp",
+        "file:src/plugin_entry.cpp",
+        "file:src/win_only.cpp"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "Files under lib.",
+      "id": "sec:lib",
+      "label": "lib",
+      "members": [
+        "file:lib/CMakeLists.txt",
+        "file:lib/gen_lut.py",
+        "file:lib/lut.cpp",
+        "file:lib/lut.csv"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "Files under tests.",
+      "id": "sec:tests",
+      "label": "tests",
+      "members": [
+        "file:tests/engine_test.cpp"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "Files under tools.",
+      "id": "sec:tools",
+      "label": "tools",
+      "members": [
+        "file:tools/gen_table.py"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "The targets CMake defines, in every declared configuration.",
+      "id": "sec:targets",
+      "label": "build targets",
+      "members": [
+        "target:engine",
+        "target:engine_test",
+        "target:lut",
+        "target:lut_docs",
+        "target:plugin"
+      ],
+      "primitive": "section"
+    },
+    {
+      "by": "human:example",
+      "claim": "Build outputs and sources outside the repo: referenced by the build, not in the tree.",
+      "id": "sec:outside",
+      "label": "generated and outside",
+      "members": [
+        "miss:${build}/generated/table.h",
+        "miss:${build}/lib/lut.h",
+        "miss:${external}/outside_a.cpp",
+        "miss:${external}/outside_b.cpp",
+        "miss:${build}/lib/lut.log"
+      ],
+      "primitive": "section"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:5cb9166986afc862995422b9b0d0af6c205125c50558c2c937bc48ec4ce6256a"
+  },
+  "overlay": {
+    "hash": "sha256:1804b3bda7b1e44f58a91ac416470a1ab01efda49eb8e5b2001380285d85c0e6"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

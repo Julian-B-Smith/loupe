@@ -7,6 +7,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from './canon.mjs';
+// V9 runs the viewer's own layout (pure: no DOM, no clock) so the no-overlap rule blocks an agent's view.json edit
+// deterministically, not only when someone opens the viewer (ROADMAP Q-010, decided 2026-10-16).
+import { indexSnapshot } from '../design/prototype/snapshot.js';
+import { layout } from '../design/prototype/layout.js';
 const require = createRequire(import.meta.url);
 
 export function check(dir, { schemaDir } = {}) {
@@ -18,14 +22,19 @@ export function check(dir, { schemaDir } = {}) {
 
   // ---- schema (optional dependency)
   if (schemaDir) {
-    try {
-      const Ajv = require('ajv');
+    // Only a missing ajv may skip validation (and ./verify makes that note fatal, DECISIONS H2). A schema that fails
+    // to compile is an error: catching it here once reported "install ajv", hiding a broken schema.
+    let Ajv = null;
+    try { Ajv = require('ajv'); } catch { notes.push('schema validation skipped (install ajv to enable)'); }
+    if (Ajv) {
       const ajv = new Ajv({ strict: false, allErrors: true });
       for (const [name, doc] of [['graph', G], ['overlay', O], ['view', V]]) {
-        const validate = ajv.compile(JSON.parse(readFileSync(join(schemaDir, `${name}.schema.json`), 'utf8')));
+        let validate;
+        try { validate = ajv.compile(JSON.parse(readFileSync(join(schemaDir, `${name}.schema.json`), 'utf8'))); }
+        catch (e) { err('S0', `${name}.schema.json does not compile: ${e.message}`); continue; }
         if (!validate(doc)) for (const e of validate.errors.slice(0, 10)) err('S1', `${name}${e.instancePath} ${e.message}`);
       }
-    } catch { notes.push('schema validation skipped (install ajv to enable)'); }
+    }
   }
 
   // ---- graph: canonical, ids, references
@@ -35,7 +44,7 @@ export function check(dir, { schemaDir } = {}) {
   for (const n of G.nodes) {
     if (nodes.has(n.id)) err('G2', `duplicate node ${n.id}`);
     nodes.set(n.id, n);
-    const prefix = { file: 'file:', symbol: 'sym:', external: 'ext:', artifact: 'art:', missing: 'miss:' }[n.kind];
+    const prefix = { file: 'file:', symbol: 'sym:', external: 'ext:', artifact: 'art:', missing: 'miss:', target: 'target:' }[n.kind];
     if (!n.id.startsWith(prefix)) err('G2', `node ${n.id} id prefix does not match kind ${n.kind}`);
     if (n.parent && !G.nodes.some((m) => m.id === n.parent)) err('G2', `node ${n.id} parent ${n.parent} missing`);
   }
@@ -60,6 +69,48 @@ export function check(dir, { schemaDir } = {}) {
     for (const x of inv.excluded) if (x.byExt && Object.values(x.byExt).reduce((a, b) => a + b, 0) !== x.count) err('G5', `excluded "${x.reason}" byExt does not sum to its count`);
   }
   // ---- missing nodes: referenced but absent, always with a reason
+  // G7 (0.3, ADR 0026): configuration names are unique; `configs` (on edges and target nodes) names only declared
+  // configurations, is sorted, and never lists all of them: "all" is spelled by omission, so one fact has one encoding
+  // and diffs cannot flip between two (critic, 2026-10-16). An edge touching a target cannot hold where it is absent.
+  const cfgNames = new Set();
+  for (const c of G.crawler.configurations || []) { if (cfgNames.has(c.name)) err('G7', `configuration ${c.name} is declared twice`); cfgNames.add(c.name); }
+  const checkConfigs = (what, cs) => {
+    if (!cs) return;
+    for (const c of cs) if (!cfgNames.has(c)) err('G7', `${what} holds in configuration ${c}, which the crawler does not declare`);
+    if (cs.join('\u0000') !== [...cs].sort().join('\u0000')) err('G7', `${what} lists its configs unsorted`);
+    if (cfgNames.size && cs.length === cfgNames.size) err('G7', `${what} lists every configuration; omit configs instead`);
+  };
+  for (const e of G.edges) checkConfigs(`edge ${e.id}`, e.configs);
+  for (const n of G.nodes) checkConfigs(`node ${n.id}`, n.configs);
+  const holdsIn = (cs) => new Set(cs || cfgNames);
+  for (const e of G.edges) for (const end of [e.src, e.dst]) {
+    const n = nodes.get(end); if (!n || !n.configs) continue;
+    const t = holdsIn(n.configs);
+    for (const c of holdsIn(e.configs)) if (!t.has(c)) { err('G7', `edge ${e.id} holds in ${c}, where its target ${end} does not exist`); break; }
+  }
+  // G8 (0.3): build targets connect through builds (target -> a file it compiles or lists), depends (target -> another
+  // target built first) and generates (a target's custom command produces a file; dropping it would hide an edge).
+  // Nothing else touches a target. targetType and configs belong to targets only; a target's path is its name.
+  const isTarget = (id) => nodes.get(id)?.kind === 'target';
+  for (const n of G.nodes) {
+    if (n.kind === 'target') {
+      if (!n.targetType) err('G8', `target ${n.id} has no targetType`);
+      if (n.path !== n.id.slice('target:'.length)) err('G8', `target ${n.id} has path ${n.path}; it must be the target's name`);
+      for (const f of ['lang', 'loc', 'symbolKind', 'parent', 'missing']) if (n[f] != null) err('G8', `target ${n.id} carries ${f}, which only files and symbols have`);
+    } else {
+      if (n.targetType != null) err('G8', `node ${n.id} has a targetType but is kind ${n.kind}`);
+      if (n.configs != null) err('G8', `node ${n.id} has configs but is kind ${n.kind}; only targets may`);
+    }
+  }
+  for (const e of G.edges) {
+    if (e.kind === 'builds' && (!isTarget(e.src) || isTarget(e.dst))) err('G8', `builds edge ${e.id} must run from a target to a non-target`);
+    else if (e.kind === 'depends' && (!isTarget(e.src) || !isTarget(e.dst) || e.src === e.dst)) err('G8', `depends edge ${e.id} must join two different targets`);
+    else if (e.kind === 'generates' && isTarget(e.dst)) err('G8', `generates edge ${e.id} ends at a target; a target is not a file`);
+    else if (!['builds', 'depends', 'generates'].includes(e.kind) && (isTarget(e.src) || isTarget(e.dst))) err('G8', `${e.kind} edge ${e.id} touches a target; only builds, depends and generates may`);
+    if ((e.kind === 'builds' || e.kind === 'depends') && e.evidence.some((x) => x.resolution && x.resolution !== 'build'))
+      err('G8', `${e.kind} edge ${e.id} comes from the build system, so its evidence resolution must be build`);
+  }
+
   for (const n of G.nodes) {
     if (n.kind === 'missing' && !n.missing) err('G6', `missing node ${n.id} has no reason`);
     if (n.kind !== 'missing' && n.missing) err('G6', `node ${n.id} carries a missing reason but is kind ${n.kind}`);
@@ -90,6 +141,19 @@ export function check(dir, { schemaDir } = {}) {
   if (V.overlay && V.overlay.hash !== sha256(oText)) err('V1', 'view is bound to a different overlay hash');
   const els = new Map();
   for (const el of V.elements) { if (els.has(el.id)) err('V2', `duplicate element ${el.id}`); els.set(el.id, el); }
+  // V8 (ADR 0020): drag offsets name a top-level section, a band level that exists, or the gutter. Levels count in
+  // the first band only and are written without leading zeros, exactly as the layout reads them. Whether offsets make
+  // anything overlap is V9, below, which runs the layout itself.
+  {
+    const offs = (V.settings && V.settings.offsets) || {};
+    const band0 = V.elements.find((x) => x.primitive === 'band');
+    const bandLevels = band0 ? (band0.levels || []).length : 0;
+    for (const key of Object.keys(offs)) {
+      const lv = /^level:(0|[1-9]\d*)$/.exec(key);
+      const ok = key === 'gutter' || (lv ? +lv[1] < bandLevels : els.get(key)?.primitive === 'section' && !els.get(key).parent);
+      if (!ok) err('V8', `offset key ${key} is not a top-level section, an existing level, or the gutter`);
+    }
+  }
   const isA = (id, ...kinds) => els.has(id) && kinds.includes(els.get(id).primitive);
   const needNode = (el, id) => { if (!nodes.has(id)) err('V2', `${el.id} references missing node ${id}`); };
   const needEdge = (el, id) => { if (!edges.has(id)) err('V2', `${el.id} references missing edge ${id}`); };
@@ -161,6 +225,17 @@ export function check(dir, { schemaDir } = {}) {
     if (x.pattern.dst) needNode(x, x.pattern.dst);
     const ok = (x.explicit && x.approvals.length >= 1) || x.approvals.length >= 3;
     if (x.status === 'established' && !ok) err('V7', `${x.id} is established with ${x.approvals.length} approval(s); needs 3, or 1 marked explicit`);
+  }
+
+  // V9 (ADR 0020): offsets in view.json must not make two top-level sections overlap or a section cover a centered
+  // hub. Only checked on an otherwise clean snapshot: layout over broken references would report noise.
+  const offs9 = (V.settings && V.settings.offsets) || {};
+  if (!errors.length && Object.keys(offs9).length) {
+    try {
+      const d = indexSnapshot({ graph: G, overlay: O, view: V, stages: null, diff: null, hashes: {} });
+      const P = layout(d, { view: 'design', settings: {}, offsets: offs9 });
+      for (const [a, b] of P.overlaps) err('V9', `offsets make ${a} overlap ${b}; something may be hidden underneath`);
+    } catch (e) { err('V9', `layout failed on this view: ${e.message}`); }
   }
 
   // ---- conservation summary (spec level): every node is homed or loose, every edge is bussed or free

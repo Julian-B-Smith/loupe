@@ -22,6 +22,8 @@ export function conserve(data, state, map) {
     const k = map.lensCheck, l = map.lens;
     if (k.in !== l.insideEdges || k.cross !== l.crossing || k.out !== l.outsideEdges) unaccounted.push(`lens partition: drawn ${k.in}/${k.cross}/${k.out}, lens ${l.insideEdges}/${l.crossing}/${l.outsideEdges}`);
   }
+  // Sections overlapping after a drag (0020): something may be hidden underneath, so the meter cannot say balanced.
+  if (map.settled && map.layout && map.layout.overlaps) map.layout.overlaps.forEach(([a, b]) => unaccounted.push(`overlap: sections ${a} and ${b}`));
   const status = unaccounted.length || accounted !== edges.total ? 'broken' : data.stale ? 'stale' : 'balanced';
   return { status, nodes, edges, accounted, unaccounted };
 }
