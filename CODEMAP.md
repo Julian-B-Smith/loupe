@@ -23,9 +23,11 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
   sample, plus Keep / Revise / Cut verdicts. Hosted copy: https://claude.ai/artifact/Lw7cH6LF7sUgLGCERhgR1Y
 - `docs/graph-schema.md`, `schema/`: the data contract (graph, overlay, view, loupe-spec). Example snapshot in
   `schema/examples/horde-sample/`.
-- `tools/`: `loupe-check.mjs` (snapshot checker), `loupe-check.test.mjs` (19 mutation tests), `canon.mjs`,
-  `convert-sample.mjs`, `probe-crawl.mjs` (probe crawler, not P1). Run with `npm run check` and `npm test`.
+- `tools/`: `loupe-check.mjs` (snapshot checker; V9 runs the viewer's layout headless), `loupe-check.test.mjs`
+  (53 mutation tests), `canon.mjs`, `convert-sample.mjs`, `example-cmake-basic.mjs` (build facts → 0.3 example, a
+  stand-in until the emitter), `probe-crawl.mjs` (probe crawler, not P1). Run with `npm run check` and `npm test`.
 - `schema/examples/horde-probe/`: a real crawl of HORDE (commit c64cfdbc), produced by the probe.
+- `schema/examples/cmake-basic-0.3/`: the only 0.3 example: targets, builds/depends/generates edges, configs.
 - `docs/spinup-brief.md`: what the `/spinup` agent needs to wire Loupe into the autonomous system.
 - `docs/design-handoff.md`: the contract with the Claude Design agent: required tokens, the `loupe-spec`
   block per primitive, screens, stress cases. Published doc: https://claude.ai/code/artifact/090409e4-c614-47e7-aa44-cebbea549775

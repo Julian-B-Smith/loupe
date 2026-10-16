@@ -187,7 +187,9 @@ if (STORY_PATH) { try { const r = await fetch(STORY_PATH); if (r.ok) { const t =
 const EDITS_KEY = 'loupe-story-edits:' + (STORY_PATH || SNAP) + ':' + STORY_HASH;
 let savedEdits = {}; try { savedEdits = JSON.parse(localStorage.getItem(EDITS_KEY) || '{}'); } catch {}
 const saved = JSON.parse(localStorage.getItem('loupe-proto') || '{}');
-const savedOffsets = (saved.offsets || {})[SNAP] || {};
+// Offsets come from view.json (ADR 0020), where loupe-check's V9 has proven they overlap nothing. Drags in this tab
+// are live state only; localStorage no longer holds them, so the checked file and the screen cannot disagree.
+const savedOffsets = (data.settings && data.settings.offsets) || {};
 const store = createStore({ stage: saved.stage || 2, view: STAGES[(saved.stage || 2) - 1].view, theme: saved.theme || 'light', offsets: savedOffsets, storyEdits: savedEdits });
 // Julian's story edits persist in this browser until the agent commits them (exported with 'Copy edits').
 store.on(s => { try { localStorage.setItem(EDITS_KEY, JSON.stringify(s.storyEdits || {})); } catch {} });
@@ -313,7 +315,7 @@ $('handle').onclick = () => $('panel').classList.toggle('open');
 $('repo').textContent = `${data.graph.source && data.graph.source.repo || 'HORDE sample'} · ${data.view.dialect.name} · not crawled`;
 if (!data.diff) $('diffSeg').hidden = true;
 if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
-store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); localStorage.setItem('loupe-proto', JSON.stringify({ stage: s.stage, theme: s.theme, offsets: { ...(prev.offsets || {}), [SNAP]: s.offsets } })); });
+store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); const { offsets: _old, ...keep } = prev; localStorage.setItem('loupe-proto', JSON.stringify({ ...keep, stage: s.stage, theme: s.theme })); });
 $('resetLayout').onclick = () => A.resetLayout();
 $('isoExit').onclick = () => A.isolate(null);
 $('storySeg').onclick = e => { const b = e.target.closest('[data-story]'); if (b) A.setStory(b.dataset.story); };

@@ -131,9 +131,13 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   then graph.json at 0.3 and the inventory layer.
 
 ### Q-010 — Schema 0.3 (human gate: schema change)
-- **Status:** drafted on branch `schema/0.3` (2026-10-16), awaiting Julian's approval of the PR. Amended with Julian
-  (2026-10-16): the no-overlap check lives in the viewer's conservation meter, not loupe-check, because only the
-  layout knows where sections land; `lens` (criterion 4) is deferred while 0019 is Proposed and is not in 0.3.
+- **Status:** drafted on branch `schema/0.3` (2026-10-16), awaiting Julian's approval of the PR. Decided with Julian
+  after the critic review (2026-10-16, polls): the no-overlap check runs in both loupe-check (V9, the viewer's own
+  layout run headless on `view.json`) and the viewer's meter (live drags), and the viewer reads offsets from
+  `view.json`, not localStorage, as ADR 0020 says; target-to-target edges are `depends`, not `links`; targets carry
+  `configs`; a graph declaring 0.2 may not carry 0.3 fields. `lens` (criterion 4) is deferred while 0019 is Proposed
+  and is not in 0.3. Open for the emitter (docs/graph-schema.md): custom-command data inputs, POST_BUILD commands
+  with no output, the declared-or-defaulted flag, and each target's defining CMake file.
 - **Scope:** `schema/*.schema.json`, `docs/graph-schema.md`, `tools/loupe-check.mjs`, mutation tests, examples
 - **Acceptance criteria:** 1. conditions on edges and on target membership, and the list of configurations covered
   and not evaluated (0026); 2. `resolution` extended with `build` and `syntactic` and required on crawled edges

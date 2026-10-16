@@ -6,6 +6,8 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { check } from './loupe-check.mjs';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from './canon.mjs';
+import { indexSnapshot } from '../design/prototype/snapshot.js';
+import { layout } from '../design/prototype/layout.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const sample = join(here, '..', 'schema', 'examples', 'horde-sample');
@@ -30,15 +32,23 @@ const buildEv = (key) => [{ type: 'config', path: 'CMakeLists.txt', key, resolut
 const cfgEdge = (src, dst, kind, extra = {}) => ({ id: edgeId(src, dst, kind), src, dst, kind, provenance: 'config', evidence: buildEv(`${kind} ${src}`), ...extra });
 function to03({ G }) {
   G.schema = 'loupe.graph/0.3';
-  G.crawler.configurations = [{ name: 'release', args: ['-DCMAKE_BUILD_TYPE=Release'], buildType: 'Release' }, { name: 'extra', args: ['-DFIX_EXTRA=ON'], buildType: 'Release' }];
+  G.crawler.configurations = [{ name: 'release', args: ['-DCMAKE_BUILD_TYPE=Release'], buildType: 'Release' }, { name: 'extra', args: ['-DFIX_EXTRA=ON'], buildType: 'Release' }, { name: 'debug', args: ['-DCMAKE_BUILD_TYPE=Debug'], buildType: 'Debug' }];
   G.crawler.notEvaluated = [{ what: 'Windows-only sources', reason: 'configured on macOS' }];
   for (const e of G.edges) for (const ev of e.evidence) if (!ev.resolution) ev.resolution = 'exact';
   G.nodes.push({ id: 'target:engine', kind: 'target', path: 'engine', hash: 'none', targetType: 'STATIC_LIBRARY' },
                { id: 'target:plugin', kind: 'target', path: 'plugin', hash: 'none', targetType: 'EXECUTABLE' });
   const file = G.nodes.find((n) => n.kind === 'file').id;
-  G.edges.push(cfgEdge('target:engine', file, 'builds', { configs: ['extra'] }), cfgEdge('target:plugin', 'target:engine', 'links'));
+  G.edges.push(cfgEdge('target:engine', file, 'builds', { configs: ['extra'] }), cfgEdge('target:plugin', 'target:engine', 'depends'));
 }
 const v03 = (f) => (x) => { to03(x); f(x); };
+const aFile = (G) => G.nodes.find((n) => n.kind === 'file').id;
+const T = (G, id) => G.nodes.find((n) => n.id === id);
+// V9 needs real geometry: lay the sample out, then drag the second top-level section onto the first.
+function dragOnto({ G, O, V }) {
+  const P = layout(indexSnapshot({ graph: G, overlay: O, view: V, stages: null, diff: null, hashes: {} }), { view: 'design', settings: {}, offsets: {} });
+  const [a, b] = V.elements.filter((e) => e.primitive === 'section' && !e.parent).map((e) => e.id).filter((id) => P.sections[id]);
+  V.settings.offsets = { [b]: { dx: P.sections[a].x - P.sections[b].x + 5, dy: P.sections[a].y - P.sections[b].y + 5 } };
+}
 
 const cases = [
   ['clean sample passes', null, () => {}],
@@ -66,15 +76,33 @@ const cases = [
   ['0.3 without configurations', 'S1', v03(({ G }) => { delete G.crawler.configurations; })],
   ['0.3 evidence without resolution', 'S1', v03(({ G }) => { delete G.edges[0].evidence[0].resolution; })],
   ['0.3 resolution outside the closed list', 'S1', v03(({ G }) => { G.edges[0].evidence[0].resolution = 'guessed'; })],
-  ['edge holds in an undeclared configuration', 'G7', v03(({ G }) => { G.edges.find((e) => e.kind === 'builds').configs = ['debug']; })],
+  ['edge holds in an undeclared configuration', 'G7', v03(({ G }) => { G.edges.find((e) => e.kind === 'builds').configs = ['nightly']; })],
   ['configuration declared twice', 'G7', v03(({ G }) => { G.crawler.configurations.push({ name: 'release', args: [] }); })],
   ['builds edge from a file', 'G8', v03(({ G }) => { const f = G.nodes.find((n) => n.kind === 'file').id; G.edges.push(cfgEdge(f, 'target:engine', 'builds')); })],
-  ['links edge to a file', 'G8', v03(({ G }) => { const f = G.nodes.find((n) => n.kind === 'file').id; G.edges.push(cfgEdge('target:engine', f, 'links')); })],
+  ['depends edge to a file', 'G8', v03(({ G }) => { G.edges.push(cfgEdge('target:engine', aFile(G), 'depends')); })],
+  ['depends edge from a target to itself', 'G8', v03(({ G }) => { G.edges.push(cfgEdge('target:engine', 'target:engine', 'depends')); })],
+  ['generates from a target (a custom command) passes', null, v03(({ G }) => { G.edges.push(cfgEdge('target:plugin', aFile(G), 'generates')); })],
+  ['generates ending at a target', 'G8', v03(({ G }) => { G.edges.push(cfgEdge('target:plugin', 'target:engine', 'generates')); })],
+  ['builds evidence resolved by search', 'G8', v03(({ G }) => { G.edges.find((e) => e.kind === 'builds').evidence[0].resolution = 'search'; })],
+  ["target whose path is not its name", 'G8', v03(({ G }) => { T(G, 'target:engine').path = 'lib/engine'; })],
+  ['targetType on a file', 'G8', v03(({ G }) => { T(G, aFile(G)).targetType = 'EXECUTABLE'; })],
+  ['configs on a file', 'G8', v03(({ G }) => { T(G, aFile(G)).configs = ['extra']; })],
+  ['a target that exists in some configurations passes', null, v03(({ G }) => { T(G, 'target:engine').configs = ['extra', 'release']; G.edges.find((e) => e.kind === 'depends').configs = ['extra', 'release']; })],
+  ['an edge holding where its target does not exist', 'G7', v03(({ G }) => { T(G, 'target:engine').configs = ['extra']; G.edges.find((e) => e.kind === 'depends').configs = ['release']; })],
+  ['configs unsorted', 'G7', v03(({ G }) => { G.edges.find((e) => e.kind === 'builds').configs = ['release', 'extra']; })],
+  ['configs listing every configuration', 'G7', v03(({ G }) => { G.edges.find((e) => e.kind === 'builds').configs = ['debug', 'extra', 'release']; })],
+  ['0.3 without notEvaluated', 'S1', v03(({ G }) => { delete G.crawler.notEvaluated; })],
+  ['0.2 graph with a target node', 'S1', ({ G }) => { G.nodes.push({ id: 'target:engine', kind: 'target', path: 'engine', hash: 'none', targetType: 'STATIC_LIBRARY' }); }],
+  ['0.2 graph with a 0.3 resolution', 'S1', ({ G }) => { G.edges[0].evidence[0].resolution = 'syntactic'; }],
+  ['0.2 graph with configurations', 'S1', ({ G }) => { G.crawler.configurations = [{ name: 'a', args: [] }]; }],
+  ['a target placed in a section passes', null, v03(({ V }) => { V.elements.find((e) => e.primitive === 'section' && !e.parent).members.push('target:engine'); })],
   ['an include touching a target', 'G8', v03(({ G }) => { const f = G.nodes.find((n) => n.kind === 'file').id; G.edges.push({ id: edgeId(f, 'target:plugin', 'include'), src: f, dst: 'target:plugin', kind: 'include', provenance: 'static', evidence: [{ type: 'site', path: 'x', line: 1, resolution: 'exact' }] }); })],
   ['target without targetType', 'G8', v03(({ G }) => { delete G.nodes.find((n) => n.id === 'target:engine').targetType; })],
   ['offset on a top-level section and a level passes', null, ({ V }) => { const top = V.elements.find((e) => e.primitive === 'section' && !e.parent); V.settings.offsets = { [top.id]: { dx: 10, dy: 0 }, 'level:0': { dx: 0, dy: 5 } }; }],
   ['offset on a nested section', 'V8', ({ V }) => { const nested = V.elements.find((e) => e.primitive === 'section' && e.parent); V.settings.offsets = { [nested.id]: { dx: 1, dy: 1 } }; }],
   ['offset on a level that does not exist', 'V8', ({ V }) => { V.settings.offsets = { 'level:99': { dx: 1, dy: 1 } }; }],
+  ['offset on level:00 (an alias the layout does not read)', 'V8', ({ V }) => { V.settings.offsets = { 'level:00': { dx: 1, dy: 1 } }; }],
+  ['offsets that make two sections overlap', 'V9', dragOnto],
   ['offset without dy', 'S1', ({ V }) => { V.settings.offsets = { gutter: { dx: 1 } }; }],
 ];
 
@@ -88,5 +116,17 @@ for (const [name, code, mutate, opts] of cases) {
   if (!ok) failed++;
   console.log(`${ok ? 'pass' : 'FAIL'}  ${name}${code ? ` → ${code}` : ''}${ok ? '' : `  got: ${errors.slice(0, 2).join(' | ') || 'no errors'}`}`);
 }
-console.log(failed ? `${failed} case(s) not caught` : `all ${cases.length} cases behave`);
+// S0: a schema that does not compile is an error, never reported as "install ajv" (the old catch hid it).
+{
+  const bad = mkdtempSync(join(tmpdir(), 'loupe-schema-'));
+  for (const f of ['graph', 'overlay', 'view']) writeFileSync(join(bad, `${f}.schema.json`), readFileSync(join(here, '..', 'schema', `${f}.schema.json`)));
+  writeFileSync(join(bad, 'graph.schema.json'), '{"type": 5}');
+  const d = snapshot(() => {});
+  const { errors, notes } = check(d, { schemaDir: bad });
+  rmSync(d, { recursive: true }); rmSync(bad, { recursive: true });
+  const ok = errors.some((e) => e.startsWith('S0 ')) && !notes.some((n) => /install ajv/.test(n));
+  if (!ok) failed++;
+  console.log(`${ok ? 'pass' : 'FAIL'}  a schema that does not compile → S0${ok ? '' : `  got: ${errors.join(' | ') || 'no errors'}`}`);
+}
+console.log(failed ? `${failed} case(s) not caught` : `all ${cases.length + 1} cases behave`);
 process.exit(failed ? 1 : 0);

@@ -232,7 +232,7 @@
         },
         "notEvaluated": {
           "type": "array",
-          "description": "0.3: what the configurations could not evaluate on this host (another OS, an option not declared, files built outside the build system). Listed, never treated as absent.",
+          "description": "0.3: what the configurations could not evaluate on this host (another OS, an option not declared, files built outside the build system). Listed, never treated as absent. Required in 0.3; an empty list says everything was evaluated.",
           "items": {
             "type": "object",
             "additionalProperties": false,
@@ -357,6 +357,15 @@
         "targetType": {
           "type": "string",
           "description": "0.3, kind target only: the build system's target type, e.g. STATIC_LIBRARY, EXECUTABLE, UTILITY"
+        },
+        "configs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "description": "0.3, kind target only: the configurations in which the target exists (ADR 0026). Absent = all of them. Sorted, and never the full list (that is spelled by omission)."
         }
       }
     },
@@ -397,9 +406,9 @@
             "generates",
             "embeds",
             "builds",
-            "links"
+            "depends"
           ],
-          "description": "Syntactic kind. generates = a script or build rule produces the target file; embeds = a file is compiled into another (e.g. HTML into a header). builds (0.3) = a build target compiles or lists this file; links (0.3) = a build target depends on another target."
+          "description": "Syntactic kind. generates = a script or build rule produces the target file; embeds = a file is compiled into another (e.g. HTML into a header). builds (0.3) = a build target compiles or lists this file; depends (0.3) = a build target needs another target built first (linking, or ordering only: the build system does not say which)."
         },
         "role": {
           "type": "string",
@@ -435,7 +444,7 @@
           "items": {
             "type": "string"
           },
-          "description": "0.3: names of the crawler configurations in which this edge holds (ADR 0026). Absent = all of them."
+          "description": "0.3: names of the crawler configurations in which this edge holds (ADR 0026). Absent = all of them. Sorted, and never the full list (that is spelled by omission)."
         }
       }
     },
@@ -563,12 +572,75 @@
     "properties": {
       "crawler": {
         "required": [
-          "configurations"
+          "configurations",
+          "notEvaluated"
         ]
       },
       "edges": {
         "items": {
           "$ref": "#/definitions/edge03"
+        }
+      }
+    }
+  },
+  "else": {
+    "description": "A graph that declares 0.2 may not carry 0.3-only fields, so a 0.2 reader can trust what it reads.",
+    "properties": {
+      "crawler": {
+        "properties": {
+          "configurations": false,
+          "notEvaluated": false,
+          "scope": {
+            "properties": {
+              "resolution": {
+                "not": {
+                  "const": "build"
+                }
+              }
+            }
+          }
+        }
+      },
+      "nodes": {
+        "items": {
+          "properties": {
+            "kind": {
+              "not": {
+                "const": "target"
+              }
+            },
+            "targetType": false,
+            "configs": false
+          }
+        }
+      },
+      "edges": {
+        "items": {
+          "properties": {
+            "kind": {
+              "not": {
+                "enum": [
+                  "builds",
+                  "depends"
+                ]
+              }
+            },
+            "configs": false,
+            "evidence": {
+              "items": {
+                "properties": {
+                  "resolution": {
+                    "not": {
+                      "enum": [
+                        "build",
+                        "syntactic"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

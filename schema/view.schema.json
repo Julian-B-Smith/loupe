@@ -736,7 +736,7 @@
   "definitions": {
     "nodeId": {
       "type": "string",
-      "pattern": "^(file|sym|ext|art|miss):.+$"
+      "pattern": "^(file|sym|ext|art|miss|target):.+$"
     },
     "edgeId": {
       "type": "string",
@@ -748,7 +748,7 @@
     },
     "ref": {
       "type": "string",
-      "pattern": "^((file|sym|ext|art|miss):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
+      "pattern": "^((file|sym|ext|art|miss|target):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
       "description": "A node id or an element id"
     }
   }

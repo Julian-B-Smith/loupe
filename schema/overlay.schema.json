@@ -108,11 +108,11 @@
         },
         "src": {
           "type": "string",
-          "pattern": "^(file|sym|ext|art|miss):.+$"
+          "pattern": "^(file|sym|ext|art|miss|target):.+$"
         },
         "dst": {
           "type": "string",
-          "pattern": "^(file|sym|ext|art|miss):.+$"
+          "pattern": "^(file|sym|ext|art|miss|target):.+$"
         },
         "kind": {
           "enum": [

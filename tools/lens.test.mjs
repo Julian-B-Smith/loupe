@@ -50,6 +50,14 @@ for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['ho
   for (const m of modes) { try { const P = layout(d, { view: 'design', settings: {}, ...m }); if (!P.bounds) ok = false; } catch (e) { ok = false; console.log('   ', name, JSON.stringify(m), e.message); } }
   check(`${name}: layout runs in every mode`, ok);
 }
+// A 0.3 graph (targets, builds/depends/generates, configs) through the viewer's layout: every node placed or proxied.
+{
+  const d = load('schema/examples/cmake-basic-0.3/'), P = layout(d, { view: 'design', settings: {} });
+  const lost = d.nodeIds.filter((id) => !P.nodes[id] && !P.proxy[id]);
+  check(`cmake-basic-0.3: every node, targets included, is placed (lost: ${lost.join(', ') || 'none'})`, lost.length === 0 && d.nodeIds.some((id) => id.startsWith('target:')));
+  const F = layout(d, { view: 'flow', settings: {} });
+  check('cmake-basic-0.3: the flow view places every node too', d.nodeIds.every((id) => F.nodes[id] || F.proxy[id]));
+}
 // No-overlap rule (0020, Q-010): checked by the viewer's meter, since loupe-check has no geometry.
 for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['horde-sample', 'design/prototype/snapshots/horde-sample/']]) {
   const d = load(dir), tops = d.sections.filter((s) => !d.parentOf[s]);
@@ -63,6 +71,17 @@ for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['ho
   check(`${name}: the meter turns an overlap into an unaccounted entry`, meter(onto).length > 0 && meter(P0).length === 0);
   const far = lay({ [b]: { dx: 0, dy: Math.max(...Object.values(P0.sections).map((r) => r.y + r.h)) + 400 } });
   check(`${name}: a drag into empty space is no overlap`, far.overlaps.length === 0);
+}
+// A centered hub sits between levels, outside every section, so a dragged section can cover it (critic M3).
+{
+  const d = load('design/prototype/snapshots/horde-sample/'), tops = d.sections.filter((s) => !d.parentOf[s]);
+  const lay = (offsets) => layout(d, { view: 'design', settings: { hubPlacement: 'center' }, offsets });
+  const P0 = lay({}), hub = (d.byPrimitive.hub || []).map((id) => d.elements[id].node).find((n) => P0.nodes[n]);
+  check('horde-sample: centered hubs overlap nothing by default', P0.overlaps.length === 0);
+  const t = tops.find((x) => d.home[hub] == null || !d.descendants(x).includes(d.home[hub])) || tops[0];
+  const r = P0.sections[t], h = P0.nodes[hub];
+  const P1 = lay({ [t]: { dx: h.x - r.x + 2, dy: h.y - r.y + 2 } });
+  check('horde-sample: a section dragged over a centered hub is reported', P1.overlaps.some((p) => p[0] === t && p[1] === hub));
 }
 console.log(failed ? `${failed} failed` : 'all lens cases behave');
 process.exit(failed ? 1 : 0);
