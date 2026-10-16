@@ -262,6 +262,16 @@ function designLayout(data, state) {
     }
   }
 
+  // ---- no-overlap rule (0020, Q-010): offsets must not make two top-level sections overlap, because an overlap can
+  // hide a node or an edge under another section. loupe-check cannot test this (it has no geometry), so layout
+  // lists the pairs and conserve() turns any into a broken meter. Touching edges do not count; area does.
+  P.overlaps = [];
+  const topRect = t => P.sections[t] || P.folds[t];
+  tops.forEach((a, i) => tops.slice(i + 1).forEach(b => {
+    const r = topRect(a), q = topRect(b);
+    if (r && q && r.x < q.x + q.w && q.x < r.x + r.w && r.y < q.y + q.h && q.y < r.y + r.h) P.overlaps.push([a, b]);
+  }));
+
   // ---- centered hubs: in the gap above their level, tethered to their home section
   hubs.filter(hb => centered.has(hb.node)).forEach(hb => {
     const lvIdx = P.levelOf[data.home[hb.node]], lv = P.levels[lvIdx];

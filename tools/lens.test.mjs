@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { computeLens } from '../design/prototype/lens.js';
 import { layout } from '../design/prototype/layout.js';
+import { conserve } from '../design/prototype/standins.js';
 
 let failed = 0;
 const check = (name, cond) => { console.log(`${cond ? 'pass' : 'FAIL'}  ${name}`); if (!cond) failed++; };
@@ -48,6 +49,20 @@ for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['ho
   let ok = true;
   for (const m of modes) { try { const P = layout(d, { view: 'design', settings: {}, ...m }); if (!P.bounds) ok = false; } catch (e) { ok = false; console.log('   ', name, JSON.stringify(m), e.message); } }
   check(`${name}: layout runs in every mode`, ok);
+}
+// No-overlap rule (0020, Q-010): checked by the viewer's meter, since loupe-check has no geometry.
+for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['horde-sample', 'design/prototype/snapshots/horde-sample/']]) {
+  const d = load(dir), tops = d.sections.filter((s) => !d.parentOf[s]);
+  const lay = (offsets) => layout(d, { view: 'design', settings: {}, offsets });
+  const P0 = lay({});
+  check(`${name}: the default layout has no overlapping top-level sections`, P0.overlaps.length === 0);
+  const [a, b] = tops, ra = P0.sections[a] || P0.folds[a], rb = P0.sections[b] || P0.folds[b];
+  const onto = lay({ [b]: { dx: ra.x - rb.x + 5, dy: ra.y - rb.y + 5 } });
+  check(`${name}: a section dragged onto another is reported`, onto.overlaps.some((p) => p.includes(a) && p.includes(b)));
+  const meter = (P) => conserve(d, {}, { nodes: {}, edges: {}, layout: P, settled: true }).unaccounted.filter((u) => u.startsWith('overlap:'));
+  check(`${name}: the meter turns an overlap into an unaccounted entry`, meter(onto).length > 0 && meter(P0).length === 0);
+  const far = lay({ [b]: { dx: 0, dy: Math.max(...Object.values(P0.sections).map((r) => r.y + r.h)) + 400 } });
+  check(`${name}: a drag into empty space is no overlap`, far.overlaps.length === 0);
 }
 console.log(failed ? `${failed} failed` : 'all lens cases behave');
 process.exit(failed ? 1 : 0);

@@ -126,11 +126,14 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      fixture makes the gate fail.
 - **Out of scope:** the syntax layer (web-tree-sitter; needs a dependency decision), the inventory layer, graph.json,
   schema 0.3, running on HORDE.
-- **Next (slice 2):** the schema 0.3 diff for Julian's approval (Q-010); the syntax layer, which needs the
-  web-tree-sitter dependency decision; the inventory layer.
+- **Next (slice 2):** the schema 0.3 diff for Julian's approval (Q-010, PR open); then the syntax layer for C and
+  C++ (web-tree-sitter runtime plus vendored grammar .wasm files pinned by sha256, accepted by Julian 2026-10-16);
+  then graph.json at 0.3 and the inventory layer.
 
 ### Q-010 — Schema 0.3 (human gate: schema change)
-- **Status:** open; decisions accepted, fields not yet written
+- **Status:** drafted on branch `schema/0.3` (2026-10-16), awaiting Julian's approval of the PR. Amended with Julian
+  (2026-10-16): the no-overlap check lives in the viewer's conservation meter, not loupe-check, because only the
+  layout knows where sections land; `lens` (criterion 4) is deferred while 0019 is Proposed and is not in 0.3.
 - **Scope:** `schema/*.schema.json`, `docs/graph-schema.md`, `tools/loupe-check.mjs`, mutation tests, examples
 - **Acceptance criteria:** 1. conditions on edges and on target membership, and the list of configurations covered
   and not evaluated (0026); 2. `resolution` extended with `build` and `syntactic` and required on crawled edges
@@ -158,7 +161,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   and `diff.sample.json` use; 2. both stand-ins validate; 3. loupe-check validates them when present.
 
 ### Q-006 — Schema 0.3: `settings.offsets` (0020)
-- **Status:** folded into Q-010 (2026-10-11)
+- **Status:** folded into Q-010 (2026-10-11); done with it (overlap check in the viewer meter, see Q-010)
 - **Scope:** `schema/view.schema.json`, `tools/loupe-check.mjs`, mutation tests
 - **Acceptance criteria:** 1. `settings.offsets` in the view schema; 2. loupe-check refuses offsets that make two
   top-level sections overlap, proven by a new mutation case; 3. ships together with 0019's `lens` if accepted.

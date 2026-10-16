@@ -1,8 +1,10 @@
 # Graph schema
 
-Version 0.2 (2026-10-01). Status: Proposed (decisions 0015, 0018). Formal schemas live in `schema/`. Two worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive) and `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder). `tools/loupe-check.mjs` enforces every rule below.
+Version 0.3 (2026-10-16). Status: Proposed, awaiting Julian's approval (Q-010; decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Two worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive) and `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder). `tools/loupe-check.mjs` enforces every rule below.
 
 Changed in 0.2: `missing` nodes, file roles, `generates` and `embeds` edges, guards, resolution on sites, and the crawl scope and inventory. Why: decision 0018.
+
+Changed in 0.3: build `target` nodes with `builds` and `links` edges (from the build system, 0027); the build configurations a graph covers and what they could not evaluate, with `configs` on any edge that holds in only some of them (0026); `resolution` gains `build` and `syntactic` and becomes required on every crawled site and config key (0028); `settings.offsets` in the view (0020). A graph declares `loupe.graph/0.2` or `loupe.graph/0.3`; a 0.2 graph stays valid as 0.2, and the 0.3 requirements apply only to a graph that declares 0.3. Not in 0.3: `lens`, which waits for 0019 to be accepted.
 
 ## A snapshot is three files
 
@@ -20,8 +22,9 @@ Later stages add `audit.json` (findings), `dialogue.json` (questions and answers
 
 | Field | Meaning |
 | --- | --- |
-| `id` | `file:<path>`, `sym:<path>#<qualified name>`, `ext:<package>`, `art:<path or glob>` or `miss:<path>` |
-| `kind` | file, symbol, external, artifact (a glob or data set referenced as a whole) or missing |
+| `id` | `file:<path>`, `sym:<path>#<qualified name>`, `ext:<package>`, `art:<path or glob>`, `miss:<path>` or `target:<name>` |
+| `kind` | file, symbol, external, artifact (a glob or data set referenced as a whole), missing, or target (a build target, 0.3) |
+| `targetType` | Target nodes only, required: the build system's type (STATIC_LIBRARY, EXECUTABLE, UTILITY…) |
 | `path` | Repo-relative path; the package name for externals |
 | `hash` | `sha256:` of the content, or `none`. Anchors explainers and drives diffs |
 | `lang`, `loc` | Language and line count, when known |
@@ -37,19 +40,24 @@ v1 crawls files. Symbol nodes are in the schema now so symbol-level crawling (ne
 
 `crawler.scope` records what the crawl looked at: the include and exclude rules, how paths were resolved (`compile-db` from `compile_commands.json`, or `heuristic` path search), and optionally the build target, assumed defines and sibling-repo prefixes. `crawler.inventory` accounts for every tracked file: `files = crawled + Σ excluded`, with each exclusion grouped by reason and extension. `crawled` must equal the number of file nodes. This is the one rule applied to files: nothing in the repo is left out silently.
 
+In 0.3, resolution can also be `build` (read from the build system itself), and `crawler.configurations` is required: each build configuration the crawl ran (`name`, `args`, optional `buildType` and `generator`), from the target repo's `.loupe/config.json`. `crawler.notEvaluated` lists what those configurations could not evaluate on this host (another OS, an option nobody declared, files built outside the build system), each with a reason. Not evaluated is never the same as absent (0026).
+
 ## Edges
 
 | Field | Meaning |
 | --- | --- |
 | `id` | `e:` + the first 16 hex of sha256(`src|dst|kind`). Stable across runs, so diffs and annotations stay attached |
 | `src`, `dst` | Node ids |
-| `kind` | What the crawler saw: include, import, call, reference, inherit, instantiate, test, config, data, generates (a script or build rule produces the file), embeds (a file is compiled into another) |
+| `kind` | What the crawler saw: include, import, call, reference, inherit, instantiate, test, config, data, generates (a script or build rule produces the file), embeds (a file is compiled into another), builds (0.3: a target compiles or lists a file), links (0.3: a target depends on another target) |
 | `role` | What it means in this kind of codebase: audio, param, mod… Set by a dialect rule (`roleRule` names it) or, in the overlay, by an agent or a person |
 | `provenance` | How we know (below) |
-| `evidence` | The proof: source sites with line, callee signature, `guard` (the preprocessor condition the site sits under) and `resolution` (exact, compile-db, or search: a guess worth auditing); config keys with an optional build-system `guard`; trace ids; annotations; or an agent's rationale |
+| `configs` | 0.3: the configurations in which the edge holds, by name. Absent means all of them |
+| `evidence` | The proof: source sites with line, callee signature, `guard` (the preprocessor condition the site sits under) and `resolution` (exact, compile-db, search: a guess worth auditing, build, or syntactic: matched by name in a parse tree, not resolved; required in 0.3); config keys with an optional build-system `guard`; trace ids; annotations; or an agent's rationale |
 | `count` | Number of distinct sites |
 
 Several call sites between the same two files with the same kind are one edge with a count, not many edges.
+
+Build edges are checked by shape (G8): `builds` goes from a target to a file or other non-target node, `links` from a target to a target, and no other kind may touch a target. Every name in `configs` must be a declared configuration, and configuration names are unique (G7).
 
 ### Provenance
 
@@ -83,7 +91,7 @@ Callee signatures are captured on every site, so bus contracts are checked again
 
 Every element also carries `claim` (one sentence), `by` (`agent:<name>` or `human:<name>`) and an audit `status` (proposed, confirmed, challenged).
 
-`settings.hubPlacement` is `group` or `center`. `exemptions` record patterns exempt from the band rule. An exemption is pending until Julian has approved it 3 times, or once marked `explicit` (decision 0014). The checker refuses an exemption marked established without that.
+`settings.hubPlacement` is `group` or `center`. `settings.offsets` (0.3, decision 0020) holds the sections a person dragged: each key is a top-level section id, `level:<i>` for a band level, or `gutter` for the outside-layers column, with a required `dx` and `dy` in world units. It is a view preference and never changes structure. The checker refuses any other key (V8). Offsets must not make two top-level sections overlap, since that could hide a node or an edge. The checker has no geometry, so this rule lives in the viewer: the layout lists overlapping pairs and the conservation meter shows broken until they are moved apart. `exemptions` record patterns exempt from the band rule. An exemption is pending until Julian has approved it 3 times, or once marked `explicit` (decision 0014). The checker refuses an exemption marked established without that.
 
 ## Determinism
 
@@ -105,6 +113,6 @@ In a target repo, the current snapshot lives in `.loupe/current/`. Every past sn
 | Command | Does |
 | --- | --- |
 | `node tools/loupe-check.mjs <snapshot dir>` | Validates schemas (when `ajv` is installed) and every rule above; prints the conservation summary |
-| `node tools/loupe-check.test.mjs` | 19 deliberately broken snapshots plus the clean sample; each break must be caught |
+| `node tools/loupe-check.test.mjs` | 34 cases: deliberately broken snapshots (0.2 and 0.3) plus clean ones; each break must be caught, with schema validation on |
 | `node tools/convert-sample.mjs` | Regenerates the HORDE example from the prototype's sample data |
 | `node tools/probe-crawl.mjs <repo> <out> [config]` | Probe crawler (not P1): file level, regex based; C/C++, Python, JS, HTML, shell and CMake generation rules. `tools/probe-config/horde.json` holds HORDE's sibling and SDK prefixes |

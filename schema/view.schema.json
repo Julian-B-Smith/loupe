@@ -71,6 +71,26 @@
             "group",
             "center"
           ]
+        },
+        "offsets": {
+          "type": "object",
+          "description": "Manual drag offsets (ADR 0020), in world units. Keys: a top-level section id, \"level:<i>\" for a band level, or \"gutter\". Checked by loupe-check (keys) and by the viewer meter (no two top-level sections may overlap).",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "dx",
+              "dy"
+            ],
+            "properties": {
+              "dx": {
+                "type": "number"
+              },
+              "dy": {
+                "type": "number"
+              }
+            }
+          }
         }
       }
     },

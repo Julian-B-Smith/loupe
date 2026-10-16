@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://loupe.dev/schema/graph-0.2.json",
+  "$id": "https://loupe.dev/schema/graph-0.3.json",
   "title": "Loupe graph",
   "description": "Deterministic crawler output. Same commit + same crawler version + same dialect rules = byte-identical canonical JSON. Agents and humans never write this file.",
   "type": "object",
@@ -14,7 +14,11 @@
   ],
   "properties": {
     "schema": {
-      "const": "loupe.graph/0.2"
+      "enum": [
+        "loupe.graph/0.2",
+        "loupe.graph/0.3"
+      ],
+      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2."
     },
     "source": {
       "type": "object",
@@ -120,9 +124,10 @@
             "resolution": {
               "enum": [
                 "compile-db",
-                "heuristic"
+                "heuristic",
+                "build"
               ],
-              "description": "compile-db = include paths and defines from compile_commands.json; heuristic = path search"
+              "description": "compile-db = include paths and defines from compile_commands.json; heuristic = path search; build = from the build system itself (CMake File API, ADR 0027)"
             },
             "target": {
               "type": "string",
@@ -190,6 +195,60 @@
               }
             }
           }
+        },
+        "configurations": {
+          "type": "array",
+          "minItems": 1,
+          "description": "0.3: the build configurations this graph covers (ADR 0026), from the target repo's .loupe/config.json. An edge with no `configs` holds in all of them.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "args"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "buildType": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "generator": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "notEvaluated": {
+          "type": "array",
+          "description": "0.3: what the configurations could not evaluate on this host (another OS, an option not declared, files built outside the build system). Listed, never treated as absent.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "what",
+              "reason"
+            ],
+            "properties": {
+              "what": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
@@ -209,8 +268,8 @@
   "definitions": {
     "nodeId": {
       "type": "string",
-      "pattern": "^(file|sym|ext|art|miss):.+$",
-      "description": "file:<repo path> | sym:<path>#<qualified name> | ext:<package> | art:<path or glob> | miss:<referenced path>"
+      "pattern": "^(file|sym|ext|art|miss|target):.+$",
+      "description": "file:<repo path> | sym:<path>#<qualified name> | ext:<package> | art:<path or glob> | miss:<referenced path> | target:<build target name> (0.3)"
     },
     "node": {
       "type": "object",
@@ -231,7 +290,8 @@
             "symbol",
             "external",
             "artifact",
-            "missing"
+            "missing",
+            "target"
           ]
         },
         "path": {
@@ -293,6 +353,10 @@
               "type": "string"
             }
           }
+        },
+        "targetType": {
+          "type": "string",
+          "description": "0.3, kind target only: the build system's target type, e.g. STATIC_LIBRARY, EXECUTABLE, UTILITY"
         }
       }
     },
@@ -331,9 +395,11 @@
             "config",
             "data",
             "generates",
-            "embeds"
+            "embeds",
+            "builds",
+            "links"
           ],
-          "description": "Syntactic kind. generates = a script or build rule produces the target file; embeds = a file is compiled into another (e.g. HTML into a header)."
+          "description": "Syntactic kind. generates = a script or build rule produces the target file; embeds = a file is compiled into another (e.g. HTML into a header). builds (0.3) = a build target compiles or lists this file; links (0.3) = a build target depends on another target."
         },
         "role": {
           "type": "string",
@@ -361,6 +427,15 @@
           "items": {
             "$ref": "#/definitions/crawlEvidence"
           }
+        },
+        "configs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "description": "0.3: names of the crawler configurations in which this edge holds (ADR 0026). Absent = all of them."
         }
       }
     },
@@ -401,9 +476,11 @@
               "enum": [
                 "exact",
                 "compile-db",
-                "search"
+                "search",
+                "build",
+                "syntactic"
               ],
-              "description": "How the target path was found. search = heuristic path search; worth auditing"
+              "description": "How the target was found (ADR 0028). exact = path as written exists; compile-db = via compile_commands.json; search = heuristic path search, worth auditing; build = read from the build system; syntactic = matched by name in a parse tree, unresolved. Required in 0.3."
             }
           }
         },
@@ -429,10 +506,71 @@
             "guard": {
               "type": "string",
               "description": "Build-system condition the config entry sits under, e.g. HYPERSAW_GUI2 or NOT HYPERSAW_GUI2"
+            },
+            "resolution": {
+              "enum": [
+                "exact",
+                "compile-db",
+                "search",
+                "build",
+                "syntactic"
+              ],
+              "description": "How the target was found (ADR 0028). exact = path as written exists; compile-db = via compile_commands.json; search = heuristic path search, worth auditing; build = read from the build system; syntactic = matched by name in a parse tree, unresolved. Required in 0.3."
             }
           }
         }
       ]
+    },
+    "crawlEvidence03": {
+      "description": "0.3: crawl evidence must say how it was resolved (ADR 0028).",
+      "allOf": [
+        {
+          "$ref": "#/definitions/crawlEvidence"
+        },
+        {
+          "required": [
+            "resolution"
+          ]
+        }
+      ]
+    },
+    "edge03": {
+      "description": "0.3 edge: evidence items carry resolution.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/edge"
+        },
+        {
+          "properties": {
+            "evidence": {
+              "items": {
+                "$ref": "#/definitions/crawlEvidence03"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "if": {
+    "properties": {
+      "schema": {
+        "const": "loupe.graph/0.3"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "crawler": {
+        "required": [
+          "configurations"
+        ]
+      },
+      "edges": {
+        "items": {
+          "$ref": "#/definitions/edge03"
+        }
+      }
     }
   }
 }
