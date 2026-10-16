@@ -129,7 +129,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Next:** the syntax layer (Q-013), then graph.json at 0.3 and the inventory layer.
 
 ### Q-013 — P1a slice 2: the syntax layer for C and C++
-- **Status:** current (started 2026-10-16)
+- **Status:** done 2026-10-16, merged as PR #20 (trace: traces/2026-10-16-p1a-syntax-layer.md)
 - **Decisions (Julian, by poll 2026-10-16):** the web-tree-sitter runtime as a dependency, with the C and C++
   grammar `.wasm` files vendored in the repo and pinned by sha256; C and C++ first. After the critic review (polls,
   same day): `#include` lines and their conditions are found by a line-oriented directive scanner, not tree-sitter
@@ -164,6 +164,40 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   5. The fixture gains includes that exercise each rule (quoted, angle, via include path, generated header, guarded,
      unresolved); the result equals a committed golden, gated in `./verify fast`; a planted change makes it fail.
 - **Out of scope:** calls and symbols (P1b), emitting graph.json (next slice), the inventory layer, running on HORDE.
+
+### Q-016 — P1a slice 3: graph.json, the inventory, and build-target conformance
+- **Status:** current (started 2026-10-16)
+- **Decisions (Julian, by poll 2026-10-16):** every tracked file except binaries is a node (hiding is a view lens,
+  0019); `via` goes into the graph as schema 0.3.1 (additive; the schema diff is approved in this item's PR);
+  declared-versus-observed findings start here, for build targets. Julian's framing: Loupe can expose where a client's
+  declared structure is not supported by the deterministic pass.
+- **Scope:** `crawler/` (emitter, inventory, conformance), `schema/graph.schema.json` (human gate), `docs/graph-schema.md`,
+  `tools/loupe-check.mjs` and mutation tests, `fixtures/`, `verify` (one added gate), `CODEMAP.md`.
+- **Acceptance criteria:**
+  1. `node crawler/cli.ts crawl <repo> --out <dir>` writes graph.json (schema `loupe.graph/0.3.1`), an empty overlay and
+     an empty view bound to it; loupe-check passes on it with schema validation.
+  2. Inventory: every tracked file is a node except binary files, which are counted by extension; the inventory closes.
+  3. Edges: `builds`, `depends` and `generates` from the build facts, `include` from the syntax facts (one edge per
+     file pair with a site per include: line, guard, resolution, `via`; `configs` where narrower than all). Every
+     missing node carries its reason; nothing in the facts is dropped: computed includes, census-skipped lines,
+     unreadable files and unclaimed sources are listed in `crawler.notEvaluated`.
+  4. Conformance (deterministic, outside graph.json): for each pair of targets, an include from a file one target
+     builds to a file another builds, with no declared dependency path between them, is a finding ("used, not
+     declared"); a declared direct dependency with no include between their files is a finding ("declared, not seen
+     in includes": linking may still need it). On the fixture, `plugin` → `lut` is the first kind.
+  5. Deterministic and machine-free: byte-identical runs; the fixture's graph (source block aside) and conformance
+     equal committed goldens, gated in `./verify fast`; a planted change fails.
+- **Out of scope:** roles (path rules), symbols (P1b), viewer changes, a HORDE crawl.
+
+### Q-017 — The design view draws loose nodes
+- **Status:** open (found 2026-10-16 while emitting graph.json, Q-016)
+- **Problem:** `docs/graph-schema.md` says a node homed in no section is "loose (shown at top level)", and loupe-check
+  allows it, but `design/prototype/layout.js`'s design layout places no loose node. A fresh crawl has an empty view,
+  so in the design view every node is undrawn and the meter cannot balance. The flow view places them all.
+- **Scope:** `design/prototype/`, `tools/lens.test.mjs`
+- **Acceptance criteria:** 1. the design layout places every loose node at top level; 2. a fresh crawl's snapshot
+  (empty view) lays out with every node placed in both views, tested; 3. the meter balances on it in the browser;
+  4. critic review with screenshots.
 
 ### Q-014 — Map HORDE's engine2 from its spec (inferred; parked)
 - **Status:** parked 2026-10-16 on branch `q014/engine2-inferred-map` (rebuildable, spec-pure, not on the testbench).

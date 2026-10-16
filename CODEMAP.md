@@ -46,10 +46,11 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `crawler/`: the P1a crawler, TypeScript run natively by Node 24 (no compiler). `build.ts` is the build layer
   (CMake File API + expanded JSON trace, scratch dir outside the tree, always deleted); `syntax.ts` is the syntax
   layer (a line scanner for includes and their `#if` conditions, with a census; tree-sitter for parse-error counts;
-  resolution per site); `cli.ts` (`npm run crawl --
-  build|syntax <repo>`); `build.test.ts`, `syntax.test.ts` (gated in `./verify fast`). `grammars/`: the C and C++
+  resolution per site); `graph.ts` emits graph.json (0.3.1) with the inventory;
+  `conformance.ts` compares declared target dependencies with observed includes; `cli.ts` (`npm run crawl --
+  build|syntax <repo>` or `crawl <repo> --out <dir>`); `build.test.ts`, `syntax.test.ts`, `graph.test.ts` (gated in `./verify fast`). `grammars/`: the C and C++
   grammar .wasm files, vendored and pinned by sha256 in `GRAMMARS.json` (refresh steps in its README).
 - `fixtures/cmake-basic/`: crawler fixture with two declared configurations; its goldens are
-  `fixtures/cmake-basic.facts.golden.json` and `fixtures/cmake-basic.syntax.golden.json` (rewrite only with
+  `fixtures/cmake-basic.{facts,syntax,graph,conformance}.golden.json` (rewrite only with
   `--update` on the matching test, reviewed).
 

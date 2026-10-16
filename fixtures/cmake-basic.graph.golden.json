@@ -1,0 +1,910 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [
+          "-G",
+          "Unix Makefiles",
+          "-DCMAKE_BUILD_TYPE=Release"
+        ],
+        "buildType": "Release",
+        "name": "release"
+      },
+      {
+        "args": [
+          "-G",
+          "Unix Makefiles",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DFIX_EXTRA=ON"
+        ],
+        "buildType": "Release",
+        "name": "extra"
+      }
+    ],
+    "dialect": {
+      "name": "none",
+      "version": "0"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 17,
+      "excluded": [],
+      "files": 17
+    },
+    "languages": [
+      "cmake",
+      "cpp",
+      "csv",
+      "json",
+      "markdown",
+      "python"
+    ],
+    "name": "loupe-crawler",
+    "notEvaluated": [
+      {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of lut): makes no file Loupe can see",
+        "what": "lib/CMakeLists.txt:15"
+      },
+      {
+        "reason": "in no compile of any configuration: its includes are textual only",
+        "what": "src/win_only.cpp"
+      },
+      {
+        "reason": "tracked source claimed by no target in any declared configuration (may be platform-only)",
+        "what": "src/win_only.cpp"
+      }
+    ],
+    "scope": {
+      "exclude": [
+        "binary content (binary)",
+        "git submodules (submodule)",
+        "symlinks (symlink)",
+        "tracked files not readable on disk (unreadable)"
+      ],
+      "include": [
+        "every tracked file"
+      ],
+      "resolution": "build"
+    },
+    "version": "0.1.0"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "miss:cstdint",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "src/engine.h",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:04ec3feee2d3f4ff",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.h"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.h",
+      "evidence": [
+        {
+          "key": "add_custom_command line 3",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:134a40706e65afdd",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:lib/lut.csv"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.h",
+      "evidence": [
+        {
+          "key": "add_custom_command line 3",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:2321e0aa8281d977",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:lib/gen_lut.py"
+    },
+    {
+      "configs": [
+        "extra"
+      ],
+      "count": 1,
+      "dst": "file:src/extra.cpp",
+      "evidence": [
+        {
+          "key": "target engine sources (defined at line 15)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:29d9d4fcf9ac00d2",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/table.h",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "src/engine.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:315297c784e8f9e6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/plugin_entry.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3c7e23b690c937dc",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/plugin_entry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/platform.h",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "src/engine.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3d2cd697b9f16a85",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.h"
+    },
+    {
+      "configs": [
+        "extra"
+      ],
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "configs": [
+            "extra"
+          ],
+          "line": 1,
+          "path": "src/extra.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:45e3321074327752",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/extra.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:45e333a69f99dfc8",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${external}/outside_b.cpp",
+      "evidence": [
+        {
+          "key": "target plugin sources (defined at line 28)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:4f865acf20d4d363",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:plugin"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.log",
+      "evidence": [
+        {
+          "key": "add_custom_command line 3",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:513b606f22208db8",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:lib/lut.csv"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/table.h",
+      "evidence": [
+        {
+          "key": "target engine sources (defined at line 15)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:59a2e0e40e9c34b8",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "lib/lut.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:67f1d75b98b08871",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:lib/lut.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:missing_extra.h",
+      "evidence": [
+        {
+          "guard": "defined(FIX_EXTRA)",
+          "line": 6,
+          "path": "src/engine.cpp",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:6aed4603ad0a2d56",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/platform_mac.h",
+      "evidence": [
+        {
+          "guard": "defined(__APPLE__)",
+          "line": 4,
+          "path": "src/platform.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6ec2106ea1289488",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/platform.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/platform.h",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "src/dsp/filter.h",
+          "resolution": "build",
+          "type": "site",
+          "via": [
+            "src/engine.cpp"
+          ]
+        }
+      ],
+      "id": "e:7b54ae8524e98b15",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/filter.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.cpp",
+      "evidence": [
+        {
+          "key": "target engine sources (defined at line 15)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:7c1de2ca591a8501",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.log",
+      "evidence": [
+        {
+          "key": "add_custom_command line 3",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:815d960344f8cd5b",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:lib/gen_lut.py"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/win_only.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:850d7ce3ba47c208",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/win_only.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.h",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "src/plugin_entry.cpp",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:895d0b484dcc384d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/plugin_entry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tests/engine_test.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:95616a15d3a6af93",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tests/engine_test.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/lib/lut.h",
+      "evidence": [
+        {
+          "key": "target lut sources (defined at line 12)",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:a54ec57c153c4951",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:lut"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${external}/outside_a.cpp",
+      "evidence": [
+        {
+          "key": "target plugin sources (defined at line 28)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:b0cfa7a7642846a9",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:plugin"
+    },
+    {
+      "count": 1,
+      "dst": "target:engine",
+      "evidence": [
+        {
+          "key": "target plugin dependencies (defined at line 28)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:b322352965965488",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:plugin"
+    },
+    {
+      "count": 1,
+      "dst": "miss:windows.h",
+      "evidence": [
+        {
+          "guard": "!(defined(__APPLE__)) && (defined(_WIN32))",
+          "line": 6,
+          "path": "src/platform.h",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:c17877d2a612951b",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/platform.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/filter.h",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "src/engine.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:cba2a1849bbdf2c9",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "target:engine",
+      "evidence": [
+        {
+          "key": "target engine_test dependencies (defined at line 31)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:cee0752faf3395a6",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:engine_test"
+    },
+    {
+      "count": 1,
+      "dst": "file:lib/lut.cpp",
+      "evidence": [
+        {
+          "key": "target lut sources (defined at line 12)",
+          "path": "lib/CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:cf18eb151b4c7778",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:lut"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/plugin_entry.cpp",
+      "evidence": [
+        {
+          "key": "target plugin sources (defined at line 28)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:d185d5b651f6238e",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:plugin"
+    },
+    {
+      "count": 1,
+      "dst": "miss:vector",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "src/engine.cpp",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:d60f6fa47c2f1c1f",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:platform_posix.h",
+      "evidence": [
+        {
+          "guard": "!(defined(__APPLE__)) && !(defined(_WIN32))",
+          "line": 8,
+          "path": "src/platform.h",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:d7f3178fdc0e9093",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/platform.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:tests/engine_test.cpp",
+      "evidence": [
+        {
+          "key": "target engine_test sources (defined at line 31)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:ea1b5c281caa95cd",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:engine_test"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/table.h",
+      "evidence": [
+        {
+          "key": "add_custom_command line 9",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:f0e79fcc1dde6da0",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:tools/gen_table.py"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine.h",
+      "evidence": [
+        {
+          "key": "target engine sources (defined at line 15)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:f1d6df4b74adf562",
+      "kind": "builds",
+      "provenance": "config",
+      "src": "target:engine"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "sha256:1efd05319a4114a2fbb5f07e873a791fbe97ba02d696dbd390269c29dba7373d",
+      "id": "file:.loupe/config.json",
+      "kind": "file",
+      "lang": "json",
+      "loc": 6,
+      "path": ".loupe/config.json"
+    },
+    {
+      "hash": "sha256:5725370be55606df5e9dab0f34b0d7ba35d23791c4db08b1c710d3971a87153d",
+      "id": "file:CMakeLists.txt",
+      "kind": "file",
+      "lang": "cmake",
+      "loc": 42,
+      "path": "CMakeLists.txt"
+    },
+    {
+      "hash": "sha256:7aa4e57a4a327719205e23200f8a53b506b5e45db64baf74196c5a0f50b6cd4d",
+      "id": "file:README.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 3,
+      "path": "README.md"
+    },
+    {
+      "hash": "sha256:537b46e794de9184a95e545078e3c6dfc3c0c7f061e53dcc34769c2e91e7e43d",
+      "id": "file:lib/CMakeLists.txt",
+      "kind": "file",
+      "lang": "cmake",
+      "loc": 19,
+      "path": "lib/CMakeLists.txt"
+    },
+    {
+      "hash": "sha256:86dee28a1c50420fd3d6edeb216b4972245b0e14bdffe2cc4d988ba50f43fcea",
+      "id": "file:lib/gen_lut.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 3,
+      "path": "lib/gen_lut.py"
+    },
+    {
+      "hash": "sha256:e3df10285666ff330239fe69a1a6067393e9b4fb099974de6f5cbb93f0859104",
+      "id": "file:lib/lut.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 2,
+      "path": "lib/lut.cpp"
+    },
+    {
+      "hash": "sha256:14c5e74c4b96ccef41cd94db73a9ec3348038ac094feca4fd897cecffa07cdae",
+      "id": "file:lib/lut.csv",
+      "kind": "file",
+      "lang": "csv",
+      "loc": 3,
+      "path": "lib/lut.csv"
+    },
+    {
+      "hash": "sha256:90aa342e75c96c8c70d474c09e1d05ecdb098f37247bf41f75b94f356efbc113",
+      "id": "file:src/dsp/filter.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 3,
+      "path": "src/dsp/filter.h"
+    },
+    {
+      "hash": "sha256:d2b48adbbeece635c4fd5b08bd24e0e3a0d14a48aa0527698e306102628e39a3",
+      "id": "file:src/engine.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 8,
+      "path": "src/engine.cpp"
+    },
+    {
+      "hash": "sha256:d645aa72cef5a4b23baa83f9e21c8623583adb25566ec1bc05f69db7248210e8",
+      "id": "file:src/engine.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 7,
+      "path": "src/engine.h"
+    },
+    {
+      "hash": "sha256:02eb248dd087cf16eb7e36988396bcefe76e9f881afbc76da618425eea73953c",
+      "id": "file:src/extra.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 2,
+      "path": "src/extra.cpp"
+    },
+    {
+      "hash": "sha256:233429e315990ffe4fe8884aef4c0f623db0b22e753c97759194b2055456508b",
+      "id": "file:src/platform.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 9,
+      "path": "src/platform.h"
+    },
+    {
+      "hash": "sha256:b3adf106d95b8934f690943f2921308b90be5b766c4c8ba250c792de56400201",
+      "id": "file:src/platform_mac.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 1,
+      "path": "src/platform_mac.h"
+    },
+    {
+      "hash": "sha256:9a56d1f4a0ea2e2a87868e69f79840d3299d8e78cdb7764f6ee12e706cf4342c",
+      "id": "file:src/plugin_entry.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 4,
+      "path": "src/plugin_entry.cpp"
+    },
+    {
+      "hash": "sha256:b2cdfdd3bfe9732da1a55113e54d6115afb6f62a0150701ba3f1a205b05da7e1",
+      "id": "file:src/win_only.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 2,
+      "path": "src/win_only.cpp"
+    },
+    {
+      "hash": "sha256:1b35cf8007c9b7f05c2f2f90d4d2f878506f7837594de6482c37e38573a6f50a",
+      "id": "file:tests/engine_test.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 2,
+      "path": "tests/engine_test.cpp"
+    },
+    {
+      "hash": "sha256:c3dbef26a97ae327323495fe9705d6cc273e394c45228458ac1c60da83223049",
+      "id": "file:tools/gen_table.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 4,
+      "path": "tools/gen_table.py"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/generated/table.h",
+      "kind": "missing",
+      "missing": {
+        "reason": "generated"
+      },
+      "path": "${build}/generated/table.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/lib/lut.h",
+      "kind": "missing",
+      "missing": {
+        "reason": "generated"
+      },
+      "path": "${build}/lib/lut.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/lib/lut.log",
+      "kind": "missing",
+      "missing": {
+        "reason": "generated"
+      },
+      "path": "${build}/lib/lut.log"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${external}/outside_a.cpp",
+      "kind": "missing",
+      "missing": {
+        "note": "a source outside the repo, listed by the build",
+        "reason": "external"
+      },
+      "path": "${external}/outside_a.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${external}/outside_b.cpp",
+      "kind": "missing",
+      "missing": {
+        "note": "a source outside the repo, listed by the build",
+        "reason": "external"
+      },
+      "path": "${external}/outside_b.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "miss:cstdint",
+      "kind": "missing",
+      "missing": {
+        "note": "outside the repo (angle include or absolute path)",
+        "reason": "external"
+      },
+      "path": "cstdint"
+    },
+    {
+      "hash": "none",
+      "id": "miss:missing_extra.h",
+      "kind": "missing",
+      "missing": {
+        "note": "not found next to the file or on any include path",
+        "reason": "unknown"
+      },
+      "path": "missing_extra.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:platform_posix.h",
+      "kind": "missing",
+      "missing": {
+        "note": "not found next to the file or on any include path",
+        "reason": "unknown"
+      },
+      "path": "platform_posix.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:vector",
+      "kind": "missing",
+      "missing": {
+        "note": "outside the repo (angle include or absolute path)",
+        "reason": "external"
+      },
+      "path": "vector"
+    },
+    {
+      "hash": "none",
+      "id": "miss:windows.h",
+      "kind": "missing",
+      "missing": {
+        "note": "outside the repo (angle include or absolute path)",
+        "reason": "external"
+      },
+      "path": "windows.h"
+    },
+    {
+      "hash": "none",
+      "id": "target:engine",
+      "kind": "target",
+      "path": "engine",
+      "targetType": "STATIC_LIBRARY"
+    },
+    {
+      "hash": "none",
+      "id": "target:engine_test",
+      "kind": "target",
+      "path": "engine_test",
+      "targetType": "EXECUTABLE"
+    },
+    {
+      "hash": "none",
+      "id": "target:lut",
+      "kind": "target",
+      "path": "lut",
+      "targetType": "STATIC_LIBRARY"
+    },
+    {
+      "hash": "none",
+      "id": "target:lut_docs",
+      "kind": "target",
+      "path": "lut_docs",
+      "targetType": "UTILITY"
+    },
+    {
+      "hash": "none",
+      "id": "target:plugin",
+      "kind": "target",
+      "path": "plugin",
+      "targetType": "EXECUTABLE"
+    }
+  ],
+  "schema": "loupe.graph/0.3.1",
+  "source": {
+    "commit": "pinned-by-test",
+    "commitTime": "pinned-by-test",
+    "dirty": false,
+    "repo": "pinned-by-test"
+  }
+}

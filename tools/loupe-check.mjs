@@ -81,6 +81,16 @@ export function check(dir, { schemaDir } = {}) {
     if (cfgNames.size && cs.length === cfgNames.size) err('G7', `${what} lists every configuration; omit configs instead`);
   };
   for (const e of G.edges) checkConfigs(`edge ${e.id}`, e.configs);
+  // 0.3.1: a site's configs follow the same rules, and the edge holds exactly where its sites do (their union).
+  for (const e of G.edges) {
+    const sites = e.evidence.filter((x) => x.type === 'site');
+    for (const x of sites) checkConfigs(`edge ${e.id} site ${x.path}:${x.line}`, x.configs);
+    if (sites.some((x) => x.configs)) {
+      const union = sites.every((x) => x.configs) ? [...new Set(sites.flatMap((x) => x.configs))].sort() : null;
+      const want = union && union.length < cfgNames.size ? union.join() : '';
+      if ((e.configs || []).join() !== want) err('G7', `edge ${e.id} configs ${(e.configs || ['(all)']).join()} is not the union of its sites' configs`);
+    }
+  }
   for (const n of G.nodes) checkConfigs(`node ${n.id}`, n.configs);
   const holdsIn = (cs) => new Set(cs || cfgNames);
   for (const e of G.edges) for (const end of [e.src, e.dst]) {
@@ -109,6 +119,13 @@ export function check(dir, { schemaDir } = {}) {
     else if (!['builds', 'depends', 'generates'].includes(e.kind) && (isTarget(e.src) || isTarget(e.dst))) err('G8', `${e.kind} edge ${e.id} touches a target; only builds, depends and generates may`);
     if ((e.kind === 'builds' || e.kind === 'depends') && e.evidence.some((x) => x.resolution && x.resolution !== 'build'))
       err('G8', `${e.kind} edge ${e.id} comes from the build system, so its evidence resolution must be build`);
+  }
+
+  // G9 (0.3.1): `via` names compiled sources the auditor can open (file nodes), and only on a site found through a
+  // build include path; on any other resolution it would claim a compile that played no part.
+  for (const e of G.edges) for (const x of e.evidence) if (x.via && x.type === 'site') {
+    if (x.resolution !== 'build') err('G9', `edge ${e.id} site ${x.path}:${x.line} has via but resolution ${x.resolution}`);
+    for (const v of x.via) if (nodes.get('file:' + v)?.kind !== 'file') err('G9', `edge ${e.id} site ${x.path}:${x.line} via ${v}, which is not a file in the graph`);
   }
 
   for (const n of G.nodes) {
