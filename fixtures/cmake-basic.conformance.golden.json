@@ -1,0 +1,21 @@
+{
+  "findings": [
+    {
+      "evidence": [
+        "e:895d0b484dcc384d"
+      ],
+      "from": "target:plugin",
+      "kind": "used-not-declared",
+      "to": "target:lut",
+      "weakestResolution": "syntactic"
+    }
+  ],
+  "graph": {
+    "hash": "pinned-by-test"
+  },
+  "schema": "loupe.conformance/0.0-internal",
+  "unattributedIncludes": {
+    "extra": 10,
+    "release": 10
+  }
+}

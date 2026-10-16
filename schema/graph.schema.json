@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://loupe.dev/schema/graph-0.3.json",
+  "$id": "https://loupe.dev/schema/graph-0.3.1.json",
   "title": "Loupe graph",
   "description": "Deterministic crawler output. Same commit + same crawler version + same dialect rules = byte-identical canonical JSON. Agents and humans never write this file.",
   "type": "object",
@@ -16,9 +16,10 @@
     "schema": {
       "enum": [
         "loupe.graph/0.2",
-        "loupe.graph/0.3"
+        "loupe.graph/0.3",
+        "loupe.graph/0.3.1"
       ],
-      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2."
+      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2. 0.3.1 adds `via` (the compiled sources whose include path found the file) and `configs` on site evidence."
     },
     "source": {
       "type": "object",
@@ -490,6 +491,25 @@
                 "syntactic"
               ],
               "description": "How the target was found (ADR 0028). exact = path as written exists; compile-db = via compile_commands.json; search = heuristic path search, worth auditing; build = read from the build system; syntactic = matched by name in a parse tree, unresolved. Required in 0.3."
+            },
+            "via": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "0.3.1: the compiled sources whose compile's include path found this file (repo paths), when it was not found next to the including file or through its own compile. An auditor checks these compiles."
+            },
+            "configs": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              },
+              "description": "0.3.1: the configurations in which this directive holds, when narrower than all; the edge's configs is the union of its sites'."
             }
           }
         },
@@ -564,7 +584,10 @@
   "if": {
     "properties": {
       "schema": {
-        "const": "loupe.graph/0.3"
+        "enum": [
+          "loupe.graph/0.3",
+          "loupe.graph/0.3.1"
+        ]
       }
     }
   },
@@ -636,6 +659,37 @@
                         "syntactic"
                       ]
                     }
+                  },
+                  "via": false,
+                  "configs": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema": {
+            "const": "loupe.graph/0.3"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "edges": {
+            "items": {
+              "properties": {
+                "evidence": {
+                  "items": {
+                    "properties": {
+                      "via": false,
+                      "configs": false
+                    }
                   }
                 }
               }
@@ -644,5 +698,5 @@
         }
       }
     }
-  }
+  ]
 }

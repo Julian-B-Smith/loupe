@@ -1,8 +1,10 @@
 # Graph schema
 
-Version 0.3 (2026-10-16). Status: Proposed, awaiting Julian's approval (Q-010; decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
+Version 0.3.1 (2026-10-16). Status: 0.3 accepted (PR #17); 0.3.1 proposed in Q-016 (decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
 
 Changed in 0.2: `missing` nodes, file roles, `generates` and `embeds` edges, guards, resolution on sites, and the crawl scope and inventory. Why: decision 0018.
+
+Changed in 0.3.1: site evidence may carry `via`, the compiled sources whose compile's include path found the file, so an auditor knows which compile to open (G9: only on a `build` resolution, and each must be a file in the graph), and `configs`, the configurations in which that directive holds; the edge's `configs` is then the union of its sites' (G7). An include holds where its file is compiled (Julian, 2026-10-16): a file no compile reaches keeps its include edges and is listed in `notEvaluated` as textual only. Both fields are allowed only in a graph that declares 0.3.1.
 
 Changed in 0.3: build `target` nodes with `builds` and `depends` edges (from the build system, 0027); the build configurations a graph covers and what they could not evaluate, with `configs` on any edge or target that holds in only some of them (0026); `resolution` gains `build` and `syntactic` and becomes required on every crawled site and config key (0028); `settings.offsets` in the view (0020; the view schema stays `loupe.view/0.2`, since the field is optional). A graph declares `loupe.graph/0.2` or `loupe.graph/0.3`. A 0.2 graph stays valid as 0.2 and may not carry any 0.3-only field, so a 0.2 reader can trust what it reads; the 0.3 requirements apply only to a graph that declares 0.3. Not in 0.3: `lens`, which waits for 0019 to be accepted.
 
@@ -67,17 +69,24 @@ How the build layer's internal facts (`crawler/build.ts`) map onto the graph. `s
 | Build fact | In the graph |
 | --- | --- |
 | Configurations that ran | `crawler.configurations`, as declared in `.loupe/config.json` |
-| A target | `target:<name>` node with `targetType`; `configs` if it exists in only some configurations |
+| A target | `target:<name>` node with `targetType`; `configs` if it exists in only some configurations. Its build evidence cites the CMake file and line that define it (File API backtrace) |
 | A source a target lists | `builds` edge, target → file, with `configs` if not in every configuration |
 | A generated source (`${build}/…`) | `miss:${build}/…` node, reason `generated`, plus the `generates` edges that make it |
 | A source outside the repo (`${external}/…`) | `miss:${external}/…` node, reason `external` |
 | A target's dependencies | `depends` edge, target → target |
 | A custom command with OUTPUT or BYPRODUCTS | `generates` edges from each tracked file in DEPENDS to each output (open question below) |
 | A tracked source no target claims | an entry in `crawler.notEvaluated` |
-| Compile groups (include paths, defines) | Not in the graph: they are how the syntax layer resolves includes, recorded per edge as `resolution` |
-| Whether configurations were declared or defaulted | Not yet in the graph (open question below) |
+| Compile groups (include paths, defines) | Not in the graph: they are how the syntax layer resolves includes, recorded per site as `resolution` and `via` |
+| An include (syntax layer) | `include` edge, file → file or `miss:`, one site per directive with `line`, `guard`, `resolution`, `via`; `configs` where narrower than all |
+| A computed include, a census-skipped line, an unreadable file, a custom command that yields no edge, an unknown `name:` dependency | an entry in `crawler.notEvaluated` |
+| A submodule or a symlink | counted in the inventory (`submodule`, `symlink`), never read |
+| Whether configurations were declared or defaulted | An entry in `crawler.notEvaluated` when none were declared |
 
-Open for the emitter, not decided by this table: whether a custom command's data input (a `.csv` in DEPENDS) is a `generates` edge like the script that runs, or a different kind; how a POST_BUILD command with no OUTPUT is shown (today it makes no edge); recording the declared-or-defaulted flag; and where each target is defined (the facts do not yet record the CMake file, so the example's evidence paths were read from the fixture).
+Open for the emitter, not decided by this table: whether a custom command's data input (a `.csv` in DEPENDS) is a `generates` edge like the script that runs, or a different kind; Settled in Q-016: a POST_BUILD command with no output is listed in `notEvaluated`; a TARGET-form command's outputs are generated by its target; the crawler (`node crawler/cli.ts crawl <repo> --out <dir>`) applies this table; each target's defining file and line now come from the build; an undeclared configuration list is stated in `crawler.notEvaluated`.
+
+### Declared versus observed (build targets)
+
+`crawl` also writes `conformance.json`, outside the graph (the graph holds only what the crawl saw). For each configuration it compares the declared target dependencies (`depends`, followed transitively) with the includes between files the targets build. `used-not-declared`: a target's files include another's and no dependency path says so. `declared-not-seen`: a direct dependency with no include behind it (linking may still need it; only includes are seen). Each finding cites its edges and states the weakest resolution among them: a `syntactic` include was matched by name only, so such a finding is a lead to check. Includes into files no target builds are counted per configuration, not judged.
 
 ### Provenance
 

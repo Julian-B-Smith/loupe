@@ -51,6 +51,9 @@ fast() {
   # Crawler syntax layer (Q-013): grammars match their pinned sha256 (a swapped .wasm fails here and refuses to load),
   # includes on the fixture equal the golden, conditions kept verbatim, resolution per site.
   node crawler/syntax.test.ts || ok=1
+  # graph.json emission and build-target conformance (Q-016): the fixture's graph and findings equal their goldens,
+  # loupe-check passes on the emitted snapshot with schema validation, every layer fact lands in the graph.
+  node crawler/graph.test.ts || ok=1
   # loupe-check on every example snapshot, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.

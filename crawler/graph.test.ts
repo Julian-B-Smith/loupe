@@ -1,0 +1,146 @@
+// Tests for graph.json emission and build-target conformance (ROADMAP Q-016). Gated in ./verify fast.
+// Run: node crawler/graph.test.ts            (compare with the goldens)
+//      node crawler/graph.test.ts --update   (rewrite the goldens; a reviewed change only)
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
+import { canonicalDoc, canonicalGraph } from '../tools/canon.mjs';
+import { check as loupeCheck } from '../tools/loupe-check.mjs';
+import { buildLayer } from './build.ts';
+import { syntaxLayer } from './syntax.ts';
+import { emitGraph, repoNameOf } from './graph.ts';
+import { conformance } from './conformance.ts';
+import { indexSnapshot } from '../design/prototype/snapshot.js';
+import { layout } from '../design/prototype/layout.js';
+
+let failed = 0;
+const check = (name: string, cond: boolean) => { console.log(`${cond ? 'pass' : 'FAIL'}  ${name}`); if (!cond) failed++; };
+const FIXTURE = 'fixtures/cmake-basic', GOLDEN = 'fixtures/cmake-basic.graph.golden.json', CGOLDEN = 'fixtures/cmake-basic.conformance.golden.json';
+const SCHEMA = 'schema';
+// The source block names the commit the fixture was crawled at, which moves with every commit of this repo; the
+// golden compares everything else.
+const unsourced = (g: string) => { const x = JSON.parse(g); x.source = { repo: 'pinned-by-test', commit: 'pinned-by-test', commitTime: 'pinned-by-test', dirty: false }; return canonicalGraph(x); };
+const write = (dir: string, s: { graph: string; overlay: string; view: string }) => { mkdirSync(dir, { recursive: true }); for (const k of ['graph', 'overlay', 'view'] as const) writeFileSync(join(dir, `${k}.json`), s[k]); };
+
+const build = buildLayer(FIXTURE).facts, syntax = await syntaxLayer(FIXTURE, build);
+const s1 = emitGraph(FIXTURE, build, syntax), s2 = emitGraph(FIXTURE, build, syntax);
+check('two runs give byte-identical snapshots', JSON.stringify(s1) === JSON.stringify(s2));
+const g = unsourced(s1.graph), conf = canonicalDoc(conformance(s1.graph));
+if (process.argv.includes('--update')) { writeFileSync(GOLDEN, g); writeFileSync(CGOLDEN, canonicalDoc({ ...JSON.parse(conf), graph: { hash: 'pinned-by-test' } })); console.log(`wrote ${GOLDEN}, ${CGOLDEN}`); }
+check('the graph equals the committed golden (source block aside)', g === readFileSync(GOLDEN, 'utf8'));
+check('conformance equals the committed golden', canonicalDoc({ ...JSON.parse(conf), graph: { hash: 'pinned-by-test' } }) === readFileSync(CGOLDEN, 'utf8'));
+check('no absolute path anywhere in the snapshot', !/(^|[\s"=:;,'(<])\/(?!\/)(Users|home|private|var|opt|tmp|Library|usr|Volumes|mnt|root|nix|srv)\b/m.test(s1.graph));
+
+const tmp = mkdtempSync(join(tmpdir(), 'loupe-graph-'));
+try {
+  write(join(tmp, 'snap'), s1);
+  const r = loupeCheck(join(tmp, 'snap'), { schemaDir: SCHEMA });
+  check(`loupe-check passes on the emitted snapshot, with schema validation (${r.errors.slice(0, 2).join(' | ') || 'clean'})`, r.errors.length === 0 && !r.notes.some((n: string) => /skipped/.test(n)));
+} finally { rmSync(tmp, { recursive: true, force: true }); }
+
+// ---- the one rule: every fact the layers produced lands in the graph
+const G = JSON.parse(s1.graph);
+const sites = G.edges.filter((e: any) => e.kind === 'include').flatMap((e: any) => e.evidence.map((x: any) => `${x.path}:${x.line}>${e.dst}`)).sort();
+const facts = syntax.includes.map((i: any) => `${i.from}:${i.line}>${i.to.startsWith('file:') ? i.to : 'miss:' + i.to.slice(5)}`).sort();
+check('every include fact is a site on an include edge, and nothing else is', JSON.stringify(sites) === JSON.stringify(facts));
+check('every membership is a builds edge', build.membership.every((m: any) => G.edges.some((e: any) => e.kind === 'builds' && e.src === 'target:' + m.target && (e.dst === 'file:' + m.source || e.dst === 'miss:' + m.source))));
+check('every target dependency is a depends edge', build.perConfiguration.every((pc: any) => pc.targets.every((t: any) => t.dependencies.every((d: string) => G.edges.some((e: any) => e.kind === 'depends' && e.src === 'target:' + t.name && e.dst === 'target:' + d)))));
+check('an unclaimed source is listed as not evaluated', G.crawler.notEvaluated.some((n: any) => n.what === 'src/win_only.cpp'));
+check('a source in one configuration only is a builds edge with that configuration', JSON.stringify(G.edges.find((e: any) => e.kind === 'builds' && e.dst === 'file:src/extra.cpp')?.configs) === '["extra"]');
+check('build evidence cites the file that defines the target', G.edges.find((e: any) => e.kind === 'builds' && e.src === 'target:lut')?.evidence[0].path === 'lib/CMakeLists.txt');
+check('one fact seen in two configurations is one piece of evidence', G.edges.filter((e: any) => e.kind === 'generates').every((e: any) => e.count === 1));
+check('via reaches the graph (0.3.1)', JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/dsp/filter.h')?.evidence[0].via) === '["src/engine.cpp"]');
+{ // the viewer can draw a real crawl: every node placed in both views
+  const d = indexSnapshot({ graph: G, overlay: JSON.parse(s1.overlay), view: JSON.parse(s1.view), stages: null, diff: null, hashes: {} });
+  const placed = (P: any) => d.nodeIds.every((id: string) => P.nodes[id] || P.proxy[id]);
+  // Flow only: the design view does not yet place loose nodes, so a fresh crawl (empty view) draws nothing there.
+  // That is a viewer gap, ROADMAP Q-017, not something this slice may paper over by writing a view.
+  check('the viewer\'s flow view lays out the crawled graph, every node placed', placed(layout(d, { view: 'flow', settings: {} })));
+}
+const C = JSON.parse(conf);
+check('an include holds where its file is compiled: extra.cpp is compiled in extra only (Julian, 2026-10-16)', JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.configs) === '["extra"]'
+  && JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.evidence[0].configs) === '["extra"]');
+check('a file in no compile keeps its includes, listed as textual only', G.edges.some((e: any) => e.src === 'file:src/win_only.cpp') && G.crawler.notEvaluated.some((n: any) => n.what === 'src/win_only.cpp' && /textual only/.test(n.reason)));
+check('every custom command lands: an edge, or listed (the POST_BUILD step with no output)', build.perConfiguration[0].customCommands.every((c: any) =>
+  G.edges.some((e: any) => e.kind === 'generates' && e.evidence.some((x: any) => x.path === c.file && x.key === `add_custom_command line ${c.line}`)) || G.crawler.notEvaluated.some((n: any) => n.what === `${c.file}:${c.line}`)));
+check('conformance: plugin uses lut without declaring it', C.findings.length === 1 && C.findings[0].kind === 'used-not-declared' && C.findings[0].from === 'target:plugin' && C.findings[0].to === 'target:lut' && C.findings[0].weakestResolution === 'syntactic');
+check('conformance counts unattributed includes per configuration', Object.keys(C.unattributedIncludes).join() === 'extra,release');
+
+// ---- small repos
+async function crawlTree(files: Record<string, string | Buffer>, buildFacts: any) {
+  const t = mkdtempSync(join(tmpdir(), 'loupe-graph-'));
+  try {
+    for (const [p, txt] of Object.entries(files)) { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), txt); }
+    commitAll(t);
+    const snap = emitGraph(t, buildFacts, await syntaxLayer(t, buildFacts));
+    // Every small graph must pass the checker too, not only the fixture's (critic).
+    const d = join(t, '.snap'); write(d, snap);
+    const r = loupeCheck(d, { schemaDir: SCHEMA });
+    if (r.errors.length) { console.log('   loupe-check:', r.errors.slice(0, 3).join(' | ')); failed++; }
+    return JSON.parse(snap.graph);
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// A fixed identity and date: the test must not depend on this machine's git config or the clock.
+const GIT_ENV = { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid',
+  GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z', GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z' };
+function commitAll(t: string) {
+  execFileSync('git', ['-C', t, 'init', '-q'], { env: GIT_ENV }); execFileSync('git', ['-C', t, 'add', '.'], { env: GIT_ENV });
+  execFileSync('git', ['-C', t, 'commit', '-q', '--no-gpg-sign', '-m', 'test'], { env: GIT_ENV });
+}
+const noBuild = { configurations: [{ name: 'default', args: [] }], declared: false, membership: [], unclaimedSources: [], perConfiguration: [{ name: 'default', targets: [], customCommands: [] }] };
+{
+  const g2 = await crawlTree({ 'a.cpp': '#define H "x.h"\n#include H\n', 'docs/n.md': '# n\n', 'img.png': Buffer.from([0x89, 0x50, 0, 0, 1]) }, noBuild);
+  const inv = g2.crawler.inventory;
+  check('every tracked text file is a node; binary files are counted, not dropped', g2.nodes.some((n: any) => n.id === 'file:docs/n.md') && !g2.nodes.some((n: any) => n.id === 'file:img.png')
+    && inv.files === 3 && inv.crawled === 2 && inv.excluded[0].reason === 'binary' && inv.excluded[0].byExt['.png'] === 1);
+  check('a computed include is listed as not evaluated', g2.crawler.notEvaluated.some((n: any) => n.what === 'a.cpp:2' && /computed include/.test(n.reason)));
+  check('no configurations declared is said, not assumed', g2.crawler.notEvaluated.some((n: any) => n.what === 'configurations'));
+}
+{ // declared-not-seen: a dependency nothing includes
+  const T = (name: string, src: string, deps: string[] = []) => ({ name, type: 'STATIC_LIBRARY', definedIn: { file: 'CMakeLists.txt', line: 1 }, dependencies: deps, sources: [{ path: src }], compileGroups: [{ includes: [], sources: [src] }] });
+  const bf = { configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [],
+    membership: [{ source: 'a.cpp', target: 'A', generated: false, configs: ['default'] }, { source: 'b.cpp', target: 'B', generated: false, configs: ['default'] }],
+    perConfiguration: [{ name: 'default', targets: [T('A', 'a.cpp', ['B']), T('B', 'b.cpp')], customCommands: [] }] };
+  const g3 = await crawlTree({ 'a.cpp': 'int a;\n', 'b.cpp': 'int b;\n' }, bf);
+  const c3 = conformance(canonicalGraph(g3));
+  check('conformance: a declared dependency no include supports is listed as declared-not-seen', c3.findings.length === 1 && c3.findings[0].kind === 'declared-not-seen' && c3.findings[0].from === 'target:A');
+}
+
+{ // custom commands: a TARGET-form command's byproduct, a name: DEPENDS on another output, an unknown name:
+  const bf = { configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [], membership: [],
+    perConfiguration: [{ name: 'default', targets: [{ name: 'A', type: 'UTILITY', definedIn: null, dependencies: [], sources: [], compileGroups: [] }], customCommands: [
+      { file: 'CMakeLists.txt', line: 1, target: null, stage: null, outputs: ['${build}/a.h'], byproducts: [], depends: ['gen.py'], commands: [] },
+      { file: 'CMakeLists.txt', line: 2, target: null, stage: null, outputs: ['${build}/b.h'], byproducts: [], depends: ['name:a.h', 'name:nowhere'], commands: [] },
+      { file: 'CMakeLists.txt', line: 3, target: 'A', stage: 'POST_BUILD', outputs: [], byproducts: ['${build}/A.stamp'], depends: [], commands: [] }] }] };
+  const g4 = await crawlTree({ 'gen.py': 'print(1)\n' }, bf);
+  const gen = (src: string, dst: string) => g4.edges.some((e: any) => e.kind === 'generates' && e.src === src && e.dst === dst);
+  check('a name: DEPENDS on another command\'s output is a generates edge from it (critic)', gen('miss:${build}/a.h', 'miss:${build}/b.h'));
+  check('an unknown name: DEPENDS is listed, not dropped (critic)', g4.crawler.notEvaluated.some((n: any) => n.what === 'CMakeLists.txt:2' && /nowhere/.test(n.reason)));
+  check('a TARGET-form command\'s byproduct is generated by its target (critic)', gen('target:A', 'miss:${build}/A.stamp'));
+}
+{ // submodules and symlinks are counted, never read; a repo with no commit is refused
+  const t = mkdtempSync(join(tmpdir(), 'loupe-graph-'));
+  try {
+    writeFileSync(join(t, 'a.cpp'), 'int a;\n'); symlinkSync('/etc/hosts', join(t, 'link.h'));
+    commitAll(t);
+    execFileSync('git', ['-C', t, 'update-index', '--add', '--cacheinfo', `160000,${'a'.repeat(40)},vendor/sub`], { env: GIT_ENV });
+    const g5 = JSON.parse(emitGraph(t, noBuild, await syntaxLayer(t, noBuild)).graph);
+    const ex = Object.fromEntries(g5.crawler.inventory.excluded.map((x: any) => [x.reason, x.count]));
+    check('a symlink and a submodule are counted in the inventory, not read (critic)', ex.symlink === 1 && ex.submodule === 1 && !g5.nodes.some((n: any) => n.path === 'link.h'));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+  const t2 = mkdtempSync(join(tmpdir(), 'loupe-graph-'));
+  try { execFileSync('git', ['-C', t2, 'init', '-q']); check('a repo with no commit is refused, not given a made-up commit (critic)', (() => { try { emitGraph(t2, noBuild, { includes: [], computed: [], skipped: [], problems: [], files: [] }); return false; } catch { return true; } })()); }
+  finally { rmSync(t2, { recursive: true, force: true }); }
+}
+{ // the repo name never carries a local path or a credential
+  // Machine-style paths are the inputs under test; assembled here so this file holds none literally (leak gate).
+  const WIN_HOME = 'C:/' + 'Users/', NIX_HOME = '/' + 'home/';
+  const cases: [string, string][] = [['https://github.com/o/r.git', 'github.com/o/r'], ['git@github.com:o/r.git', 'github.com/o/r'], ['ssh://git@host.example.com:22/o/r', 'host.example.com/o/r'],
+    ['https://u:p@ss@host.com/o/r', 'host.com/o/r'], ['../sibling/repo', 'local'], ['~/code/repo', 'local'], [WIN_HOME + 'x/repo', 'local'], ['nas:' + NIX_HOME + 'x/repo.git', 'local'], ['/abs/repo', 'local'], ['file:///abs/repo', 'local']];
+  const bad = cases.filter(([u, want]) => repoNameOf(u) !== want);
+  check(`the repo name comes only from a hosted remote, without credentials (critic)${bad.length ? ': ' + bad.map(([u]) => u + '→' + repoNameOf(u)).join(', ') : ''}`, bad.length === 0);
+}
+
+console.log(failed ? `${failed} failed` : 'all graph cases behave');
+process.exit(failed ? 1 : 0);

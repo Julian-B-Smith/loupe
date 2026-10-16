@@ -42,6 +42,8 @@ function to03({ G }) {
 }
 const v03 = (f) => (x) => { to03(x); f(x); };
 const aFile = (G) => G.nodes.find((n) => n.kind === 'file').id;
+// Put `via` on the first static site, resolved through a build include path unless told otherwise.
+const via = (G, viaId, resolution = 'build') => { const ev = G.edges.find((e) => e.provenance === 'static').evidence.find((x) => x.type === 'site'); ev.resolution = resolution; ev.via = [viaId.replace(/^file:/, '')]; };
 const T = (G, id) => G.nodes.find((n) => n.id === id);
 // V9 needs real geometry: lay the sample out, then drag the second top-level section onto the first.
 function dragOnto({ G, O, V }) {
@@ -98,6 +100,16 @@ const cases = [
   ['a target placed in a section passes', null, v03(({ V }) => { V.elements.find((e) => e.primitive === 'section' && !e.parent).members.push('target:engine'); })],
   ['an include touching a target', 'G8', v03(({ G }) => { const f = G.nodes.find((n) => n.kind === 'file').id; G.edges.push({ id: edgeId(f, 'target:plugin', 'include'), src: f, dst: 'target:plugin', kind: 'include', provenance: 'static', evidence: [{ type: 'site', path: 'x', line: 1, resolution: 'exact' }] }); })],
   ['target without targetType', 'G8', v03(({ G }) => { delete G.nodes.find((n) => n.id === 'target:engine').targetType; })],
+  // ---- schema 0.3.1: via (Q-016)
+  ['0.3.1 with via on a build site passes', null, v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; via(G, aFile(G)); })],
+  ['via in a graph declaring 0.3', 'S1', v03(({ G }) => { via(G, aFile(G)); })],
+  ['via in a graph declaring 0.2', 'S1', ({ G }) => { const ev = G.edges.find((e) => e.provenance === 'static').evidence.find((x) => x.type === 'site'); ev.via = [G.nodes.find((n) => n.kind === 'file').id.slice(5)]; }],
+  ['0.3.1 with site configs matching the edge passes', null, v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; const e = G.edges.find((x) => x.provenance === 'static'); for (const x of e.evidence) if (x.type === 'site') x.configs = ['extra']; e.configs = ['extra']; })],
+  ['site configs whose union is not the edge configs', 'G7', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; const e = G.edges.find((x) => x.provenance === 'static'); for (const x of e.evidence) if (x.type === 'site') x.configs = ['extra']; })],
+  ['site configs in a graph declaring 0.3', 'S1', v03(({ G }) => { G.edges.find((x) => x.provenance === 'static').evidence[0].configs = ['extra']; })],
+  ['0.3.1 without notEvaluated', 'S1', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; delete G.crawler.notEvaluated; })],
+  ['via naming a file not in the graph', 'G9', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; via(G, 'nowhere.cpp'); })],
+  ['via on a site resolved exactly', 'G9', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; via(G, aFile(G), 'exact'); })],
   ['offset on a top-level section and a level passes', null, ({ V }) => { const top = V.elements.find((e) => e.primitive === 'section' && !e.parent); V.settings.offsets = { [top.id]: { dx: 10, dy: 0 }, 'level:0': { dx: 0, dy: 5 } }; }],
   ['offset on a nested section', 'V8', ({ V }) => { const nested = V.elements.find((e) => e.primitive === 'section' && e.parent); V.settings.offsets = { [nested.id]: { dx: 1, dy: 1 } }; }],
   ['offset on a level that does not exist', 'V8', ({ V }) => { V.settings.offsets = { 'level:99': { dx: 1, dy: 1 } }; }],

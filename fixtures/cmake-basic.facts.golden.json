@@ -209,6 +209,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 15
+          },
           "dependencies": [],
           "name": "engine",
           "sources": [
@@ -249,6 +253,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 31
+          },
           "dependencies": [
             "engine"
           ],
@@ -276,6 +284,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "lib/CMakeLists.txt",
+            "line": 12
+          },
           "dependencies": [],
           "name": "lut",
           "sources": [
@@ -296,6 +308,10 @@
         },
         {
           "compileGroups": [],
+          "definedIn": {
+            "file": "lib/CMakeLists.txt",
+            "line": 19
+          },
           "dependencies": [],
           "name": "lut_docs",
           "sources": [],
@@ -319,6 +335,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 28
+          },
           "dependencies": [
             "engine"
           ],
@@ -445,6 +465,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 15
+          },
           "dependencies": [],
           "name": "engine",
           "sources": [
@@ -491,6 +515,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 31
+          },
           "dependencies": [
             "engine"
           ],
@@ -518,6 +546,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "lib/CMakeLists.txt",
+            "line": 12
+          },
           "dependencies": [],
           "name": "lut",
           "sources": [
@@ -538,6 +570,10 @@
         },
         {
           "compileGroups": [],
+          "definedIn": {
+            "file": "lib/CMakeLists.txt",
+            "line": 19
+          },
           "dependencies": [],
           "name": "lut_docs",
           "sources": [],
@@ -561,6 +597,10 @@
               ]
             }
           ],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 28
+          },
           "dependencies": [
             "engine"
           ],

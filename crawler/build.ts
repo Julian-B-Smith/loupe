@@ -22,7 +22,7 @@ import { tmpdir } from 'node:os';
 
 export type Configuration = { name: string; args: string[] };
 type Source = { path: string; generated: boolean; compiled: boolean; language: string | null };
-type Target = { name: string; type: string; dependencies: string[]; sources: Source[];
+type Target = { name: string; type: string; definedIn: { file: string; line: number } | null; dependencies: string[]; sources: Source[];
   compileGroups: { language: string; includes: string[]; defines: string[]; sources: string[] }[] };
 type CustomCommand = { file: string; line: number; target: string | null; stage: string | null; outputs: string[];
   byproducts: string[]; depends: string[]; commands: string[][] };
@@ -253,8 +253,12 @@ function configureOnce(repo: string, cfg: Configuration) {
             language: s.compileGroupIndex != null ? groups[s.compileGroupIndex].language : null,
           }))
           .sort((a: Source, b: Source) => by(a.path, b.path));
+        // Where the target is defined (the add_library/add_executable line), from the File API backtrace, so build
+        // evidence can cite the right CMake file (Q-016: the first emitter cited the top-level file for every target).
+        const bg = T.backtraceGraph, bn = bg && T.backtrace != null ? bg.nodes[T.backtrace] : null;
+        const definedIn = bn ? { file: norm(abs(bg.files[bn.file])), line: bn.line ?? 0 } : null;
         return {
-          name: T.name, type: T.type,
+          name: T.name, type: T.type, definedIn,
           dependencies: (T.dependencies || []).map((d: { id: string }) => idToName[d.id] || d.id).sort(by),
           sources,
           compileGroups: groups.map((g: any) => ({
