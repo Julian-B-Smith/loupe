@@ -41,4 +41,9 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `design/prototype/story.js`, `works.js`, `stories/`: the "How it works" view (ADR 0025). `stories/<repo>-<commit>.json`
   holds agent-written stories (stand-in format); `story.js` applies Julian's edits and does the accounting;
   `works.js` draws it. `lens.js`: focus lenses (ADR 0019). Tests: `tools/{history,lens,story}.test.mjs`.
+- `crawler/`: the P1a crawler, TypeScript run natively by Node 24 (no compiler). `build.ts` is the build layer
+  (CMake File API + expanded JSON trace, scratch dir outside the tree, always deleted); `cli.ts` (`npm run crawl --
+  build <repo>`); `build.test.ts` (gated in `./verify fast`).
+- `fixtures/cmake-basic/`: crawler fixture with two declared configurations; its golden build facts are
+  `fixtures/cmake-basic.facts.golden.json` (rewrite only with `node crawler/build.test.ts --update`, reviewed).
 

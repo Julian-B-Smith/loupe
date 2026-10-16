@@ -1,0 +1,350 @@
+{
+  "configurations": [
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "buildType": "Release",
+      "name": "release"
+    },
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DFIX_EXTRA=ON"
+      ],
+      "buildType": "Release",
+      "name": "extra"
+    }
+  ],
+  "declared": true,
+  "membership": [
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": true,
+      "source": "${build}/generated/table.h",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/engine.cpp",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/engine.h",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra"
+      ],
+      "generated": false,
+      "source": "src/extra.cpp",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/plugin_entry.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "tests/engine_test.cpp",
+      "target": "engine_test"
+    }
+  ],
+  "perConfiguration": [
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "buildType": "Release",
+      "customCommands": [
+        {
+          "command": [
+            "python3",
+            "tools/gen_table.py",
+            "${build}/generated/table.h"
+          ],
+          "depends": [
+            "tools/gen_table.py"
+          ],
+          "file": "CMakeLists.txt",
+          "line": 9,
+          "outputs": [
+            "${build}/generated/table.h"
+          ]
+        }
+      ],
+      "name": "release",
+      "targets": [
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/engine.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "engine",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/generated/table.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/engine.cpp"
+            },
+            {
+              "compiled": false,
+              "generated": false,
+              "language": null,
+              "path": "src/engine.h"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "tests/engine_test.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "engine_test",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "tests/engine_test.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/plugin_entry.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "plugin",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/plugin_entry.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        }
+      ]
+    },
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DFIX_EXTRA=ON"
+      ],
+      "buildType": "Release",
+      "customCommands": [
+        {
+          "command": [
+            "python3",
+            "tools/gen_table.py",
+            "${build}/generated/table.h"
+          ],
+          "depends": [
+            "tools/gen_table.py"
+          ],
+          "file": "CMakeLists.txt",
+          "line": 9,
+          "outputs": [
+            "${build}/generated/table.h"
+          ]
+        }
+      ],
+      "name": "extra",
+      "targets": [
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_EXTRA=1",
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/engine.cpp",
+                "src/extra.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "engine",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/generated/table.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/engine.cpp"
+            },
+            {
+              "compiled": false,
+              "generated": false,
+              "language": null,
+              "path": "src/engine.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/extra.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "tests/engine_test.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "engine_test",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "tests/engine_test.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/plugin_entry.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "plugin",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/plugin_entry.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        }
+      ]
+    }
+  ],
+  "schema": "loupe.buildfacts/0.0-internal",
+  "unclaimedSources": [
+    "src/win_only.cpp"
+  ]
+}

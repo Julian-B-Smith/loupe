@@ -98,6 +98,37 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   followed transitively) is its own class in the view; 4. on HORDE, the 11 product-named-but-unshipped files are
   re-checked against the build and each is confirmed or cleared.
 
+### Q-012 — P1a slice 1: the build layer, on a fixture
+- **Status:** done 2026-10-16 (trace: traces/2026-10-16-p1a-build-layer.md). Note for the first HORDE run: the
+  build layer adds `--trace-expand` to the command HORDE named, so custom-command outputs can be matched to
+  generated sources; ask HORDE before running it there.
+- **Decisions (Julian, by poll 2026-10-16):** TypeScript run natively by Node 24 (type stripping, no new
+  dependency); configure commands come from the target's `.loupe/config.json` (`configurations`), defaulting to one
+  plain configure recorded as "default configuration, nothing declared"; this slice emits an internal build-facts
+  file, so no schema change (schema 0.3 is Q-010, proposed as a diff in slice 2); the fixture test is gated in
+  `./verify fast`.
+- **Scope:** `crawler/` (new), `fixtures/cmake-basic/` (new), `verify`, `CODEMAP.md`.
+- **Acceptance criteria:**
+  1. For each configuration, `cmake` configure runs into a scratch directory outside the target tree, with File API
+     queries (codemodel-v2, cmakeFiles-v1, toolchains-v1) and `--trace-format=json-v1`; never a build.
+  2. The scratch directory is deleted when the crawl ends, also on failure (HORDE's condition 1).
+  3. Configure output (reply JSON, trace) is parsed as data only; nothing in it is executed or evaluated (condition 2).
+  4. Build facts per configuration: targets (name, type, dependencies), each target's sources with `isGenerated`,
+     compile groups with language, include paths and defines; custom commands from the trace (outputs, depends,
+     command, file and line), restricted to calls in the target's own CMake files.
+  5. Union across configurations (0026): every source-to-target membership lists the configurations it was seen in.
+     Tracked C/C++ sources claimed by no target in any configuration are listed (they may be platform-only).
+  6. Deterministic: two runs give byte-identical facts. No timestamp, and no absolute path: repo paths are relative,
+     build-dir paths are `${build}/...`, anything else is `${external}`. Toolchain-specific values (CMake version,
+     compiler paths, host platform) live in a separate `environment` block excluded from the golden comparison.
+  7. On `fixtures/cmake-basic/` (two configurations, a generated header, a Windows-only and an option-only source, a
+     plugin and a test target): facts equal the committed golden, gated in `./verify fast`; a planted change to the
+     fixture makes the gate fail.
+- **Out of scope:** the syntax layer (web-tree-sitter; needs a dependency decision), the inventory layer, graph.json,
+  schema 0.3, running on HORDE.
+- **Next (slice 2):** the schema 0.3 diff for Julian's approval (Q-010); the syntax layer, which needs the
+  web-tree-sitter dependency decision; the inventory layer.
+
 ### Q-010 — Schema 0.3 (human gate: schema change)
 - **Status:** open; decisions accepted, fields not yet written
 - **Scope:** `schema/*.schema.json`, `docs/graph-schema.md`, `tools/loupe-check.mjs`, mutation tests, examples
