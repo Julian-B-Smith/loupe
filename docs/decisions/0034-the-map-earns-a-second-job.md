@@ -28,3 +28,12 @@ Whether exported rules belong in P4 (audit) or a new phase.
 ## Ruling (2026-10-11)
 
 The proposal: maps on demand inside the workflow; confirmed claims exportable as deterministic rules the target repo can run. Still open, as written: whether exported rules belong in P4 or a phase of their own.
+
+## Ruling on the open question (2026-10-15)
+
+Julian, by poll: **exported rules get their own phase, P6r, after P6**, not P4. Reasons: P4's gate should not depend
+on another repository's CI; committed rules need a home in the target repo, which is P6's plumbing (0021); and P4
+asks "is the claim true" while export asks "will a repo adopt it", which only adoption answers. P4 keeps one
+obligation toward export: every claim test is a pure function over `graph.json` and `view.json`, with no viewer
+code, so exporting it later is packaging.
+
