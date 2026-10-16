@@ -1,0 +1,597 @@
+{
+  "configurations": [
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "buildType": "Release",
+      "name": "release"
+    },
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DFIX_EXTRA=ON"
+      ],
+      "buildType": "Release",
+      "name": "extra"
+    }
+  ],
+  "declared": true,
+  "membership": [
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": true,
+      "source": "${build}/generated/table.h",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": true,
+      "source": "${build}/lib/lut.h",
+      "target": "lut"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "${external}/outside_a.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "${external}/outside_b.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "lib/lut.cpp",
+      "target": "lut"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/engine.cpp",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/engine.h",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra"
+      ],
+      "generated": false,
+      "source": "src/extra.cpp",
+      "target": "engine"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "src/plugin_entry.cpp",
+      "target": "plugin"
+    },
+    {
+      "configs": [
+        "extra",
+        "release"
+      ],
+      "generated": false,
+      "source": "tests/engine_test.cpp",
+      "target": "engine_test"
+    }
+  ],
+  "notes": [],
+  "perConfiguration": [
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "buildType": "Release",
+      "customCommands": [
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "python3",
+              "tools/gen_table.py",
+              "${build}/generated/table.h"
+            ]
+          ],
+          "depends": [
+            "tools/gen_table.py"
+          ],
+          "file": "CMakeLists.txt",
+          "line": 9,
+          "outputs": [
+            "${build}/generated/table.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [
+            "${build}/lib/lut.log"
+          ],
+          "commands": [
+            [
+              "python3",
+              "lib/gen_lut.py",
+              "lib/lut.csv",
+              "lut.h"
+            ],
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lut.log"
+            ]
+          ],
+          "depends": [
+            "lib/gen_lut.py",
+            "lib/lut.csv"
+          ],
+          "file": "lib/CMakeLists.txt",
+          "line": 3,
+          "outputs": [
+            "${build}/lib/lut.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lib/BUILD_RAN.marker"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 15,
+          "outputs": [],
+          "stage": "POST_BUILD",
+          "target": "lut"
+        }
+      ],
+      "name": "release",
+      "targets": [
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "DATA_DIR=\"${source}/data\"",
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/engine.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "engine",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/generated/table.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/engine.cpp"
+            },
+            {
+              "compiled": false,
+              "generated": false,
+              "language": null,
+              "path": "src/engine.h"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "tests/engine_test.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "engine_test",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "tests/engine_test.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [],
+              "includes": [
+                "${build}/lib"
+              ],
+              "language": "CXX",
+              "sources": [
+                "lib/lut.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "lut",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/lib/lut.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "lib/lut.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "dependencies": [],
+          "name": "lut_docs",
+          "sources": [],
+          "type": "UTILITY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "${external}/outside_a.cpp",
+                "${external}/outside_b.cpp",
+                "src/plugin_entry.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "plugin",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_a.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_b.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/plugin_entry.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        }
+      ]
+    },
+    {
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DFIX_EXTRA=ON"
+      ],
+      "buildType": "Release",
+      "customCommands": [
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "python3",
+              "tools/gen_table.py",
+              "${build}/generated/table.h"
+            ]
+          ],
+          "depends": [
+            "tools/gen_table.py"
+          ],
+          "file": "CMakeLists.txt",
+          "line": 9,
+          "outputs": [
+            "${build}/generated/table.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [
+            "${build}/lib/lut.log"
+          ],
+          "commands": [
+            [
+              "python3",
+              "lib/gen_lut.py",
+              "lib/lut.csv",
+              "lut.h"
+            ],
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lut.log"
+            ]
+          ],
+          "depends": [
+            "lib/gen_lut.py",
+            "lib/lut.csv"
+          ],
+          "file": "lib/CMakeLists.txt",
+          "line": 3,
+          "outputs": [
+            "${build}/lib/lut.h"
+          ],
+          "stage": null,
+          "target": null
+        },
+        {
+          "byproducts": [],
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "touch",
+              "lib/BUILD_RAN.marker"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 15,
+          "outputs": [],
+          "stage": "POST_BUILD",
+          "target": "lut"
+        }
+      ],
+      "name": "extra",
+      "targets": [
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "DATA_DIR=\"${source}/data\"",
+                "FIX_EXTRA=1",
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "src/engine.cpp",
+                "src/extra.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "engine",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/generated/table.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/engine.cpp"
+            },
+            {
+              "compiled": false,
+              "generated": false,
+              "language": null,
+              "path": "src/engine.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/extra.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "tests/engine_test.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "engine_test",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "tests/engine_test.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [],
+              "includes": [
+                "${build}/lib"
+              ],
+              "language": "CXX",
+              "sources": [
+                "lib/lut.cpp"
+              ]
+            }
+          ],
+          "dependencies": [],
+          "name": "lut",
+          "sources": [
+            {
+              "compiled": false,
+              "generated": true,
+              "language": null,
+              "path": "${build}/lib/lut.h"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "lib/lut.cpp"
+            }
+          ],
+          "type": "STATIC_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "dependencies": [],
+          "name": "lut_docs",
+          "sources": [],
+          "type": "UTILITY"
+        },
+        {
+          "compileGroups": [
+            {
+              "defines": [
+                "FIX_RATE=48000"
+              ],
+              "includes": [
+                "src",
+                "${build}/generated"
+              ],
+              "language": "CXX",
+              "sources": [
+                "${external}/outside_a.cpp",
+                "${external}/outside_b.cpp",
+                "src/plugin_entry.cpp"
+              ]
+            }
+          ],
+          "dependencies": [
+            "engine"
+          ],
+          "name": "plugin",
+          "sources": [
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_a.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "${external}/outside_b.cpp"
+            },
+            {
+              "compiled": true,
+              "generated": false,
+              "language": "CXX",
+              "path": "src/plugin_entry.cpp"
+            }
+          ],
+          "type": "EXECUTABLE"
+        }
+      ]
+    }
+  ],
+  "schema": "loupe.buildfacts/0.0-internal",
+  "unclaimedSources": [
+    "src/win_only.cpp"
+  ]
+}
