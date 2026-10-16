@@ -1,0 +1,16 @@
+{
+  "c": {
+    "file": "tree-sitter-c.wasm",
+    "package": "tree-sitter-c",
+    "version": "0.24.1",
+    "sha256": "c852c2a85ebf2beb636aa3b0ef7f7e70458684d74f6741b20dcb296885bed9f9",
+    "license": "LICENSE-tree-sitter-c"
+  },
+  "cpp": {
+    "file": "tree-sitter-cpp.wasm",
+    "package": "tree-sitter-cpp",
+    "version": "0.23.4",
+    "sha256": "174eb0deb75b2ec7881bcacda9f995648d8e683956e5c2267e69ab6dc503fcbf",
+    "license": "LICENSE-tree-sitter-cpp"
+  }
+}
