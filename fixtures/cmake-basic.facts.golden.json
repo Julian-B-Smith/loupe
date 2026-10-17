@@ -321,7 +321,8 @@
           "compileGroups": [
             {
               "defines": [
-                "FIX_RATE=48000"
+                "FIX_RATE=48000",
+                "plugin_EXPORTS"
               ],
               "includes": [
                 "src",
@@ -363,7 +364,7 @@
               "path": "src/plugin_entry.cpp"
             }
           ],
-          "type": "EXECUTABLE"
+          "type": "MODULE_LIBRARY"
         }
       ]
     },
@@ -583,7 +584,8 @@
           "compileGroups": [
             {
               "defines": [
-                "FIX_RATE=48000"
+                "FIX_RATE=48000",
+                "plugin_EXPORTS"
               ],
               "includes": [
                 "src",
@@ -625,7 +627,7 @@
               "path": "src/plugin_entry.cpp"
             }
           ],
-          "type": "EXECUTABLE"
+          "type": "MODULE_LIBRARY"
         }
       ]
     }

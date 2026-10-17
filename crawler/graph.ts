@@ -17,6 +17,7 @@ import { createHash } from 'node:crypto';
 import { join, extname, basename } from 'node:path';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from '../tools/canon.mjs';
 import { langLayer } from './langs.ts';
+import { assignRoles, guiBridge, readRoleConfig, DIALECTS } from './dialect.ts';
 
 const by = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const LANG: Record<string, string> = { '.cjs': 'js', '.htm': 'html', '.bash': 'sh', '.c': 'c', '.h': 'cpp', '.cc': 'cpp', '.cpp': 'cpp', '.cxx': 'cpp', '.hh': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp',
@@ -41,7 +42,7 @@ function repoName(repo: string): string {
 }
 const git = (repo: string, args: string[]) => execFileSync('git', ['-C', repo, ...args], { stdio: ['ignore', 'pipe', 'ignore'] }).toString();
 
-export function emitGraph(repoIn: string, build: any, syntax: any) {
+export function emitGraph(repoIn: string, build: any, syntax: any, opts: { dialect?: string } = {}) {
   let repo = repoIn; try { repo = realpathSync(repoIn); } catch {}
   // Mode from the index: 160000 is a submodule (a gitlink, not a file here), 120000 a symlink (following it would make
   // the hash depend on this machine). Both are counted in the inventory, never read.
@@ -181,8 +182,40 @@ export function emitGraph(repoIn: string, build: any, syntax: any) {
   for (const n of nodes.values()) if (n.kind === 'missing' && n.missing.reason === 'generated' && !n.missing.note && ![...edges.values()].some((e) => e.dst === n.id && e.kind === 'generates'))
     n.missing.note = 'a build output (the build lists it as generated)';
 
+  // ---- dialect (Q-024): chosen by the repo's .loupe/config.json, else by `crawl --dialect` (said so), else none
+  const rc = readRoleConfig(repo);
+  if (opts.dialect && !DIALECTS[opts.dialect]) throw new Error(`crawl: unknown dialect "${opts.dialect}" (have: ${Object.keys(DIALECTS).join(', ')})`);
+  const dialect = rc.dialect || opts.dialect || 'none';
+  if (!rc.dialect && opts.dialect) notEvaluated.push({ what: 'dialect', reason: `${opts.dialect} chosen by crawl --dialect: the target has not declared one in .loupe/config.json` });
+  if (rc.dialect && opts.dialect && opts.dialect !== rc.dialect) notEvaluated.push({ what: 'dialect', reason: `crawl --dialect ${opts.dialect} ignored: the target declares ${rc.dialect}, and the human-owned config wins` });
+  for (const pr of rc.problems) notEvaluated.push({ what: '.loupe/config.json', reason: pr });
+  // What each custom command runs: the first repo file in its command line that is code (python3 tools/gen.py ...),
+  // so `generator` names the program, never the inputs it reads (Julian, 2026-10-17).
+  const runs = new Set<string>();
+  for (const pc of build.perConfiguration) for (const c of pc.customCommands) for (const cmd of c.commands || []) {
+    const prog = cmd.find((a: string) => nodes.has('file:' + a) && /\.(py|sh|js|mjs|cjs|pl|rb)$|^[^.]+$/.test(a) && ['python', 'js', 'sh'].includes(nodes.get('file:' + a).lang));
+    if (prog) runs.add('file:' + prog);
+  }
+  const targetsUnion = new Map<string, any>();
+  for (const pc of build.perConfiguration) for (const t of pc.targets) { const u = targetsUnion.get(t.name) || { name: t.name, type: t.type, dependencies: [] as string[] }; for (const d of t.dependencies) if (!u.dependencies.includes(d)) u.dependencies.push(d); targetsUnion.set(t.name, u); }
+  const fileNodes = [...nodes.values()].filter((n) => n.kind === 'file');
+  const rep = assignRoles(fileNodes, [...edges.values()], [...targetsUnion.values()], dialect, rc, runs);
+  if (rep.unroled) notEvaluated.push({ what: 'roles', reason: `${rep.unroled} files match no role rule (defaults${dialect !== 'none' ? ', ' + dialect : ''}, graph, config)` });
+  if (rep.unreachedSources) notEvaluated.push({ what: 'roles', reason: `${rep.unreachedSources} source-dir files are neither built nor reached by any compile (role from their path only)` });
+  for (const g of rep.unusedConfig) notEvaluated.push({ what: '.loupe/config.json', reason: `roles pattern "${g}" matches no file` });
+  if (dialect === 'dsp-plugin') { // after roles: the bridge prefers product/gui registrations
+    const br = guiBridge(repo, fileNodes.map((n) => ({ path: n.path, lang: n.lang, role: n.role })));
+    for (const b of br.edges) {
+      addEdge('file:' + b.from, 'file:' + b.to, 'call', 'static', { type: 'site', path: b.from, line: b.line, resolution: 'syntactic', signature: b.names.join(',') }, null, true);
+      const e = edges.get(edgeId('file:' + b.from, 'file:' + b.to, 'call')); e.role = 'bridge'; e.roleRule = 'dsp-plugin:bridge/bind';
+    }
+    if (br.nonLiteral) notEvaluated.push({ what: 'gui bridge', reason: `${br.nonLiteral} .bind(...) registrations name the function by a variable: not matched` });
+    if (br.dropped) notEvaluated.push({ what: 'gui bridge', reason: `${br.dropped} registrations in test/tool files of names a product or gui file also registers: not drawn` });
+  }
+
   const edgeList = [...edges.values()].map((e) => {
     const out: any = { id: e.id, src: e.src, dst: e.dst, kind: e.kind, provenance: e.provenance, evidence: e.evidence, count: e.evidence.length };
+    if (e.role) { out.role = e.role; out.roleRule = e.roleRule; }
     const c = e.all ? undefined : narrow(e.cfg); if (c) out.configs = c;
     return out;
   });
@@ -193,7 +226,7 @@ export function emitGraph(repoIn: string, build: any, syntax: any) {
     crawler: {
       name: 'loupe-crawler', version: '0.1.0', granularity: 'file',
       languages: [...new Set([...nodes.values()].filter((n) => n.kind === 'file').map((n) => n.lang))].sort(by),
-      dialect: { name: 'none', version: '0' },
+      dialect: { name: dialect, version: DIALECTS[dialect] },
       scope: { include: ['every tracked file'], exclude: ['binary content (binary)', 'git submodules (submodule)', 'symlinks (symlink)', 'tracked files not readable on disk (unreadable)'], resolution: 'build' },
       inventory: { files: tracked.length, crawled: fileCount, excluded: [
         ...(binaryCount ? [{ reason: 'binary', count: binaryCount, byExt: Object.fromEntries(Object.entries(binary).sort()) }] : []),
@@ -210,6 +243,6 @@ export function emitGraph(repoIn: string, build: any, syntax: any) {
   // An empty overlay and view bound to this graph, so the snapshot is complete and checkable before any agent runs.
   const overlay = { schema: 'loupe.overlay/0.2', graph: { hash: sha256(gText) }, edges: [], roles: [], conditions: [] };
   const oText = canonicalDoc(overlay);
-  const view = { schema: 'loupe.view/0.2', graph: { hash: sha256(gText) }, overlay: { hash: sha256(oText) }, dialect: { name: 'none', version: '0' }, settings: { hubPlacement: 'group' }, elements: [], exemptions: [] };
+  const view = { schema: 'loupe.view/0.2', graph: { hash: sha256(gText) }, overlay: { hash: sha256(oText) }, dialect: { name: dialect, version: DIALECTS[dialect] }, settings: { hubPlacement: 'group' }, elements: [], exemptions: [] };
   return { graph: gText, overlay: oText, view: canonicalDoc(view) };
 }

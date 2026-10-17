@@ -22,14 +22,14 @@
       }
     ],
     "dialect": {
-      "name": "none",
-      "version": "0"
+      "name": "dsp-plugin",
+      "version": "1"
     },
     "granularity": "file",
     "inventory": {
-      "crawled": 30,
+      "crawled": 31,
       "excluded": [],
-      "files": 30
+      "files": 31
     },
     "languages": [
       "cmake",
@@ -48,6 +48,10 @@
       {
         "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of lut): makes no file Loupe can see",
         "what": "lib/CMakeLists.txt:15"
+      },
+      {
+        "reason": "3 source-dir files are neither built nor reached by any compile (role from their path only)",
+        "what": "roles"
       },
       {
         "reason": "in no compile of any configuration: its includes are textual only",
@@ -907,6 +911,25 @@
     },
     {
       "count": 1,
+      "dst": "file:src/gui/app_gui.h",
+      "evidence": [
+        {
+          "line": 6,
+          "path": "web/index.html",
+          "resolution": "syntactic",
+          "signature": "fxGetLevel",
+          "type": "site"
+        }
+      ],
+      "id": "e:e7f665c41f063ba8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "bridge",
+      "roleRule": "dsp-plugin:bridge/bind",
+      "src": "file:web/index.html"
+    },
+    {
+      "count": 1,
       "dst": "file:tests/engine_test.cpp",
       "evidence": [
         {
@@ -1018,20 +1041,24 @@
       "path": "web:cdn.example.com"
     },
     {
-      "hash": "sha256:1efd05319a4114a2fbb5f07e873a791fbe97ba02d696dbd390269c29dba7373d",
+      "hash": "sha256:66119a8c307dfcbbb335c9689e5ac4b8daa183684cc92b320eccb3bb358ad91e",
       "id": "file:.loupe/config.json",
       "kind": "file",
       "lang": "json",
-      "loc": 6,
-      "path": ".loupe/config.json"
+      "loc": 28,
+      "path": ".loupe/config.json",
+      "role": "data",
+      "roleRule": "default:path/data-ext"
     },
     {
-      "hash": "sha256:5725370be55606df5e9dab0f34b0d7ba35d23791c4db08b1c710d3971a87153d",
+      "hash": "sha256:112d4d920e6d06d03c241de16ee56b1284ca97c3a139e6bbd01b33e65aa00c26",
       "id": "file:CMakeLists.txt",
       "kind": "file",
       "lang": "cmake",
       "loc": 42,
-      "path": "CMakeLists.txt"
+      "path": "CMakeLists.txt",
+      "role": "build",
+      "roleRule": "default:path/build"
     },
     {
       "hash": "sha256:7aa4e57a4a327719205e23200f8a53b506b5e45db64baf74196c5a0f50b6cd4d",
@@ -1039,7 +1066,9 @@
       "kind": "file",
       "lang": "markdown",
       "loc": 3,
-      "path": "README.md"
+      "path": "README.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
     },
     {
       "hash": "sha256:1c90a621fd39212094774a886a3a9795d3e9206142ab96c2011add24a951a151",
@@ -1047,7 +1076,9 @@
       "kind": "file",
       "lang": "json",
       "loc": 1,
-      "path": "data/presets.json"
+      "path": "data/presets.json",
+      "role": "data",
+      "roleRule": "default:path/data-ext"
     },
     {
       "hash": "sha256:537b46e794de9184a95e545078e3c6dfc3c0c7f061e53dcc34769c2e91e7e43d",
@@ -1055,7 +1086,9 @@
       "kind": "file",
       "lang": "cmake",
       "loc": 19,
-      "path": "lib/CMakeLists.txt"
+      "path": "lib/CMakeLists.txt",
+      "role": "build",
+      "roleRule": "default:path/build"
     },
     {
       "hash": "sha256:86dee28a1c50420fd3d6edeb216b4972245b0e14bdffe2cc4d988ba50f43fcea",
@@ -1063,7 +1096,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 3,
-      "path": "lib/gen_lut.py"
+      "path": "lib/gen_lut.py",
+      "role": "generator",
+      "roleRule": "graph:runs-command"
     },
     {
       "hash": "sha256:e3df10285666ff330239fe69a1a6067393e9b4fb099974de6f5cbb93f0859104",
@@ -1071,7 +1106,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 2,
-      "path": "lib/lut.cpp"
+      "path": "lib/lut.cpp",
+      "role": "product",
+      "roleRule": "default:path/source-dir"
     },
     {
       "hash": "sha256:14c5e74c4b96ccef41cd94db73a9ec3348038ac094feca4fd897cecffa07cdae",
@@ -1079,7 +1116,9 @@
       "kind": "file",
       "lang": "csv",
       "loc": 3,
-      "path": "lib/lut.csv"
+      "path": "lib/lut.csv",
+      "role": "data",
+      "roleRule": "default:path/data-ext"
     },
     {
       "hash": "sha256:90aa342e75c96c8c70d474c09e1d05ecdb098f37247bf41f75b94f356efbc113",
@@ -1087,7 +1126,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 3,
-      "path": "src/dsp/filter.h"
+      "path": "src/dsp/filter.h",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-reach"
     },
     {
       "hash": "sha256:d2b48adbbeece635c4fd5b08bd24e0e3a0d14a48aa0527698e306102628e39a3",
@@ -1095,7 +1136,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 8,
-      "path": "src/engine.cpp"
+      "path": "src/engine.cpp",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-target"
     },
     {
       "hash": "sha256:d645aa72cef5a4b23baa83f9e21c8623583adb25566ec1bc05f69db7248210e8",
@@ -1103,7 +1146,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 7,
-      "path": "src/engine.h"
+      "path": "src/engine.h",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-target"
     },
     {
       "hash": "sha256:02eb248dd087cf16eb7e36988396bcefe76e9f881afbc76da618425eea73953c",
@@ -1111,7 +1156,19 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 2,
-      "path": "src/extra.cpp"
+      "path": "src/extra.cpp",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-target"
+    },
+    {
+      "hash": "sha256:6703f986dd504b255a9f22f5a3f79a44ed8ec3b6e3cf22d98d1a9faefcb59b47",
+      "id": "file:src/gui/app_gui.h",
+      "kind": "file",
+      "lang": "cpp",
+      "loc": 6,
+      "path": "src/gui/app_gui.h",
+      "role": "gui",
+      "roleRule": "dsp-plugin:path/gui-dir"
     },
     {
       "hash": "sha256:233429e315990ffe4fe8884aef4c0f623db0b22e753c97759194b2055456508b",
@@ -1119,7 +1176,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 9,
-      "path": "src/platform.h"
+      "path": "src/platform.h",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-reach"
     },
     {
       "hash": "sha256:b3adf106d95b8934f690943f2921308b90be5b766c4c8ba250c792de56400201",
@@ -1127,7 +1186,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 1,
-      "path": "src/platform_mac.h"
+      "path": "src/platform_mac.h",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-reach"
     },
     {
       "hash": "sha256:9a56d1f4a0ea2e2a87868e69f79840d3299d8e78cdb7764f6ee12e706cf4342c",
@@ -1135,7 +1196,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 4,
-      "path": "src/plugin_entry.cpp"
+      "path": "src/plugin_entry.cpp",
+      "role": "product",
+      "roleRule": "dsp-plugin:build/product-target"
     },
     {
       "hash": "sha256:b2cdfdd3bfe9732da1a55113e54d6115afb6f62a0150701ba3f1a205b05da7e1",
@@ -1143,7 +1206,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 2,
-      "path": "src/win_only.cpp"
+      "path": "src/win_only.cpp",
+      "role": "product",
+      "roleRule": "default:path/source-dir"
     },
     {
       "hash": "sha256:1b35cf8007c9b7f05c2f2f90d4d2f878506f7837594de6482c37e38573a6f50a",
@@ -1151,7 +1216,9 @@
       "kind": "file",
       "lang": "cpp",
       "loc": 2,
-      "path": "tests/engine_test.cpp"
+      "path": "tests/engine_test.cpp",
+      "role": "test",
+      "roleRule": "dsp-plugin:build/test-target"
     },
     {
       "hash": "sha256:4aebd7360ba10e9f0acf969a5c4fef307ddfbfa51e66e2a2bb533ac554baf972",
@@ -1159,7 +1226,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 2,
-      "path": "tools/common.py"
+      "path": "tools/common.py",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:35eb25b22ba213905e058fc8eab80fea47e9b7c3aa6785a32a509c94d8c0909f",
@@ -1167,7 +1236,9 @@
       "kind": "file",
       "lang": "sh",
       "loc": 1,
-      "path": "tools/env.sh"
+      "path": "tools/env.sh",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:b76b0db13f7ba73c92db6f36a76a13d66e9672be0fea6e8d45498458b8e061b0",
@@ -1175,7 +1246,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 8,
-      "path": "tools/gen_table.py"
+      "path": "tools/gen_table.py",
+      "role": "generator",
+      "roleRule": "graph:runs-command"
     },
     {
       "hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1183,7 +1256,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 0,
-      "path": "tools/pkg/__init__.py"
+      "path": "tools/pkg/__init__.py",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:8587133c75e0d82efc53282d62751b0c824b469f63c82c575cc550089413867e",
@@ -1191,7 +1266,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 4,
-      "path": "tools/pkg/fmt.py"
+      "path": "tools/pkg/fmt.py",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:bd92e5a1e2c73c8ad1f7a1bb00979394c2a047f3bdc44462386fd0c901b8761b",
@@ -1199,7 +1276,9 @@
       "kind": "file",
       "lang": "python",
       "loc": 2,
-      "path": "tools/pkg/util.py"
+      "path": "tools/pkg/util.py",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:8214a6660d0315e1c8d7442f3a5a75e7b63053870512bdb14eb07d472c8cf3f6",
@@ -1207,7 +1286,9 @@
       "kind": "file",
       "lang": "text",
       "loc": 1,
-      "path": "tools/presets.in"
+      "path": "tools/presets.in",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:34000ffde2812ff3e895f5aedbb18a2563036317f1342dc455c81bc55f7a012a",
@@ -1215,7 +1296,9 @@
       "kind": "file",
       "lang": "sh",
       "loc": 3,
-      "path": "tools/regen"
+      "path": "tools/regen",
+      "role": "tool",
+      "roleRule": "default:path/tools-dir"
     },
     {
       "hash": "sha256:c77beb5b278ae31a7ec6433d11a32033882cf76a8e8bdf7539fd674a9868d5b2",
@@ -1223,23 +1306,29 @@
       "kind": "file",
       "lang": "sh",
       "loc": 5,
-      "path": "tools/run.sh"
+      "path": "tools/run.sh",
+      "role": "generator",
+      "roleRule": "graph:writes-file"
     },
     {
-      "hash": "sha256:d64868fca6a6e786e6368a69ee1afa5498591b488b084a3e7d2130880a1a98ad",
+      "hash": "sha256:71341cec96d2620f23567fc07487a2f318962abd538ad77a90bbbcb32f0d4f33",
       "id": "file:web/app.js",
       "kind": "file",
       "lang": "js",
-      "loc": 5,
-      "path": "web/app.js"
+      "loc": 6,
+      "path": "web/app.js",
+      "role": "gui",
+      "roleRule": "config:roles[0]"
     },
     {
-      "hash": "sha256:6a5e6a2af36aee7d4770ae689087c257a40d7dba217e477036ec0a12e06ae923",
+      "hash": "sha256:40565a4706393ea23ab87c038cfcc1e7f5a7c1853b5b153943f804df73d621a1",
       "id": "file:web/index.html",
       "kind": "file",
       "lang": "html",
-      "loc": 5,
-      "path": "web/index.html"
+      "loc": 6,
+      "path": "web/index.html",
+      "role": "gui",
+      "roleRule": "config:roles[0]"
     },
     {
       "hash": "sha256:f3ada4bc50afadb5fe56ed99cbdf815f1580422945dcc61e52ca8e25709a18ae",
@@ -1247,7 +1336,9 @@
       "kind": "file",
       "lang": "js",
       "loc": 1,
-      "path": "web/lazy.js"
+      "path": "web/lazy.js",
+      "role": "gui",
+      "roleRule": "config:roles[0]"
     },
     {
       "hash": "sha256:4a381860447226426a116b024081641b32f9b6c4f7c2c5d3cb86987e85c8ae33",
@@ -1255,7 +1346,9 @@
       "kind": "file",
       "lang": "js",
       "loc": 1,
-      "path": "web/util.js"
+      "path": "web/util.js",
+      "role": "gui",
+      "roleRule": "config:roles[0]"
     },
     {
       "hash": "none",
@@ -1407,13 +1500,13 @@
       "id": "target:plugin",
       "kind": "target",
       "path": "plugin",
-      "targetType": "EXECUTABLE"
+      "targetType": "MODULE_LIBRARY"
     }
   ],
   "schema": "loupe.graph/0.3.1",
   "source": {
-    "commit": "291c9e5f995db311bc6ee93f4a15897f585e44bf",
-    "commitTime": "2026-10-17T01:40:18-04:00",
+    "commit": "c8ab09883e0191f348a09819f6e717fa941d85cf",
+    "commitTime": "2026-10-17T16:05:21-04:00",
     "dirty": true,
     "repo": "github.com/Julian-B-Smith/loupe"
   }
