@@ -24,7 +24,7 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `docs/graph-schema.md`, `schema/`: the data contract (graph, overlay, view, loupe-spec). Example snapshot in
   `schema/examples/horde-sample/`.
 - `tools/`: `loupe-check.mjs` (snapshot checker; V9 runs the viewer's layout headless), `loupe-check.test.mjs`
-  (53 mutation tests), `canon.mjs`, `convert-sample.mjs`, `example-cmake-basic.mjs` (build facts → 0.3 example, a
+  (mutation tests), `canon.mjs`, `convert-sample.mjs`, `example-cmake-basic.mjs` (build facts → 0.3 example, a
   stand-in until the emitter), `probe-crawl.mjs` (probe crawler, not P1). Run with `npm run check` and `npm test`.
 - `schema/examples/horde-probe/`: a real crawl of HORDE (commit c64cfdbc), produced by the probe.
 - `schema/examples/cmake-basic-0.3/`: the only 0.3 example: targets, builds/depends/generates edges, configs.

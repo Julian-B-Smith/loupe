@@ -1,6 +1,6 @@
 # Graph schema
 
-Version 0.3.1 (2026-10-16). Status: 0.3 accepted (PR #17); 0.3.1 proposed in Q-016 (decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
+Version 0.3.1 (2026-10-16). Status: 0.3 accepted (PR #17); 0.3.1 accepted (PR #21, Q-016) (decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
 
 Changed in 0.2: `missing` nodes, file roles, `generates` and `embeds` edges, guards, resolution on sites, and the crawl scope and inventory. Why: decision 0018.
 

@@ -108,9 +108,11 @@ repo; its own session runs the skill (0021). `.loupe/config.json` there is human
 **Decisions.** ADRs in `docs/decisions/` (numbered, Accepted only when Julian agrees, else Proposed).
 `DECISIONS.md` points at their index (docs/decisions/README.md) and holds harness decisions.
 
-**Verify targets.** `fast` (~2 s): kit integrity, leak gate, 58 mutation tests, viewer history, lens and story tests, the crawler's build layer on its fixture (needs `cmake`), loupe-check with schema
-validation required on every `schema/examples/*`, `horde-sample` regenerated and byte-compared. `full`: currently == fast; P1/P2 add HORDE golden crawl
-and stress-case renders.
+**Verify targets.** `fast`: kit integrity, leak gate, the loupe-check mutation tests, the viewer's history, lens,
+render and story tests, the crawler's build, syntax and graph tests on its fixture (goldens; needs `cmake`), loupe-check
+with schema validation required on every `schema/examples/*`, `horde-sample` regenerated and byte-compared. Counts live
+in the test output, not in prose (they drifted in three files: autonomous audit, 2026-10-17). `full`: currently == fast;
+P1/P2 add the HORDE golden crawl and stress-case renders.
 
 ## Mailbox
 
