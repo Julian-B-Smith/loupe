@@ -94,7 +94,7 @@ const SLABEL = { built: 'built', 'in progress': 'in progress', ready: 'ready to 
 // The plan's structure, by hand from ROADMAP.md. deps: [prerequisite id, basis]; basis 'inferred' = this map's reading.
 const DATA = {
   asOf: '2026-10-17',
-  records: 'ROADMAP on main 0536481 with this change (Status block refreshed, Q-022 added); Q-019 in review',
+  records: 'ROADMAP on main d93dcf0 (Q-019 merged as PR #27)',
   nodes: [
     { id: 'harness', name: 'Harness and oracle', status: 'built', v1: true, rows: ['P0', 'Q-001', 'Q-002'], adrs: [], deps: [],
       what: 'The project scaffolding: ./verify (kit integrity, leak gate, mutation tests, every gate below), CI, the manifest, traces and the knowledge loop.' },
@@ -128,8 +128,8 @@ const DATA = {
       what: 'The crawler\'s exit test: zero `unknown` missing nodes on HORDE, everything the old probe found found again, the crawl byte-identical in `./verify full`.' },
     { id: 'viewer', name: 'Viewer prototype', status: 'built', v1: true, rows: ['Q-017', 'Q-004'], adrs: ['0022', '0023', '0024', '0025'], deps: [['contract', 'inferred']],
       what: 'Flow and design views, the conservation meter, fold, isolate, history, lenses, "How it works" stories, loose nodes; a headless render test in ./verify.' },
-    { id: 'nodekinds', name: 'Node kinds visible', status: 'in progress', v1: true, rows: ['Q-019'], adrs: [], deps: [['viewer', 'Q-019']],
-      what: 'Targets, files, missing and external nodes told apart at a glance; no two nodes of a kind share a label. Built; waiting on its critic review.' },
+    { id: 'nodekinds', name: 'Node kinds visible', status: 'built', v1: true, rows: ['Q-019'], adrs: [], deps: [['viewer', 'Q-019']],
+      what: 'Targets, files, missing nodes and packages told apart at every zoom; a missing node\'s reason as a chip at detail zoom; no two drawn labels of one kind read the same at detail zoom.' },
     { id: 'renderer', name: 'Renderer gates (P2)', status: 'planned', v1: true, rows: ['P2', 'Q-011'], adrs: ['0029', '0030'], deps: [['viewer', 'P2'], ['nodekinds', 'inferred']],
       what: 'Every bundle opens to exactly its edges, a matrix lens for dense sections, Flow and Design side by side, the ten stress cases render with the meter balanced.',
       decisions: ['Which P2 gates must pass before v1, and which can follow'] },
