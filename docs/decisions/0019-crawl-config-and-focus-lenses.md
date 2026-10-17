@@ -1,6 +1,6 @@
 # 0019. Crawl config and focus lenses
 
-- **Status:** Proposed
+- **Status:** Accepted 2026-10-17 (Julian, ratified after the autonomous audit noted code relied on it while Proposed), as updated 2026-10-08
 - **Date:** 2026-10-01
 - **Source:** Julian asked for a way to focus on the files that feed one version (HORDE is splitting into a
   legacy system and horde 2) without knowing in advance where each project's fault lines are, and asked for
@@ -70,7 +70,7 @@ reads both. The expected first proposal is two lenses, "horde 2" (seeds `h2/**`,
 
 Julian asked whether operational code can be separated from labs and tests deterministically; by poll he chose to
 build the lens now and take its seeds from the build in P1, and defined **operational = reachable from the plugin's
-entry points**. Status stays Proposed.
+entry points**. (Status stayed Proposed until 2026-10-17.)
 
 - **Built:** `design/prototype/lens.js`, lens `operational`. Seeds: entry files found by name (`*_entry.cpp/.h`,
   `*_clap.cpp`) until P1 reads the build target. Rule `upstream` over **crawled edges only** (static, config): agent
