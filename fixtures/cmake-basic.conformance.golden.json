@@ -6,6 +6,9 @@
       ],
       "from": "target:plugin",
       "kind": "used-not-declared",
+      "tiedBy": [
+        "listed"
+      ],
       "to": "target:lut",
       "weakestResolution": "syntactic"
     }
@@ -13,9 +16,15 @@
   "graph": {
     "hash": "pinned-by-test"
   },
-  "schema": "loupe.conformance/0.0-internal",
-  "unattributedIncludes": {
-    "extra": 10,
-    "release": 10
-  }
+  "notJudged": {
+    "extra": {
+      "dependencies": 0,
+      "unownedFiles": 3
+    },
+    "release": {
+      "dependencies": 0,
+      "unownedFiles": 3
+    }
+  },
+  "schema": "loupe.conformance/0.0-internal"
 }
