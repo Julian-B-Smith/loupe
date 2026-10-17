@@ -6,16 +6,18 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 
 ## Status
 
-- **Phase:** P0 done 2026-10-02. PA done 2026-10-11 (Julian reviewed `docs/prior-art.md` and accepted ADRs 0026 to
-  0034). **P1a ← current**, HORDE accepted brief loupe-002 on 2026-10-12 with the configure command it names (see P1a).
-- **Oracle:** `./verify fast` = kit integrity, leak gate, 20 loupe-check mutation
-  cases, loupe-check with required schema validation on every `schema/examples/*`.
-  `full` == `fast` until P1/P2 add Layer-E gates.
-  `fast` also regenerates `horde-sample` and byte-compares it (Q-002), and runs the viewer's history, lens and
-  story tests. **Known gaps:** no crawl determinism gate (no P1 crawler yet); the renderer itself has no automated
-  test (its conservation is checked in the browser by `conserve()`, not in CI); `design/tokens.css` and the
-  prototype snapshots are not generated or gated yet (Q-007, Q-008).
-- **Last human ratification:** 2026-10-01 (manifest ratified by poll).
+- **Phase:** P0 done 2026-10-02. PA done 2026-10-11. **P1a ← current, mostly built:** the CMake build layer (Q-012),
+  the C/C++/Objective-C syntax layer (Q-013), graph.json at schema 0.3.1 with the inventory and build-target
+  conformance (Q-016, Q-020, Q-021), and the first crawl of HORDE (Q-018) are done. Still open in P1a: the other
+  languages (Python, JS, HTML, shell), the dsp-plugin dialect and its roles, the Operational lens from the build
+  (Q-009), and its gates on HORDE (zero `unknown` missing nodes, probe parity). Side track ready: engine2 from
+  HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+- **Oracle:** `./verify fast` = kit integrity, leak gate, 62 loupe-check mutation cases, schema validation on every
+  example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
+  syntax and graph tests on the fixture (goldens). `full` == `fast` until Layer-E gates exist. **Known gaps:** no
+  crawl determinism gate on HORDE itself (checked by hand at 1e6aae79); `design/tokens.css` and the prototype
+  snapshots are not generated (Q-007, Q-008).
+- **Last human ratification:** 2026-10-17 (Q-020's attribution rule, by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
 
@@ -242,6 +244,16 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Acceptance criteria:** 1. targets, files, missing nodes (by reason) and externals are told apart at a glance, and
   the key says how; 2. a label never shows two nodes as the same text without a kind cue; 3. critic review with
   screenshots.
+
+### Q-022 — Acknowledged conformance findings (exemptions with a reason)
+- **Status:** open (2026-10-17, from HORDE's answer to notice-004)
+- **Why:** both Q-020 leads on HORDE were deliberate: `vst3_save_bench` depends on the VST3 target for build order
+  only (it loads the bundle at run time), and `presetstore_check` includes a header-only file and links nothing.
+  HORDE suggested categories such as "build-order-only dependency" and "header-only include from a shared dir".
+- **Shape to decide with Julian:** the target repo's human acknowledges a finding with a reason in their own
+  `.loupe/config.json` (Loupe proposes, the human commits, as with configurations); an acknowledged finding stays in
+  `conformance.json`, marked exempt with its reason, never removed; an acknowledgement that no longer matches a finding
+  is itself reported. Mirrors the band-rule exemptions in view.json (decision 0014).
 
 ### Q-014 — Map HORDE's engine2 from its spec (inferred; parked)
 - **Status:** parked 2026-10-16 on branch `q014/engine2-inferred-map` (rebuildable, spec-pure, not on the testbench).

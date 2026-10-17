@@ -1,0 +1,328 @@
+<!doctype html>
+<!-- plan-map — the visual map of Loupe's plan (ROADMAP.md), modelled on horde's docs/design/h2-plan-map.html.
+     Loupe lead session, 2026-10-17. Julian: "How many stages left until this is in functional shape? Could you look
+     at horde's /docs/design/h2-plan-map.html and create something similar for Loupe?"
+
+     WHAT THIS PAGE IS. One box per part of Loupe, an edge per dependency (prerequisite -> dependent), colour by
+     status, the path to v1 ("functional": run Loupe in a repo and get a crawled, structured, readable map delivered
+     there, with a diff on the next run) highlighted. Clicking a box shows what the part is, its status, its open
+     decisions, and the ROADMAP rows and ADRs it cites, READ LIVE from ROADMAP.md and docs/decisions/README.md. The
+     page never restates a row's state as its own: ROADMAP.md is the single source of truth.
+
+     THE DATA BLOCK (DATA below) is written by hand from ROADMAP.md (main at 0536481 plus this change) and the ADRs it
+     cites. An edge's basis is the row, phase or ADR that makes it a dependency; an edge whose basis is 'inferred' is
+     this map's own reading and is drawn dashed.
+
+     SELF-CHECKS (?check=1, or the button), each with a must-fail control that must go red:
+       1. every cited row (Q-xxx), phase (P1a...) and ADR exists in the served ROADMAP.md / decisions index
+          (control: a planted part citing Q-9999);
+       2. the dependency graph has no cycle (control: a planted back-edge v1 -> harness);
+       3. every edge names real parts and every status is in the vocabulary (control: an edge to 'nope');
+       4. the highlighted path is a chain of real edges ending at 'v1' and no longer chain into 'v1' exists
+          (control: the path with one part removed).
+     Check 1 reads files over HTTP: serve the repo (npm run view, then /docs/plan-map.html); opened as a file it
+     reports SKIP, never a pass. URL: ?theme=dark · ?check=1 · ?part=<id>. Nothing is stored; nothing reads a clock. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loupe plan map</title>
+<link rel="stylesheet" href="../design/tokens.css">
+<style>
+  /* Visual values come from design/tokens.css (the Loupe design system); the fallbacks only keep a file:// open legible. */
+  :root {
+    --bg: var(--loupe-surface-page, #eceee9); --panel: var(--loupe-surface-panel, #f8f8f5); --well: var(--loupe-surface-node, #fff);
+    --fg: var(--loupe-ink, #1b1d1c); --muted: var(--loupe-ink-muted, #555b58); --faint: var(--loupe-ink-faint, #737875);
+    --rule: var(--loupe-rule, #d6d9d4); --accent: var(--loupe-accent, #4b3fd1); --accent-soft: var(--loupe-accent-soft, rgba(75,63,209,.12));
+    /* one hue per status */
+    --s-built: var(--loupe-state-ok, #3c7a3a); --s-progress: var(--loupe-accent, #4b3fd1); --s-ready: var(--loupe-hub, #285a63);
+    --s-planned: var(--loupe-state-warn, #9a6a00); --s-later: var(--loupe-ink-faint, #737875); --s-parked: var(--loupe-rule, #c9ccc6);
+    --ui: var(--loupe-font-ui, system-ui, sans-serif); --mono: var(--loupe-font-mono, ui-monospace, Menlo, monospace);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--fg); font: 400 14px/1.45 var(--ui); padding: 20px 16px 40px; }
+  h1 { font: 700 20px/1.2 var(--ui); } h2 { font: 700 15px/1.3 var(--ui); margin-bottom: 6px; } h3 { font: 700 14px/1.3 var(--ui); margin-bottom: 6px; }
+  .eyebrow { font: var(--loupe-type-eyebrow, 500 10.5px/14px var(--mono)); letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+  .wrap { max-width: 1400px; margin: 0 auto; display: grid; gap: 14px; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: baseline; justify-content: space-between; }
+  .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; min-width: 0; }
+  .answer { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+  .answer .n { font: 700 28px/1 var(--ui); } .answer p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+  @media (max-width: 1000px) { .main { grid-template-columns: 1fr; } }
+  .canvas { overflow-x: auto; }
+  svg text { font-family: var(--ui); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+  .legend i.line { width: 22px; height: 0; border-top: 2px solid var(--faint); border-radius: 0; vertical-align: 3px; }
+  .legend i.dash { border-top-style: dashed; } .legend i.crit { border-top-color: var(--accent); border-top-width: 3px; }
+  .side h3 { margin-top: 10px; } .side p, .side li { font-size: 13px; color: var(--muted); }
+  .side ul { padding-left: 18px; } .side code, .row code { font: 500 12px/1.4 var(--mono); }
+  .pill { display: inline-block; font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 999px; color: var(--well); }
+  .row { border-top: 1px solid var(--rule); padding: 6px 0; font-size: 13px; }
+  .row b { font-weight: 700; } .row .st { color: var(--muted); }
+  .order { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; }
+  .order .step { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; background: var(--well); cursor: pointer; }
+  .order .step .k { font: 500 11px/1 var(--mono); color: var(--faint); }
+  button { font: 500 13px/1 var(--ui); color: var(--fg); background: var(--well); border: 1px solid var(--rule); border-radius: 7px; padding: 7px 10px; cursor: pointer; }
+  button:focus-visible, .order .step:focus-visible, [data-part]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chk .r { display: grid; grid-template-columns: 70px 1fr; gap: 8px; padding: 4px 0; border-top: 1px solid var(--rule); font-size: 13px; }
+  .ok { color: var(--s-built); font-weight: 700; } .bad { color: var(--loupe-state-bad, #b3261e); font-weight: 700; } .skip { color: var(--faint); font-weight: 700; }
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="eyebrow">Loupe · plan of record</div><h1>Where Loupe stands, and what is left until it works</h1></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button id="theme">Dark</button><button id="runchk">Run self-checks</button></div>
+  </header>
+  <section class="card answer" id="answer" aria-label="Summary"></section>
+  <div class="main">
+    <section class="card"><div class="canvas" id="canvas"></div>
+      <div class="legend" id="legend"></div></section>
+    <aside class="card side" id="side" aria-live="polite"></aside>
+  </div>
+  <section class="card"><h2>The path to v1, in order</h2><p style="color:var(--muted);font-size:13px;margin-bottom:8px">The longest chain of prerequisites into v1, computed from the edges (not drawn by hand). Parts off the path can run alongside it.</p><div class="order" id="order"></div></section>
+  <section class="card chk" id="chk" hidden><h2>Self-checks</h2><div id="chkrows"></div></section>
+  <p class="eyebrow" id="foot"></p>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const STATUSES = ['built', 'in progress', 'ready', 'planned', 'later', 'parked'];
+const SCOLOR = { built: 'var(--s-built)', 'in progress': 'var(--s-progress)', ready: 'var(--s-ready)', planned: 'var(--s-planned)', later: 'var(--s-later)', parked: 'var(--s-parked)' };
+// Status says how far along a part is; whether v1 needs it is separate (the box outline), so a planned part off
+// the v1 path never reads "before v1".
+const SLABEL = { built: 'built', 'in progress': 'in progress', ready: 'ready to start', planned: 'planned', later: 'after v1', parked: 'parked' };
+
+// The plan's structure, by hand from ROADMAP.md. deps: [prerequisite id, basis]; basis 'inferred' = this map's reading.
+const DATA = {
+  asOf: '2026-10-17',
+  records: 'ROADMAP on main 0536481 with this change (Status block refreshed, Q-022 added); Q-019 in review',
+  nodes: [
+    { id: 'harness', name: 'Harness and oracle', status: 'built', v1: true, rows: ['P0', 'Q-001', 'Q-002'], adrs: [], deps: [],
+      what: 'The project scaffolding: ./verify (kit integrity, leak gate, mutation tests, every gate below), CI, the manifest, traces and the knowledge loop.' },
+    { id: 'contract', name: 'Graph contract, schema 0.3.1', status: 'built', v1: true, rows: ['Q-010', 'Q-016'], adrs: ['0015', '0016', '0018', '0026', '0028'], deps: [['harness', 'P0']],
+      what: 'graph.json, overlay.json and view.json as JSON Schema, with loupe-check enforcing the one rule (nothing destroys a node or hides an edge), provenance, configurations, resolution per site and `via`.' },
+    { id: 'priorart', name: 'Prior-art landscape', status: 'built', v1: true, rows: ['PA', 'Q-003'], adrs: ['0026', '0027', '0028', '0032', '0033', '0034'], deps: [['harness', 'inferred']],
+      what: 'What already exists and where Loupe differs; nine contradictions ruled as ADRs 0026 to 0034, which shaped the crawler.' },
+    { id: 'buildlayer', name: 'Crawler: build layer', status: 'built', v1: true, rows: ['Q-012'], adrs: ['0026', '0027'], deps: [['contract', '0026'], ['priorart', '0027']],
+      what: 'Runs CMake configure (never a build) in a scratch dir outside the repo and reads targets, sources, include paths, defines and custom commands from the File API and trace.' },
+    { id: 'syntax', name: 'Crawler: syntax layer', status: 'built', v1: true, rows: ['Q-013'], adrs: ['0028'], deps: [['buildlayer', 'Q-013']],
+      what: 'Every #include, #include_next and #import in C, C++ and Objective-C, with its #if condition verbatim and how it resolved; a census proves no include line is dropped.' },
+    { id: 'emit', name: 'graph.json and the inventory', status: 'built', v1: true, rows: ['Q-016'], adrs: [], deps: [['syntax', 'Q-016'], ['contract', 'Q-016']],
+      what: '`crawl <repo> --out <dir>`: every tracked file a node, build targets, include, builds, depends and generates edges; what cannot be an edge is listed as not evaluated.' },
+    { id: 'conformance', name: 'Conformance: declared vs observed', status: 'built', v1: false, rows: ['Q-016', 'Q-020', 'Q-021'], adrs: [], deps: [['emit', 'Q-016']],
+      what: 'Where the build\'s declared structure is not what the code does: used-not-declared, declared-not-seen, generated-by-several. On HORDE it led to a real bug (horde B501).' },
+    { id: 'exemptions', name: 'Acknowledged findings', status: 'planned', v1: false, rows: ['Q-022'], adrs: [], deps: [['conformance', 'Q-022']],
+      what: 'A repo\'s human marks a deliberate finding (e.g. a build-order-only dependency) as acknowledged, with a reason; it stays visible as exempt.',
+      decisions: ['The shape of an acknowledgement (Q-022)'] },
+    { id: 'hordecrawl', name: 'First crawl of HORDE', status: 'built', v1: true, rows: ['Q-018'], adrs: [], deps: [['emit', 'Q-018']],
+      what: 'HORDE at 1e6aae79, on HORDE\'s terms (response-003): 1,293 files, 127 targets, 1,719 edges, leak-checked, byte-identical twice.' },
+    { id: 'langs', name: 'Crawler: other languages', status: 'planned', v1: true, rows: ['P1a'], adrs: ['0018'], deps: [['emit', 'P1a']],
+      what: 'Python, JavaScript, HTML and shell edges (imports, script references), so the map covers more than the C-family core. HORDE has a web GUI and Python tools.',
+      decisions: ['Which languages first, and how deep (imports only, or script-to-script calls)'] },
+    { id: 'dialect', name: 'dsp-plugin dialect', status: 'planned', v1: true, rows: ['P1a'], adrs: ['0018'], deps: [['langs', 'P1a'], ['emit', 'P1a']],
+      what: 'Deterministic roles for files and edges in an audio plugin (audio, param, mod, gui), including the GUI bridge rule (web.bind -> JS calls).',
+      decisions: ['Which roles the dialect assigns, and from what evidence'] },
+    { id: 'oplens', name: 'Operational lens from the build', status: 'planned', v1: true, rows: ['Q-009'], adrs: ['0019'], deps: [['buildlayer', 'Q-009'], ['viewer', 'Q-009']],
+      what: 'The lens that shows only what the product depends on, seeded from the product target\'s sources instead of file names.',
+      decisions: ['ADR 0019 is still Proposed: accept it, or change it'] },
+    { id: 'p1gates', name: 'P1a gates on HORDE', status: 'planned', v1: true, rows: ['P1a'], adrs: [], deps: [['langs', 'P1a'], ['dialect', 'P1a'], ['hordecrawl', 'P1a']],
+      what: 'The crawler\'s exit test: zero `unknown` missing nodes on HORDE, everything the old probe found found again, the crawl byte-identical in `./verify full`.' },
+    { id: 'viewer', name: 'Viewer prototype', status: 'built', v1: true, rows: ['Q-017', 'Q-004'], adrs: ['0022', '0023', '0024', '0025'], deps: [['contract', 'inferred']],
+      what: 'Flow and design views, the conservation meter, fold, isolate, history, lenses, "How it works" stories, loose nodes; a headless render test in ./verify.' },
+    { id: 'nodekinds', name: 'Node kinds visible', status: 'in progress', v1: true, rows: ['Q-019'], adrs: [], deps: [['viewer', 'Q-019']],
+      what: 'Targets, files, missing and external nodes told apart at a glance; no two nodes of a kind share a label. Built; waiting on its critic review.' },
+    { id: 'renderer', name: 'Renderer gates (P2)', status: 'planned', v1: true, rows: ['P2', 'Q-011'], adrs: ['0029', '0030'], deps: [['viewer', 'P2'], ['nodekinds', 'inferred']],
+      what: 'Every bundle opens to exactly its edges, a matrix lens for dense sections, Flow and Design side by side, the ten stress cases render with the meter balanced.',
+      decisions: ['Which P2 gates must pass before v1, and which can follow'] },
+    { id: 'structure', name: 'Structure agent (P3)', status: 'planned', v1: true, rows: ['P3'], adrs: ['0006', '0019'], deps: [['emit', 'P3'], ['renderer', 'inferred'], ['oplens', 'P3']],
+      what: 'The agent that turns a crawl into a readable design view: sections, buses, lanes, proposed lenses, each with a claim an auditor can test. Without it a crawl of HORDE is one dense block.' },
+    { id: 'dialogue', name: 'Dialogue (P3)', status: 'planned', v1: true, rows: ['P3'], adrs: ['0002'], deps: [['structure', 'P3']],
+      what: 'The agent and you resolve what it could not decide (unclassified loops, unclear layers) in chat; answers become annotated evidence.' },
+    { id: 'delivery', name: 'The skill in a target repo (P6)', status: 'planned', v1: true, rows: ['P6'], adrs: ['0009', '0011', '0021'], deps: [['structure', '0009'], ['p1gates', 'inferred'], ['dialogue', 'inferred']],
+      what: '/loupe run in the target repo\'s own session: .loupe/current/ (gitignored there), snapshots on a loupe-history branch after the leak check, a visual diff on every later run. Opens with the P6 notice to HORDE.',
+      decisions: ['Whether v1 needs the re-run diff, or only the first run'] },
+    { id: 'v1', name: 'v1: Loupe works', status: 'planned', v1: true, rows: ['P1a', 'P3', 'P6'], adrs: ['0009'], deps: [['delivery', 'P6'], ['dialogue', 'P3'], ['p1gates', 'P1a'], ['renderer', 'inferred']],
+      what: 'Run Loupe in a repo and get a crawled, structured, readable map there, with a diff on the next run.',
+      decisions: ['Whether deterministic claim tests (the first half of P4) belong in v1'] },
+    { id: 'audit', name: 'Audit (P4)', status: 'later', v1: false, rows: ['P4'], adrs: ['0033'], deps: [['structure', 'P4']],
+      what: 'Deterministic claim tests first, then model auditors labelled as measured; a claim confirmed only by same-lineage agents reads "reviewed".' },
+    { id: 'explain', name: 'Explainers and navigator (P5)', status: 'later', v1: false, rows: ['P5'], adrs: [], deps: [['structure', 'P5'], ['audit', 'inferred']],
+      what: 'Explainers anchored to file hashes, flagged stale after an edit; a navigator through the map.' },
+    { id: 'rules', name: 'Rules export (P6r)', status: 'later', v1: false, rows: ['P6r'], adrs: ['0034'], deps: [['delivery', 'P6r'], ['audit', 'P6r']],
+      what: 'A confirmed claim becomes a deterministic check the target repo commits and runs in its own CI.' },
+    { id: 'designsys', name: 'Design system integration (P7)', status: 'later', v1: false, rows: ['P7', 'Q-007', 'Q-008'], adrs: ['0022'], deps: [['viewer', 'P7']],
+      what: 'tokens.css and primitives.json generated from design/system/, the prototype wired to real data.' },
+    { id: 'px', name: 'Pre-ship IP re-scan (PX)', status: 'later', v1: false, rows: ['PX'], adrs: [], deps: [['v1', 'PX']],
+      what: 'Before any public release: the prior-art doc refreshed with a patent and IP pass.' },
+    { id: 'engine2', name: 'engine2 from HORDE\'s declaration', status: 'ready', v1: false, rows: ['Q-015'], adrs: [], deps: [['emit', 'Q-015'], ['viewer', 'Q-015'], ['inferredmap', 'Q-015']],
+      what: 'HORDE declared engine2\'s structure as gated data (on horde main at 0e577fc). Loupe draws it deterministically: schema 0.4 (your approval) and one adapter. The parked inferred map measures how close inference got.',
+      decisions: ['Approve schema 0.4\'s structure layer when drafted'] },
+    { id: 'inferredmap', name: 'engine2 inferred map', status: 'parked', v1: false, rows: ['Q-014'], adrs: [], deps: [],
+      what: 'An agent\'s spec-only map of engine2, kept on a branch as the measured check for the declared one.' },
+    { id: 'symbols', name: 'Symbols and calls (P1b)', status: 'parked', v1: false, rows: ['P1b'], adrs: ['0032'], deps: [],
+      what: 'Not started until a named question cannot be answered at file level.' },
+  ],
+};
+const byId = (nodes) => Object.fromEntries(nodes.map((n) => [n.id, n]));
+
+// ---------------- graph helpers (pure) ----------------
+function topo(nodes) {
+  const m = byId(nodes), indeg = {}, out = {};
+  for (const n of nodes) { indeg[n.id] = 0; out[n.id] = []; }
+  for (const n of nodes) for (const [d] of n.deps) if (m[d]) { indeg[n.id]++; out[d].push(n.id); }
+  const q = nodes.filter((n) => !indeg[n.id]).map((n) => n.id).sort(), order = [];
+  while (q.length) { const id = q.shift(); order.push(id); for (const x of out[id]) if (!--indeg[x]) q.push(x); q.sort(); }
+  return { order, cyclic: order.length < nodes.length, stuck: nodes.map((n) => n.id).filter((id) => !order.includes(id)) };
+}
+function depths(nodes) { // longest path from a root
+  const m = byId(nodes), d = {};
+  for (const id of topo(nodes).order) d[id] = Math.max(0, ...m[id].deps.filter(([p]) => m[p]).map(([p]) => d[p] + 1));
+  return d;
+}
+function longestInto(nodes, target) { // the longest chain of prerequisites ending at target
+  const m = byId(nodes), best = {};
+  const go = (id) => { if (best[id]) return best[id]; const ps = m[id].deps.map(([p]) => p).filter((p) => m[p]).sort(); let b = [id]; for (const p of ps) { const c = go(p).concat(id); if (c.length > b.length) b = c; } return (best[id] = b); };
+  return go(target);
+}
+
+// ---------------- self-checks, each run against a planted fault too ----------------
+function checkCitations(nodes, known) {
+  const bad = []; for (const n of nodes) { for (const r of n.rows) if (!known.rows.has(r)) bad.push(`${n.id}: ${r}`); for (const a of n.adrs) if (!known.adrs.has(a)) bad.push(`${n.id}: ADR ${a}`); for (const [, b] of n.deps) if (b !== 'inferred' && !known.rows.has(b) && !known.adrs.has(b)) bad.push(`${n.id}: basis ${b}`); }
+  return { ok: !bad.length, msg: bad.length ? 'not found: ' + bad.join(', ') : 'every cited row, phase and ADR exists' };
+}
+function checkAcyclic(nodes) { const t = topo(nodes); return { ok: !t.cyclic, msg: t.cyclic ? 'cycle through: ' + t.stuck.join(', ') : 'acyclic, ' + nodes.length + ' parts' }; }
+function checkRefs(nodes) {
+  const m = byId(nodes), bad = [];
+  for (const n of nodes) { if (!STATUSES.includes(n.status)) bad.push(`${n.id}: status ${n.status}`); for (const [d] of n.deps) if (!m[d]) bad.push(`${n.id} -> ${d}`); }
+  return { ok: !bad.length, msg: bad.length ? bad.join(', ') : 'every edge names a real part; every status is in the vocabulary' };
+}
+function checkPath(nodes, path) {
+  const m = byId(nodes);
+  if (path[path.length - 1] !== 'v1') return { ok: false, msg: 'does not end at v1' };
+  for (let i = 1; i < path.length; i++) if (!m[path[i]] || !m[path[i]].deps.some(([d]) => d === path[i - 1])) return { ok: false, msg: `${path[i - 1]} -> ${path[i]} is not an edge` };
+  const L = longestInto(nodes, 'v1').length;
+  return { ok: path.length === L, msg: path.length === L ? `a real chain of ${L} parts, the longest into v1` : `length ${path.length}, but the longest is ${L}` };
+}
+async function known() {
+  const get = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(u + ' ' + r.status); return r.text(); };
+  const road = await get('../ROADMAP.md'), dec = await get('decisions/README.md');
+  const rows = new Set([...road.matchAll(/^### (Q-\d{3})/gm)].map((m) => m[1]).concat([...road.matchAll(/^\| \*\*(P\w+)\*\*/gm)].map((m) => m[1])));
+  const adrs = new Set([...dec.matchAll(/^\| \[(\d{4})\]/gm)].map((m) => m[1]));
+  return { rows, adrs, road };
+}
+async function runChecks() {
+  const N = DATA.nodes, rows = [], add = (name, real, ctl) => rows.push({ name, real, ctl });
+  let K = null;
+  try { K = await known(); } catch (e) { /* opened as a file: check 1 cannot run */ }
+  const planted = N.concat([{ id: 'plant', name: 'plant', status: 'planned', rows: ['Q-9999'], adrs: [], deps: [] }]);
+  if (K) add('1 citations', checkCitations(N, K), checkCitations(planted, K));
+  else add('1 citations', { skip: true, msg: 'needs the page served (npm run view); opened as a file it cannot read ROADMAP.md' }, { skip: true, msg: '' });
+  const back = N.map((n) => n.id === 'harness' ? { ...n, deps: [['v1', 'inferred']] } : n);
+  add('2 acyclic', checkAcyclic(N), checkAcyclic(back));
+  add('3 references', checkRefs(N), checkRefs(N.concat([{ id: 'x', name: 'x', status: 'planned', rows: [], adrs: [], deps: [['nope', 'inferred']] }])));
+  const path = longestInto(N, 'v1');
+  add('4 v1 path', checkPath(N, path), checkPath(N, path.filter((_, i) => i !== 1)));
+  const cell = (r, wantOk) => r.skip ? '<span class="skip">SKIP</span>' : (r.ok === wantOk ? '<span class="ok">' : '<span class="bad">') + (r.ok ? 'pass' : 'fail') + '</span>';
+  $('chkrows').innerHTML = rows.map((r) => `<div class="r"><b>${esc(r.name)}</b><div>${cell(r.real, true)} ${esc(r.real.msg)}<br><span style="color:var(--faint)">control (must fail): ${cell(r.ctl, false)} ${esc(r.ctl.msg)}</span></div></div>`).join('');
+  $('chk').hidden = false;
+  const allGood = rows.every((r) => r.real.skip || (r.real.ok && !r.ctl.ok));
+  return allGood;
+}
+
+// ---------------- layout and drawing ----------------
+const NW = 190, NH = 52, COLW = 214, ROWH = 92, PADX = 16, PADY = 18;
+function layout(nodes) {
+  const d = depths(nodes), maxD = Math.max(...Object.values(d)), pos = {}, rows = {};
+  const rowOf = (n) => n.status === 'parked' ? maxD + 1 : d[n.id];
+  for (const n of nodes) (rows[rowOf(n)] = rows[rowOf(n)] || []).push(n);
+  let widest = 0;
+  for (let r = 0; r <= maxD + 1; r++) {
+    const row = rows[r] || [];
+    // one barycentre pass: sit under the mean column of the prerequisites already placed
+    const bc = (n) => { const xs = n.deps.map(([p]) => pos[p]).filter(Boolean).map((p) => p.c); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0; };
+    row.sort((a, b) => bc(a) - bc(b) || (a.v1 === b.v1 ? 0 : a.v1 ? -1 : 1) || (a.id < b.id ? -1 : 1));
+    row.forEach((n, i) => { pos[n.id] = { r, c: i - (row.length - 1) / 2 }; });
+    widest = Math.max(widest, row.length);
+  }
+  const w = PADX * 2 + widest * COLW, mid = w / 2;
+  for (const id in pos) { const p = pos[id]; p.x = mid + p.c * COLW - NW / 2; p.y = PADY + p.r * ROWH; }
+  return { pos, w, h: PADY * 2 + (maxD + 2) * ROWH - (ROWH - NH) };
+}
+const ST = { sel: null, crit: [] };
+function wrap(text, max) { const words = text.split(' '), lines = ['']; for (const w of words) { const l = lines[lines.length - 1]; if ((l + ' ' + w).trim().length > max && l) lines.push(w); else lines[lines.length - 1] = (l + ' ' + w).trim(); } return lines.slice(0, 2); }
+function render() {
+  const N = DATA.nodes, m = byId(N), L = layout(N), crit = new Set(ST.crit), critE = new Set();
+  for (let i = 1; i < ST.crit.length; i++) critE.add(ST.crit[i - 1] + '>' + ST.crit[i]);
+  const near = new Set(); if (ST.sel) { near.add(ST.sel); for (const [d] of m[ST.sel].deps) near.add(d); for (const n of N) if (n.deps.some(([d]) => d === ST.sel)) near.add(n.id); }
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${L.w}" height="${L.h}" viewBox="0 0 ${L.w} ${L.h}" role="img" aria-label="Loupe plan: ${N.length} parts and their dependencies">`;
+  for (const n of N) for (const [d, basis] of n.deps) {
+    const a = L.pos[d], b = L.pos[n.id]; if (!a || !b) continue;
+    const x1 = a.x + NW / 2, y1 = a.y + NH, x2 = b.x + NW / 2, y2 = b.y, my = (y1 + y2) / 2;
+    const isC = critE.has(d + '>' + n.id), dim = ST.sel && !(near.has(d) && near.has(n.id));
+    s += `<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" fill="none" stroke="${isC ? 'var(--accent)' : 'var(--faint)'}" stroke-width="${isC ? 3 : 1.4}" stroke-dasharray="${basis === 'inferred' ? '5 4' : 'none'}" opacity="${dim ? 0.15 : isC ? 1 : 0.7}"><title>${esc(d + ' → ' + n.id + ' (' + (basis === 'inferred' ? 'inferred by this map' : basis) + ')')}</title></path>`;
+  }
+  for (const n of N) {
+    const p = L.pos[n.id], isC = crit.has(n.id), sel = ST.sel === n.id, dim = ST.sel && !near.has(n.id);
+    const lines = wrap(n.name, 24);
+    s += `<g data-part="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name + ', ' + SLABEL[n.status])}" style="cursor:pointer" opacity="${dim ? 0.3 : 1}"><title>${esc(n.name)}</title>`;
+    s += `<rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="8" fill="var(--well)" stroke="${sel || isC ? 'var(--accent)' : 'var(--rule)'}" stroke-width="${sel ? 2.5 : isC ? 2 : 1}" ${n.v1 ? '' : 'stroke-dasharray="4 3"'}/>`;
+    s += `<rect x="${p.x}" y="${p.y}" width="6" height="${NH}" rx="3" fill="${SCOLOR[n.status]}"/>`;
+    lines.forEach((t, i) => { s += `<text x="${p.x + 14}" y="${p.y + 19 + i * 16}" font-size="13" font-weight="700" fill="var(--fg)">${esc(t)}</text>`; });
+    if (lines.length < 2) s += `<text x="${p.x + 14}" y="${p.y + 37}" font-size="11.5" fill="var(--muted)">${esc(SLABEL[n.status])}</text>`;
+    s += `</g>`;
+  }
+  $('canvas').innerHTML = s + '</svg>';
+}
+function legend() {
+  $('legend').innerHTML = STATUSES.map((k) => `<span><i style="background:${SCOLOR[k]}"></i>${esc(SLABEL[k])}</span>`).join('')
+    + '<span><i class="line"></i>dependency (cites a row, phase or ADR)</span><span><i class="line dash"></i>inferred by this map</span><span><i class="line crit"></i>path to v1</span><span><i style="border:1px dashed var(--faint);background:transparent"></i>not needed for v1</span>';
+}
+let ROAD = null;
+function rowInfo(id) {
+  if (!ROAD) return null;
+  if (/^Q-/.test(id)) { const i = ROAD.indexOf('### ' + id); if (i < 0) return null; const blk = ROAD.slice(i, ROAD.indexOf('\n### ', i + 4) > 0 ? ROAD.indexOf('\n### ', i + 4) : undefined); const title = blk.split('\n')[0].replace(/^### Q-\d+ — /, ''); const st = (/\*\*Status:\*\*\s*([^\n]*)/.exec(blk) || [])[1] || ''; return { title, st: st.split(/[.;(]/)[0] }; }
+  const m = new RegExp('^\\| \\*\\*' + id + '\\*\\*([^|]*)\\|([^|]*)\\|', 'm').exec(ROAD); return m ? { title: (m[1] + ' ' + m[2]).replace(/\s+/g, ' ').trim().slice(0, 150) + '…', st: '' } : null;
+}
+function side() {
+  const id = ST.sel, m = byId(DATA.nodes);
+  if (!id) { $('side').innerHTML = '<h3>Click a part</h3><p>Each box is one part of Loupe. The coloured bar is its status; an accent outline marks the path to v1; a dashed outline marks a part v1 does not need. Solid edges cite the ROADMAP row, phase or ADR that makes them a dependency; dashed edges are this map\'s own reading (hover an edge to see which).</p><p style="margin-top:6px">ROADMAP.md outranks this page: the rows shown for a part are read from it live.</p>'; return; }
+  const n = m[id], deps = n.deps.map(([d, b]) => `<li>${esc(m[d] ? m[d].name : d)} <span style="color:var(--faint)">(${esc(b)})</span></li>`).join('') || '<li>none</li>';
+  const users = DATA.nodes.filter((x) => x.deps.some(([d]) => d === id)).map((x) => `<li>${esc(x.name)}</li>`).join('') || '<li>none</li>';
+  const rows = n.rows.map((r) => { const i = rowInfo(r); return `<div class="row"><code>${esc(r)}</code> ${i ? `<b>${esc(i.title)}</b>${i.st ? `<br><span class="st">${esc(i.st)}</span>` : ''}` : '<span class="st">(served page reads ROADMAP.md live)</span>'}</div>`; }).join('');
+  $('side').innerHTML = `<div class="eyebrow">${esc(n.v1 ? 'needed for v1' : 'not needed for v1')}</div><h2>${esc(n.name)}</h2><span class="pill" style="background:${SCOLOR[n.status]}">${esc(SLABEL[n.status])}</span>
+    <p style="margin-top:8px">${esc(n.what)}</p>
+    ${n.decisions ? `<h3>Your open decisions</h3><ul>${n.decisions.map((d) => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}
+    <h3>Needs</h3><ul>${deps}</ul><h3>Needed by</h3><ul>${users}</ul>
+    <h3>ROADMAP</h3>${rows || '<p>no rows</p>'}${n.adrs.length ? `<h3>Decisions</h3><p>${n.adrs.map((a) => `ADR ${esc(a)}`).join(' · ')}</p>` : ''}`;
+}
+function answer() {
+  const N = DATA.nodes, need = N.filter((n) => n.v1 && n.id !== 'v1'), left = need.filter((n) => n.status !== 'built');
+  const stages = [['P1a finish', ['langs', 'dialect', 'oplens', 'p1gates']], ['P2 renderer gates', ['nodekinds', 'renderer']], ['P3 structure + dialogue', ['structure', 'dialogue']], ['P6 delivery as a skill', ['delivery']]];
+  const remaining = stages.filter(([, ids]) => ids.some((i) => byId(N)[i].status !== 'built'));
+  $('answer').innerHTML = `<div><div class="eyebrow">Stages left to v1</div><div class="n">${remaining.length}</div><p>${remaining.map(([s]) => esc(s)).join(' → ')}</p></div>
+    <div><div class="eyebrow">Parts v1 needs</div><div class="n">${need.length - left.length} / ${need.length}</div><p>built; ${left.length} still to do (${left.filter((n) => n.status === 'in progress').length} in progress)</p></div>
+    <div><div class="eyebrow">After v1</div><div class="n">${N.filter((n) => n.status === 'later').length}</div><p>audit, explainers, rules export, design system, the IP re-scan</p></div>
+    <div><div class="eyebrow">Ready now, off the path</div><div class="n">${N.filter((n) => n.status === 'ready').length}</div><p>${esc(N.filter((n) => n.status === 'ready').map((n) => n.name).join(', '))}</p></div>`;
+}
+function order() {
+  const m = byId(DATA.nodes);
+  $('order').innerHTML = ST.crit.map((id, i) => `<div class="step" data-part="${id}" tabindex="0" role="button"><span class="k">${i + 1} · ${esc(SLABEL[m[id].status])}</span><br><b>${esc(m[id].name)}</b></div>`).join('');
+}
+function select(id) { ST.sel = id && byId(DATA.nodes)[id] ? id : null; render(); side(); }
+function onPick(e) { const g = e.target.closest('[data-part]'); if (g) select(ST.sel === g.dataset.part ? null : g.dataset.part); }
+function theme(dark) { document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light'); $('theme').textContent = dark ? 'Light' : 'Dark'; }
+async function boot() {
+  const q = new URLSearchParams(location.search);
+  theme(q.get('theme') === 'dark' || (!q.get('theme') && matchMedia('(prefers-color-scheme: dark)').matches));
+  ST.crit = longestInto(DATA.nodes, 'v1');
+  legend(); answer(); order(); render(); side();
+  for (const el of [$('canvas'), $('order')]) { el.addEventListener('click', onPick); el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPick(e); } }); }
+  $('theme').onclick = () => theme(document.documentElement.getAttribute('data-theme') !== 'dark');
+  $('runchk').onclick = runChecks;
+  $('foot').textContent = `As of ${DATA.asOf} · ${DATA.records}`;
+  try { ROAD = (await known()).road; side(); } catch (e) { /* file:// open: rows say so */ }
+  if (q.get('part')) select(q.get('part'));
+  if (q.get('check')) runChecks();
+}
+boot();
+</script>
+</body></html>
