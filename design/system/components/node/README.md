@@ -1,6 +1,16 @@
 # Node
 
-A node stands for exactly one crawled file.
+A node stands for exactly one node of the graph: usually a crawled file, but also a build target, a file the code
+references that is not in the tree (missing), or a package outside the repo (external). The kinds must never look
+alike (ROADMAP Q-019: on the first crawl a target and a file both read "engine", and `<vector>` looked like a file
+that exists).
+
+**Kinds.** A file is the plain body. A build target is a pill (`kind-target`). A missing node is dashed on the canvas
+fill with a muted label (`kind-missing`); an external package the same with a darker stroke (`kind-external`). Every
+non-file node also carries a chip on its right end saying what it is (`kind-chip`): `target`, `generated`,
+`not found`, `sibling`, `external`, `package` or `artifact`. Shape and dash survive at every zoom; the chip shows
+where the label does. Two nodes of the same kind never share a label: a colliding name keeps its extension, then its
+parent directory.
 
 **Audit test.** Conservation: one node per crawled file, placed, collapsed or ghosted.
 
@@ -9,7 +19,7 @@ A node stands for exactly one crawled file.
 ```loupe-spec
 {
  "primitive": "node",
- "version": 2,
+ "version": 3,
  "parts": {
   "body": {
    "fill": "surface-node",
@@ -34,6 +44,31 @@ A node stands for exactly one crawled file.
    "stroke": "diff-removed",
    "dash": "gap",
    "textColor": "ink-faint"
+  },
+  "kind-target": {
+   "fill": "surface-group",
+   "stroke": "ink-muted",
+   "strokeWidth": "stroke-group",
+   "radius": "radius-pill"
+  },
+  "kind-missing": {
+   "fill": "surface-canvas",
+   "stroke": "ink-faint",
+   "dash": "gap",
+   "textColor": "ink-muted"
+  },
+  "kind-external": {
+   "fill": "surface-canvas",
+   "stroke": "ink-muted",
+   "dash": "gap",
+   "textColor": "ink-muted"
+  },
+  "kind-chip": {
+   "fill": "surface-panel",
+   "stroke": "rule",
+   "radius": "radius-pill",
+   "textStyle": "count",
+   "textColor": "ink-muted"
   }
  },
  "states": {

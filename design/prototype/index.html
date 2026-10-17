@@ -382,7 +382,15 @@ function legend(s) {
   data.edges.forEach(e => { const k = e.role || e.kind; if (!seen[k]) seen[k] = e; });
   const kinds = Object.entries(seen).sort((a, b) => slotOf(a[1]) - slotOf(b[1]));
   const provs = ['static', 'config', 'runtime', 'annotated', 'inferred'];
-  $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button><div class="col" style="grid-template-columns:repeat(${kinds.length > 4 ? 2 : 1},auto);column-gap:14px">${kinds.map(([k, e]) => `<button class="lk" data-kind="${k}" aria-pressed="${!s.dimmedKinds.includes(k)}" title="Dim or show ${k} edges">${swatch({ ...e, provenance: 'static' })}${k}</button>`).join('')}</div>
+  // Node kinds present in this snapshot, drawn as the map draws them (node loupe-spec v3, Q-019).
+  const nk = (fill, stroke, dash, pill) => `<svg width="30" height="12" aria-hidden="true"><rect x="1" y="1" width="28" height="10" style="rx:${pill ? v('radius-pill') : '2px'};fill:${v(fill)};stroke:${v(stroke)};stroke-width:1.25px;stroke-dasharray:${dash}"/></svg>`;
+  const present = new Set(data.nodeIds.map(id => { const n = data.nodes[id]; return n.kind === 'missing' ? 'missing:' + ((n.missing && n.missing.reason) || '') : n.kind; }));
+  const KINDS = [['file', nk('surface-node', 'rule', 'none'), 'file'], ['target', nk('surface-group', 'ink-muted', 'none', true), 'build target'],
+    ['missing:generated', nk('surface-canvas', 'ink-faint', SPEC.dash.gap), 'generated (not in the tree)'], ['missing:external', nk('surface-canvas', 'ink-faint', SPEC.dash.gap), 'external (outside the repo)'],
+    ['missing:unknown', nk('surface-canvas', 'ink-faint', SPEC.dash.gap), 'not found'], ['missing:sibling', nk('surface-canvas', 'ink-faint', SPEC.dash.gap), 'sibling repo'],
+    ['external', nk('surface-canvas', 'ink-muted', SPEC.dash.gap), 'package'], ['artifact', nk('surface-node', 'rule', 'none'), 'artifact']].filter(([k]) => present.has(k));
+  const nodeCol = KINDS.length > 1 ? `<div class="col">${KINDS.map(([, sw, label]) => `<div class="lk">${sw}${label}</div>`).join('')}</div>` : '';
+  $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>${nodeCol}<div class="col" style="grid-template-columns:repeat(${kinds.length > 4 ? 2 : 1},auto);column-gap:14px">${kinds.map(([k, e]) => `<button class="lk" data-kind="${k}" aria-pressed="${!s.dimmedKinds.includes(k)}" title="Dim or show ${k} edges">${swatch({ ...e, provenance: 'static' })}${k}</button>`).join('')}</div>
     <div class="col">${provs.map(p => `<div class="lk">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}${p}</div>`).join('')}</div>${strip()}`;
 }
 $('legend').onclick = e => { if (e.target.closest('[data-keytoggle]')) { $('legend').classList.toggle('closed'); legend(store.get()); return; } const b = e.target.closest('[data-kind]'); if (b) A.toggleKind(b.dataset.kind); };

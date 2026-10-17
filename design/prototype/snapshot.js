@@ -7,6 +7,24 @@ async function sha256(text) {
   return 'sha256:' + [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Two nodes of the same kind never share a label (Q-019): on the first crawl src/engine.h and src/engine.cpp both
+// read "engine". A colliding label keeps its extension, then grows parent directories until it is unique; the last
+// resort is the full path. Different kinds may share text: shape and chip tell them apart. Deterministic: depends only
+// on the set of paths.
+export function uniqueLabels(list) {
+  const byKind = {};
+  list.forEach(n => { (byKind[n.kind] = byKind[n.kind] || []).push(n); });
+  Object.values(byKind).forEach(group => {
+    for (let depth = 0; depth < 64; depth++) {
+      const count = {};
+      group.forEach(n => { count[n.label] = (count[n.label] || 0) + 1; });
+      const clash = group.filter(n => count[n.label] > 1);
+      if (!clash.length) return;
+      clash.forEach(n => { const parts = n.path.split('/'); n.label = depth === 0 ? parts[parts.length - 1] : parts.slice(-1 - depth).join('/'); });
+    }
+  });
+}
+
 export function stem(path, kind) {
   if (kind === 'external') return path;
   const parts = path.split('/');
@@ -32,6 +50,7 @@ export function indexSnapshot(raw) {
   const { graph, overlay, view } = raw;
   const nodes = {};
   graph.nodes.forEach(n => { nodes[n.id] = { ...n, label: stem(n.path, n.kind) }; });
+  uniqueLabels(Object.values(nodes));
   const roles = {};
   ((overlay && overlay.roles) || []).forEach(r => { roles[r.edge] = r.role; });
   const conds = {};

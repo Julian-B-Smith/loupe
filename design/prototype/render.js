@@ -549,19 +549,34 @@ export function render(container, data, state) {
     const sel = id === selNode, hov = id === hovNode, relN = rel && rel.has(id) && !sel && !hov;
     const dim = isDim(id) && !sel && !hov;
     const hub = designish && hubs[id] && decor > 0;
-    const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'ink-faint') : hub ? 'hub' : 'rule';
+    // Node kinds (Q-019, node loupe-spec v3): a target is a pill, a missing or external node is dashed on the canvas
+    // fill with a muted label; each non-file kind also gets a chip naming it. Never two kinds that look alike.
+    const kind = n.kind || 'file', reason = n.missing && n.missing.reason;
+    const isTarget = kind === 'target', isAbsent = kind === 'missing' || kind === 'external';
+    const kindChip = isTarget ? 'target' : kind === 'missing' ? ({ generated: 'generated', unknown: 'not found', sibling: 'sibling', external: 'external' }[reason] || 'missing')
+      : kind === 'external' ? 'package' : kind === 'artifact' ? 'artifact' : null;
+    const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'ink-faint') : hub ? 'hub' : isTarget || kind === 'external' ? 'ink-muted' : kind === 'missing' ? 'ink-faint' : 'rule';
     const sw = sel || hov ? v('stroke-hub') : hub ? v('stroke-hub') : v('stroke-group');
     let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(n.path)}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
     if (sel) g += `<rect x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${v('accent-soft')}"/>`;
     if (hub) g += `<rect x="${f1(r.x - 3.5)}" y="${f1(r.y - 3.5)}" width="${f1(r.w + 7)}" height="${f1(r.h + 7)}" rx="6.5" style="fill:${v('hub-soft')};stroke:${v('hub')};stroke-width:${v('stroke-hub')};opacity:${decor}"/>`;
     if (designish && overlapOf[id] && decor > 0) g += `<rect x="${f1(r.x - 3)}" y="${f1(r.y - 3)}" width="${f1(r.w + 6)}" height="${f1(r.h + 6)}" rx="6" style="fill:${v('set-1')};stroke:${v('set-1')};stroke-width:4px;opacity:${decor}"/>`;
-    g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="fill:${ghost ? v('surface-canvas') : v('surface-node')};stroke:${v(strokeC)};stroke-width:${sw};stroke-dasharray:${ghost ? '3 2.5' : 'none'}"/>`;
+    const bodyFill = ghost || isAbsent ? v('surface-canvas') : isTarget ? v('surface-group') : v('surface-node');
+    const bodyDash = ghost ? '3 2.5' : isAbsent ? SPEC.dash.gap : 'none';
+    g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="${isTarget ? `rx:${v('radius-pill')};` : ''}fill:${bodyFill};stroke:${v(strokeC)};stroke-width:${sw};stroke-dasharray:${bodyDash}"/>`;
     if (dm && !ghost) g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="fill:${v('diff-' + dm + '-soft')}"/>`;
     if (dm === 'removed') g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="fill:${v('diff-removed-soft')}"/>`;
     const tier = r.w < 34 || r.h < 8 ? 0 : (detail || !designish) && r.w >= 60 && r.h >= 14 ? 2 : 1;
     const showLabel = tier === 2, ncw = tier === 2 ? cw : cw * 0.8, nin = tier === 2 ? SPEC.node.inset : 4;
     if (tier) {
       const marks = [];
+      // The kind chip shows wherever the label does, in both views: it is identity, not decoration.
+      // ...but never at the label's expense: shape and dash already say the kind at every zoom, so the chip only shows
+      // when the whole label still fits beside it (on the first try "engine_test" became "engin…" next to "engine").
+      if (tier === 2 && kindChip) {
+        const chipW = kindChip.length * cw * 0.9 + 10 + 4;
+        if (fit(n.label, r.w - nin * 2 - chipW - 5, ncw) === n.label) marks.push({ kind: 'kindchip', t: kindChip });
+      }
       if (tier === 2 && designish && decor > 0) {
         if (hub) marks.push({ kind: 'fanin', t: String(fanIn(id)) });
         if (overlapOf[id]) marks.push({ kind: 'overlap', t: '∩' + data.elements[overlapOf[id][0]].sets.length });
@@ -573,11 +588,12 @@ export function render(container, data, state) {
       const reserve = r.x + r.w - mx - 5 + (marks.length ? 4 : 0);
       marks.forEach(m => {
         const cy = r.y + r.h / 2;
+        if (m.kind === 'kindchip') { g += `<g><title>${esc(m.t === 'target' ? 'A build target' : m.t === 'package' ? 'A package outside the repo' : 'Referenced by the code, not in the tree: ' + m.t)}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" style="rx:${v('radius-pill')};fill:${v('surface-panel')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(m.t)}</text></g>`; return; }
         if (m.kind === 'fanin') g += `<text x="${f1(m.x + m.w)}" y="${f1(cy + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('hub')};opacity:${decor}">${m.t}</text>`;
         else if (m.kind === 'overlap') { const o = data.elements[overlapOf[id][0]]; g += `<g style="opacity:${decor}"><title>${esc('Overlap: ' + o.sets.map(x => data.elements[x].label).join(' ∩ '))}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" rx="7" style="fill:${v('set-1')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink')}">${m.t}</text></g>`; }
         else { const f = cfOf[id], est = f.status === 'established', pend = f.status === 'pending'; g += `<g style="opacity:${decor}" ${f.exemption ? `data-el="${f.exemption}"` : ''}><title>${esc(`↑${f.edges.length} counterflow · ${est ? 'exempt' : pend ? 'pending' : 'flagged'}: ${f.edges.length} edges point up a level`)}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" rx="7" style="fill:${v('surface-panel')};stroke:${est ? v('ink-faint') : v('state-warn')};stroke-width:1.25px;stroke-dasharray:${pend ? '3 2' : 'none'}"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${est ? v('ink-muted') : v('ink')}">${m.t}</text></g>`; }
       });
-      g += `<text x="${f1(r.x + lead)}" y="${f1(r.y + r.h / 2 + (tier === 2 ? 4 : 3))}" style="font:${tier === 2 ? v('type-node-label') : v('type-node-label-compact')};letter-spacing:${v('tracking-node-label')};fill:${ghost ? v('ink-faint') : v('ink')};text-decoration:${dm === 'removed' ? 'line-through' : 'none'}">${esc(fit(n.label, r.w - lead - nin - reserve, ncw))}</text>`;
+      g += `<text x="${f1(r.x + lead)}" y="${f1(r.y + r.h / 2 + (tier === 2 ? 4 : 3))}" style="font:${tier === 2 ? v('type-node-label') : v('type-node-label-compact')};letter-spacing:${v('tracking-node-label')};fill:${ghost ? v('ink-faint') : isAbsent ? v('ink-muted') : v('ink')};text-decoration:${dm === 'removed' ? 'line-through' : 'none'}">${esc(fit(n.label, r.w - lead - nin - reserve, ncw))}</text>`;
     }
     if (dm) {
       const key = dm === 'ghost-added' ? 'added' : dm, gl = { added: '+', changed: '~', stale: '⧗', removed: '−' }[key];
