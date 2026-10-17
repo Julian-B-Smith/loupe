@@ -6,10 +6,10 @@
   "elements": [],
   "exemptions": [],
   "graph": {
-    "hash": "sha256:ceb580835cebab6a8803645742e6782eee3ada34a316d436f53896b8be41a483"
+    "hash": "sha256:8b2a9c3420960f9f1223dcbff8af706e003fd2eaf6efa980a94826d29c3313a8"
   },
   "overlay": {
-    "hash": "sha256:14d47267d447637b06f7d754f6832760b8f5fef45bbcf511d725608bfea0dc24"
+    "hash": "sha256:fc471f9b94d801b8d8a892bd036ad3537308019f0ea6b081bcc657b9bd7d4321"
   },
   "schema": "loupe.view/0.2",
   "settings": {

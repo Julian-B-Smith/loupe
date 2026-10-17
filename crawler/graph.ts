@@ -16,9 +16,10 @@ import { readFileSync, realpathSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, extname, basename } from 'node:path';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from '../tools/canon.mjs';
+import { langLayer } from './langs.ts';
 
 const by = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
-const LANG: Record<string, string> = { '.c': 'c', '.h': 'cpp', '.cc': 'cpp', '.cpp': 'cpp', '.cxx': 'cpp', '.hh': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp',
+const LANG: Record<string, string> = { '.cjs': 'js', '.htm': 'html', '.bash': 'sh', '.c': 'c', '.h': 'cpp', '.cc': 'cpp', '.cpp': 'cpp', '.cxx': 'cpp', '.hh': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp',
   '.inl': 'cpp', '.ipp': 'cpp', '.tpp': 'cpp', '.inc': 'cpp', '.m': 'objc', '.mm': 'objcpp', '.cmake': 'cmake', '.py': 'python', '.js': 'js', '.mjs': 'js',
   '.ts': 'ts', '.sh': 'sh', '.json': 'json', '.md': 'markdown', '.txt': 'text', '.csv': 'csv', '.tsv': 'tsv', '.yml': 'yaml', '.yaml': 'yaml', '.html': 'html' };
 const langOf = (p: string) => (basename(p) === 'CMakeLists.txt' ? 'cmake' : LANG[extname(p).toLowerCase()] || 'text');
@@ -155,6 +156,20 @@ export function emitGraph(repoIn: string, build: any, syntax: any) {
     addEdge('file:' + i.from, dst, 'include', 'static', site, n, true);
   }
   for (const f of [...textual].sort(by)) notEvaluated.push({ what: f, reason: 'in no compile of any configuration: its includes are textual only' });
+  // ---- Python, JS, HTML, shell (Q-023): imports, references, data and generated files, one site per line.
+  // The layer sees every tracked file (so a link to a tracked binary resolves) and knows which are text (it reads only
+  // those); a target that is not a node (binary, submodule, symlink) gets nodeFor's note, never "not found".
+  const langs = langLayer(repo, tracked, new Set(tracked.filter((p) => nodes.has('file:' + p))));
+  for (const [p, l] of Object.entries(langs.langOf)) { const n = nodes.get('file:' + p); if (n && n.lang === 'text') n.lang = l === 'js' ? 'js' : l; }
+  for (const e of langs.edges) {
+    let dst = e.to;
+    if (dst.startsWith('ext:') && !nodes.has(dst)) nodes.set(dst, { id: dst, kind: 'external', path: dst.slice(4), hash: 'none' });
+    else if (dst.startsWith('file:') && !nodes.has(dst)) dst = nodeFor(dst.slice(5));
+    else if (dst.startsWith('miss:')) dst = missing(dst.slice(5), e.missing || 'unknown', e.missing === 'external' ? 'a path that leaves the repo' : 'named by the code, not found next to it or from the repo root');
+    addEdge('file:' + e.from, dst, e.kind, 'static', { type: 'site', path: e.from, line: e.line, resolution: e.resolution }, null, true);
+  }
+  for (const c of langs.computed) notEvaluated.push({ what: `${c.from}:${c.line}`, reason: `computed import ${c.text}: needs evaluation` });
+
   // ---- what cannot be an edge
   for (const c of syntax.computed) notEvaluated.push({ what: `${c.from}:${c.line}`, reason: `computed include ${c.text}: needs macro evaluation` });
   for (const s of syntax.skipped) notEvaluated.push({ what: `${s.from}:${s.line}`, reason: `include-like line not read: ${s.reason}` });

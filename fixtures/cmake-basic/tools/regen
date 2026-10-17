@@ -1,0 +1,3 @@
+#!/bin/sh
+# A script with no extension, recognised by its first line.
+sh tools/run.sh

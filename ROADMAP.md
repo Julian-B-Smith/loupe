@@ -247,6 +247,31 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   the key says how; 2. a label never shows two nodes as the same text without a kind cue; 3. critic review with
   screenshots.
 
+### Q-023 — P1a slice 4: Python, JS, HTML and shell
+- **Status:** built 2026-10-17 after a critic round (trace: traces/2026-10-17-q023-languages.md). Julian (poll):
+  imports are read from code only (comments, strings, docstrings blanked); string literals naming repo files still
+  count. On HORDE at 1e6aae79: 856 language edges, 343 of the probe's 354 found again (the 11 differences listed and
+  explained: one false probe edge from a comment, ten bare-name guesses declined), no invented packages; byte-identical
+  twice.
+- **Decisions (Julian, 2026-10-17, "go with your recommendations"):** imports plus references, as the probe did
+  (repo paths written as string literals are edges too); role rules come from Loupe's defaults, the dsp-plugin
+  dialect, then the target's `.loupe/config.json` (human-owned), each role naming its rule; the GUI bridge appears in
+  P1a at file level (a `call` edge, role `bridge`, matched by the bound name, resolution `syntactic`), upgraded to
+  symbols in P1b. This item is the languages; the dialect (roles, bridge) is the next.
+- **Scope:** `crawler/` (a languages layer and its emission into graph.json), `fixtures/cmake-basic/`, goldens,
+  `docs/graph-schema.md`, `CODEMAP.md`.
+- **Acceptance criteria:**
+  1. Python `import` / `from … import` (relative imports included), JS `import` / `export … from` / `import()` /
+     `require()`, HTML `script` / `link` / `img` / `iframe` references and inline module imports, shell `source` / `.`
+     and script invocations become edges with site evidence and a resolution: next to the file `exact`, from the
+     repo root or by unique module name `search`, otherwise an external package (`ext:`) or a missing node.
+  2. A repo path written as a string literal in Python, JS or shell is a `reference` edge, `data` when the target is
+     data, `generates` when the line writes it; resolution says how it was found.
+  3. Deterministic, machine-free, independent of file order; the fixture gains a file for each rule and the graph
+     golden shows each edge; a planted change fails.
+  4. On HORDE, the crawl finds the probe's non-C edges again (counts compared, differences listed and explained).
+- **Out of scope:** roles and the GUI bridge (next item), symbols (P1b).
+
 ### Q-022 — Acknowledged conformance findings (exemptions with a reason)
 - **Status:** open (2026-10-17, from HORDE's answer to notice-004)
 - **Why:** both Q-020 leads on HORDE were deliberate: `vst3_save_bench` depends on the VST3 target for build order
