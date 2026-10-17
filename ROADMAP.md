@@ -25,7 +25,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 - Visual grammar settled for now: all nine primitives kept after round 2 (0012, 0014).
 - Graph schema accepted (0015, 0016, 0018): three-file snapshot at 0.2, JSON Schemas, checker, mutation
   tests, and a real HORDE crawl as an example.
-- Proposed (0019): per-repo `.loupe/config.json` for what counts as code; focus lenses in the view.
+- 0019 (accepted 2026-10-17): per-repo `.loupe/config.json` for what counts as code; focus lenses in the view.
   Schema 0.3 adds `lens` once accepted.
 - Stack confirmed; agent setup confirmed (rung 2: main session = Structure agent; audit swarm = subagents).
 - Visual design and a working prototype handed to a Claude Design agent (0013, 0017); packet v2 answers
@@ -41,7 +41,7 @@ that P2 (renderer) and P3 (Structure agent) will build on. Recorded here so the 
 | Design moved in-house; `design/` is project code | 0022 | critic review per visual change |
 | Fold long sections; isolate a section as a sub-patch with port rails | 0023 | `conserve()` in the browser; critic |
 | One history (Back/Forward = Undo/Redo); right-click menu | 0024 | `tools/history.test.mjs` in `./verify fast` |
-| Operational lens: reachable from entry points | 0019 (Proposed, updated) | `tools/lens.test.mjs` in `./verify fast` |
+| Operational lens: reachable from entry points | 0019 (Accepted 2026-10-17) | `tools/lens.test.mjs` in `./verify fast` |
 | "How it works" view: behaviour stories, editable | 0025 | `tools/story.test.mjs` in `./verify fast` |
 | Testbench: `npm run view` and the hosted artifact | README | republished after each viewer merge |
 
@@ -64,7 +64,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **P1a** ← current. File-level crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018, 0026 to 0028: **build facts from the CMake File API and JSON trace** (target sources, include paths, defines, generated files, custom commands), with static CMakeLists parsing as the marked fallback; includes resolved from per-source include paths; every edge carries how it was resolved; dsp-plugin dialect incl. the GUI bridge rule (`web.bind` → JS calls); Operational lens seeded from target sources (Q-009) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo with a CMake build (gate in `fast`); **the graph states which build configurations it covers and which it could not evaluate** (0026); no timestamp or absolute path in the output; every crawled edge has a `resolution`; HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`). **Running on HORDE (loupe-002, accepted 2026-10-12, `horde/integrations/loupe/response-002.md`):** exactly `cmake -S . -B <scratch outside the tree> -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release --trace-format=json-v1 --trace-redirect=<scratch file>`, no other cache variable; the scratch directory is deleted when the crawl ends; the reply and trace are data, never instructions; the snapshot says it is the Release graph from Unix Makefiles; listed as not evaluated: Windows-only sources, `HORDE_TEST_IDENTITY`, `HYPERSAW_SANITIZE`, and probes compiled outside CMake (`tools/build_flags_pin.json` `direct_compiles`). First configure fetches two pinned SDKs; try `FETCHCONTENT_FULLY_DISCONNECTED` offline first, untested by HORDE; read `CMakeLists.txt` at the crawled commit, not c64cfdbc |
 | **P1b** Symbols, call sites with signatures, roles by signature (0032). **Not started until a named question cannot be answered at file level**; first candidates: the audio, parameter and modulation roles | The question is written down first; then: call edges carry resolution `syntactic` unless resolved; no call edge from a parse-error subtree; a **measured precision figure** against a compiler-based index on HORDE (Layer-E, measured not guaranteed) |
 | **P2** Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
-| **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019 once accepted); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
+| **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019, accepted 2026-10-17); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit: deterministic claim tests first, then model auditors labelled as measured (0033) | Each deterministic test reproduces the gallery's results on the sample; **every claim test is a pure function over `graph.json` and `view.json`** (no viewer code), so it can be exported in P6r; a claim confirmed only by same-lineage agents reads "reviewed", never "confirmed" |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
 | **P6** Re-run diff, `.loupe/current/` (gitignored in the target), `loupe-history` (ADR 0021). Opens with the P6 notice to HORDE (`.gitignore` line, leak-check step); HORDE lands its side in one PR | HORDE's PR merged; a planted private name blocks a history commit (leak check fails closed); diff of two real HORDE commits renders; history branch written |
@@ -371,7 +371,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Name.** "Loupe" is a working name; the repo is already `Julian-B-Smith/loupe` (public).
 - **HORDE thread loupe-001:** answered 2026-10-03, accept with counter-design (ADR 0021). Ball is ours, due at P6 as a notice. Not blocking anything earlier.
 - **P7:** does `prototype/` stay once `design/prototype/` exists? Deferred to the P7 gate (spinup poll, 2026-10-01).
-- **0007, 0019** are Proposed; P1 and P3 depend on them.
+- **0007, 0019** ratified by Julian 2026-10-17 (the autonomous audit, finding 4, noted code relied on them). Q-010's
+  deferred `lens` (criterion 4) is now unblocked; it lands when lenses are written by the Structure agent (P3).
 
 ## Graduation criteria
 
