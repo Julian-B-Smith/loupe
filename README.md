@@ -8,7 +8,7 @@ conservation check proves it after every agent edit.
 First client: [HORDE](https://github.com/Julian-B-Smith/horde). Ships first as a Claude Code skill
 run inside a target repo.
 
-*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-11.*
+*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-17.*
 
 ## How it works
 
@@ -30,20 +30,22 @@ Agents write the overlay and view, never the graph. Every edge carries provenanc
 | --- | --- | --- |
 | `docs/vision.md` | Pipeline, two-view split, target experience | Current |
 | `docs/visual-grammar.md` | Nine visual primitives, the claim each makes, its audit test | Settled for now |
-| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec (0.2 accepted; 0.3 proposed in Q-010) | 0.3 awaiting approval |
-| `tools/loupe-check.mjs` | Snapshot checker (conservation, ids, provenance) + 58 mutation cases | Built |
+| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec | 0.3.1 accepted |
+| `tools/loupe-check.mjs` | Snapshot checker (conservation, ids, provenance) + 62 mutation cases | Built |
 | `tools/probe-crawl.mjs` | Regex probe crawler that shaped schema 0.2 | Reference only; not the P1 crawler |
 | `prototype/` | Viewer v1 and primitives gallery (open `index.html` in a browser) | Built, on sample data |
-| `design/` | Design system snapshot and prototype v4, designed in-house since ADR 0022 | Built; known issues in `docs/design-review-v4.md` |
+| `design/` | Design system and the viewer prototype (flow and design views, meter, fold, isolate, lenses, loose nodes), in-house since ADR 0022 | Built; a headless render test in `./verify` |
 | `design/prototype/stories/` | "How it works" stories, agent-written from HORDE's source with file:line evidence | Prototype (ADR 0025) |
-| Crawler, renderer, agents, skill | P1–P7 | **Not built** |
+| `crawler/` | P1a crawler: CMake build layer, C/C++/Objective-C syntax layer, graph.json at 0.3.1, build-target conformance | Built on a fixture; first HORDE crawl done (`design/prototype/snapshots/horde-crawl/`) |
+| `docs/plan-map.html` | The plan as a picture: every part, its status, the path to v1 | Current |
+| Structure agent, audit, explainers, the skill in a target repo | P3–P6 | **Not built** (see the plan map) |
 
-Full file map: [CODEMAP.md](CODEMAP.md). Plan and phase gates: [ROADMAP.md](ROADMAP.md).
+Full file map: [CODEMAP.md](CODEMAP.md). Plan and phase gates: [ROADMAP.md](ROADMAP.md); the same plan as a picture, with the path to v1: [docs/plan-map.html](docs/plan-map.html) (served by `npm run view`).
 Decisions: [DECISIONS.md](DECISIONS.md) → `docs/decisions/`.
 
 ## Status
 
-P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Prior-art landscape done 2026-10-11 ([docs/prior-art.md](docs/prior-art.md); ADRs 0026 to 0034 accepted). Current phase: **P1a**, the file-level crawler with build facts from CMake.
+P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Prior-art landscape done 2026-10-11 ([docs/prior-art.md](docs/prior-art.md); ADRs 0026 to 0034 accepted). Current phase: **P1a**, mostly built: the crawler's build, syntax and graph layers, conformance, and a first crawl of HORDE. Four stages to a working v1 (finish P1a, P2 renderer gates, P3 Structure agent and dialogue, P6 delivery as a skill).
 
 ## See it running
 
