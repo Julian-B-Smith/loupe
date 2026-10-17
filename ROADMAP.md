@@ -236,7 +236,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   4. critic review with screenshots.
 
 ### Q-019 — Node kinds are visible in the viewer
-- **Status:** open (found 2026-10-16 viewing the first crawler snapshot, Q-017)
+- **Status:** done 2026-10-17 (trace: traces/2026-10-17-q019-node-kinds.md). Decided with Julian after the critic
+  review (polls): a kind differs at every zoom by body, a missing node's reason may need detail zoom (chip, said in
+  the key); drawn labels of one kind are unique at detail zoom, cut in the middle elsewhere.
 - **Problem:** the viewer draws every node as a file box with its basename, so a build target (`target:engine`) and
   a file (`src/engine.h`) read the same, and a missing node (`miss:vector`, an angle include) looks like a file that
   exists. A legibility tool must not make different kinds of thing look alike.

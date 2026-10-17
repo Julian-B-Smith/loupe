@@ -159,7 +159,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
 <script type="module">
 import { loadSnapshot } from './snapshot.js';
 import { createStore, createHistory, STAGES } from './state.js';
-import { render, SPEC, slotOf, glyphOf } from './render.js';
+import { render, SPEC, slotOf, glyphOf, kindStyle } from './render.js';
 import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
@@ -357,9 +357,9 @@ function meter(c) {
   const main = c.status === 'broken' ? `${c.unaccounted.length} not accounted for` : `${c.accounted} of ${c.edges.total} edges accounted`;
   const lz = map && map.lens;
   const sub = c.status === 'stale' ? 'view made for an older graph' : lz
-    ? (lz.name === 'story' ? `Story · on cards ${lz.insideFiles} files, ${lz.insideEdges} edges · not in story ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} files`
-      : `${lz.label} lens · in focus ${lz.insideFiles} files, ${lz.insideEdges} edges · outside ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} files`)
-    : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} files`;
+    ? (lz.name === 'story' ? `Story · on cards ${lz.insideFiles} files, ${lz.insideEdges} edges · not in story ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`
+      : `${lz.label} lens · in focus ${lz.insideFiles} files, ${lz.insideEdges} edges · outside ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`)
+    : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
@@ -382,7 +382,17 @@ function legend(s) {
   data.edges.forEach(e => { const k = e.role || e.kind; if (!seen[k]) seen[k] = e; });
   const kinds = Object.entries(seen).sort((a, b) => slotOf(a[1]) - slotOf(b[1]));
   const provs = ['static', 'config', 'runtime', 'annotated', 'inferred'];
-  $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button><div class="col" style="grid-template-columns:repeat(${kinds.length > 4 ? 2 : 1},auto);column-gap:14px">${kinds.map(([k, e]) => `<button class="lk" data-kind="${k}" aria-pressed="${!s.dimmedKinds.includes(k)}" title="Dim or show ${k} edges">${swatch({ ...e, provenance: 'static' })}${k}</button>`).join('')}</div>
+  // Node kinds present in this snapshot, drawn by the same kindStyle the map uses (Q-019), each with its chip, so the
+  // key says how kinds and missing reasons differ; reasons are chips, shown at detail zoom.
+  const nk = ks => `<svg width="30" height="12" aria-hidden="true"><rect x="1" y="1" width="28" height="10" style="rx:${ks.pill ? v('radius-pill') : v('radius-node')};fill:${v(ks.fill)};stroke:${v(ks.stroke)};stroke-width:${v('stroke-group')};stroke-dasharray:${ks.dash}"/></svg>`;
+  const chipHtml = t => t ? `<span style="font:${v('type-count')};color:${v('ink-muted')};border:1px solid ${v('rule')};border-radius:999px;padding:0 6px;margin-left:6px">${esc(t)}</span>` : '';
+  const seenK = new Map();
+  data.nodeIds.forEach(id => { const ks = kindStyle(data.nodes[id]); const k = ks.kind + ':' + (ks.chip || ''); if (!seenK.has(k)) seenK.set(k, ks); });
+  const ORDER = ['file', 'target', 'missing', 'external', 'artifact', 'symbol'];
+  const KINDS = [...seenK.values()].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind) || String(a.chip).localeCompare(String(b.chip)));
+  const NAME = { file: 'file', target: 'build target', missing: 'not in the tree', external: 'package', artifact: 'artifact', symbol: 'symbol' };
+  const nodeCol = KINDS.length > 1 ? `<div class="col">${KINDS.map(ks => `<div class="lk">${nk(ks)}${esc(NAME[ks.kind])}${ks.kind === 'missing' ? chipHtml(ks.chip) : ''}</div>`).join('')}${KINDS.some(k => k.kind === 'missing') ? `<div class="lk" style="color:${v('ink-faint')}">reason chips show at detail zoom</div>` : ''}</div>` : '';
+  $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>${nodeCol}<div class="col" style="grid-template-columns:repeat(${kinds.length > 4 ? 2 : 1},auto);column-gap:14px">${kinds.map(([k, e]) => `<button class="lk" data-kind="${k}" aria-pressed="${!s.dimmedKinds.includes(k)}" title="Dim or show ${k} edges">${swatch({ ...e, provenance: 'static' })}${k}</button>`).join('')}</div>
     <div class="col">${provs.map(p => `<div class="lk">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}${p}</div>`).join('')}</div>${strip()}`;
 }
 $('legend').onclick = e => { if (e.target.closest('[data-keytoggle]')) { $('legend').classList.toggle('closed'); legend(store.get()); return; } const b = e.target.closest('[data-kind]'); if (b) A.toggleKind(b.dataset.kind); };
