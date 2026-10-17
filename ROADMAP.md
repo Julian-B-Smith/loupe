@@ -12,7 +12,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   languages (Python, JS, HTML, shell), the dsp-plugin dialect and its roles, the Operational lens from the build
   (Q-009), and its gates on HORDE (zero `unknown` missing nodes, probe parity). Side track ready: engine2 from
   HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
-- **Oracle:** `./verify fast` = kit integrity, leak gate, 62 loupe-check mutation cases, schema validation on every
+- **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens). `full` == `fast` until Layer-E gates exist. **Known gaps:** no
   crawl determinism gate on HORDE itself (checked by hand at 1e6aae79); `design/tokens.css` and the prototype
@@ -293,8 +293,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** waiting on HORDE (ball: horde, writing the declaration). Loupe's answer to the brief:
-  `integrations/hypersaw/response-engine-structure.md`.
+- **Status:** ready (ball: loupe). HORDE's declaration landed on horde main at 0e577fc
+  (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
+  notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
   spec in its own `./verify`; Loupe reads it through one adapter into a structure graph; no inferred edges.
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
