@@ -200,7 +200,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   "declared, not seen" that are Loupe's blind spot (Q-020), reported to HORDE as such.
 
 ### Q-021 — Conformance: one generated output, several owning targets
-- **Status:** open (2026-10-16, from HORDE's answer to notice-003)
+- **Status:** done 2026-10-17 (trace: traces/2026-10-17-q021-generated-by-several.md); from HORDE's answer to notice-003
 - **Why:** Loupe's lead on HORDE (`identity_store_check` reads `factory_bank.h` without depending on its maker) was
   close but not the bug. HORDE found the real one (horde B501): `factory_bank.h`'s generating rule was listed in two
   independent targets (`presetstore_check` and `HYPERSAW-impl`), so CMake emitted the rule twice and `make -j` can
