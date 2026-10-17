@@ -212,14 +212,16 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   against the snapshot).
 
 ### Q-020 — Attribute headers to targets, so conformance can see includes
-- **Status:** open (found 2026-10-16 by the first HORDE crawl, Q-018)
-- **Problem:** CMake targets list compiled sources, rarely headers. Conformance attributes an include only between
-  files a target `builds`, so on HORDE 1,336 of 1,338 includes were unattributed and 94 "declared, not seen" findings
-  were noise.
-- **Scope:** `crawler/conformance.ts` (and the graph only if a decision needs data it lacks), tests, docs.
-- **Acceptance criteria:** to be set with Julian: how a header is tied to a target (the compiles that reach it, its
-  directory, or both, and how ties are broken), and how a finding says which rule tied it. Until then the 94 are not
-  findings.
+- **Status:** done 2026-10-17 (trace: traces/2026-10-17-q020-attribution.md)
+- **Decision (Julian, poll 2026-10-17, from measurements on the HORDE crawl):** a target uses every file its
+  compiles reach; a file's owner is the target that lists it, else the one target sharing its directory, else nobody
+  (counted); a dependency is seen when the user's compiles reach the dependency's interface; dependencies where a side
+  compiles no repo file are counted as not judged. Each finding says which rule tied it.
+- **Acceptance criteria:** 1. conformance implements that rule per configuration, with `tiedBy` on each
+  `used-not-declared` and a `notJudged` count; 2. a crawled small repo shows a directory-tied transitive use as a
+  finding, and none once declared; 3. on the HORDE crawl at 1e6aae79 the 94 noise findings become one
+  `used-not-declared`, one `declared-not-seen` and the B501 `generated-by-several`, with 26 dependencies and 42 files
+  not judged; 4. plants of each new rule fail their tests.
 
 ### Q-017 — The design view draws loose nodes
 - **Status:** done 2026-10-16 (trace: traces/2026-10-16-q017-loose-nodes.md); a large loose block folds (Julian, poll)

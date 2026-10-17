@@ -67,7 +67,8 @@ check('a file in no compile keeps its includes, listed as textual only', G.edges
 check('every custom command lands: an edge, or listed (the POST_BUILD step with no output)', build.perConfiguration[0].customCommands.every((c: any) =>
   G.edges.some((e: any) => e.kind === 'generates' && e.evidence.some((x: any) => x.path === c.file && x.key === `add_custom_command line ${c.line}`)) || G.crawler.notEvaluated.some((n: any) => n.what === `${c.file}:${c.line}`)));
 check('conformance: plugin uses lut without declaring it', C.findings.length === 1 && C.findings[0].kind === 'used-not-declared' && C.findings[0].from === 'target:plugin' && C.findings[0].to === 'target:lut' && C.findings[0].weakestResolution === 'syntactic');
-check('conformance counts unattributed includes per configuration', Object.keys(C.unattributedIncludes).join() === 'extra,release');
+check('conformance counts what it could not judge, per configuration', Object.keys(C.notJudged).join() === 'extra,release' && Number.isInteger(C.notJudged.release.unownedFiles));
+check('a finding says which rule tied the file to its owner', JSON.stringify(C.findings[0].tiedBy) === '["listed"]');
 
 // ---- small repos
 async function crawlTree(files: Record<string, string | Buffer>, buildFacts: any) {
@@ -119,6 +120,25 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   const un = await several([]);
   check('one generated output owned by two unordered targets is a finding, naming both (Q-021)', un.length === 1 && un[0].from === 'miss:${build}/gen/bank.h' && JSON.stringify(un[0].owners) === '["target:A","target:B"]' && un[0].evidence.length === 2);
   check('the same output owned by two targets that are ordered (B depends on A) is not', (await several(['A'])).length === 0);
+}
+{ // Q-020 (Julian, 2026-10-17): uses by compile reach, owners by listing then unique directory, seen by interface
+  const T = (name: string, srcs: string[], deps: string[] = []) => ({ name, type: 'EXECUTABLE', definedIn: { file: 'CMakeLists.txt', line: 1 }, dependencies: deps,
+    sources: srcs.map((path) => ({ path })), compileGroups: [{ includes: [], sources: srcs.filter((x) => /\.cpp$/.test(x)) }] });
+  const mk = (deps: string[]) => ({ configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [],
+    membership: [['lib/a.cpp', 'LIB'], ['app/m.cpp', 'APP']].map(([source, target]) => ({ source, target, generated: false, configs: ['default'] })),
+    perConfiguration: [{ name: 'default', targets: [T('LIB', ['lib/a.cpp']), T('APP', ['app/m.cpp'], deps)], customCommands: [] }] });
+  // lib/api.h is listed by no target: only its directory ties it to LIB. app/m.cpp reaches it through app/glue.h.
+  const files = { 'lib/a.cpp': '#include "api.h"\n', 'lib/api.h': '', 'app/m.cpp': '#include "glue.h"\n', 'app/glue.h': '#include "../lib/api.h"\n' };
+  const und = conformance(canonicalGraph(await crawlTree(files, mk([])))).findings;
+  check('a header listed by no target is tied by directory, through a transitive include (Q-020)', und.length === 1 && und[0].kind === 'used-not-declared' && und[0].from === 'target:APP' && und[0].to === 'target:LIB' && JSON.stringify(und[0].tiedBy) === '["directory"]');
+  const ok = conformance(canonicalGraph(await crawlTree(files, mk(['LIB'])))).findings;
+  check('with the dependency declared, the same use is no finding, and the dependency counts as seen (interface overlap)', ok.length === 0);
+}
+{ // on HORDE at 1e6aae79: the Q-020 rule turns 94 noise findings into one of each kind, plus B501
+  const H = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8'));
+  check('on the HORDE crawl: one used-not-declared, one declared-not-seen, one generated-by-several (Q-020)',
+    H.findings.map((f: any) => f.kind).join() === 'declared-not-seen,generated-by-several,used-not-declared'
+    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 42);
 }
 { // on HORDE at 1e6aae79 it names factory_bank.h, the bug HORDE fixed as B501, and nothing else
   const h = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8')).findings.filter((f: any) => f.kind === 'generated-by-several');
