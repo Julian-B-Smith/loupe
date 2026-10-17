@@ -3,6 +3,7 @@
 // No structural decisions here: grouping, bundling and membership come from view.json via layout().
 import { layout, L, hubPlacement } from './layout.js';
 import { counterflow, conformity } from './standins.js';
+import { stem, uniqueLabels } from './snapshot.js';
 
 export const SPEC = {
   dash: { static: 'none', config: '10 4', runtime: '0.1 3.6', annotated: '9 3 1.5 3', inferred: '4 3.5', gap: '2 4' },
@@ -14,6 +15,49 @@ export const SPEC = {
   node: { inset: 8 }
 };
 export const slotOf = e => SPEC.slot.role[e.role] || SPEC.slot.kind[e.kind] || 8;
+
+// How each node kind looks (node loupe-spec v3, ROADMAP Q-019). One place, used by nodes, isolate ports and the key,
+// so they cannot drift apart (critic: isolate ports drew a missing file as an existing one). Kinds differ at every
+// zoom by body (shape, fill, dash); a missing node's reason is a chip at detail zoom (Julian, 2026-10-17).
+// Token names only: the caller wraps them in var(--loupe-*).
+const MISSING_CHIP = { generated: 'generated', unknown: 'not found', sibling: 'sibling', external: 'external' };
+export function kindStyle(n) {
+  const kind = (n && n.kind) || 'file', reason = n && n.missing && n.missing.reason;
+  switch (kind) {
+    case 'target': return { kind, fill: 'surface-group', stroke: 'ink-muted', dash: 'none', pill: true, ink: 'ink', chip: 'target', title: 'A build target' };
+    case 'missing': return { kind, fill: 'surface-canvas', stroke: 'ink-faint', dash: SPEC.dash.gap, pill: false, ink: 'ink-muted', chip: MISSING_CHIP[reason] || 'missing',
+      title: 'Referenced by the code, not in the tree: ' + (MISSING_CHIP[reason] || 'missing') };
+    case 'external': return { kind, fill: 'surface-group-nested', stroke: 'ink-muted', dash: SPEC.dash.gap, pill: false, ink: 'ink-muted', chip: 'package', title: 'A package outside the repo' };
+    case 'artifact': return { kind, fill: 'surface-group-nested', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: 'artifact', title: 'A set of files the code reads as a whole (in the tree)' };
+    case 'symbol': return { kind, fill: 'surface-node', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: 'symbol', title: 'A symbol inside a file' };
+    default: return { kind: 'file', fill: 'surface-node', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: null, title: 'A file' };
+  }
+}
+// Body rect attributes for a kind (shared by nodes, ports and diff tints, so a tint never overflows a pill).
+export const bodyShape = ks => ks.pill ? `rx="4" style="rx:var(--loupe-radius-pill);` : `rx="4" style="`;
+// Labels are cut in the middle, keeping the start and the distinguishing end (Julian, 2026-10-17: unique at detail
+// zoom). An end-cut made "HYPERSAW-impl" and "HYPERSAW_auv2" both read "HYPERSAW…" on the HORDE crawl.
+// When two labels of one kind still cut to the same text (dated names share both ends: "2026-09-18-…-audit.md"),
+// show what differs instead: drop the prefix the clashing labels share and cut the rest at its end.
+export function distinctCuts(labels, n) {
+  const out = labels.map(l => fitMid(l, n, 1));
+  // Repeat on whatever still clashes: a smaller clashing group shares a longer prefix, so each pass shows more of
+  // what differs. Ends when nothing clashes or a pass changes nothing (identical within n characters).
+  for (let pass = 0; pass < 8; pass++) {
+    const groups = new Map(); out.forEach((c, i) => { if (c && c !== labels[i]) (groups.get(c) || groups.set(c, []).get(c)).push(i); });
+    let changed = false;
+    for (const idx of groups.values()) {
+      if (idx.length < 2 || new Set(idx.map(i => labels[i])).size < 2) continue;
+      const ls = idx.map(i => labels[i]);
+      let p = 0; while (ls.every(l => l[p] !== undefined && l[p] === ls[0][p])) p++;
+      p = Math.max(0, p - 2); // two characters of context
+      idx.forEach(i => { const rest = labels[i].slice(p), t = '…' + (rest.length <= n - 1 ? rest : rest.slice(0, n - 2) + '…'); if (t !== out[i]) { out[i] = t; changed = true; } });
+    }
+    if (!changed) break;
+  }
+  return out;
+}
+export const fitMid = (s, px, cw) => { const n = Math.floor(px / cw); if (n < 3) return ''; if (s.length <= n) return s; const head = Math.ceil((n - 1) / 2), tail = n - 1 - head; return s.slice(0, head) + '…' + (tail ? s.slice(-tail) : ''); };
 export const glyphOf = e => SPEC.glyph.role[e.role] || SPEC.glyph.kind[e.kind] || 'arrow-filled';
 export const lodFor = k => (SPEC.lod.find(l => l.maxScale != null && k < l.maxScale) || SPEC.lod[SPEC.lod.length - 1]).name;
 
@@ -204,7 +248,10 @@ export function render(container, data, state) {
     (df.removed || []).forEach(n => { diffOf[n.id] = side === 'before' ? null : 'removed'; });
   }
   const removedById = {}; ((df && df.removed) || []).forEach(n => { removedById[n.id] = n; });
-  const nodeInfo = id => data.nodes[id] || (removedById[id] && { ...removedById[id], label: removedById[id].path.split('/').pop().replace(/\.(cpp|hpp|h)$/, '') });
+  // Removed ghosts get labels by the same rule as live nodes (stem, then unique within a kind), never an ad-hoc regex.
+  const ghostLabels = (() => { const all = Object.values(data.nodes).map(n => ({ ...n })).concat(Object.values(removedById).map(r => ({ ...r, kind: r.kind || 'file', label: stem(r.path, r.kind || 'file') })));
+    uniqueLabels(all); return Object.fromEntries(all.filter(n => removedById[n.id]).map(n => [n.id, n.label])); })();
+  const nodeInfo = id => data.nodes[id] || (removedById[id] && { ...removedById[id], label: ghostLabels[id] });
 
   // drawn: every stand-in this frame actually draws (section ids, fold:<sec>, port keys, 'elsewhere'). conserve() checks node
   // proxies against it, so a proxy pointing at something not on screen reads as broken instead of balanced.
@@ -526,6 +573,20 @@ export function render(container, data, state) {
   const fanIn = id => data.edges.filter(e => e.dst === id).length;
   const cfOf = {}; if (designish && detail) memo(data, 'cf', () => counterflow(data)).forEach(f => { cfOf[f.node] = f; });
   const ids = data.nodeIds.concat(df ? (df.removed || []).map(n => n.id) : []);
+  // Labels cut for this frame: per kind and character budget, so two nodes of one kind never show the same text
+  // when the full labels differ (Julian, 2026-10-17: unique at detail zoom; the render test checks the drawn text).
+  const cutCache = new Map();
+  const cutLabel = (id, n, kind, chars) => {
+    if (chars < 3) return '';
+    if (n.label.length <= chars) return n.label;
+    const key = kind + '|' + chars;
+    if (!cutCache.has(key)) {
+      const same = ids.filter(x => { const m = nodeInfo(x); return m && kindStyle(m).kind === kind; });
+      const cuts = distinctCuts(same.map(x => nodeInfo(x).label), chars);
+      cutCache.set(key, new Map(same.map((x, i) => [x, cuts[i]])));
+    }
+    return cutCache.get(key).get(id) ?? fitMid(n.label, chars, 1);
+  };
   ids.forEach(id => {
     const n = nodeInfo(id);
     if (iso && !iso.inside.has(id)) {
@@ -549,38 +610,36 @@ export function render(container, data, state) {
     const sel = id === selNode, hov = id === hovNode, relN = rel && rel.has(id) && !sel && !hov;
     const dim = isDim(id) && !sel && !hov;
     const hub = designish && hubs[id] && decor > 0;
-    // Node kinds (Q-019, node loupe-spec v3): a target is a pill, a missing or external node is dashed on the canvas
-    // fill with a muted label; each non-file kind also gets a chip naming it. Never two kinds that look alike.
-    const kind = n.kind || 'file', reason = n.missing && n.missing.reason;
-    const isTarget = kind === 'target', isAbsent = kind === 'missing' || kind === 'external';
-    const kindChip = isTarget ? 'target' : kind === 'missing' ? ({ generated: 'generated', unknown: 'not found', sibling: 'sibling', external: 'external' }[reason] || 'missing')
-      : kind === 'external' ? 'package' : kind === 'artifact' ? 'artifact' : null;
-    const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'ink-faint') : hub ? 'hub' : isTarget || kind === 'external' ? 'ink-muted' : kind === 'missing' ? 'ink-faint' : 'rule';
+    const ks = kindStyle(n), isAbsent = ks.kind === 'missing' || ks.kind === 'external';
+    // A ghost keeps its kind's shape but takes the diff colour, so it never reads as a missing node (critic).
+    const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'diff-added') : hub ? 'hub' : ks.stroke;
     const sw = sel || hov ? v('stroke-hub') : hub ? v('stroke-hub') : v('stroke-group');
     let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(n.path)}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
     if (sel) g += `<rect x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${v('accent-soft')}"/>`;
     if (hub) g += `<rect x="${f1(r.x - 3.5)}" y="${f1(r.y - 3.5)}" width="${f1(r.w + 7)}" height="${f1(r.h + 7)}" rx="6.5" style="fill:${v('hub-soft')};stroke:${v('hub')};stroke-width:${v('stroke-hub')};opacity:${decor}"/>`;
     if (designish && overlapOf[id] && decor > 0) g += `<rect x="${f1(r.x - 3)}" y="${f1(r.y - 3)}" width="${f1(r.w + 6)}" height="${f1(r.h + 6)}" rx="6" style="fill:${v('set-1')};stroke:${v('set-1')};stroke-width:4px;opacity:${decor}"/>`;
-    const bodyFill = ghost || isAbsent ? v('surface-canvas') : isTarget ? v('surface-group') : v('surface-node');
-    const bodyDash = ghost ? '3 2.5' : isAbsent ? SPEC.dash.gap : 'none';
-    g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="${isTarget ? `rx:${v('radius-pill')};` : ''}fill:${bodyFill};stroke:${v(strokeC)};stroke-width:${sw};stroke-dasharray:${bodyDash}"/>`;
-    if (dm && !ghost) g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="fill:${v('diff-' + dm + '-soft')}"/>`;
-    if (dm === 'removed') g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" rx="4" style="fill:${v('diff-removed-soft')}"/>`;
+    const bodyFill = ghost ? v('surface-canvas') : v(ks.fill);
+    const bodyDash = ghost ? SPEC.dash.gap : ks.dash; // the node spec's ghost part says dash: gap
+    g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" ${bodyShape(ks)}fill:${bodyFill};stroke:${v(strokeC)};stroke-width:${sw};stroke-dasharray:${bodyDash}"/>`;
+    if (dm && !ghost) g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" ${bodyShape(ks)}fill:${v('diff-' + dm + '-soft')}"/>`;
+    if (dm === 'removed') g += `<rect width="${f1(r.w)}" height="${f1(r.h)}" x="${f1(r.x)}" y="${f1(r.y)}" ${bodyShape(ks)}fill:${v('diff-removed-soft')}"/>`;
     const tier = r.w < 34 || r.h < 8 ? 0 : (detail || !designish) && r.w >= 60 && r.h >= 14 ? 2 : 1;
     const showLabel = tier === 2, ncw = tier === 2 ? cw : cw * 0.8, nin = tier === 2 ? SPEC.node.inset : 4;
     if (tier) {
       const marks = [];
       // The kind chip shows wherever the label does, in both views: it is identity, not decoration.
-      // ...but never at the label's expense: shape and dash already say the kind at every zoom, so the chip only shows
-      // when the whole label still fits beside it (on the first try "engine_test" became "engin…" next to "engine").
-      if (tier === 2 && kindChip) {
-        const chipW = kindChip.length * cw * 0.9 + 10 + 4;
-        if (fit(n.label, r.w - nin * 2 - chipW - 5, ncw) === n.label) marks.push({ kind: 'kindchip', t: kindChip });
-      }
       if (tier === 2 && designish && decor > 0) {
         if (hub) marks.push({ kind: 'fanin', t: String(fanIn(id)) });
         if (overlapOf[id]) marks.push({ kind: 'overlap', t: '∩' + data.elements[overlapOf[id][0]].sets.length });
         if (cfOf[id]) marks.push({ kind: 'cf', t: '↑' + cfOf[id].edges.length });
+      }
+      // The kind chip shows wherever the label does, but never at the label's expense: shape and dash already say the
+      // kind at every zoom, so the chip shows only when the whole label still fits beside it and the other marks
+      // (on the first try "engine_test" became "engin…" next to "engine").
+      if (tier === 2 && ks.chip) {
+        const others = marks.reduce((a, m) => a + (m.kind === 'fanin' ? m.t.length * cw + 2 : m.t.length * cw * 0.9 + 10) + 4, 0);
+        const chipW = ks.chip.length * cw * 0.9 + 10 + 4, leadW = tier === 2 && routeStep[id] ? 20 : nin;
+        if (fitMid(n.label, r.w - leadW - nin - others - chipW - 5, ncw) === n.label) marks.unshift({ kind: 'kindchip', t: ks.chip });
       }
       let mx = r.x + r.w - 5;
       marks.forEach(m => { m.w = m.kind === 'fanin' ? m.t.length * cw + 2 : m.t.length * cw * 0.9 + 10; m.x = mx - m.w; mx = m.x - 4; });
@@ -588,12 +647,12 @@ export function render(container, data, state) {
       const reserve = r.x + r.w - mx - 5 + (marks.length ? 4 : 0);
       marks.forEach(m => {
         const cy = r.y + r.h / 2;
-        if (m.kind === 'kindchip') { g += `<g><title>${esc(m.t === 'target' ? 'A build target' : m.t === 'package' ? 'A package outside the repo' : 'Referenced by the code, not in the tree: ' + m.t)}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" style="rx:${v('radius-pill')};fill:${v('surface-panel')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(m.t)}</text></g>`; return; }
+        if (m.kind === 'kindchip') { g += `<g><title>${esc(ks.title)}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" style="rx:${v('radius-pill')};fill:${v('surface-panel')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(m.t)}</text></g>`; return; }
         if (m.kind === 'fanin') g += `<text x="${f1(m.x + m.w)}" y="${f1(cy + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('hub')};opacity:${decor}">${m.t}</text>`;
         else if (m.kind === 'overlap') { const o = data.elements[overlapOf[id][0]]; g += `<g style="opacity:${decor}"><title>${esc('Overlap: ' + o.sets.map(x => data.elements[x].label).join(' ∩ '))}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" rx="7" style="fill:${v('set-1')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink')}">${m.t}</text></g>`; }
         else { const f = cfOf[id], est = f.status === 'established', pend = f.status === 'pending'; g += `<g style="opacity:${decor}" ${f.exemption ? `data-el="${f.exemption}"` : ''}><title>${esc(`↑${f.edges.length} counterflow · ${est ? 'exempt' : pend ? 'pending' : 'flagged'}: ${f.edges.length} edges point up a level`)}</title><rect x="${f1(m.x)}" y="${f1(cy - 7)}" width="${f1(m.w)}" height="14" rx="7" style="fill:${v('surface-panel')};stroke:${est ? v('ink-faint') : v('state-warn')};stroke-width:1.25px;stroke-dasharray:${pend ? '3 2' : 'none'}"/><text x="${f1(m.x + m.w / 2)}" y="${f1(cy + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${est ? v('ink-muted') : v('ink')}">${m.t}</text></g>`; }
       });
-      g += `<text x="${f1(r.x + lead)}" y="${f1(r.y + r.h / 2 + (tier === 2 ? 4 : 3))}" style="font:${tier === 2 ? v('type-node-label') : v('type-node-label-compact')};letter-spacing:${v('tracking-node-label')};fill:${ghost ? v('ink-faint') : isAbsent ? v('ink-muted') : v('ink')};text-decoration:${dm === 'removed' ? 'line-through' : 'none'}">${esc(fit(n.label, r.w - lead - nin - reserve, ncw))}</text>`;
+      g += `<text x="${f1(r.x + lead)}" y="${f1(r.y + r.h / 2 + (tier === 2 ? 4 : 3))}" style="font:${tier === 2 ? v('type-node-label') : v('type-node-label-compact')};letter-spacing:${v('tracking-node-label')};fill:${ghost ? v('ink-faint') : v(ks.ink)};text-decoration:${dm === 'removed' ? 'line-through' : 'none'}">${esc(cutLabel(id, n, ks.kind, Math.floor((r.w - lead - nin - reserve) / ncw)))}</text>`;
     }
     if (dm) {
       const key = dm === 'ghost-added' ? 'added' : dm, gl = { added: '+', changed: '~', stale: '⧗', removed: '−' }[key];
@@ -652,11 +711,12 @@ export function render(container, data, state) {
     Object.values(iso.ports).forEach(P => {
       const r = S(P), lab = P.kind === 'section' ? (data.elements[P.sec] ? data.elements[P.sec].label : P.sec) : P.kind === 'rest' ? `+${P.files} more files` : (nodeInfo(P.file) || {}).label || P.file;
       const tail = String(P.edges); // file count lives in the tooltip; the name gets the room
+      const pks = kindStyle(P.kind === 'file' ? nodeInfo(P.file) : null); // a file port shows its node's kind (Q-019)
       const mark = P.kind === 'section' ? (P.open ? '−' : '+') : '';
       const cnt = `${tail}`, room = r.w - 16 - cnt.length * cw * 0.92 - (mark ? 14 : 0);
       const on = !!(selNode && (iso.portOf.in[selNode] === P.key || iso.portOf.out[selNode] === P.key));
       map.drawn.add(P.key);
-      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : 'surface-node')};stroke:${v(on ? 'accent' : P.kind === 'file' ? 'rule' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
+      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="${P.kind === 'file' && pks.pill ? `rx:${v('radius-pill')};` : ''}fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : pks.fill)};stroke:${v(on ? 'accent' : P.kind === 'file' ? pks.stroke : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : P.kind === 'file' ? pks.dash : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
     });
     ['in', 'out'].forEach(side => {
       const ps = Object.values(iso.ports).filter(p => p.side === side); if (!ps.length) return;

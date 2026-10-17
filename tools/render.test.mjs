@@ -63,6 +63,39 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   check('a missing node is drawn dashed, and a file is not', /stroke-dasharray:2 4/.test(nodeG('miss:vector')) && !/stroke-dasharray:2 4/.test(nodeG('file:src/engine.cpp')));
   check('engine.h and engine.cpp are told apart by their labels', />engine\.h</.test(html) && />engine\.cpp</.test(html));
 }
+// Drawn labels (Julian, 2026-10-17: unique at detail zoom): what the frame shows, not only the data. Middle-cut keeps
+// the distinguishing end ("HYPERSAW-impl" and "HYPERSAW_auv2" both read "HYPERSAW…" with an end-cut).
+const drawnLabels = (html) => {
+  const out = new Map();
+  for (const part of html.split('<g data-node="').slice(1)) {
+    const id = part.slice(0, part.indexOf('"')), m = /letter-spacing:var\(--loupe-tracking-node-label\)[^>]*>([^<]*)<\/text>/.exec(part.split('<g data-node="')[0]);
+    if (m && m[1]) out.set(id, m[1]);
+  }
+  return out;
+};
+for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/snapshots/cmake-basic-crawl/', 'schema/examples/horde-probe/', 'schema/examples/horde-sample/']) {
+  const d = snap(dir), bad = [];
+  for (const view of ['design', 'flow']) {
+    render(container, d, { view, stage: 2, settings: {}, unfolded: ['loose', ...d.sections], zoom: { k: 1, x: 0, y: 0 } });
+    const seen = new Map();
+    for (const [id, t] of drawnLabels(svg.innerHTML)) { const k = (d.nodes[id] ? d.nodes[id].kind : '?') + '|' + t; if (seen.has(k)) bad.push(`${view}: ${seen.get(k)} / ${id} both "${t}"`); else seen.set(k, id); }
+  }
+  check(`${dir}: at detail zoom no two drawn labels of one kind read the same${bad.length ? ' — ' + bad.length + ', e.g. ' + bad.slice(0, 2).join('; ') : ''}`, bad.length === 0);
+}
+{ // kinds through every path: isolate ports, packages vs missing, artifacts, ghosts
+  const { kindStyle } = await import('../design/prototype/render.js');
+  const pk = kindStyle({ kind: 'external' }), ms = kindStyle({ kind: 'missing', missing: { reason: 'external' } });
+  check('a package and a missing external file have different bodies (critic)', pk.fill !== ms.fill);
+  check('an artifact is not described as missing (critic)', !/not in the tree/.test(kindStyle({ kind: 'artifact' }).title) && kindStyle({ kind: 'artifact' }).fill !== kindStyle({ kind: 'file' }).fill);
+  const d = snap('schema/examples/horde-probe/'), sec = 'sec:artifacts';
+  // Open every section port (by its key) so file ports, including the missing ones, are drawn.
+  const first = render(container, d, { view: 'design', stage: 2, settings: {}, isolate: sec, zoom: { k: 1, x: 0, y: 0 } });
+  const keys = Object.values(first.layout.iso.ports).filter((P) => P.kind === 'section').map((P) => P.key);
+  render(container, d, { view: 'design', stage: 2, settings: {}, isolate: sec, isoOpen: keys, zoom: { k: 1, x: 0, y: 0 } });
+  const html = svg.innerHTML, gen = d.nodeIds.find((id) => d.nodes[id].kind === 'missing' && /<g data-node="/.test(html) && html.includes(`data-node="${id}"`));
+  const portG = gen ? (html.split(`data-node="${gen}"`)[1] || '').split('</g>')[0] : '';
+  check('an isolate port of a missing node is drawn dashed, not as a file (critic)', !!gen && /stroke-dasharray:2 4/.test(portG));
+}
 // Every component's loupe-spec block validates against schema/loupe-spec.schema.json. design/system/README.md says
 // they are validated; until Q-019 nothing did (the node spec was edited to v3 here, so the gap mattered).
 {
