@@ -27,17 +27,21 @@
     },
     "granularity": "file",
     "inventory": {
-      "crawled": 17,
+      "crawled": 30,
       "excluded": [],
-      "files": 17
+      "files": 30
     },
     "languages": [
       "cmake",
       "cpp",
       "csv",
+      "html",
+      "js",
       "json",
       "markdown",
-      "python"
+      "python",
+      "sh",
+      "text"
     ],
     "name": "loupe-crawler",
     "notEvaluated": [
@@ -71,6 +75,22 @@
   "edges": [
     {
       "count": 1,
+      "dst": "file:data/presets.json",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "tools/run.sh",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:04683ed250e7d6b6",
+      "kind": "generates",
+      "provenance": "static",
+      "src": "file:tools/run.sh"
+    },
+    {
+      "count": 1,
       "dst": "miss:cstdint",
       "evidence": [
         {
@@ -84,6 +104,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:src/engine.h"
+    },
+    {
+      "count": 1,
+      "dst": "ext:python-std",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "lib/gen_lut.py",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:12d4dcae6e11c0b2",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:lib/gen_lut.py"
     },
     {
       "count": 1,
@@ -135,6 +171,22 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "ext:py:numpy",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "tools/gen_table.py",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:2d94f122835485d9",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/gen_table.py"
     },
     {
       "count": 1,
@@ -224,6 +276,22 @@
     },
     {
       "count": 1,
+      "dst": "file:web/app.js",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "web/index.html",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4b27b110a9947d2e",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:web/index.html"
+    },
+    {
+      "count": 1,
       "dst": "miss:${external}/outside_b.cpp",
       "evidence": [
         {
@@ -237,6 +305,22 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:plugin"
+    },
+    {
+      "count": 1,
+      "dst": "miss:web/style.css",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "web/index.html",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:4f8744e02ee1c774",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:web/index.html"
     },
     {
       "count": 1,
@@ -256,6 +340,22 @@
     },
     {
       "count": 1,
+      "dst": "file:tools/gen_table.py",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "tools/run.sh",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:55e83c89a2b5c3d6",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/run.sh"
+    },
+    {
+      "count": 1,
       "dst": "miss:${build}/generated/table.h",
       "evidence": [
         {
@@ -272,6 +372,38 @@
     },
     {
       "count": 1,
+      "dst": "file:tools/run.sh",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "tools/regen",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:62829de0d1162d07",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/regen"
+    },
+    {
+      "count": 1,
+      "dst": "file:tools/env.sh",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "tools/run.sh",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:668d4b1fc1ea18aa",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/run.sh"
+    },
+    {
+      "count": 1,
       "dst": "miss:${build}/lib/lut.h",
       "evidence": [
         {
@@ -285,6 +417,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:lib/lut.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "ext:python-std",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "tools/gen_table.py",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:69d1cd9b1db745e9",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/gen_table.py"
     },
     {
       "count": 1,
@@ -322,6 +470,38 @@
     },
     {
       "count": 1,
+      "dst": "file:tools/pkg/util.py",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "tools/pkg/fmt.py",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7283e9949059a6e7",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/pkg/fmt.py"
+    },
+    {
+      "count": 1,
+      "dst": "file:data/presets.json",
+      "evidence": [
+        {
+          "line": 4,
+          "path": "web/app.js",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:784eed29fe8d014f",
+      "kind": "data",
+      "provenance": "static",
+      "src": "file:web/app.js"
+    },
+    {
+      "count": 1,
       "dst": "file:src/platform.h",
       "evidence": [
         {
@@ -354,6 +534,22 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "file:web/util.js",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "web/index.html",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7dbea208ecba34ac",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:web/index.html"
     },
     {
       "count": 1,
@@ -405,6 +601,22 @@
     },
     {
       "count": 1,
+      "dst": "file:web/util.js",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "web/app.js",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:901394d39a050d65",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:web/app.js"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engine.h",
       "evidence": [
         {
@@ -418,6 +630,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tests/engine_test.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "ext:web:cdn.example.com",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "web/index.html",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:9a1eef1897b28b03",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:web/index.html"
     },
     {
       "count": 1,
@@ -469,6 +697,38 @@
     },
     {
       "count": 1,
+      "dst": "file:tools/common.py",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "tools/gen_table.py",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:bba217b5b899daaf",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/gen_table.py"
+    },
+    {
+      "count": 1,
+      "dst": "file:tools/presets.in",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "tools/run.sh",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:be927871972dd2cd",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/run.sh"
+    },
+    {
+      "count": 1,
       "dst": "miss:windows.h",
       "evidence": [
         {
@@ -483,6 +743,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:src/platform.h"
+    },
+    {
+      "count": 1,
+      "dst": "ext:node",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "web/app.js",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:c2d364ed0359c236",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:web/app.js"
     },
     {
       "count": 1,
@@ -534,6 +810,22 @@
     },
     {
       "count": 1,
+      "dst": "file:lib/lut.csv",
+      "evidence": [
+        {
+          "line": 6,
+          "path": "tools/gen_table.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:d17ae9772a1b0fd1",
+      "kind": "data",
+      "provenance": "static",
+      "src": "file:tools/gen_table.py"
+    },
+    {
+      "count": 1,
       "dst": "file:src/plugin_entry.cpp",
       "evidence": [
         {
@@ -566,6 +858,22 @@
     },
     {
       "count": 1,
+      "dst": "file:tools/pkg/fmt.py",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "tools/gen_table.py",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d793dbb53779b5ee",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/gen_table.py"
+    },
+    {
+      "count": 1,
       "dst": "miss:platform_posix.h",
       "evidence": [
         {
@@ -583,6 +891,22 @@
     },
     {
       "count": 1,
+      "dst": "file:web/lazy.js",
+      "evidence": [
+        {
+          "line": 5,
+          "path": "web/app.js",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e6ccfd3ba5261b58",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:web/app.js"
+    },
+    {
+      "count": 1,
       "dst": "file:tests/engine_test.cpp",
       "evidence": [
         {
@@ -596,6 +920,22 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:engine_test"
+    },
+    {
+      "count": 1,
+      "dst": "ext:npm:lodash",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "web/app.js",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:f016b817f52036e9",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:web/app.js"
     },
     {
       "count": 1,
@@ -628,9 +968,55 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:engine"
+    },
+    {
+      "count": 1,
+      "dst": "miss:tools/pkg/missing.py",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "tools/pkg/fmt.py",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:f91c798f4bf3ea33",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/pkg/fmt.py"
     }
   ],
   "nodes": [
+    {
+      "hash": "none",
+      "id": "ext:node",
+      "kind": "external",
+      "path": "node"
+    },
+    {
+      "hash": "none",
+      "id": "ext:npm:lodash",
+      "kind": "external",
+      "path": "npm:lodash"
+    },
+    {
+      "hash": "none",
+      "id": "ext:py:numpy",
+      "kind": "external",
+      "path": "py:numpy"
+    },
+    {
+      "hash": "none",
+      "id": "ext:python-std",
+      "kind": "external",
+      "path": "python-std"
+    },
+    {
+      "hash": "none",
+      "id": "ext:web:cdn.example.com",
+      "kind": "external",
+      "path": "web:cdn.example.com"
+    },
     {
       "hash": "sha256:1efd05319a4114a2fbb5f07e873a791fbe97ba02d696dbd390269c29dba7373d",
       "id": "file:.loupe/config.json",
@@ -654,6 +1040,14 @@
       "lang": "markdown",
       "loc": 3,
       "path": "README.md"
+    },
+    {
+      "hash": "sha256:1c90a621fd39212094774a886a3a9795d3e9206142ab96c2011add24a951a151",
+      "id": "file:data/presets.json",
+      "kind": "file",
+      "lang": "json",
+      "loc": 1,
+      "path": "data/presets.json"
     },
     {
       "hash": "sha256:537b46e794de9184a95e545078e3c6dfc3c0c7f061e53dcc34769c2e91e7e43d",
@@ -760,12 +1154,108 @@
       "path": "tests/engine_test.cpp"
     },
     {
-      "hash": "sha256:c3dbef26a97ae327323495fe9705d6cc273e394c45228458ac1c60da83223049",
+      "hash": "sha256:4aebd7360ba10e9f0acf969a5c4fef307ddfbfa51e66e2a2bb533ac554baf972",
+      "id": "file:tools/common.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 2,
+      "path": "tools/common.py"
+    },
+    {
+      "hash": "sha256:35eb25b22ba213905e058fc8eab80fea47e9b7c3aa6785a32a509c94d8c0909f",
+      "id": "file:tools/env.sh",
+      "kind": "file",
+      "lang": "sh",
+      "loc": 1,
+      "path": "tools/env.sh"
+    },
+    {
+      "hash": "sha256:b76b0db13f7ba73c92db6f36a76a13d66e9672be0fea6e8d45498458b8e061b0",
       "id": "file:tools/gen_table.py",
       "kind": "file",
       "lang": "python",
-      "loc": 4,
+      "loc": 8,
       "path": "tools/gen_table.py"
+    },
+    {
+      "hash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "id": "file:tools/pkg/__init__.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 0,
+      "path": "tools/pkg/__init__.py"
+    },
+    {
+      "hash": "sha256:8587133c75e0d82efc53282d62751b0c824b469f63c82c575cc550089413867e",
+      "id": "file:tools/pkg/fmt.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 4,
+      "path": "tools/pkg/fmt.py"
+    },
+    {
+      "hash": "sha256:bd92e5a1e2c73c8ad1f7a1bb00979394c2a047f3bdc44462386fd0c901b8761b",
+      "id": "file:tools/pkg/util.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 2,
+      "path": "tools/pkg/util.py"
+    },
+    {
+      "hash": "sha256:8214a6660d0315e1c8d7442f3a5a75e7b63053870512bdb14eb07d472c8cf3f6",
+      "id": "file:tools/presets.in",
+      "kind": "file",
+      "lang": "text",
+      "loc": 1,
+      "path": "tools/presets.in"
+    },
+    {
+      "hash": "sha256:34000ffde2812ff3e895f5aedbb18a2563036317f1342dc455c81bc55f7a012a",
+      "id": "file:tools/regen",
+      "kind": "file",
+      "lang": "sh",
+      "loc": 3,
+      "path": "tools/regen"
+    },
+    {
+      "hash": "sha256:c77beb5b278ae31a7ec6433d11a32033882cf76a8e8bdf7539fd674a9868d5b2",
+      "id": "file:tools/run.sh",
+      "kind": "file",
+      "lang": "sh",
+      "loc": 5,
+      "path": "tools/run.sh"
+    },
+    {
+      "hash": "sha256:d64868fca6a6e786e6368a69ee1afa5498591b488b084a3e7d2130880a1a98ad",
+      "id": "file:web/app.js",
+      "kind": "file",
+      "lang": "js",
+      "loc": 5,
+      "path": "web/app.js"
+    },
+    {
+      "hash": "sha256:6a5e6a2af36aee7d4770ae689087c257a40d7dba217e477036ec0a12e06ae923",
+      "id": "file:web/index.html",
+      "kind": "file",
+      "lang": "html",
+      "loc": 5,
+      "path": "web/index.html"
+    },
+    {
+      "hash": "sha256:f3ada4bc50afadb5fe56ed99cbdf815f1580422945dcc61e52ca8e25709a18ae",
+      "id": "file:web/lazy.js",
+      "kind": "file",
+      "lang": "js",
+      "loc": 1,
+      "path": "web/lazy.js"
+    },
+    {
+      "hash": "sha256:4a381860447226426a116b024081641b32f9b6c4f7c2c5d3cb86987e85c8ae33",
+      "id": "file:web/util.js",
+      "kind": "file",
+      "lang": "js",
+      "loc": 1,
+      "path": "web/util.js"
     },
     {
       "hash": "none",
@@ -846,6 +1336,16 @@
     },
     {
       "hash": "none",
+      "id": "miss:tools/pkg/missing.py",
+      "kind": "missing",
+      "missing": {
+        "note": "named by the code, not found next to it or from the repo root",
+        "reason": "unknown"
+      },
+      "path": "tools/pkg/missing.py"
+    },
+    {
+      "hash": "none",
       "id": "miss:vector",
       "kind": "missing",
       "missing": {
@@ -853,6 +1353,16 @@
         "reason": "external"
       },
       "path": "vector"
+    },
+    {
+      "hash": "none",
+      "id": "miss:web/style.css",
+      "kind": "missing",
+      "missing": {
+        "note": "named by the code, not found next to it or from the repo root",
+        "reason": "unknown"
+      },
+      "path": "web/style.css"
     },
     {
       "hash": "none",

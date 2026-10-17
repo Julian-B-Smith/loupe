@@ -84,7 +84,10 @@ try {
   const n2 = scratchCount();
   const code = await new Promise<number | null>((resolve) => {
     const child = spawn(process.execPath, ['crawler/cli.ts', 'build', tmp], { stdio: 'ignore', detached: true });
-    setTimeout(() => { try { process.kill(-(child.pid as number), 'SIGINT'); } catch { child.kill('SIGINT'); } }, 1500);
+    // Interrupt only once configure is running (its scratch dir exists), so the cleanup handler is armed. A fixed
+    // 1.5 s timer raced Node's startup under load and could kill the process before the handler existed (2026-10-17).
+    const t0 = Date.now(), sig = () => { try { process.kill(-(child.pid as number), 'SIGINT'); } catch { child.kill('SIGINT'); } };
+    const poll = setInterval(() => { if (scratchCount() > n2 || Date.now() - t0 > 15000) { clearInterval(poll); setTimeout(sig, 300); } }, 50);
     child.on('exit', (c) => resolve(c));
   });
   check('Ctrl-C during configure exits 130 and deletes the scratch directory (critic)', code === 130 && scratchCount() === n2);

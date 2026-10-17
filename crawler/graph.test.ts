@@ -11,6 +11,7 @@ import { buildLayer } from './build.ts';
 import { syntaxLayer } from './syntax.ts';
 import { emitGraph, repoNameOf } from './graph.ts';
 import { conformance } from './conformance.ts';
+import { langLayer } from './langs.ts';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { layout } from '../design/prototype/layout.js';
 
@@ -60,6 +61,48 @@ check('via reaches the graph (0.3.1)', JSON.stringify(G.edges.find((e: any) => e
 // The testbench copy of this crawl must stay what the crawler makes, or the testbench shows a stale crawler (critic).
 check('the testbench snapshot cmake-basic-crawl equals the crawler\'s output (regenerate: node crawler/cli.ts crawl fixtures/cmake-basic --out design/prototype/snapshots/cmake-basic-crawl)',
   unsourced(readFileSync('design/prototype/snapshots/cmake-basic-crawl/graph.json', 'utf8')) === g);
+// ---- Python, JS, HTML, shell (Q-023): one check per rule on the fixture
+{
+  const has = (kind: string, src: string, dst: string, res?: string) => G.edges.some((e: any) => e.kind === kind && e.src === 'file:' + src && e.dst === dst && (!res || e.evidence.every((x: any) => x.resolution === res)));
+  check('Python: a sibling module is an exact import', has('import', 'tools/gen_table.py', 'file:tools/common.py', 'exact'));
+  check('Python: `from pkg import mod` points at the module, not __init__', has('import', 'tools/gen_table.py', 'file:tools/pkg/fmt.py'));
+  check('Python: a relative import inside a package, and a missing one', has('import', 'tools/pkg/fmt.py', 'file:tools/pkg/util.py', 'exact') && has('import', 'tools/pkg/fmt.py', 'miss:tools/pkg/missing.py', 'syntactic'));
+  check('Python: the standard library and third-party packages are external', has('import', 'tools/gen_table.py', 'ext:python-std') && has('import', 'tools/gen_table.py', 'ext:py:numpy'));
+  check('Python: a data path in a string is a data edge, found from the repo root', has('data', 'tools/gen_table.py', 'file:lib/lut.csv', 'search'));
+  check('JS: relative import, dynamic import, node: and npm packages', has('import', 'web/app.js', 'file:web/util.js', 'exact') && has('import', 'web/app.js', 'file:web/lazy.js') && has('import', 'web/app.js', 'ext:node') && has('import', 'web/app.js', 'ext:npm:lodash'));
+  check('JS: an import specifier is not also a string-literal reference', !has('reference', 'web/app.js', 'file:web/util.js') && !has('reference', 'web/app.js', 'file:web/lazy.js'));
+  check('JS: a data file read by a relative path', has('data', 'web/app.js', 'file:data/presets.json', 'exact'));
+  check('HTML: script src, inline module import, CDN host, missing stylesheet', has('reference', 'web/index.html', 'file:web/app.js') && has('import', 'web/index.html', 'file:web/util.js')
+    && has('reference', 'web/index.html', 'ext:web:cdn.example.com') && has('reference', 'web/index.html', 'miss:web/style.css'));
+  check('shell: source, an interpreter call, a read, and a file written with >', has('import', 'tools/run.sh', 'file:tools/env.sh') && has('reference', 'tools/run.sh', 'file:tools/gen_table.py')
+    && has('reference', 'tools/run.sh', 'file:tools/presets.in') && has('generates', 'tools/run.sh', 'file:data/presets.json'));
+}
+// ---- precision (critic, 2026-10-17; Julian: imports from code only, a missed edge over a made-up one)
+{
+  const lang = (files: Record<string, string>) => {
+    const t = mkdtempSync(join(tmpdir(), 'loupe-langs-'));
+    try { for (const [p, txt] of Object.entries(files)) { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), txt); }
+      return langLayer(t, Object.keys(files).sort()); } finally { rmSync(t, { recursive: true, force: true }); }
+  };
+  const to = (r: any) => r.edges.map((e: any) => e.kind + ' ' + e.to);
+  const junk = lang({ 'a.js': 'x = "x-import" && (el.getAttribute("y");\nconst l = [\'export\', \'lib-export\', libExport, \'z\'];\nconst s = "import { x } from \'y\';";\n/* import a from \'./gone.js\' */\nconst t = `import z from \'./gone3.js\'`;\nfoo.import(\'./x.js\');\n',
+    'p.html': '<p id="b-export" class="c">x</p>\n<!-- <script src="gone.js"></script> -->\n' });
+  check(`JS/HTML: text in strings, comments, templates and attributes is never an import (critic C1/H1)${junk.edges.length ? ' — got ' + JSON.stringify(to(junk)) : ''}`, junk.edges.length === 0);
+  const py = lang({ 'm.py': '"""\nimport secretmod\n"""\nx = \'import other\'\n# import commented\nimport os; import json\nfrom pkg import (a,\n    b)\n', 'pkg/__init__.py': '', 'pkg/a.py': '', 'pkg/b.py': '' });
+  check(`Python: docstrings, strings and comments are not imports; ';' and parenthesised forms are (critic H3/M4) — ${JSON.stringify(to(py).sort())}`, JSON.stringify(to(py).sort()) === JSON.stringify(['import ext:python-std', 'import file:pkg/a.py', 'import file:pkg/b.py'].sort()));
+  const rw = lang({ 'w.py': 'open("data/out.json", "w").write(open("data/in.json").read())\nopen("assets/in.json")\n', 'data/out.json': '', 'data/in.json': '', 'assets/in.json': '',
+    'w.js': 'fs.readFileSync("data/in.json"); // writeFileSync later\nfs.writeFileSync("data/out.json", x);\n', 'w.sh': 'cat "data/in.json" > /dev/null\ncat data/in.json > data/out.json\n' });
+  const gen = rw.edges.filter((e: any) => e.kind === 'generates').map((e: any) => e.from + '>' + e.to.slice(5)).sort();
+  check(`a write is the literal that is written, not the line (critic H2) — ${JSON.stringify(gen)}`, JSON.stringify(gen) === JSON.stringify(['w.js>data/out.json', 'w.py>data/out.json', 'w.sh>data/out.json']));
+  const shadow = lang({ 'a.py': 'import random\n', 'lib/random.py': '' });
+  check('the standard library wins over a stray same-named repo file (critic M2)', JSON.stringify(to(shadow)) === '["import ext:python-std"]');
+  check('Node built-ins via require are ext:node (critic M2)', JSON.stringify(to(lang({ 'a.js': "const fs = require('fs');\n" }))) === '["import ext:node"]');
+  const comp = lang({ 'a.js': 'import(name);\nrequire(mod + ".js");\n', 'b.py': 'm = __import__(name)\n', 'c.sh': 'source $DIR/env.sh\n' });
+  check(`computed imports are listed, not dropped (critic M3)${comp.computed.length !== 4 ? ' — got ' + JSON.stringify(comp.computed.map((c: any) => c.text)) : ''}`, comp.computed.length === 4 && comp.edges.length === 0);
+  const lex = lang({ 'a.js': 'const r = /"/g;\nimport x from \'./b.js\';\nconst t = `pre ${require(\'./c.js\')} post`;\nconst u = `${`nested`} import y from \'./no.js\'`;\n', 'b.js': '', 'c.js': '' });
+  check(`JS lexer: a regex literal with a quote does not hide later code; code inside \${} is code; template text is not (critic, HORDE morph_order) — ${JSON.stringify(to(lex))}`, JSON.stringify(to(lex).sort()) === JSON.stringify(['import file:b.js', 'import file:c.js']));
+  check('a bare file name resolves only next to the file, never from the repo root', lang({ 'tools/x.js': 'join(outDir, "index.html");\n', 'index.html': '' }).edges.length === 0);
+}
 const C = JSON.parse(conf);
 check('an include holds where its file is compiled: extra.cpp is compiled in extra only (Julian, 2026-10-16)', JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.configs) === '["extra"]'
   && JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.evidence[0].configs) === '["extra"]');
