@@ -12,6 +12,7 @@ import { syntaxLayer } from './syntax.ts';
 import { emitGraph, repoNameOf } from './graph.ts';
 import { conformance } from './conformance.ts';
 import { langLayer } from './langs.ts';
+import { assignRoles, guiBridge, readRoleConfig } from './dialect.ts';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { layout } from '../design/prototype/layout.js';
 
@@ -223,5 +224,100 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   check(`the repo name comes only from a hosted remote, without credentials (critic)${bad.length ? ': ' + bad.map(([u]) => u + '→' + repoNameOf(u)).join(', ') : ''}`, bad.length === 0);
 }
 
+// ---- roles and the dsp-plugin dialect (Q-024): every layer, its precedence, and the GUI bridge
+{
+  const role = (p: string) => { const n = G.nodes.find((x: any) => x.id === 'file:' + p); return n ? `${n.role}|${n.roleRule}` : 'none'; };
+  check('the fixture declares its dialect, and the graph records it', G.crawler.dialect.name === 'dsp-plugin' && !G.crawler.notEvaluated.some((x: any) => x.what === 'dialect'));
+  check('default path rules: docs, build files, tools, data', role('README.md') === 'doc|default:path/doc-ext' && role('CMakeLists.txt') === 'build|default:path/build'
+    && role('tools/common.py') === 'tool|default:path/tools-dir' && role('data/presets.json') === 'data|default:path/data-ext');
+  check('dialect build rule: what the plugin module and its dependencies build is product', role('src/plugin_entry.cpp') === 'product|dsp-plugin:build/product-target' && role('src/engine.cpp') === 'product|dsp-plugin:build/product-target');
+  check('dialect build rule: headers the product\'s compiles reach are product (unity-style builds list few sources)', role('src/platform.h') === 'product|dsp-plugin:build/product-reach' && role('src/dsp/filter.h') === 'product|dsp-plugin:build/product-reach');
+  check('dialect build rule: a test target\'s sources are test', role('tests/engine_test.cpp') === 'test|dsp-plugin:build/test-target');
+  check('dialect path rule: a gui directory', role('src/gui/app_gui.h') === 'gui|dsp-plugin:path/gui-dir');
+  check('graph rule: the script a custom command runs is a generator; its data input is not', role('tools/gen_table.py') === 'generator|graph:runs-command' && role('lib/lut.csv') === 'data|default:path/data-ext');
+  check('the repo\'s config patterns win last', role('web/app.js') === 'gui|config:roles[0]');
+  const br = G.edges.filter((e: any) => e.role === 'bridge');
+  check('GUI bridge: a bound name used in a page is a call edge to the registering file', br.length === 1 && br[0].src === 'file:web/index.html' && br[0].dst === 'file:src/gui/app_gui.h'
+    && br[0].kind === 'call' && br[0].evidence[0].signature === 'fxGetLevel' && br[0].evidence[0].resolution === 'syntactic');
+  check('GUI bridge: a mock that only defines the name, and a registration in a comment, make no edge', !G.edges.some((e: any) => e.role === 'bridge' && e.src === 'file:web/app.js') && !JSON.stringify(G).includes('fxNotReal'));
+  // a repo with no declared dialect: --dialect chooses one and the graph says so; an unknown one is refused
+  const plain = { configurations: [{ name: 'default', args: [] }], declared: false, membership: [], unclaimedSources: [], perConfiguration: [{ name: 'default', targets: [], customCommands: [] }] };
+  const t = mkdtempSync(join(tmpdir(), 'loupe-dialect-'));
+  try {
+    writeFileSync(join(t, 'a_check.cpp'), 'int main() {}\n'); commitAll(t);
+    const g = JSON.parse(emitGraph(t, plain, await syntaxLayer(t, plain), { dialect: 'dsp-plugin' }).graph);
+    check('--dialect on an undeclared repo is used and stated as not evaluated', g.crawler.dialect.name === 'dsp-plugin' && g.crawler.notEvaluated.some((x: any) => x.what === 'dialect')
+      && g.nodes.find((n: any) => n.path === 'a_check.cpp').roleRule === 'dsp-plugin:path/check-name');
+    check('an unknown dialect is refused', (() => { try { emitGraph(t, plain, { includes: [], computed: [], skipped: [], problems: [], files: [] }, { dialect: 'nope' }); return false; } catch { return true; } })());
+    const none = JSON.parse(emitGraph(t, plain, await syntaxLayer(t, plain)).graph);
+    check('without a dialect only the defaults apply, and unroled files are counted', none.crawler.dialect.name === 'none' && none.crawler.notEvaluated.some((x: any) => x.what === 'roles'));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- every role rule id, on a synthetic project (critic: criterion 5 asks a case per rule kind)
+{
+  const F = (path: string, lang = 'text') => ({ id: 'file:' + path, kind: 'file', path, lang });
+  const nodes = ['docs/a.html', 'README.md', 'tests/t.cpp', 'CMakeLists.txt', 'CMakePresets.json', '.gitignore', '.kit/x.sh', 'scratch/s.py', 'tools/u.py', 'data/d.json',
+    'src/gui/g.cpp', 'src/x_probe.cpp', 'src/x_bench.cpp', 'src/y_check.cpp', 'src/plug.cpp', 'src/core.h', 'src/only_tested.h', 'src/orphan.h', 'p/p.cpp', 'b/b.cpp', 'g/g.cpp', 't/t.cpp',
+    'gen/run.py', 'gen/w.py', 'docs/presets/a.json'].map((p) => F(p, /\.(cpp|h)$/.test(p) ? 'cpp' : /\.py$/.test(p) ? 'python' : 'text'));
+  const E = (src: string, dst: string, kind: string, provenance = 'config') => ({ src, dst, kind, provenance });
+  const edges = [E('target:plugin', 'file:src/plug.cpp', 'builds'), E('target:plugin', 'miss:${build}/bank.h', 'builds'), E('file:src/plug.cpp', 'file:src/core.h', 'include', 'static'),
+    E('target:x_probe', 'file:p/p.cpp', 'builds'), E('target:y_bench', 'file:b/b.cpp', 'builds'), E('target:gen_z', 'file:g/g.cpp', 'builds'), E('target:a_check', 'file:t/t.cpp', 'builds'),
+    E('file:t/t.cpp', 'file:src/only_tested.h', 'include', 'static'), E('file:gen/w.py', 'file:data/d.json', 'generates', 'static'), E('file:docs/presets/a.json', 'miss:${build}/bank.h', 'generates')];
+  const targets = [{ name: 'plugin', type: 'MODULE_LIBRARY', dependencies: [] }, { name: 'x_probe', type: 'EXECUTABLE', dependencies: [] }, { name: 'y_bench', type: 'EXECUTABLE', dependencies: [] },
+    { name: 'gen_z', type: 'EXECUTABLE', dependencies: [] }, { name: 'a_check', type: 'EXECUTABLE', dependencies: [] }];
+  const rep = assignRoles(nodes, edges, targets, 'dsp-plugin', { dialect: 'dsp-plugin', roles: [{ match: 'tools/**', role: 'tool' }, { match: 'nothing/**', role: 'doc' }], problems: [] }, new Set(['file:gen/run.py']));
+  const rr = (p: string) => nodes.find((n: any) => n.path === p)!.roleRule;
+  const want: Record<string, string> = { 'README.md': 'default:path/doc-ext', 'docs/a.html': 'default:path/docs-dir', 'tests/t.cpp': 'default:path/test', 'CMakeLists.txt': 'default:path/build',
+    'CMakePresets.json': 'default:path/build', '.gitignore': 'default:path/root-dotfile', '.kit/x.sh': 'default:path/repo-tooling', 'scratch/s.py': 'default:path/scratch', 'data/d.json': 'default:path/data-ext',
+    'src/gui/g.cpp': 'dsp-plugin:path/gui-dir', 'src/x_probe.cpp': 'dsp-plugin:path/probe-name', 'src/x_bench.cpp': 'dsp-plugin:path/bench-name', 'src/y_check.cpp': 'dsp-plugin:path/check-name',
+    'src/plug.cpp': 'dsp-plugin:build/product-target', 'src/core.h': 'dsp-plugin:build/product-reach', 'p/p.cpp': 'dsp-plugin:build/probe-target', 'b/b.cpp': 'dsp-plugin:build/bench-target',
+    'g/g.cpp': 'dsp-plugin:build/generator-target', 't/t.cpp': 'dsp-plugin:build/test-target', 'src/only_tested.h': 'dsp-plugin:build/reached-only-by-tests', 'src/orphan.h': 'default:path/source-dir',
+    'docs/presets/a.json': 'dsp-plugin:build/product-input', 'gen/run.py': 'graph:runs-command', 'gen/w.py': 'graph:writes-file', 'tools/u.py': 'config:roles[0]' };
+  const bad = Object.entries(want).filter(([p, r]) => rr(p) !== r).map(([p, r]) => `${p}: ${rr(p)} (want ${r})`);
+  check(`every role rule id, each on its case${bad.length ? ' — ' + bad.join('; ') : ''}`, bad.length === 0);
+  check('a src/ file nothing reaches is counted; an unused config pattern is reported', rep.unreachedSources === 1 && JSON.stringify(rep.unusedConfig) === '["nothing/**"]');
+}
+// ---- the bridge's edge cases (critic M2/M3/L6/L7)
+{
+  const t = mkdtempSync(join(tmpdir(), 'loupe-bridge-'));
+  try {
+    const W = (p: string, s: string) => { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), s); };
+    W('src/gui/reg.h', 'void f(W& w) {\n  w.bind("hzUndo", a);\n  w.bind("hzRedo", b);\n  w.bind("hzA", c);\n  w.bind("hzB", d);\n  auto s = R"(w.bind("hzFake", x);)";\n  w.bind(kName, e);\n  w.bind("hzT", f);\n}\n');
+    W('tools/t_check.mm', 'void g(W& w) { w.bind("hzT", z); w.bind("hzOnlyTest", z); }\n');
+    W('src/gui/page.html', '<script>\nawait (back ? window.hzUndo() : window.hzRedo());\nconst m = cond ? hzA : hzB;\nwindow.hzT();\nwindow.hzOnlyTest();\n</script>\n<button onclick="window.hzA()">x</button>\n');
+    const files = [['src/gui/reg.h', 'cpp', 'gui'], ['tools/t_check.mm', 'objcpp', 'test'], ['src/gui/page.html', 'html', 'gui']].map(([path, lang, role]) => ({ path, lang, role }));
+    const br = guiBridge(t, files);
+    const sig = (line: number, to: string) => br.edges.find((e) => e.line === line && e.to === to)?.names.join(',');
+    check('two bound names on one line are both in its evidence (critic: hzRedo was dropped)', sig(2, 'src/gui/reg.h') === 'hzRedo,hzUndo');
+    check('a ternary is a use, not an object key (critic L6)', sig(3, 'src/gui/reg.h') === 'hzA,hzB');
+    check('an onclick handler is scanned', sig(7, 'src/gui/reg.h') === 'hzA');
+    check('a registration inside a C++ raw string is not one, and a variable name is counted (critic L7)', !br.edges.some((e) => e.names.includes('hzFake')) && br.nonLiteral === 1);
+    check('a test re-registering a gui name gets no edge; a name only a test registers still bridges (Julian, 2026-10-17)',
+      !br.edges.some((e) => e.to === 'tools/t_check.mm' && e.names.includes('hzT')) && br.edges.some((e) => e.to === 'tools/t_check.mm' && e.names.includes('hzOnlyTest')) && br.dropped === 1);
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- config problems are reported, never silently ignored
+{
+  const t = mkdtempSync(join(tmpdir(), 'loupe-cfg-'));
+  try {
+    mkdirSync(join(t, '.loupe'));
+    const cfg = (o: string) => { writeFileSync(join(t, '.loupe', 'config.json'), o); return readRoleConfig(t).problems.join(' | '); };
+    check('config: unknown dialect, unknown role, roles not a list, and not JSON are each reported',
+      /dialect "x"/.test(cfg('{"dialect":"x"}')) && /roles\[0\]/.test(cfg('{"roles":[{"match":"a/**","role":"nope"}]}')) && /must be a list/.test(cfg('{"roles":{}}')) && /not JSON/.test(cfg('{')));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- the dialect changes roles and adds bridge edges, nothing else (criterion 4)
+{
+  const strip = (g: any) => { const x = JSON.parse(JSON.stringify(g)); for (const n of x.nodes) { delete n.role; delete n.roleRule; } x.edges = x.edges.filter((e: any) => e.role !== 'bridge');
+    x.crawler.dialect = null; x.crawler.notEvaluated = x.crawler.notEvaluated.filter((n: any) => !['dialect', 'roles', 'gui bridge'].includes(n.what)); return JSON.stringify(x); };
+  const plain = { configurations: [{ name: 'default', args: [] }], declared: false, membership: [], unclaimedSources: [], perConfiguration: [{ name: 'default', targets: [], customCommands: [] }] };
+  const t = mkdtempSync(join(tmpdir(), 'loupe-dinv-'));
+  try {
+    for (const [p, s] of [['src/gui/r.h', 'void f(W& w){ w.bind("hzX", a); }\n'], ['src/gui/p.html', '<script>window.hzX();</script>\n'], ['tools/a.py', 'import os\n']]) { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), s); }
+    commitAll(t);
+    const s1 = await syntaxLayer(t, plain);
+    check('with and without the dialect, every other fact is the same', strip(JSON.parse(emitGraph(t, plain, s1).graph)) === strip(JSON.parse(emitGraph(t, plain, s1, { dialect: 'dsp-plugin' }).graph)));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
 console.log(failed ? `${failed} failed` : 'all graph cases behave');
 process.exit(failed ? 1 : 0);

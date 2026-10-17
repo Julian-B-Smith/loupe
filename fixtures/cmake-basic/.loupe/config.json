@@ -1,6 +1,28 @@
 {
   "configurations": [
-    { "name": "release", "args": ["-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=Release"] },
-    { "name": "extra", "args": ["-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=Release", "-DFIX_EXTRA=ON"] }
+    {
+      "name": "release",
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ]
+    },
+    {
+      "name": "extra",
+      "args": [
+        "-G",
+        "Unix Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DFIX_EXTRA=ON"
+      ]
+    }
+  ],
+  "dialect": "dsp-plugin",
+  "roles": [
+    {
+      "match": "web/**",
+      "role": "gui"
+    }
   ]
 }

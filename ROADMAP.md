@@ -272,6 +272,33 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   4. On HORDE, the crawl finds the probe's non-C edges again (counts compared, differences listed and explained).
 - **Out of scope:** roles and the GUI bridge (next item), symbols (P1b).
 
+### Q-024 — P1a slice 5: file roles and the dsp-plugin dialect (GUI bridge at file level)
+- **Status:** built 2026-10-17 after a critic round (trace: traces/2026-10-17-q024-dialect.md). Julian (polls): a
+  generator is the code a custom command runs (inputs keep their roles); the bridge prefers product/gui registrations;
+  a src/ file reached only by tests takes their role. HORDE at 1e6aae79 (`--dialect dsp-plugin`): 4 generators,
+  gui2.html → hypersaw_gui_common.h with 48 bound names (ADR 0018's hand count), 88 files left for HORDE's config.
+- **Decisions (Julian, 2026-10-17, recommendations accepted):** role rules come from Loupe's defaults, then the
+  dialect, then the target's `.loupe/config.json` (human-owned; the human's patterns win), each role naming the rule
+  that set it (`roleRule`); the GUI bridge is a file-level `call` edge, role `bridge`, matched by the bound name,
+  resolution `syntactic`, upgraded to symbols in P1b. Roles and vocabulary from ADR 0018 (product, gui, test, probe,
+  bench, generator, scratch, data, build, tool, doc).
+- **Scope:** `crawler/` (a dialect module and its emission), `fixtures/cmake-basic/`, goldens, `docs/graph-schema.md`.
+- **Acceptance criteria:**
+  1. Every file node gets a role or is counted as unroled; `roleRule` names the layer and rule (`default:…`,
+     `dsp-plugin:…`, `graph:…`, `config:…`); precedence: defaults' path rules, the dialect's path and build rules,
+     graph rules (a file that generates another is a generator, ADR 0018), then the repo's config patterns last.
+  2. The dsp-plugin dialect ties roles to the build where it can: files built by the plugin's targets (module
+     libraries and what they depend on) are `product`; targets named as checks, tests, probes, benches or generators
+     give their files those roles.
+  3. The GUI bridge: a name registered in C++/Objective-C++ with `<x>.bind("name", …)` and used by an HTML or JS file
+     (a call or a reference in code, not an assignment) is a `call` edge, role `bridge`, from the GUI file to the
+     registering file, one site per use line, resolution `syntactic`.
+  4. The dialect is chosen by `.loupe/config.json` (`"dialect"`), or by `crawl --dialect` for a target that has not
+     declared one; the graph records which, and the choice never changes the crawl's other facts.
+  5. Deterministic; fixture cases for each rule kind and a bridge; goldens; on HORDE (with `--dialect dsp-plugin`),
+     roles counted by rule and the bridge edges listed.
+- **Out of scope:** symbols (P1b); Q-009's Operational lens (next).
+
 ### Q-022 — Acknowledged conformance findings (exemptions with a reason)
 - **Status:** open (2026-10-17, from HORDE's answer to notice-004)
 - **Why:** both Q-020 leads on HORDE were deliberate: `vst3_save_bench` depends on the VST3 target for build order

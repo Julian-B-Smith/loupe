@@ -25,7 +25,7 @@ if(FIX_EXTRA)
   target_compile_definitions(engine PRIVATE FIX_EXTRA=1)
 endif()
 
-add_executable(plugin src/plugin_entry.cpp)
+add_library(plugin MODULE src/plugin_entry.cpp)
 target_link_libraries(plugin PRIVATE engine)
 
 add_executable(engine_test tests/engine_test.cpp)
