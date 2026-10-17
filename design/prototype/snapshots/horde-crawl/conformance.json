@@ -848,6 +848,19 @@
     },
     {
       "evidence": [
+        "e:178e61a14b917173",
+        "e:b29f6dd5b06bb815"
+      ],
+      "from": "miss:${build}/generated/factory_bank.h",
+      "kind": "generated-by-several",
+      "owners": [
+        "target:HYPERSAW-impl",
+        "target:presetstore_check"
+      ],
+      "weakestResolution": "build"
+    },
+    {
+      "evidence": [
         "e:436c311656017e6a"
       ],
       "from": "target:identity_store_check",

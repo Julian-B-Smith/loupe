@@ -109,6 +109,22 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   check('conformance: a declared dependency no include supports is listed as declared-not-seen', c3.findings.length === 1 && c3.findings[0].kind === 'declared-not-seen' && c3.findings[0].from === 'target:A');
 }
 
+{ // generated-by-several (Q-021): one generated output listed by two targets with no dependency between them
+  const T = (name: string, deps: string[] = []) => ({ name, type: 'STATIC_LIBRARY', definedIn: { file: 'CMakeLists.txt', line: 1 }, dependencies: deps,
+    sources: [{ path: '${build}/gen/bank.h' }], compileGroups: [] });
+  const mk = (deps: string[]) => ({ configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [],
+    membership: ['A', 'B'].map((t) => ({ source: '${build}/gen/bank.h', target: t, generated: true, configs: ['default'] })),
+    perConfiguration: [{ name: 'default', targets: [T('A'), T('B', deps)], customCommands: [{ file: 'CMakeLists.txt', line: 2, target: null, stage: null, outputs: ['${build}/gen/bank.h'], byproducts: [], depends: ['gen.py'], commands: [] }] }] });
+  const several = async (deps: string[]) => conformance(canonicalGraph(await crawlTree({ 'gen.py': 'print(1)\n' }, mk(deps)))).findings.filter((f: any) => f.kind === 'generated-by-several');
+  const un = await several([]);
+  check('one generated output owned by two unordered targets is a finding, naming both (Q-021)', un.length === 1 && un[0].from === 'miss:${build}/gen/bank.h' && JSON.stringify(un[0].owners) === '["target:A","target:B"]' && un[0].evidence.length === 2);
+  check('the same output owned by two targets that are ordered (B depends on A) is not', (await several(['A'])).length === 0);
+}
+{ // on HORDE at 1e6aae79 it names factory_bank.h, the bug HORDE fixed as B501, and nothing else
+  const h = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8')).findings.filter((f: any) => f.kind === 'generated-by-several');
+  check('on the HORDE crawl, generated-by-several names exactly factory_bank.h (horde B501)', h.length === 1 && h[0].from === 'miss:${build}/generated/factory_bank.h'
+    && JSON.stringify(h[0].owners) === '["target:HYPERSAW-impl","target:presetstore_check"]');
+}
 { // custom commands: a TARGET-form command's byproduct, a name: DEPENDS on another output, an unknown name:
   const bf = { configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [], membership: [],
     perConfiguration: [{ name: 'default', targets: [{ name: 'A', type: 'UTILITY', definedIn: null, dependencies: [], sources: [], compileGroups: [] }], customCommands: [
