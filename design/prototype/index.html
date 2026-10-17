@@ -312,7 +312,12 @@ $('diffSeg').onclick = e => { const b = e.target.closest('[data-diff]'); if (b) 
 $('hubSeg').onclick = e => { const b = e.target.closest('[data-hub]'); if (b) A.setHubPlacement(b.dataset.hub); };
 $('theme').onclick = () => A.setTheme(store.get().theme === 'dark' ? 'light' : 'dark');
 $('handle').onclick = () => $('panel').classList.toggle('open');
-$('repo').textContent = `${data.graph.source && data.graph.source.repo || 'HORDE sample'} · ${data.view.dialect.name} · not crawled`;
+// Say what made the graph: the P1a crawler, the regex probe, or nothing (a hand-made sample). Was always "not crawled".
+const crawledBy = (() => { const c = data.graph.crawler || {}, src = data.graph.source || {};
+  if (c.name === 'loupe-crawler') return `crawled at ${String(src.commit || '').slice(0, 7)}`;
+  if (c.name === 'loupe-probe') return `probe crawl at ${String(src.commit || '').slice(0, 7)}`;
+  return 'not crawled'; })();
+$('repo').textContent = `${data.graph.source && data.graph.source.repo || 'HORDE sample'} · ${data.view.dialect.name} · ${crawledBy}`;
 if (!data.diff) $('diffSeg').hidden = true;
 if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
 store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); const { offsets: _old, ...keep } = prev; localStorage.setItem('loupe-proto', JSON.stringify({ ...keep, stage: s.stage, theme: s.theme })); });

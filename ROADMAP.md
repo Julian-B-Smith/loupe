@@ -166,7 +166,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Out of scope:** calls and symbols (P1b), emitting graph.json (next slice), the inventory layer, running on HORDE.
 
 ### Q-016 — P1a slice 3: graph.json, the inventory, and build-target conformance
-- **Status:** current (started 2026-10-16)
+- **Status:** done 2026-10-16, merged as PR #21 (trace: traces/2026-10-16-p1a-graph-emit.md)
 - **Decisions (Julian, by poll 2026-10-16):** every tracked file except binaries is a node (hiding is a view lens,
   0019); `via` goes into the graph as schema 0.3.1 (additive; the schema diff is approved in this item's PR);
   declared-versus-observed findings start here, for build targets. Julian's framing: Loupe can expose where a client's
@@ -189,8 +189,40 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      equal committed goldens, gated in `./verify fast`; a planted change fails.
 - **Out of scope:** roles (path rules), symbols (P1b), viewer changes, a HORDE crawl.
 
+### Q-018 — The first crawl of HORDE
+- **Status:** done 2026-10-16 (trace: traces/2026-10-16-q018-horde-crawl.md). Crawled on HORDE's terms (response-003):
+  `git clone --local` of 1e6aae79 in Loupe's scratch, its declared Release configuration, submodules filled at their
+  pinned commits from HORDE's local module stores (read only; disclosed in notice-003), clone deleted, leak check
+  (HORDE's PCRE name rule + machine paths) clean with a must-fail control. Findings sent in `notice-003`.
+- **Result:** 1,293 files, 127 targets, 1,719 edges; byte-identical on a second run; loupe-check passes; the meter
+  balances (1,719/1,719 edges, 1,579/1,579 files) in the design view with Q-017's fold. Conformance: one lead
+  (`identity_store_check` reads `presetstore_check`'s generated `factory_bank.h` with no declared dependency) and 94
+  "declared, not seen" that are Loupe's blind spot (Q-020), reported to HORDE as such.
+
+### Q-021 — Conformance: one generated output, several owning targets
+- **Status:** open (2026-10-16, from HORDE's answer to notice-003)
+- **Why:** Loupe's lead on HORDE (`identity_store_check` reads `factory_bank.h` without depending on its maker) was
+  close but not the bug. HORDE found the real one (horde B501): `factory_bank.h`'s generating rule was listed in two
+  independent targets (`presetstore_check` and `HYPERSAW-impl`), so CMake emitted the rule twice and `make -j` can
+  run the generator twice on one file. The crawl already holds this: both targets have a `builds` edge to
+  `miss:${build}/generated/factory_bank.h`. A deterministic check would have named it directly.
+- **Acceptance criteria:** 1. `conformance.json` lists every generated output that two or more targets build, with
+  no dependency path between them, as `generated-by-several` with the `builds` edges as evidence; 2. a fixture case and
+  a test; 3. on the HORDE crawl at 1e6aae79 it names `factory_bank.h` (and nothing HORDE would call noise, checked
+  against the snapshot).
+
+### Q-020 — Attribute headers to targets, so conformance can see includes
+- **Status:** open (found 2026-10-16 by the first HORDE crawl, Q-018)
+- **Problem:** CMake targets list compiled sources, rarely headers. Conformance attributes an include only between
+  files a target `builds`, so on HORDE 1,336 of 1,338 includes were unattributed and 94 "declared, not seen" findings
+  were noise.
+- **Scope:** `crawler/conformance.ts` (and the graph only if a decision needs data it lacks), tests, docs.
+- **Acceptance criteria:** to be set with Julian: how a header is tied to a target (the compiles that reach it, its
+  directory, or both, and how ties are broken), and how a finding says which rule tied it. Until then the 94 are not
+  findings.
+
 ### Q-017 — The design view draws loose nodes
-- **Status:** open (found 2026-10-16 while emitting graph.json, Q-016)
+- **Status:** done 2026-10-16 (trace: traces/2026-10-16-q017-loose-nodes.md); a large loose block folds (Julian, poll)
 - **Problem:** `docs/graph-schema.md` says a node homed in no section is "loose (shown at top level)", and loupe-check
   allows it, but `design/prototype/layout.js`'s design layout places no loose node. A fresh crawl has an empty view,
   so in the design view every node is undrawn and the meter cannot balance. The flow view places them all.
@@ -198,6 +230,16 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Acceptance criteria:** 1. the design layout places every loose node at top level; 2. a fresh crawl's snapshot
   (empty view) lays out with every node placed in both views, tested; 3. the meter balances on it in the browser;
   4. critic review with screenshots.
+
+### Q-019 — Node kinds are visible in the viewer
+- **Status:** open (found 2026-10-16 viewing the first crawler snapshot, Q-017)
+- **Problem:** the viewer draws every node as a file box with its basename, so a build target (`target:engine`) and
+  a file (`src/engine.h`) read the same, and a missing node (`miss:vector`, an angle include) looks like a file that
+  exists. A legibility tool must not make different kinds of thing look alike.
+- **Scope:** `design/prototype/`, `design/system/tokens.json` (visual values come from tokens).
+- **Acceptance criteria:** 1. targets, files, missing nodes (by reason) and externals are told apart at a glance, and
+  the key says how; 2. a label never shows two nodes as the same text without a kind cue; 3. critic review with
+  screenshots.
 
 ### Q-014 — Map HORDE's engine2 from its spec (inferred; parked)
 - **Status:** parked 2026-10-16 on branch `q014/engine2-inferred-map` (rebuildable, spec-pure, not on the testbench).

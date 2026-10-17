@@ -83,5 +83,33 @@ for (const [name, dir] of [['horde-probe', 'schema/examples/horde-probe/'], ['ho
   const P1 = lay({ [t]: { dx: h.x - r.x + 2, dy: h.y - r.y + 2 } });
   check('horde-sample: a section dragged over a centered hub is reported', P1.overlaps.some((p) => p[0] === t && p[1] === hub));
 }
+// Loose nodes (Q-017): a node homed in no section is laid out in its own block, never lost; a lens keeps only its files;
+// a section dragged onto the block is an overlap.
+{
+  const d = load('schema/examples/horde-sample/');
+  const top = d.sections.filter((x) => !d.parentOf[x])[0];
+  const homed = d.elements[top].members.slice(0, 2);
+  d.elements[top].members = d.elements[top].members.slice(2); for (const m of homed) delete d.home[m];
+  const P = layout(d, { view: 'design', settings: {} });
+  check('a node homed in no section is placed, in the loose block', homed.every((m) => P.nodes[m]) && P.loose && P.loose.members.length === 2);
+  const r = P.sections[top], q = P.loose;
+  const P2 = layout(d, { view: 'design', settings: {}, offsets: { [top]: { dx: q.x - r.x + 4, dy: q.y - r.y + 4 } } });
+  check('a section dragged onto the loose block is an overlap', P2.overlaps.some((p) => p[0] === top && /Not-in-a-section/.test(p[1])));
+  // A removed file that was loose keeps its ghost in the loose block (critic, Q-017).
+  const crawl = load('design/prototype/snapshots/cmake-basic-crawl/');
+  crawl.diff = { removed: [{ id: 'file:src/gone.cpp', home: null }] };
+  check('a removed file that was loose keeps its ghost in the loose block', !!layout(crawl, { view: 'design', settings: {}, diff: { side: 'after' } }).nodes['file:src/gone.cpp']);
+  const empty = load('schema/examples/horde-probe/'); empty.view.elements = []; 
+  const E = indexSnapshot({ graph: empty.graph, overlay: empty.overlay, view: { ...empty.view, elements: [] }, stages: null, diff: null, hashes: {} });
+  const PE = layout(E, { view: 'design', settings: {} });
+  check('an empty view (a fresh crawl): every node is placed, or folded into the loose block\'s fold row', E.nodeIds.every((id) => PE.nodes[id] || PE.foldOf[id] === 'loose'));
+  check('a large loose block folds: the most connected files shown, the rest in one fold row (Julian, 2026-10-16)', !!PE.folds.loose && Object.keys(PE.nodes).length <= 60 + E.nodeIds.filter((id) => id).length && PE.folds.loose.members.length === E.nodeIds.length - Object.keys(PE.nodes).filter((id) => E.nodes[id]).length);
+  const PU = layout(E, { view: 'design', settings: {}, unfolded: ['loose'] });
+  check('unfolding the loose block shows every file', E.nodeIds.every((id) => PU.nodes[id]) && !PU.folds.loose);
+  check('with no sections the loose block is a square-ish grid, not a tall column', PU.loose.w > PU.loose.h / 3);
+  const PL = layout(E, { view: 'design', settings: {}, lens: 'operational' });
+  const LZ = computeLens(E, 'operational');
+  check('under a lens, the loose block holds only the lens\'s files', PL.loose.members.every((m) => LZ.inside.has(m)) && PL.loose.members.length === LZ.counts.insideFiles);
+}
 console.log(failed ? `${failed} failed` : 'all lens cases behave');
 process.exit(failed ? 1 : 0);
