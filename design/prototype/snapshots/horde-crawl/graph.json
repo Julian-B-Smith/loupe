@@ -537,6 +537,22 @@
     },
     {
       "count": 1,
+      "dst": "file:engine2/core/api/engine.h",
+      "evidence": [
+        {
+          "line": 2,
+          "path": "engine2/core/api/engine.cpp",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:00f794c95aa6f25d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/core/api/engine.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:tools/statefix_common.h",
       "evidence": [
         {
@@ -1587,6 +1603,22 @@
       "kind": "import",
       "provenance": "static",
       "src": "file:tools/golden/gen_goldens_sr.mjs"
+    },
+    {
+      "count": 1,
+      "dst": "file:DECISIONS.md",
+      "evidence": [
+        {
+          "line": 90,
+          "path": "tools/manual_scaffold_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:073b76424785f844",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/manual_scaffold_check.py"
     },
     {
       "count": 1,
@@ -2961,6 +2993,22 @@
     },
     {
       "count": 1,
+      "dst": "file:ROADMAP.md",
+      "evidence": [
+        {
+          "line": 88,
+          "path": "tools/manual_scaffold_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:0f9c7eedc781cc14",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/manual_scaffold_check.py"
+    },
+    {
+      "count": 1,
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
@@ -3167,6 +3215,22 @@
       "kind": "import",
       "provenance": "static",
       "src": "file:tools/labharness/composed_engine_check.mjs"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ipluginbase.h",
+      "evidence": [
+        {
+          "line": 36,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:10d57b4041f18bb9",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
     },
     {
       "count": 1,
@@ -6150,6 +6214,22 @@
     },
     {
       "count": 1,
+      "dst": "file:CMakeLists.txt",
+      "evidence": [
+        {
+          "line": 299,
+          "path": "tools/license_audit_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:215c78b562392ce3",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/license_audit_check.py"
+    },
+    {
+      "count": 1,
       "dst": "miss:cstdlib",
       "evidence": [
         {
@@ -6711,22 +6791,6 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/station_check.cpp"
-    },
-    {
-      "count": 1,
-      "dst": "miss:clap/clap.h",
-      "evidence": [
-        {
-          "line": 36,
-          "path": "tools/slotcontract_check.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:24cfab5f314bbe60",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/slotcontract_check.cpp"
     },
     {
       "count": 2,
@@ -8463,6 +8527,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstcomponent.h",
+      "evidence": [
+        {
+          "line": 38,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:2fc54bf72f5a8374",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:reference/scalpel/verify/rng.js",
       "evidence": [
         {
@@ -9183,6 +9263,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ibstream.h",
+      "evidence": [
+        {
+          "line": 35,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:3447a6a2985c1eb4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "count": 1,
       "dst": "miss:algorithm",
       "evidence": [
         {
@@ -9569,22 +9665,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:pluginterfaces/base/ibstream.h",
-      "evidence": [
-        {
-          "line": 35,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:35b2ff5d9585911f",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
-    },
-    {
-      "count": 1,
       "dst": "file:h2/harness/harness.mjs",
       "evidence": [
         {
@@ -9917,6 +9997,22 @@
       "kind": "reference",
       "provenance": "static",
       "src": "file:docs/design/envelope-hierarchy-lab.html"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ftypes.h",
+      "evidence": [
+        {
+          "line": 34,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:37cbd1f6fea73492",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
     },
     {
       "count": 1,
@@ -13362,6 +13458,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:libs/choc/choc/text/choc_JSON.h",
+      "evidence": [
+        {
+          "line": 55,
+          "path": "tools/bridge_utf8_check.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4c3a874ead2f5b48",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/bridge_utf8_check.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:h2/harness/control_steal.h",
       "evidence": [
         {
@@ -13407,6 +13519,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/stability_check.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:libs/clap/include/clap/clap.h",
+      "evidence": [
+        {
+          "line": 36,
+          "path": "tools/slotcontract_check.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:4cbad1093e43ea96",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/slotcontract_check.cpp"
     },
     {
       "count": 1,
@@ -15687,22 +15815,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:pluginterfaces/vst/ivstcomponent.h",
-      "evidence": [
-        {
-          "line": 38,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:58fda22883481205",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
-    },
-    {
-      "count": 1,
       "dst": "miss:cstdlib",
       "evidence": [
         {
@@ -16160,6 +16272,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/kstuck_probe.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:engine2/tests/suite.h",
+      "evidence": [
+        {
+          "line": 3,
+          "path": "engine2/tests/controls/failing_item.cpp",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:5adbd0388121df26",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:engine2/tests/controls/failing_item.cpp"
     },
     {
       "count": 1,
@@ -17962,22 +18090,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:pluginterfaces/base/ipluginbase.h",
-      "evidence": [
-        {
-          "line": 36,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:642002bf34282c3c",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
-    },
-    {
-      "count": 1,
       "dst": "file:tools/h2_engine_parity_check.cpp",
       "evidence": [
         {
@@ -18742,22 +18854,6 @@
       "kind": "import",
       "provenance": "static",
       "src": "file:tools/labharness/modlab_reach.mjs"
-    },
-    {
-      "count": 1,
-      "dst": "miss:pluginterfaces/vst/ivsthostapplication.h",
-      "evidence": [
-        {
-          "line": 39,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:67e39f61f2a597be",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
     },
     {
       "count": 2,
@@ -21221,22 +21317,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:api/engine.h",
-      "evidence": [
-        {
-          "line": 2,
-          "path": "engine2/core/api/engine.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:7813d17a86861452",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:engine2/core/api/engine.cpp"
-    },
-    {
-      "count": 1,
       "dst": "miss:cmath",
       "evidence": [
         {
@@ -21846,6 +21926,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/statefix_check.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:CMakeLists.txt",
+      "evidence": [
+        {
+          "line": 177,
+          "path": "tools/gen_sbom.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:7bc12f706a701b55",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/gen_sbom.py"
     },
     {
       "count": 1,
@@ -25178,6 +25274,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstaudioprocessor.h",
+      "evidence": [
+        {
+          "line": 37,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:8f675b2ba3aed943",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "count": 1,
       "dst": "miss:cmath",
       "evidence": [
         {
@@ -26420,22 +26532,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:../libs/choc/choc/text/choc_JSON.h",
-      "evidence": [
-        {
-          "line": 55,
-          "path": "tools/bridge_utf8_check.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:96e7081b0d199859",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/bridge_utf8_check.cpp"
-    },
-    {
-      "count": 1,
       "dst": "miss:libs/clap-wrapper/src/detail/clap/fsutil.cpp",
       "evidence": [
         {
@@ -27668,22 +27764,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:pluginterfaces/base/ftypes.h",
-      "evidence": [
-        {
-          "line": 34,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:9f363c8efcc781d1",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
-    },
-    {
-      "count": 1,
       "dst": "miss:cstring",
       "evidence": [
         {
@@ -28702,22 +28782,6 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/h2_scalpel_parity_check.cpp"
-    },
-    {
-      "count": 1,
-      "dst": "miss:pluginterfaces/vst/ivstaudioprocessor.h",
-      "evidence": [
-        {
-          "line": 37,
-          "path": "tools/vst3_save_bench.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:a5491c668f2f1254",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/vst3_save_bench.cpp"
     },
     {
       "count": 1,
@@ -36472,6 +36536,22 @@
     },
     {
       "count": 1,
+      "dst": "file:CMakeLists.txt",
+      "evidence": [
+        {
+          "line": 221,
+          "path": "tools/h2_rules_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:d28165fe05acfb08",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/h2_rules_check.py"
+    },
+    {
+      "count": 1,
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
@@ -39062,22 +39142,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:suite.h",
-      "evidence": [
-        {
-          "line": 3,
-          "path": "engine2/tests/controls/failing_item.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:e0aad29a314dc52b",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:engine2/tests/controls/failing_item.cpp"
-    },
-    {
-      "count": 1,
       "dst": "miss:string",
       "evidence": [
         {
@@ -39521,6 +39585,22 @@
       "kind": "generates",
       "provenance": "config",
       "src": "file:docs/presets/factory/pluck/PL - Porcelain.json"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivsthostapplication.h",
+      "evidence": [
+        {
+          "line": 39,
+          "path": "tools/vst3_save_bench.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:e3d00965e2753a58",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/vst3_save_bench.cpp"
     },
     {
       "count": 1,
@@ -43232,6 +43312,28 @@
       "src": "file:tools/tseed_check.cpp"
     },
     {
+      "count": 2,
+      "dst": "file:CMakeLists.txt",
+      "evidence": [
+        {
+          "line": 318,
+          "path": "tools/release_path_check.py",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 328,
+          "path": "tools/release_path_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:f872334f33bf916a",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/release_path_check.py"
+    },
+    {
       "count": 1,
       "dst": "file:tools/lfoenv_check.cpp",
       "evidence": [
@@ -43626,6 +43728,22 @@
       "kind": "import",
       "provenance": "static",
       "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "count": 1,
+      "dst": "file:CMakeLists.txt",
+      "evidence": [
+        {
+          "line": 164,
+          "path": "tools/choc_patch_check.py",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:facbfb15266638e6",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:tools/choc_patch_check.py"
     },
     {
       "count": 1,
@@ -58168,6 +58286,16 @@
     },
     {
       "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ftypes.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ftypes.h"
+    },
+    {
+      "hash": "none",
       "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/funknown.cpp",
       "kind": "missing",
       "missing": {
@@ -58178,6 +58306,26 @@
     },
     {
       "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ibstream.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ibstream.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ipluginbase.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ipluginbase.h"
+    },
+    {
+      "hash": "none",
       "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ustring.cpp",
       "kind": "missing",
       "missing": {
@@ -58185,6 +58333,36 @@
         "reason": "generated"
       },
       "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ustring.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstaudioprocessor.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstaudioprocessor.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstcomponent.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstcomponent.h"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivsthostapplication.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in sources the build fetched (FetchContent): listed at configure, not read by the crawl",
+        "reason": "external"
+      },
+      "path": "${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivsthostapplication.h"
     },
     {
       "hash": "none",
@@ -58435,16 +58613,6 @@
     },
     {
       "hash": "none",
-      "id": "miss:../libs/choc/choc/text/choc_JSON.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "../libs/choc/choc/text/choc_JSON.h"
-    },
-    {
-      "hash": "none",
       "id": "miss:Accelerate/Accelerate.h",
       "kind": "missing",
       "missing": {
@@ -58502,16 +58670,6 @@
         "reason": "external"
       },
       "path": "algorithm"
-    },
-    {
-      "hash": "none",
-      "id": "miss:api/engine.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "api/engine.h"
     },
     {
       "hash": "none",
@@ -58795,11 +58953,21 @@
     },
     {
       "hash": "none",
+      "id": "miss:libs/choc/choc/text/choc_JSON.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in submodule libs/choc (pinned a08bfd844949), which the crawl does not read",
+        "reason": "external"
+      },
+      "path": "libs/choc/choc/text/choc_JSON.h"
+    },
+    {
+      "hash": "none",
       "id": "miss:libs/clap-wrapper/src/clap_proxy.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/clap_proxy.cpp"
     },
@@ -58808,8 +58976,8 @@
       "id": "miss:libs/clap-wrapper/src/clap_proxy.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/clap_proxy.h"
     },
@@ -58818,8 +58986,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/ara/ara.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/ara/ara.h"
     },
@@ -58828,8 +58996,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/auv2_base_classes.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/auv2_base_classes.h"
     },
@@ -58838,8 +59006,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/auv2_shared.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/auv2_shared.h"
     },
@@ -58848,8 +59016,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/auv2_shared.mm",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/auv2_shared.mm"
     },
@@ -58858,8 +59026,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/build-helper/build-helper.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/build-helper/build-helper.cpp"
     },
@@ -58868,8 +59036,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/parameter.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/parameter.cpp"
     },
@@ -58878,8 +59046,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/parameter.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/parameter.h"
     },
@@ -58888,8 +59056,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/process.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/process.cpp"
     },
@@ -58898,8 +59066,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/process.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/process.h"
     },
@@ -58908,8 +59076,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/auv2/wrappedview.mm",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/auv2/wrappedview.mm"
     },
@@ -58918,8 +59086,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/clap/automation.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/clap/automation.h"
     },
@@ -58928,8 +59096,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/clap/fsutil.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/clap/fsutil.cpp"
     },
@@ -58938,8 +59106,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/clap/fsutil.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/clap/fsutil.h"
     },
@@ -58948,8 +59116,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/clap/mac_helpers.mm",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/clap/mac_helpers.mm"
     },
@@ -58958,8 +59126,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/os/macos.mm",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/os/macos.mm"
     },
@@ -58968,8 +59136,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/shared/sha1.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/shared/sha1.cpp"
     },
@@ -58978,8 +59146,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/shared/sha1.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/shared/sha1.h"
     },
@@ -58988,8 +59156,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/shared/util.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/shared/util.cpp"
     },
@@ -58998,8 +59166,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/shared/util.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/shared/util.h"
     },
@@ -59008,8 +59176,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/aravst3.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/aravst3.h"
     },
@@ -59018,8 +59186,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/categories.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/categories.cpp"
     },
@@ -59028,8 +59196,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/categories.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/categories.h"
     },
@@ -59038,8 +59206,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/parameter.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/parameter.cpp"
     },
@@ -59048,8 +59216,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/parameter.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/parameter.h"
     },
@@ -59058,8 +59226,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/plugview.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/plugview.cpp"
     },
@@ -59068,8 +59236,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/plugview.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/plugview.h"
     },
@@ -59078,8 +59246,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/process.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/process.cpp"
     },
@@ -59088,8 +59256,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/process.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/process.h"
     },
@@ -59098,8 +59266,8 @@
       "id": "miss:libs/clap-wrapper/src/detail/vst3/state.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/detail/vst3/state.h"
     },
@@ -59108,8 +59276,8 @@
       "id": "miss:libs/clap-wrapper/src/wrapasauv2.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/wrapasauv2.cpp"
     },
@@ -59118,8 +59286,8 @@
       "id": "miss:libs/clap-wrapper/src/wrapasvst3.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/wrapasvst3.cpp"
     },
@@ -59128,8 +59296,8 @@
       "id": "miss:libs/clap-wrapper/src/wrapasvst3.h",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/wrapasvst3.h"
     },
@@ -59138,8 +59306,8 @@
       "id": "miss:libs/clap-wrapper/src/wrapasvst3_entry.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/wrapasvst3_entry.cpp"
     },
@@ -59148,10 +59316,20 @@
       "id": "miss:libs/clap-wrapper/src/wrapasvst3_export_entry.cpp",
       "kind": "missing",
       "missing": {
-        "note": "listed by the build but not a tracked file",
-        "reason": "unknown"
+        "note": "in submodule libs/clap-wrapper (pinned 35f524b771ec), which the crawl does not read",
+        "reason": "external"
       },
       "path": "libs/clap-wrapper/src/wrapasvst3_export_entry.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "miss:libs/clap/include/clap/clap.h",
+      "kind": "missing",
+      "missing": {
+        "note": "in submodule libs/clap (pinned 195b42a00414), which the crawl does not read",
+        "reason": "external"
+      },
+      "path": "libs/clap/include/clap/clap.h"
     },
     {
       "hash": "none",
@@ -59212,66 +59390,6 @@
         "reason": "external"
       },
       "path": "objc/runtime.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/base/ftypes.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/base/ftypes.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/base/ibstream.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/base/ibstream.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/base/ipluginbase.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/base/ipluginbase.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/vst/ivstaudioprocessor.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/vst/ivstaudioprocessor.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/vst/ivstcomponent.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/vst/ivstcomponent.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:pluginterfaces/vst/ivsthostapplication.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "pluginterfaces/vst/ivsthostapplication.h"
     },
     {
       "hash": "none",
@@ -59372,16 +59490,6 @@
         "reason": "external"
       },
       "path": "strings.h"
-    },
-    {
-      "hash": "none",
-      "id": "miss:suite.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "suite.h"
     },
     {
       "hash": "none",

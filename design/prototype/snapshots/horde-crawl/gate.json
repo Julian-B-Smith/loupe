@@ -1,0 +1,55 @@
+{
+  "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
+  "dialect": "dsp-plugin",
+  "dirty": false,
+  "gates": {
+    "byteIdentical": {
+      "files": [
+        "conformance.json",
+        "graph.json",
+        "overlay.json",
+        "view.json"
+      ],
+      "pass": true
+    },
+    "inventoryCloses": {
+      "crawled": 1293,
+      "excluded": 11,
+      "files": 1304,
+      "pass": true
+    },
+    "leakCheck": {
+      "machinePaths": 0,
+      "pass": true,
+      "privateNameHits": 0
+    },
+    "loupeCheck": {
+      "pass": true,
+      "tail": "OK"
+    },
+    "probeParity": {
+      "expanded": 1,
+      "explained": 15,
+      "kind": 132,
+      "lost": 0,
+      "package": 254,
+      "pass": true,
+      "resolved": 6,
+      "same": 768
+    },
+    "unknownMissing": {
+      "count": 2,
+      "ids": [
+        "miss:foundations/note.h",
+        "miss:foundations/note_conformance.h"
+      ],
+      "pass": false
+    }
+  },
+  "graph": {
+    "hash": "sha256:ac40590a35247298b77ae6756487d6a85a6a42e6676159a08a660a8064b322cb"
+  },
+  "pass": false,
+  "proposedConfig": false,
+  "schema": "loupe.horde-gate/0.0-internal"
+}

@@ -56,6 +56,9 @@ fast() {
   # graph.json emission and build-target conformance (Q-016): the fixture's graph and findings equal their goldens,
   # loupe-check passes on the emitted snapshot with schema validation, every layer fact lands in the graph.
   node crawler/graph.test.ts || ok=1
+  # The committed HORDE gate report (Q-025): it describes the committed graph, partitions every probe edge, loses
+  # none, and every hand-written parity explanation is still used. The gate itself needs HORDE: see full.
+  node tools/gate.test.mjs || ok=1
   # loupe-check on every example snapshot, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.
@@ -81,19 +84,47 @@ fast() {
     ok=1
   fi
   rm -r "$fresh"
-  # Not yet gated (ROADMAP P0/P1): crawl-twice byte equality needs the P1
-  # crawler; the probe is regex-based and not a determinism reference.
   return $ok
 }
 
 full() {
   fast || return $?
   # ---- Layer-E: the whole gate. Run before closing a queue item. -----------
-  # Planned (ROADMAP P1/P2): crawl HORDE at a pinned commit vs its golden
-  # graph; render the stress cases with the conservation meter balanced.
-  # Until those exist, full == fast, stated rather than faked.
-  echo "verify[full]: no Layer-E gates yet (see ROADMAP P1/P2); full == fast" >&2
-  return 0
+  # The P1a gates on HORDE (Q-025; Julian, 2026-10-18): clone the snapshot's commit on HORDE's terms, crawl twice,
+  # leak-check, probe parity, zero unknown missing nodes; then the fresh crawl must equal the committed snapshot byte
+  # for byte. Needs a local HORDE checkout (LOUPE_HORDE, ~/-relative default); without one the gate is SKIPPED and
+  # full exits 3, recorded as such, never as a pass (Julian, 2026-10-18). A failing gate is named, with the reason
+  # from tools/horde-gate-waiting.json when it waits on something outside Loupe; it stays red either way, but exits 4
+  # when every failure is such a gate with exactly its listed ids and every byte-compare held, 1 for anything else,
+  # so "only waiting" is decided by code, never by reading this text.
+  # Planned (P2): stress-case renders with the meter balanced.
+  local ok=0 waiting=0 horde="${LOUPE_HORDE:-$HOME/Documents/Claude/synthetic-worlds/horde}" snap=design/prototype/snapshots/horde-crawl
+  if [ -e "$horde/.git" ]; then  # -e: a worktree's .git is a file
+    local commit out; commit="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('$snap/graph.json','utf8')).source.commit)")"
+    out="$(mktemp -d)"
+    if ! node tools/horde-gate.mjs --horde "$horde" --commit "$commit" --dialect dsp-plugin --out "$out"; then
+      # exit 4 from this check: every failing gate waits, with exactly its listed ids; 1: anything else
+      node -e "
+        const fs = require('fs'), g = JSON.parse(fs.readFileSync('$out/gate.json', 'utf8')), w = JSON.parse(fs.readFileSync('tools/horde-gate-waiting.json', 'utf8')).waiting;
+        const same = (a, b) => JSON.stringify([...(a || [])].sort()) === JSON.stringify([...(b || [])].sort());
+        let all = true;
+        for (const [k, v] of Object.entries(g.gates)) if (!v.pass) {
+          const ok = w[k] && same(w[k].ids, v.ids); all = all && !!ok;
+          console.error('verify[full]: HORDE gate ' + k + ' fails' + (ok ? ': ' + w[k].reason : ' (not a listed wait: a regression)'));
+        }
+        process.exit(all ? 4 : 1);
+      "; case $? in 4) waiting=1 ;; *) ok=1; [ -s "$out/gate.json" ] || echo "verify[full]: the HORDE gate wrote no report (a crawl, probe or leak failure above)" >&2 ;; esac
+    fi
+    local f; for f in graph.json conformance.json overlay.json view.json parity.json gate.json; do
+      cmp -s "$out/$f" "$snap/$f" || { echo "verify[full]: $snap/$f differs from a fresh gate run (regenerate it with tools/horde-gate.mjs and review the diff)" >&2; ok=1; }
+    done
+    rm -r "$out"
+  else
+    echo "verify[full]: SKIPPED the HORDE gates: no checkout at LOUPE_HORDE ($horde). Not a pass: exit 3." >&2
+    return 3
+  fi
+  [ $ok -eq 0 ] && [ $waiting -eq 1 ] && { echo "verify[full]: red only on listed waits (exit 4); see ROADMAP Q-025" >&2; return 4; }
+  return $ok
 }
 
 case "$TARGET" in

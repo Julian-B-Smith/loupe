@@ -26,6 +26,11 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `tools/`: `loupe-check.mjs` (snapshot checker; V9 runs the viewer's layout headless), `loupe-check.test.mjs`
   (mutation tests), `canon.mjs`, `convert-sample.mjs`, `example-cmake-basic.mjs` (build facts → 0.3 example, a
   stand-in until the emitter), `probe-crawl.mjs` (probe crawler, not P1). Run with `npm run check` and `npm test`.
+  The HORDE gates (Q-025): `horde-gate.mjs` (one command: clone a named HORDE commit on its terms, crawl twice, leak
+  check, probe, parity; `./verify full`), `parity.mjs` (probe vs crawl, every probe edge classed),
+  `horde-parity-explained.json` (the hand-written reasons, pinned to a commit, reviewed like code),
+  `horde-gate-waiting.json` (gates that fail for a reason outside Loupe, printed by `full`), `gate.test.mjs` (the
+  committed report, in `fast`). The report lives beside the snapshot: `design/prototype/snapshots/horde-crawl/{gate,parity}.json`.
 - `schema/examples/horde-probe/`: a real crawl of HORDE (commit c64cfdbc), produced by the probe.
 - `schema/examples/cmake-basic-0.3/`: the only 0.3 example: targets, builds/depends/generates edges, configs.
 - `docs/spinup-brief.md`: what the `/spinup` agent needs to wire Loupe into the autonomous system.

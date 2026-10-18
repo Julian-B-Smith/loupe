@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import { canonicalDoc } from '../tools/canon.mjs';
-import { buildLayer, readLoupeConfig, checkArgs } from './build.ts';
+import { buildLayer, readLoupeConfig, checkArgs, listFetched } from './build.ts';
 
 let failed = 0;
 const check = (name: string, cond: boolean) => { console.log(`${cond ? 'pass' : 'FAIL'}  ${name}`); if (!cond) failed++; };
@@ -97,6 +97,19 @@ try {
   });
   check('Ctrl-C during configure exits 130 and deletes the scratch directory (critic)', code === 130 && scratchCount() === n2);
 } finally { rmSync(tmp, { recursive: true, force: true }); }
+
+// listFetched (Q-025, critic round 2 MED-4): headers in fetched sources the include path names, listed by name only.
+{
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } = await import('node:fs'), { join } = await import('node:path'), { tmpdir } = await import('node:os');
+  const b = mkdtempSync(join(tmpdir(), 'loupe-fetched-'));
+  try {
+    for (const p of ['_deps/sdk-src/inc/a.h', '_deps/sdk-src/inc/b.hpp', '_deps/sdk-src/LICENSE', '_deps/sdk-src/.git/x.h', '_deps/other-src/c.h', 'gen/d.h']) { mkdirSync(join(b, p, '..'), { recursive: true }); writeFileSync(join(b, p), '\n'); }
+    symlinkSync(join(b, '_deps/sdk-src/inc/a.h'), join(b, '_deps/sdk-src/inc/link.h'));
+    const got = listFetched(b, new Set(['${build}/_deps/sdk-src', '${build}/gen', 'src']));
+    check('listFetched: headers under a ${build}/_deps include dir, by extension; not LICENSE, .git, symlinks, other dirs',
+      JSON.stringify(got) === JSON.stringify(['${build}/_deps/sdk-src/inc/a.h', '${build}/_deps/sdk-src/inc/b.hpp']));
+  } finally { rmSync(b, { recursive: true, force: true }); }
+}
 
 console.log(failed ? `${failed} failed` : 'all build-layer cases behave');
 process.exit(failed ? 1 : 0);

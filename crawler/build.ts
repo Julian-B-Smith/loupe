@@ -221,7 +221,31 @@ function parseTrace(file: string, repo: string, build: string, normPath: (p: str
   return out.sort((a, b) => by(a.file, b.file) || a.line - b.line);
 }
 
-type RunFacts = { name: string; args: string[]; buildType: string | null; targets: Target[]; customCommands: CustomCommand[] };
+type RunFacts = { name: string; args: string[]; buildType: string | null; targets: Target[]; customCommands: CustomCommand[]; fetched: string[] };
+
+// Headers in the sources the build fetched (FetchContent, under ${build}/_deps) that a compile's include path names.
+// Configure has populated them, and the scratch is deleted after this run, so this is the only moment they can be
+// read: listed here, an include into them is found (or shown missing) instead of guessed (Q-025, critic M2). Names
+// only, never contents; headers only, to keep a large SDK's listing small.
+const FETCHED_HEADER = /\.(h|hh|hpp|hxx|inc|inl|ipp|tpp)$/i; // by extension: an extensionless file is a LICENSE, not a header
+export function listFetched(build: string, includeDirs: Set<string>): string[] {
+  const out = new Set<string>();
+  for (const d of [...includeDirs].sort(by)) {
+    if (!d.startsWith('${build}/_deps/')) continue;
+    const real = join(build, d.slice('${build}/'.length));
+    const walk = (abs: string, rel: string) => {
+      let ents; try { ents = readdirSync(abs, { withFileTypes: true }); } catch { return; }
+      for (const e of ents) {
+        if (e.name === '.git') continue;
+        const r = rel ? rel + '/' + e.name : e.name;
+        if (e.isDirectory()) walk(join(abs, e.name), r);
+        else if (e.isFile() && FETCHED_HEADER.test(r)) out.add(d + '/' + r); // a symlink is neither: not followed
+      }
+    };
+    walk(real, '');
+  }
+  return [...out].sort(by);
+}
 
 function configureOnce(repo: string, cfg: Configuration) {
   installSignalCleanup();
@@ -278,7 +302,8 @@ function configureOnce(repo: string, cfg: Configuration) {
         };
       }).sort((a: Target, b: Target) => by(a.name, b.name));
       const name = multiConfig ? `${cfg.name}/${c.name}` : cfg.name;
-      runs.push({ name, args: cfg.args.map(text), buildType: c.name || null, targets, customCommands });
+      const fetched = listFetched(build, new Set(targets.flatMap((t) => t.compileGroups.flatMap((g) => g.includes))));
+      runs.push({ name, args: cfg.args.map(text), buildType: c.name || null, targets, customCommands, fetched });
       envOut.push({
         name,
         cmake: reply.index.cmake?.version?.string ?? null,

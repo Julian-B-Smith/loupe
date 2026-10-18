@@ -184,8 +184,10 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   const H = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8'));
   check('on the HORDE crawl: one used-not-declared, one declared-not-seen, one generated-by-several (Q-020)',
     H.findings.map((f: any) => f.kind).join() === 'declared-not-seen,generated-by-several,used-not-declared'
-    // 43: since Q-009 reads add_custom_target, build_stamp.h is a generated file only a utility target makes (no compile owns it)
-    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 43);
+    // 43: since Q-009 reads add_custom_target, build_stamp.h is a generated file only a utility target makes (no compile
+    // owns it); 49: since Q-025 the six VST3 headers vst3_save_bench includes resolve into the fetched SDK, which no
+    // target lists
+    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 49);
 }
 { // on HORDE at 1e6aae79 it names factory_bank.h, the bug HORDE fixed as B501, and nothing else
   const h = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8')).findings.filter((f: any) => f.kind === 'generated-by-several');
@@ -365,6 +367,91 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
     check('with no program recognised, a script in DEPENDS is still a program, data stays input, and the graph says so',
       as('file:tools/gen2.py', 'g.h') === 'program' && as('file:data/in.json', 'g.h') === 'input' && g.crawler.notEvaluated.some((x: any) => x.what === 'CMakeLists.txt:7' && /no program recognised/.test(x.reason)));
   } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- Q-025: what was "unknown" on HORDE, each class on a synthetic repo
+{
+  const t = mkdtempSync(join(tmpdir(), 'loupe-q025-'));
+  try {
+    const W = (p: string, x: string) => { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), x); };
+    W('tools/uses_sub.cpp', '#include "../libs/dep/dep.h"\n');            // quoted, relative, lands in a submodule
+    W('a/tests/controls/item.cpp', '#include "suite.h"\n');                 // in no compile; the header is two levels up
+    W('a/tests/suite.h', '\n');
+    W('bench/b.cpp', '#include "sdk/iface.h"\n#include "nowhere.h"\n');     // compiled with a FetchContent include dir
+    W('tools/sib.cpp', '#include "foundations/note.h"\n#include "pluginterfaces/x.h"\n'); // config prefix, and one it does not cover
+    W('.loupe/config.json', JSON.stringify({ siblings: ['foundations/', 'stale/'] }));
+    W('tools/both.cpp', '#include <lib/one.h>\n#include "lib/one.h"\n');   // one path, angle (external) and quoted (unknown)
+    writeFileSync(join(t, 'foundations.bin'), Buffer.from([0, 1, 2])); mkdirSync(join(t, 'foundations'), { recursive: true });
+    writeFileSync(join(t, 'foundations/blob.bin'), Buffer.from([0, 1, 2]));  // tracked binary under a sibling prefix
+    W('tools/blob.py', 'open("foundations/blob.bin", "rb")\n');
+    commitAll(t);
+    // A gitlink without a checkout, as a submodule the crawl does not read.
+    execFileSync('git', ['-C', t, 'update-index', '--add', '--cacheinfo', '160000,' + 'a'.repeat(40) + ',libs/dep'], { env: GIT_ENV });
+    execFileSync('git', ['-C', t, 'commit', '-q', '--no-gpg-sign', '-m', 'sub'], { env: GIT_ENV });
+    const ctx = { language: 'CXX', includes: ['${build}/_deps/sdk-src', 'bench'], defines: [], sources: ['bench/b.cpp'] };
+    const build = { configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [],
+      membership: [{ source: 'bench/b.cpp', target: 'b', generated: false, configs: ['default'] }, { source: 'libs/dep/src/d.cpp', target: 'b', generated: false, configs: ['default'] }],
+      perConfiguration: [{ name: 'default', customCommands: [], fetched: ['${build}/_deps/sdk-src/sdk/iface.h'], targets: [{ name: 'b', type: 'EXECUTABLE', dependencies: [], definedIn: null, sources: [{ path: 'bench/b.cpp' }, { path: 'libs/dep/src/d.cpp' }], compileGroups: [ctx] }] }] };
+    // A second submodule, checked out (a repo of its own at the gitlink's path): its files are checked on disk.
+    execFileSync('git', ['-C', t, 'update-index', '--add', '--cacheinfo', '160000,' + 'b'.repeat(40) + ',libs/out'], { env: GIT_ENV });
+    execFileSync('git', ['-C', t, 'commit', '-q', '--no-gpg-sign', '-m', 'sub2'], { env: GIT_ENV });
+    mkdirSync(join(t, 'libs/out/inc'), { recursive: true }); writeFileSync(join(t, 'libs/out/inc/real.h'), '\n'); commitAll(join(t, 'libs/out'));
+    W('tools/uses_out.cpp', '#include "../libs/out/inc/real.h"\n#include "../libs/out/inc/typo.h"\n');
+    execFileSync('git', ['-C', t, 'add', 'tools/uses_out.cpp'], { env: GIT_ENV }); execFileSync('git', ['-C', t, 'commit', '-q', '--no-gpg-sign', '-m', 'out'], { env: GIT_ENV });
+    const g = JSON.parse(emitGraph(t, build, await syntaxLayer(t, build)).graph);
+    const M = (id: string) => g.nodes.find((n: any) => n.id === id)?.missing;
+    check('a quoted include into a submodule that is not checked out is external, said unchecked', M('miss:libs/dep/dep.h')?.reason === 'external' && /in submodule libs\/dep \(pinned aaaaaaaaaaaa\), not checked out/.test(M('miss:libs/dep/dep.h').note));
+    check('into a checked-out submodule: a file that is there is external; a typo stays unknown (critic M2)', M('miss:libs/out/inc/real.h')?.reason === 'external' && M('miss:../libs/out/inc/typo.h')?.reason === 'unknown'); // kept as spelled: not found anywhere
+    check('a source the build lists inside a submodule is external too, not "not a tracked file"', M('miss:libs/dep/src/d.cpp')?.reason === 'external' && /submodule libs\/dep/.test(M('miss:libs/dep/src/d.cpp').note));
+    const srch = g.edges.find((e: any) => e.src === 'file:a/tests/controls/item.cpp' && e.kind === 'include');
+    check('a file in no compile finds its header in the nearest parent directory, resolution search', srch?.dst === 'file:a/tests/suite.h' && srch.evidence[0].resolution === 'search');
+    check('a quoted include found in the fetched sources the build listed is external, resolved by the build', M('miss:${build}/_deps/sdk-src/sdk/iface.h')?.reason === 'external'
+      && g.edges.find((e: any) => e.src === 'file:bench/b.cpp' && e.dst === 'miss:${build}/_deps/sdk-src/sdk/iface.h')?.evidence[0].resolution === 'build');
+    check('config: a sibling prefix makes a still-unknown header sibling; a header no prefix covers stays unknown',
+      M('miss:foundations/note.h')?.reason === 'sibling' && M('miss:pluginterfaces/x.h')?.reason === 'unknown');
+    check('one missing path named by an angle and a quoted include stays unknown: unknown wins the merge (critic M3)', M('miss:lib/one.h')?.reason === 'unknown');
+    const blob = g.edges.find((e: any) => e.src === 'file:tools/blob.py');
+    check('a sibling prefix never relabels a tracked binary: it is there, counted, not "a sibling repo"', !!blob && M(blob.dst)?.reason !== 'sibling');
+    check('config: a prefix that matched nothing is said, so a stale config shows', g.crawler.notEvaluated.some((x: any) => /siblings prefix stale\/ matched no missing file/.test(x.reason)));
+    check('a header the fetched sources do not have stays unknown: a typo is never taken for an SDK header (critic M2)', M('miss:nowhere.h')?.reason === 'unknown');
+  } finally { rmSync(t, { recursive: true, force: true }); }
+  // A bare name joined onto a root variable resolves from the repo root (Q-025, Julian: "fix the 4"); onto anything
+  // else, or in a comment, it does not.
+  const t3 = mkdtempSync(join(tmpdir(), 'loupe-q025r-'));
+  try {
+    mkdirSync(join(t3, 'tools')); writeFileSync(join(t3, 'CMakeLists.txt'), '\n'); writeFileSync(join(t3, 'README.md'), '\n'); writeFileSync(join(t3, 'index.html'), '\n');
+    writeFileSync(join(t3, 'tools/c.py'), 'ROOT = x\nA = ROOT / "CMakeLists.txt"\nB = os.path.join(repo_root, "README.md")\nC = out_dir / "index.html"\n# ROOT / "index.html"\n');
+    commitAll(t3);
+    const g3 = JSON.parse(emitGraph(t3, noBuild, await syntaxLayer(t3, noBuild)).graph);
+    const ref = (dst: string) => g3.edges.find((e: any) => e.src === 'file:tools/c.py' && e.dst === 'file:' + dst);
+    check('ROOT / "CMakeLists.txt" and join(repo_root, "README.md") resolve from the repo root, as search', ref('CMakeLists.txt')?.evidence[0].resolution === 'search' && ref('README.md')?.evidence[0].line === 3);
+    check('a bare name joined onto another variable, or in a comment, does not', !ref('index.html'));
+    check('a script reading CMakeLists.txt references the build; it is not data', ref('CMakeLists.txt')?.kind === 'reference');
+    // Lowercase root (critic M1): a parameter in a file that defines ROOT counts; a walker's or argv's root never does.
+    writeFileSync(join(t3, 'tools/p.py'), 'ROOT = x\ndef f(root):\n    return root / "README.md"\n');
+    writeFileSync(join(t3, 'tools/w.py'), 'ROOT = x\nfor root, dirs, files in os.walk(ROOT):\n    p = os.path.join(root, "README.md")\n');
+    writeFileSync(join(t3, 'tools/a.mjs'), 'const root = process.argv[2];\nwriteFileSync(join(root, "index.html"), x);\n');
+    writeFileSync(join(t3, 'tools/n.py'), 'def f(root):\n    return root / "README.md"\n');
+    writeFileSync(join(t3, 'tools/tmp.py'), 'ROOT = x\nwith tempfile.TemporaryDirectory() as root:\n    (root / "README.md").write_text("plant")\n');
+    writeFileSync(join(t3, 'tools/asg.py'), 'ROOT = x\nroot = pathlib.Path(tmp)\nopen(root / "README.md", "w")\n');
+    writeFileSync(join(t3, 'tools/ok.py'), 'ROOT = x\nroot = ROOT\np = root / "README.md"\n');
+    writeFileSync(join(t3, 'tools/ok3.py'), 'ROOT = x\nrepo = re.search(a, b)\ndef f(root):\n    return root / "README.md"\n');
+    writeFileSync(join(t3, 'tools/ok2.py'), 'ROOT = x\ndef f(root):\n    root = pathlib.Path(root)\n    return root / "README.md"\n');
+    execFileSync('git', ['-C', t3, 'add', '.'], { env: GIT_ENV }); execFileSync('git', ['-C', t3, 'commit', '-q', '--no-gpg-sign', '-m', 'more'], { env: GIT_ENV });
+    const g4 = JSON.parse(emitGraph(t3, noBuild, await syntaxLayer(t3, noBuild)).graph);
+    const has4 = (src: string, dst: string) => g4.edges.some((e: any) => e.src === 'file:' + src && e.dst === 'file:' + dst);
+    check('lowercase root: a parameter in a file that defines ROOT resolves from the root', has4('tools/p.py', 'README.md'));
+    check('lowercase root: os.walk\'s root, argv\'s root, or a file with no ROOT does not', !has4('tools/w.py', 'README.md') && !has4('tools/a.mjs', 'index.html') && !has4('tools/n.py', 'README.md'));
+    check('lowercase root: `with ... as root` or `root = <not ROOT>` does not; `root = ROOT` does (critic round 2)', !has4('tools/tmp.py', 'README.md') && !has4('tools/asg.py', 'README.md') && has4('tools/ok.py', 'README.md') && has4('tools/ok2.py', 'README.md') && has4('tools/ok3.py', 'README.md'));
+  } finally { rmSync(t3, { recursive: true, force: true }); }
+  const t2 = mkdtempSync(join(tmpdir(), 'loupe-q025b-'));
+  try {
+    mkdirSync(join(t2, 'x')); writeFileSync(join(t2, 'x/a.cpp'), '#include "gone.h"\n'); commitAll(t2);
+    const g2 = JSON.parse(emitGraph(t2, noBuild, await syntaxLayer(t2, noBuild)).graph);
+    check('with no rule to explain it, a missing quoted header is still unknown', g2.nodes.find((n: any) => n.id === 'miss:gone.h')?.missing.reason === 'unknown');
+    mkdirSync(join(t2, '.loupe'));
+    const bad = (v: string) => { writeFileSync(join(t2, '.loupe/config.json'), v); return readRoleConfig(t2).problems.some((x) => /"siblings" must be a list of folder prefixes/.test(x)); };
+    check('config: siblings must be a list of prefixes ending in "/"; anything else is reported', bad('{"siblings":"foundations/"}') && bad('{"siblings":["e"]}') && !bad('{"siblings":["foundations/"]}'));
+  } finally { rmSync(t2, { recursive: true, force: true }); }
 }
 console.log(failed ? `${failed} failed` : 'all graph cases behave');
 process.exit(failed ? 1 : 0);

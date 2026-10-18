@@ -232,6 +232,7 @@
           "target": "lut_docs"
         }
       ],
+      "fetched": [],
       "name": "release",
       "targets": [
         {
@@ -541,6 +542,7 @@
           "target": "lut_docs"
         }
       ],
+      "fetched": [],
       "name": "extra",
       "targets": [
         {
