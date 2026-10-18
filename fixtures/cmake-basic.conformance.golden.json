@@ -18,11 +18,11 @@
   },
   "notJudged": {
     "extra": {
-      "dependencies": 0,
+      "dependencies": 1,
       "unownedFiles": 3
     },
     "release": {
-      "dependencies": 0,
+      "dependencies": 1,
       "unownedFiles": 3
     }
   },

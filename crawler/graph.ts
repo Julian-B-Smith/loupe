@@ -1,5 +1,5 @@
 // graph.json emitter of the P1a crawler (ROADMAP Q-016). Turns the build layer's facts and the syntax layer's facts
-// into a canonical `loupe.graph/0.3.1` graph, with the inventory that accounts for every tracked file.
+// into a canonical `loupe.graph/0.3.2` graph, with the inventory that accounts for every tracked file.
 //
 // The one rule, applied here: every fact the layers produced lands somewhere. A membership is a `builds` edge, a
 // target dependency a `depends` edge, a custom command's outputs `generates` edges, an include an `include` edge with
@@ -9,7 +9,9 @@
 //
 // Mapping choices recorded in docs/graph-schema.md ("From the build layer's facts to 0.3"). Still open there, and
 // kept as the example made them: a custom command's DEPENDS (script and data alike) each `generates` its outputs;
-// a TARGET-form command with no outputs makes no edge.
+// a TARGET-form command with no outputs makes no edge. 0.3.2 (Q-009): each generates evidence says `as` program (what
+// the command runs) or input (what it reads), because only the crawler sees the command line and the Operational lens
+// must not guess: a program is build-time code, an input is compiled into whatever consumes the output.
 // TypeScript is run by Node's built-in type stripping: only erasable syntax here.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, realpathSync } from 'node:fs';
@@ -121,21 +123,51 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   // ---- generates. Each tracked DEPENDS of a custom command -> each OUTPUT and BYPRODUCT; a TARGET-form command's
   // outputs come from its target; a `name:` DEPENDS is a target, or another command's output (matched by path), else
   // it is listed. A command that yields no edge at all is listed too: nothing the build reported is dropped (critic).
+  // Languages first: a command's program is recognised by its language, and an extensionless script only has one
+  // once the layer has read its shebang.
+  const langs = langLayer(repo, tracked, new Set(tracked.filter((p) => nodes.has('file:' + p))));
+  for (const [p, l] of Object.entries(langs.langOf)) { const n = nodes.get('file:' + p); if (n && n.lang === 'text') n.lang = l === 'js' ? 'js' : l; }
+  // What a command runs: the first repo file in its command line that is code (python3 tools/gen.py ...), so a script
+  // is never mistaken for one of its inputs (Julian, 2026-10-17); or an executable target the command line names.
+  const runs = new Set<string>();
+  // A target runs when a command starts with it: bare (COMMAND tool) or as a generator expression, which the trace keeps
+  // unexpanded (HORDE's auv2 helper: COMMAND $<TARGET_FILE:HYPERSAW_auv2-build-helper> --explicit ...). Only the first
+  // word runs: in `codesign -s - $<TARGET_FILE:x>` the target is an argument.
+  const firstWords = (c: any) => (c.commands || []).map((cmd: string[]) => cmd[0]).filter(Boolean) as string[];
+  // A script: code a command can run (cmake -P x.cmake, perl, ruby too). Any script in DEPENDS is marked program, not
+  // only the one recognised in the command line: a misread program would otherwise be followed INTO the product by the
+  // Operational lens, while a misread input only lands on the build-time side, the safe one (critic, 2026-10-18).
+  const isScript = (id: string) => { const n = nodes.get(id); return !!n && n.kind === 'file' && (['python', 'js', 'sh', 'cmake'].includes(n.lang) || /\.(pl|rb)$/i.test(n.path)) && basename(n.path) !== 'CMakeLists.txt'; };
+  const progOf = (c: any) => { for (const cmd of c.commands || []) { const a = cmd.find((w: string) => isScript('file:' + w)); if (a) return a; } return null; };
+  const runsTarget = (c: any, t: string) => tseen.get(t)!.types.has('EXECUTABLE') && firstWords(c).some((w) => w === t || w === `$<TARGET_FILE:${t}>`);
   for (const pc of build.perConfiguration) for (const c of pc.customCommands) {
-    const ev = { type: 'config', path: c.file, key: `add_custom_command line ${c.line}`, resolution: 'build' };
-    const outs = [...c.outputs, ...c.byproducts];
+    const ev = { type: 'config', path: c.file, key: `${c.command || 'add_custom_command'} line ${c.line}`, resolution: 'build' };
+    const as = (program: boolean) => ({ ...ev, as: program ? 'program' : 'input' });
+    const outs = [...c.outputs, ...c.byproducts], prog = progOf(c);
+    if (prog) runs.add('file:' + prog);
     let made = 0;
     for (const o of outs) {
       const dst = nodeFor(o);
-      if (c.target && tseen.has(c.target)) { addEdge('target:' + c.target, dst, 'generates', 'config', ev, [pc.name]); made++; }
+      // The target that owns the command (TARGET form, add_custom_target) is what runs it: always the program side.
+      if (c.target && tseen.has(c.target)) { addEdge('target:' + c.target, dst, 'generates', 'config', as(true), [pc.name]); made++; }
+      // The program makes the output even when DEPENDS forgets to list it: dropping it would hide the edge.
+      if (prog && !c.depends.includes(prog)) { addEdge('file:' + prog, dst, 'generates', 'config', as(true), [pc.name]); made++; }
       for (const d of c.depends) {
-        if (!d.startsWith('name:')) { addEdge(nodeFor(d), dst, 'generates', 'config', ev, [pc.name]); made++; continue; }
+        if (!d.startsWith('name:')) { const id = nodeFor(d); addEdge(id, dst, 'generates', 'config', as(d === prog || isScript(id)), [pc.name]); made++; continue; }
         const nm = d.slice(5), out = [...genOut].filter((g) => g === nm || g.endsWith('/' + nm)).sort(by)[0];
-        if (tseen.has(nm)) { addEdge('target:' + nm, dst, 'generates', 'config', ev, [pc.name]); made++; }
-        else if (out) { addEdge(nodeFor(out), dst, 'generates', 'config', ev, [pc.name]); made++; }
+        if (tseen.has(nm)) { addEdge('target:' + nm, dst, 'generates', 'config', as(runsTarget(c, nm)), [pc.name]); made++; }
+        else if (out) { addEdge(nodeFor(out), dst, 'generates', 'config', as(false), [pc.name]); made++; }
         else notEvaluated.push({ what: `${c.file}:${c.line}`, reason: `custom command depends on "${nm}", which is neither a target nor a known output` });
       }
     }
+    // A script in DEPENDS that is not the recognised program is marked program too (the safe side for the lens), but an
+    // embedded script asset would be misread that way, so the graph says so (critic round 2, N2).
+    const extra = c.depends.filter((d: string) => !d.startsWith('name:') && d !== prog && isScript(nodeFor(d)));
+    if (outs.length && prog && extra.length)
+      notEvaluated.push({ what: `${c.file}:${c.line}`, reason: `scripts in DEPENDS besides the program ${prog}, marked program: ${extra.join(', ')}` });
+    const runsSomeTarget = c.depends.some((d: string) => d.startsWith('name:') && tseen.has(d.slice(5)) && runsTarget(c, d.slice(5)));
+    if (outs.length && !prog && !runsSomeTarget && !(c.target && tseen.has(c.target)) && c.depends.some((d: string) => !d.startsWith('name:')))
+      notEvaluated.push({ what: `${c.file}:${c.line}`, reason: 'no program recognised in the command line: scripts in DEPENDS are marked program, the other files input' });
     if (!made) notEvaluated.push({ what: `${c.file}:${c.line}`, reason: outs.length ? 'custom command with outputs but nothing it depends on in the build'
       : `custom command with no OUTPUT or BYPRODUCTS${c.target ? ` (${c.stage || 'TARGET'} step of ${c.target})` : ''}: makes no file Loupe can see` });
   }
@@ -160,14 +192,13 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   // ---- Python, JS, HTML, shell (Q-023): imports, references, data and generated files, one site per line.
   // The layer sees every tracked file (so a link to a tracked binary resolves) and knows which are text (it reads only
   // those); a target that is not a node (binary, submodule, symlink) gets nodeFor's note, never "not found".
-  const langs = langLayer(repo, tracked, new Set(tracked.filter((p) => nodes.has('file:' + p))));
-  for (const [p, l] of Object.entries(langs.langOf)) { const n = nodes.get('file:' + p); if (n && n.lang === 'text') n.lang = l === 'js' ? 'js' : l; }
   for (const e of langs.edges) {
     let dst = e.to;
     if (dst.startsWith('ext:') && !nodes.has(dst)) nodes.set(dst, { id: dst, kind: 'external', path: dst.slice(4), hash: 'none' });
     else if (dst.startsWith('file:') && !nodes.has(dst)) dst = nodeFor(dst.slice(5));
     else if (dst.startsWith('miss:')) dst = missing(dst.slice(5), e.missing || 'unknown', e.missing === 'external' ? 'a path that leaves the repo' : 'named by the code, not found next to it or from the repo root');
-    addEdge('file:' + e.from, dst, e.kind, 'static', { type: 'site', path: e.from, line: e.line, resolution: e.resolution }, null, true);
+    // Code that writes a file is that file's program (0.3.2: every generates evidence says which side it is).
+    addEdge('file:' + e.from, dst, e.kind, 'static', { type: 'site', path: e.from, line: e.line, resolution: e.resolution, ...(e.kind === 'generates' ? { as: 'program' } : {}) }, null, true);
   }
   for (const c of langs.computed) notEvaluated.push({ what: `${c.from}:${c.line}`, reason: `computed import ${c.text}: needs evaluation` });
 
@@ -189,13 +220,7 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   if (!rc.dialect && opts.dialect) notEvaluated.push({ what: 'dialect', reason: `${opts.dialect} chosen by crawl --dialect: the target has not declared one in .loupe/config.json` });
   if (rc.dialect && opts.dialect && opts.dialect !== rc.dialect) notEvaluated.push({ what: 'dialect', reason: `crawl --dialect ${opts.dialect} ignored: the target declares ${rc.dialect}, and the human-owned config wins` });
   for (const pr of rc.problems) notEvaluated.push({ what: '.loupe/config.json', reason: pr });
-  // What each custom command runs: the first repo file in its command line that is code (python3 tools/gen.py ...),
-  // so `generator` names the program, never the inputs it reads (Julian, 2026-10-17).
-  const runs = new Set<string>();
-  for (const pc of build.perConfiguration) for (const c of pc.customCommands) for (const cmd of c.commands || []) {
-    const prog = cmd.find((a: string) => nodes.has('file:' + a) && /\.(py|sh|js|mjs|cjs|pl|rb)$|^[^.]+$/.test(a) && ['python', 'js', 'sh'].includes(nodes.get('file:' + a).lang));
-    if (prog) runs.add('file:' + prog);
-  }
+  // `runs` (each command's program, from the generates pass above) makes `generator` name the program, never its inputs.
   const targetsUnion = new Map<string, any>();
   for (const pc of build.perConfiguration) for (const t of pc.targets) { const u = targetsUnion.get(t.name) || { name: t.name, type: t.type, dependencies: [] as string[] }; for (const d of t.dependencies) if (!u.dependencies.includes(d)) u.dependencies.push(d); targetsUnion.set(t.name, u); }
   const fileNodes = [...nodes.values()].filter((n) => n.kind === 'file');
@@ -221,7 +246,7 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   });
   const fileCount = [...nodes.values()].filter((n) => n.kind === 'file').length;
   const graph = {
-    schema: 'loupe.graph/0.3.1',
+    schema: 'loupe.graph/0.3.2',
     source: { repo: repoName(repo), commit, commitTime, dirty },
     crawler: {
       name: 'loupe-crawler', version: '0.1.0', granularity: 'file',

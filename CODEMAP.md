@@ -42,11 +42,11 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
 - `.claude/launch.json`: `loupe-view` for the app's browser pane.
 - `design/prototype/story.js`, `works.js`, `stories/`: the "How it works" view (ADR 0025). `stories/<repo>-<commit>.json`
   holds agent-written stories (stand-in format); `story.js` applies Julian's edits and does the accounting;
-  `works.js` draws it. `lens.js`: focus lenses (ADR 0019). Tests: `tools/{history,lens,story}.test.mjs`.
+  `works.js` draws it. `lens.js`: focus lenses (ADR 0019); the Operational lens seeds from the product targets when the graph has them (Q-009). Tests: `tools/{history,lens,story}.test.mjs`.
 - `crawler/`: the P1a crawler, TypeScript run natively by Node 24 (no compiler). `build.ts` is the build layer
   (CMake File API + expanded JSON trace, scratch dir outside the tree, always deleted); `syntax.ts` is the syntax
   layer (a line scanner for includes and their `#if` conditions, with a census; tree-sitter for parse-error counts;
-  resolution per site); `dialect.ts` assigns file roles (defaults, the dsp-plugin dialect, graph rules, the repo's config) and draws the GUI bridge; `langs.ts` is the languages layer (Python, JS, HTML, shell: imports, references, data and generated files); `graph.ts` emits graph.json (0.3.1) with the inventory;
+  resolution per site); `dialect.ts` assigns file roles (defaults, the dsp-plugin dialect, graph rules, the repo's config) and draws the GUI bridge; `langs.ts` is the languages layer (Python, JS, HTML, shell: imports, references, data and generated files); `graph.ts` emits graph.json (0.3.2) with the inventory;
   `conformance.ts` compares declared target dependencies with observed includes; `cli.ts` (`npm run crawl --
   build|syntax <repo>` or `crawl <repo> --out <dir>`); `build.test.ts`, `syntax.test.ts`, `graph.test.ts` (gated in `./verify fast`). `grammars/`: the C and C++
   grammar .wasm files, vendored and pinned by sha256 in `GRAMMARS.json` (refresh steps in its README).

@@ -42,14 +42,19 @@ check('two sources outside the repo stay two rows (critic)', !!m('${external}/ou
 check('a path-valued define keeps no machine path (critic)', T('engine').compileGroups[0].defines.includes('DATA_DIR="${source}/data"'));
 check("a custom target's CMakeFiles stamp is not a member (critic)", !f.membership.some((x: { source: string }) => /CMakeFiles/.test(x.source)));
 check('include paths keep their search order', JSON.stringify(T('engine').compileGroups[0].includes) === '["src","${build}/generated"]');
-check('target dependencies are named', JSON.stringify(T('plugin').dependencies) === '["engine"]');
+check('target dependencies are named', JSON.stringify(T('plugin').dependencies) === '["engine","stamp"]');
 
 const cc = cfg0.customCommands;
 const top = cc.find((c: { file: string }) => c.file === 'CMakeLists.txt');
 const lut = cc.find((c: { file: string; target: string | null }) => c.file === 'lib/CMakeLists.txt' && !c.target);
 const post = cc.find((c: { target: string | null }) => c.target === 'lut');
 check('the top-level custom command: file, line, output and generator', !!top && top.line === 9 && top.outputs[0] === '${build}/generated/table.h' && top.depends.includes('tools/gen_table.py'));
-check('custom commands from CMake files outside the repo are filtered out (critic)', cc.length === 3 && !cc.some((c: { outputs: string[] }) => c.outputs.some((o) => o.includes('outside'))));
+check('custom commands from CMake files outside the repo are filtered out (critic)', cc.length === 5 && !cc.some((c: { outputs: string[] }) => c.outputs.some((o) => o.includes('outside'))));
+// add_custom_target is read (Q-009): HORDE's build stamp is one, and its BYPRODUCTS were dropped without a trace.
+const stamp = cc.find((c: any) => c.target === 'stamp'), docs = cc.find((c: any) => c.target === 'lut_docs');
+check('add_custom_target: its name owns the command, its BYPRODUCTS and its CMake script are read', !!stamp && stamp.stage === 'CUSTOM_TARGET'
+  && JSON.stringify(stamp.byproducts) === '["${build}/generated/stamp.h"]' && stamp.commands[0].includes('tools/stamp.cmake'));
+check('add_custom_target with the command right after its name (no COMMAND keyword)', !!docs && docs.commands.length === 1 && docs.commands[0].join(' ').endsWith('-E echo lut docs'));
 check('a relative OUTPUT is in the subdirectory\'s build dir (critic)', !!lut && JSON.stringify(lut.outputs) === '["${build}/lib/lut.h"]');
 check('BYPRODUCTS are kept (critic)', !!lut && JSON.stringify(lut.byproducts) === '["${build}/lib/lut.log"]');
 check('a list-valued DEPENDS is split, and relative DEPENDS resolve against the caller\'s dir (critic)', !!lut && JSON.stringify(lut.depends) === '["lib/gen_lut.py","lib/lut.csv"]');

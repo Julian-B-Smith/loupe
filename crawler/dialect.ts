@@ -93,10 +93,13 @@ export function assignRoles(fileNodes: any[], edges: any[], targets: { name: str
   for (const n of fileNodes) { const r = first(DEFAULT_PATH, n.path); if (r) set(n, r[1], r[2]); }
   if (dialect === 'dsp-plugin') {
     for (const n of fileNodes) { const r = first(DSP_PATH, n.path); if (r) set(n, r[1], r[2]); }
-    // build: product targets are the plugin's module or shared libraries and everything they depend on
+    // build: product targets are the plugin's module or shared libraries and the libraries they link. An executable or
+    // utility they depend on (HORDE's auv2 build-helper, a build stamp) is built first and never shipped, so it is not
+    // followed (Q-009). design/prototype/lens.js productTargets() is the same rule; tools/lens.test.mjs compares them.
     const byName = new Map(targets.map((t) => [t.name, t]));
+    const LINKED = /^(STATIC|SHARED|MODULE|OBJECT|INTERFACE)_LIBRARY$/;
     const product = new Set<string>(), work = targets.filter((t) => /MODULE_LIBRARY|SHARED_LIBRARY/.test(t.type) && !first(DSP_TARGET, t.name)).map((t) => t.name);
-    while (work.length) { const t = work.pop()!; if (product.has(t)) continue; product.add(t); for (const d of byName.get(t)?.dependencies || []) work.push(d); }
+    while (work.length) { const t = work.pop()!; if (product.has(t)) continue; product.add(t); for (const d of byName.get(t)?.dependencies || []) if (LINKED.test(byName.get(d)?.type || '')) work.push(d); }
     const builtBy = new Map<string, string[]>();
     for (const e of edges) if (e.kind === 'builds') (builtBy.get(e.dst) || builtBy.set(e.dst, []).get(e.dst)!).push(e.src.slice(7));
     const COMPILED = /\.(c|cc|cpp|cxx|c\+\+|m|mm)$/i;

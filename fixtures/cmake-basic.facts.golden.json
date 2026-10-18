@@ -124,6 +124,7 @@
       "customCommands": [
         {
           "byproducts": [],
+          "command": "add_custom_command",
           "commands": [
             [
               "python3",
@@ -144,8 +145,29 @@
         },
         {
           "byproducts": [
+            "${build}/generated/stamp.h"
+          ],
+          "command": "add_custom_target",
+          "commands": [
+            [
+              "${external}/cmake",
+              "-DOUT=${build}/generated/stamp.h",
+              "-P",
+              "tools/stamp.cmake"
+            ]
+          ],
+          "depends": [],
+          "file": "CMakeLists.txt",
+          "line": 45,
+          "outputs": [],
+          "stage": "CUSTOM_TARGET",
+          "target": "stamp"
+        },
+        {
+          "byproducts": [
             "${build}/lib/lut.log"
           ],
+          "command": "add_custom_command",
           "commands": [
             [
               "python3",
@@ -174,6 +196,7 @@
         },
         {
           "byproducts": [],
+          "command": "add_custom_command",
           "commands": [
             [
               "${external}/cmake",
@@ -188,6 +211,25 @@
           "outputs": [],
           "stage": "POST_BUILD",
           "target": "lut"
+        },
+        {
+          "byproducts": [],
+          "command": "add_custom_target",
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "echo",
+              "lut",
+              "docs"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 19,
+          "outputs": [],
+          "stage": "CUSTOM_TARGET",
+          "target": "lut_docs"
         }
       ],
       "name": "release",
@@ -341,7 +383,8 @@
             "line": 28
           },
           "dependencies": [
-            "engine"
+            "engine",
+            "stamp"
           ],
           "name": "plugin",
           "sources": [
@@ -365,6 +408,17 @@
             }
           ],
           "type": "MODULE_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 45
+          },
+          "dependencies": [],
+          "name": "stamp",
+          "sources": [],
+          "type": "UTILITY"
         }
       ]
     },
@@ -379,6 +433,7 @@
       "customCommands": [
         {
           "byproducts": [],
+          "command": "add_custom_command",
           "commands": [
             [
               "python3",
@@ -399,8 +454,29 @@
         },
         {
           "byproducts": [
+            "${build}/generated/stamp.h"
+          ],
+          "command": "add_custom_target",
+          "commands": [
+            [
+              "${external}/cmake",
+              "-DOUT=${build}/generated/stamp.h",
+              "-P",
+              "tools/stamp.cmake"
+            ]
+          ],
+          "depends": [],
+          "file": "CMakeLists.txt",
+          "line": 45,
+          "outputs": [],
+          "stage": "CUSTOM_TARGET",
+          "target": "stamp"
+        },
+        {
+          "byproducts": [
             "${build}/lib/lut.log"
           ],
+          "command": "add_custom_command",
           "commands": [
             [
               "python3",
@@ -429,6 +505,7 @@
         },
         {
           "byproducts": [],
+          "command": "add_custom_command",
           "commands": [
             [
               "${external}/cmake",
@@ -443,6 +520,25 @@
           "outputs": [],
           "stage": "POST_BUILD",
           "target": "lut"
+        },
+        {
+          "byproducts": [],
+          "command": "add_custom_target",
+          "commands": [
+            [
+              "${external}/cmake",
+              "-E",
+              "echo",
+              "lut",
+              "docs"
+            ]
+          ],
+          "depends": [],
+          "file": "lib/CMakeLists.txt",
+          "line": 19,
+          "outputs": [],
+          "stage": "CUSTOM_TARGET",
+          "target": "lut_docs"
         }
       ],
       "name": "extra",
@@ -604,7 +700,8 @@
             "line": 28
           },
           "dependencies": [
-            "engine"
+            "engine",
+            "stamp"
           ],
           "name": "plugin",
           "sources": [
@@ -628,6 +725,17 @@
             }
           ],
           "type": "MODULE_LIBRARY"
+        },
+        {
+          "compileGroups": [],
+          "definedIn": {
+            "file": "CMakeLists.txt",
+            "line": 45
+          },
+          "dependencies": [],
+          "name": "stamp",
+          "sources": [],
+          "type": "UTILITY"
         }
       ]
     }

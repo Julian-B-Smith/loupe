@@ -241,7 +241,9 @@ function designLayout(data, state) {
   }
 
   // ---- outside layers gutter
-  let right = contentW + 2 * x0;
+  // The loose block can be wider than the sections (a fresh crawl has none, and its grid is square): anything placed to
+  // the right starts past it, or the lens's outside box lands on top of the files (Q-009, HORDE crawl).
+  let right = Math.max(contentW + 2 * x0, P.loose ? P.loose.x + P.loose.w + x0 : 0);
   if (outside.length) {
     const gx = right + L.colGap;
     let gy = L.bandHead, gw = 0;
@@ -354,8 +356,8 @@ function designLayout(data, state) {
 
   if (iso) P.iso = isolatePorts(data, state, iso, P.sections[iso]);
   if (LZ) {
-    // One container for everything outside the lens: a header, a counts line, then one line per role.
-    const roles = Object.keys(LZ.outsideRoles).length;
+    // One container for everything outside the lens: a header, a counts line, a line per build class, one per role.
+    const roles = Object.keys(LZ.outsideRoles).length + (LZ.outsideClass ? (LZ.outsideClass.buildTime ? 1 : 0) + (LZ.outsideClass.notBuilt ? 1 : 0) : 0);
     P.lens = LZ;
     P.lensOut = { x: right + L.colGap, y: band ? L.bandHead : 0, w: L.portW + 110, h: L.header + 22 + roles * 18 + L.pad };
     right = P.lensOut.x + P.lensOut.w;

@@ -45,6 +45,16 @@ const aFile = (G) => G.nodes.find((n) => n.kind === 'file').id;
 // Put `via` on the first static site, resolved through a build include path unless told otherwise.
 const via = (G, viaId, resolution = 'build') => { const ev = G.edges.find((e) => e.provenance === 'static').evidence.find((x) => x.type === 'site'); ev.resolution = resolution; ev.via = [viaId.replace(/^file:/, '')]; };
 const T = (G, id) => G.nodes.find((n) => n.id === id);
+// A 0.3.2 graph with one generates edge (a script and a data file make one header), each side marked as given.
+const gen = (G, progAs = 'program', dataAs = 'input', site = false) => {
+  G.schema = 'loupe.graph/0.3.2';
+  const [a, b] = G.nodes.filter((n) => n.kind === 'file').map((n) => n.id), out = 'miss:${build}/gen.h';
+  G.nodes.push({ id: out, kind: 'missing', path: '${build}/gen.h', hash: 'none', missing: { reason: 'generated' } });
+  const ev = (as) => [site ? { type: 'site', path: a.slice(5), line: 1, resolution: 'exact', as } : { type: 'config', path: 'CMakeLists.txt', key: 'add_custom_command line 1', resolution: 'build', as }];
+  G.edges.push({ id: edgeId(a, out, 'generates'), src: a, dst: out, kind: 'generates', provenance: site ? 'static' : 'config', evidence: ev(progAs) },
+               { id: edgeId(b, out, 'generates'), src: b, dst: out, kind: 'generates', provenance: 'config', evidence: [{ type: 'config', path: 'CMakeLists.txt', key: 'add_custom_command line 1', resolution: 'build', as: dataAs }] });
+  if (dataAs === null) delete G.edges.find((e) => e.kind === 'generates' && e.src === b).evidence[0].as; // null: leave it out
+};
 // V9 needs real geometry: lay the sample out, then drag the second top-level section onto the first.
 function dragOnto({ G, O, V }) {
   const P = layout(indexSnapshot({ graph: G, overlay: O, view: V, stages: null, diff: null, hashes: {} }), { view: 'design', settings: {}, offsets: {} });
@@ -110,6 +120,15 @@ const cases = [
   ['0.3.1 without notEvaluated', 'S1', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; delete G.crawler.notEvaluated; })],
   ['via naming a file not in the graph', 'G9', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; via(G, 'nowhere.cpp'); })],
   ['via on a site resolved exactly', 'G9', v03(({ G }) => { G.schema = 'loupe.graph/0.3.1'; via(G, aFile(G), 'exact'); })],
+  // ---- schema 0.3.2: as on generates evidence (Q-009)
+  ['0.3.2 with a program and an input passes', null, v03(({ G }) => gen(G))],
+  ['0.3.2 with code writing a file (a program site) passes', null, v03(({ G }) => gen(G, 'program', 'input', true))],
+  ['as in a graph declaring 0.3.1', 'S1', v03(({ G }) => { gen(G); G.schema = 'loupe.graph/0.3.1'; })],
+  ['as in a graph declaring 0.2', 'S1', ({ G }) => { G.edges.find((e) => e.evidence.length).evidence[0].as = 'input'; }],
+  ['as that is neither program nor input', 'S1', v03(({ G }) => gen(G, 'tool'))],
+  ['0.3.2 generates evidence without as', 'G10', v03(({ G }) => gen(G, 'program', null))],
+  ['as on an edge that is not generates', 'G10', v03(({ G }) => { G.schema = 'loupe.graph/0.3.2'; G.edges.find((e) => e.kind === 'builds').evidence[0].as = 'input'; })],
+  ['code writing a file marked as an input', 'G10', v03(({ G }) => gen(G, 'input', 'input', true))],
   ['offset on a top-level section and a level passes', null, ({ V }) => { const top = V.elements.find((e) => e.primitive === 'section' && !e.parent); V.settings.offsets = { [top.id]: { dx: 10, dy: 0 }, 'level:0': { dx: 0, dy: 5 } }; }],
   ['offset on a nested section', 'V8', ({ V }) => { const nested = V.elements.find((e) => e.primitive === 'section' && e.parent); V.settings.offsets = { [nested.id]: { dx: 1, dy: 1 } }; }],
   ['offset on a level that does not exist', 'V8', ({ V }) => { V.settings.offsets = { 'level:99': { dx: 1, dy: 1 } }; }],

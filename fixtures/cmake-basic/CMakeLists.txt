@@ -40,3 +40,9 @@ add_subdirectory(lib)
 target_sources(plugin PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_a.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_b.cpp)
 # CMake code from outside the repo: its rules are not the project's and must be filtered out.
 include(${CMAKE_CURRENT_SOURCE_DIR}/../shared/outside_rules.cmake)
+# A custom target that stamps a header the plugin waits on (HORDE's build stamp, Q-009): add_custom_target must be read,
+# its CMake script is the program, and the utility is build-time, never product.
+add_custom_target(stamp ALL
+  COMMAND ${CMAKE_COMMAND} -DOUT=${GEN_DIR}/stamp.h -P ${CMAKE_CURRENT_SOURCE_DIR}/tools/stamp.cmake
+  BYPRODUCTS ${GEN_DIR}/stamp.h)
+add_dependencies(plugin stamp)

@@ -114,8 +114,20 @@
         "what": "gui bridge"
       },
       {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of vst3_validator): makes no file Loupe can see",
+        "what": "libs/clap-wrapper/cmake/base_sdks.cmake:192"
+      },
+      {
         "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of vst3_validator): makes no file Loupe can see",
         "what": "libs/clap-wrapper/cmake/base_sdks.cmake:193"
+      },
+      {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of HYPERSAW_all): makes no file Loupe can see",
+        "what": "libs/clap-wrapper/cmake/make_clapfirst.cmake:129"
+      },
+      {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of SWARMFX_all): makes no file Loupe can see",
+        "what": "libs/clap-wrapper/cmake/make_clapfirst.cmake:129"
       },
       {
         "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of HYPERSAW_auv2): makes no file Loupe can see",
@@ -156,6 +168,10 @@
       {
         "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of SWARMFX_auv2-build-helper): makes no file Loupe can see",
         "what": "libs/clap-wrapper/cmake/wrap_auv2.cmake:85"
+      },
+      {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of clap-tests): makes no file Loupe can see",
+        "what": "libs/clap/CMakeLists.txt:49"
       },
       {
         "reason": "88 files match no role rule (defaults, dsp-plugin, graph, config)",
@@ -690,6 +706,23 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/presetstore_check.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "as": "program",
+          "key": "add_custom_target line 162",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:02060988856fd0e9",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "target:hypersaw_build_stamp"
     },
     {
       "count": 1,
@@ -1736,6 +1769,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -1898,6 +1932,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -2688,6 +2723,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -2928,6 +2964,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -5996,6 +6033,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -6098,6 +6136,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -6395,6 +6434,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -7031,6 +7071,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -8344,6 +8385,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -11013,6 +11055,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -11471,6 +11514,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -12011,6 +12055,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -13464,6 +13509,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -14394,6 +14440,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "line": 88,
+          "path": "tools/measure_fx.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:53162af6ab421c15",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/measure_fx.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:tools/labharness/lab_load_check.mjs",
       "evidence": [
         {
@@ -15137,6 +15199,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -16103,6 +16166,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -16167,6 +16231,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -17041,6 +17106,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -17073,6 +17139,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -17089,6 +17156,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -17384,6 +17452,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -20587,6 +20656,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "line": 94,
+          "path": "tools/measure_alias.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:745427a26cfff444",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/measure_alias.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:tools/labharness/gui_history_check.mjs",
       "evidence": [
         {
@@ -20876,6 +20961,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -21837,22 +21923,6 @@
         }
       ],
       "id": "e:7c878dd13fcbde42",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:src/hypersaw_clap.cpp"
-    },
-    {
-      "count": 1,
-      "dst": "miss:build_stamp.h",
-      "evidence": [
-        {
-          "line": 52,
-          "path": "src/hypersaw_clap.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:7cda6bfe6afe856c",
       "kind": "include",
       "provenance": "static",
       "src": "file:src/hypersaw_clap.cpp"
@@ -23646,6 +23716,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -24964,6 +25035,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -25044,6 +25116,7 @@
       "dst": "miss:${build}/generated/gui_html.h",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 113",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -25220,6 +25293,7 @@
       "dst": "miss:${build}/SWARMFX_auv2-build-helper-output/generated_entrypoints.hxx",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 185",
           "path": "libs/clap-wrapper/cmake/wrap_auv2.cmake",
           "resolution": "build",
@@ -25386,6 +25460,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -26746,22 +26821,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:build_stamp.h",
-      "evidence": [
-        {
-          "line": 94,
-          "path": "tools/measure_alias.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:9a402b328330ab77",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/measure_alias.cpp"
-    },
-    {
-      "count": 1,
       "dst": "file:tools/force_check.cpp",
       "evidence": [
         {
@@ -27050,22 +27109,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:build_stamp.h",
-      "evidence": [
-        {
-          "line": 80,
-          "path": "tools/measure_cpu.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:9c6cea8ae429e10a",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/measure_cpu.cpp"
-    },
-    {
-      "count": 1,
       "dst": "file:tools/patchspace/metrics_check.mjs",
       "evidence": [
         {
@@ -27181,6 +27224,7 @@
       "dst": "miss:${build}/SWARMFX_auv2-build-helper-output/auv2_Info.plist",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 185",
           "path": "libs/clap-wrapper/cmake/wrap_auv2.cmake",
           "resolution": "build",
@@ -27326,6 +27370,7 @@
       "dst": "miss:${build}/HYPERSAW_auv2-build-helper-output/generated_entrypoints.hxx",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 185",
           "path": "libs/clap-wrapper/cmake/wrap_auv2.cmake",
           "resolution": "build",
@@ -27756,6 +27801,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -28062,6 +28108,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -28406,6 +28453,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -28934,6 +28982,7 @@
       "dst": "file:src/depends_graph.h",
       "evidence": [
         {
+          "as": "program",
           "line": 93,
           "path": "tools/gen_depends_header.py",
           "resolution": "search",
@@ -28982,6 +29031,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -29890,6 +29940,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -30012,6 +30063,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/parity_check.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "line": 52,
+          "path": "src/hypersaw_clap.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:ac8a342ebe1e1075",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/hypersaw_clap.cpp"
     },
     {
       "count": 1,
@@ -30275,6 +30342,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -30959,6 +31027,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -32643,6 +32712,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -33449,6 +33519,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -33666,6 +33737,23 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "as": "program",
+          "key": "add_custom_target line 162",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:c2493fce52858607",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:tools/build_stamp.cmake"
+    },
+    {
+      "count": 1,
       "dst": "miss:string",
       "evidence": [
         {
@@ -33733,6 +33821,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -34007,6 +34096,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -34215,6 +34305,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -35035,6 +35126,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -36383,6 +36475,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -37884,6 +37977,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -38260,6 +38354,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -38574,22 +38669,6 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/trajectory_check.cpp"
-    },
-    {
-      "count": 1,
-      "dst": "miss:build_stamp.h",
-      "evidence": [
-        {
-          "line": 88,
-          "path": "tools/measure_fx.cpp",
-          "resolution": "syntactic",
-          "type": "site"
-        }
-      ],
-      "id": "e:deaa42e78c2dab44",
-      "kind": "include",
-      "provenance": "static",
-      "src": "file:tools/measure_fx.cpp"
     },
     {
       "count": 1,
@@ -39158,6 +39237,7 @@
       "dst": "miss:${build}/generated/gui_html.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 113",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -39430,6 +39510,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -40379,6 +40460,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -40523,6 +40605,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -41697,6 +41780,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -42065,6 +42149,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -42634,6 +42719,7 @@
       "dst": "miss:${build}/generated/factory_bank.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 131",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -43673,6 +43759,22 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/generated/build_stamp.h",
+      "evidence": [
+        {
+          "line": 80,
+          "path": "tools/measure_cpu.cpp",
+          "resolution": "build",
+          "type": "site"
+        }
+      ],
+      "id": "e:fb9a7cd9b9af91a6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:tools/measure_cpu.cpp"
+    },
+    {
+      "count": 1,
       "dst": "miss:cmath",
       "evidence": [
         {
@@ -44542,6 +44644,7 @@
       "dst": "miss:${build}/HYPERSAW_auv2-build-helper-output/auv2_Info.plist",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 185",
           "path": "libs/clap-wrapper/cmake/wrap_auv2.cmake",
           "resolution": "build",
@@ -50416,8 +50519,8 @@
       "lang": "cmake",
       "loc": 22,
       "path": "tools/build_stamp.cmake",
-      "role": "build",
-      "roleRule": "default:path/build"
+      "role": "generator",
+      "roleRule": "graph:runs-command"
     },
     {
       "hash": "sha256:dbb7f733297976383d2bfc4b6123f9008495cd0654be487add576d00639f08d3",
@@ -58305,6 +58408,15 @@
     },
     {
       "hash": "none",
+      "id": "miss:${build}/generated/build_stamp.h",
+      "kind": "missing",
+      "missing": {
+        "reason": "generated"
+      },
+      "path": "${build}/generated/build_stamp.h"
+    },
+    {
+      "hash": "none",
       "id": "miss:${build}/generated/factory_bank.h",
       "kind": "missing",
       "missing": {
@@ -58420,16 +58532,6 @@
         "reason": "external"
       },
       "path": "atomic"
-    },
-    {
-      "hash": "none",
-      "id": "miss:build_stamp.h",
-      "kind": "missing",
-      "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
-      },
-      "path": "build_stamp.h"
     },
     {
       "hash": "none",
@@ -60251,7 +60353,7 @@
       "targetType": "EXECUTABLE"
     }
   ],
-  "schema": "loupe.graph/0.3.1",
+  "schema": "loupe.graph/0.3.2",
   "source": {
     "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
     "commitTime": "2026-10-16T18:31:54-04:00",

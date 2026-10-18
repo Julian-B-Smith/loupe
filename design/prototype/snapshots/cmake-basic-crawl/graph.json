@@ -27,9 +27,9 @@
     },
     "granularity": "file",
     "inventory": {
-      "crawled": 31,
+      "crawled": 32,
       "excluded": [],
-      "files": 31
+      "files": 32
     },
     "languages": [
       "cmake",
@@ -48,6 +48,10 @@
       {
         "reason": "custom command with no OUTPUT or BYPRODUCTS (POST_BUILD step of lut): makes no file Loupe can see",
         "what": "lib/CMakeLists.txt:15"
+      },
+      {
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of lut_docs): makes no file Loupe can see",
+        "what": "lib/CMakeLists.txt:19"
       },
       {
         "reason": "3 source-dir files are neither built nor reached by any compile (role from their path only)",
@@ -82,6 +86,7 @@
       "dst": "file:data/presets.json",
       "evidence": [
         {
+          "as": "program",
           "line": 5,
           "path": "tools/run.sh",
           "resolution": "search",
@@ -130,6 +135,7 @@
       "dst": "miss:${build}/lib/lut.h",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 3",
           "path": "lib/CMakeLists.txt",
           "resolution": "build",
@@ -143,9 +149,26 @@
     },
     {
       "count": 1,
+      "dst": "target:stamp",
+      "evidence": [
+        {
+          "key": "target plugin dependencies (defined at line 28)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:22babdcfc784db7a",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:plugin"
+    },
+    {
+      "count": 1,
       "dst": "miss:${build}/lib/lut.h",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 3",
           "path": "lib/CMakeLists.txt",
           "resolution": "build",
@@ -331,6 +354,7 @@
       "dst": "miss:${build}/lib/lut.log",
       "evidence": [
         {
+          "as": "input",
           "key": "add_custom_command line 3",
           "path": "lib/CMakeLists.txt",
           "resolution": "build",
@@ -560,6 +584,7 @@
       "dst": "miss:${build}/lib/lut.log",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 3",
           "path": "lib/CMakeLists.txt",
           "resolution": "build",
@@ -666,6 +691,23 @@
       "kind": "builds",
       "provenance": "config",
       "src": "target:lut"
+    },
+    {
+      "count": 1,
+      "dst": "miss:${build}/generated/stamp.h",
+      "evidence": [
+        {
+          "as": "program",
+          "key": "add_custom_target line 45",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:ae6126317bc28599",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "file:tools/stamp.cmake"
     },
     {
       "count": 1,
@@ -862,6 +904,23 @@
     },
     {
       "count": 1,
+      "dst": "miss:${build}/generated/stamp.h",
+      "evidence": [
+        {
+          "as": "program",
+          "key": "add_custom_target line 45",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:d72fca526f16a635",
+      "kind": "generates",
+      "provenance": "config",
+      "src": "target:stamp"
+    },
+    {
+      "count": 1,
       "dst": "file:tools/pkg/fmt.py",
       "evidence": [
         {
@@ -965,6 +1024,7 @@
       "dst": "miss:${build}/generated/table.h",
       "evidence": [
         {
+          "as": "program",
           "key": "add_custom_command line 9",
           "path": "CMakeLists.txt",
           "resolution": "build",
@@ -1051,11 +1111,11 @@
       "roleRule": "default:path/data-ext"
     },
     {
-      "hash": "sha256:112d4d920e6d06d03c241de16ee56b1284ca97c3a139e6bbd01b33e65aa00c26",
+      "hash": "sha256:74f7bbe380261f3b54f0b99bc2645ab7b6091f9aaec73034089838b9fe880793",
       "id": "file:CMakeLists.txt",
       "kind": "file",
       "lang": "cmake",
-      "loc": 42,
+      "loc": 48,
       "path": "CMakeLists.txt",
       "role": "build",
       "roleRule": "default:path/build"
@@ -1311,6 +1371,16 @@
       "roleRule": "graph:writes-file"
     },
     {
+      "hash": "sha256:8700df796e6dc65c2716c4a0aeebc5742549c3988ab49e0b0e8f4122fad382f5",
+      "id": "file:tools/stamp.cmake",
+      "kind": "file",
+      "lang": "cmake",
+      "loc": 2,
+      "path": "tools/stamp.cmake",
+      "role": "generator",
+      "roleRule": "graph:runs-command"
+    },
+    {
       "hash": "sha256:71341cec96d2620f23567fc07487a2f318962abd538ad77a90bbbcb32f0d4f33",
       "id": "file:web/app.js",
       "kind": "file",
@@ -1349,6 +1419,15 @@
       "path": "web/util.js",
       "role": "gui",
       "roleRule": "config:roles[0]"
+    },
+    {
+      "hash": "none",
+      "id": "miss:${build}/generated/stamp.h",
+      "kind": "missing",
+      "missing": {
+        "reason": "generated"
+      },
+      "path": "${build}/generated/stamp.h"
     },
     {
       "hash": "none",
@@ -1501,12 +1580,19 @@
       "kind": "target",
       "path": "plugin",
       "targetType": "MODULE_LIBRARY"
+    },
+    {
+      "hash": "none",
+      "id": "target:stamp",
+      "kind": "target",
+      "path": "stamp",
+      "targetType": "UTILITY"
     }
   ],
-  "schema": "loupe.graph/0.3.1",
+  "schema": "loupe.graph/0.3.2",
   "source": {
-    "commit": "c8ab09883e0191f348a09819f6e717fa941d85cf",
-    "commitTime": "2026-10-17T16:05:21-04:00",
+    "commit": "7162087fae00833c533c74d158b1505d09d63c42",
+    "commitTime": "2026-10-18T00:16:56-04:00",
     "dirty": true,
     "repo": "github.com/Julian-B-Smith/loupe"
   }
