@@ -52,7 +52,7 @@ check('#ifdef becomes defined(X)', one('src/engine.cpp', 'missing_extra.h').guar
 check('#elif and #else carry the negation of every earlier branch, each part parenthesised',
   one('src/platform.h', 'windows.h').guard === '!(defined(__APPLE__)) && (defined(_WIN32))'
   && one('src/platform.h', 'platform_posix.h').guard === '!(defined(__APPLE__)) && !(defined(_WIN32))');
-check('every tracked C/C++ file is read, headers included', f.files.length === 10 && f.files.some((x: any) => x.path === 'src/dsp/filter.h'));
+check('every tracked C/C++ file is read, headers included', f.files.length === 11 && f.files.some((x: any) => x.path === 'src/dsp/filter.h'));
 check('every C/C++ file records its parse-error count (0028)', f.files.every((x: any) => Number.isInteger(x.parseErrors)));
 check('the census finds no include line unaccounted for in the fixture', f.skipped.length === 0 && f.problems.length === 0);
 

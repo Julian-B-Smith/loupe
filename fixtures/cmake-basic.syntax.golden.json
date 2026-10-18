@@ -31,6 +31,12 @@
     },
     {
       "grammar": "cpp",
+      "inCompile": false,
+      "parseErrors": 0,
+      "path": "src/gui/app_gui.h"
+    },
+    {
+      "grammar": "cpp",
       "parseErrors": 0,
       "path": "src/platform.h"
     },

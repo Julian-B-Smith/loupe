@@ -46,7 +46,7 @@ const NODE_BUILTINS = new Set(('assert async_hooks buffer child_process cluster 
 const MODULE_SPEC = /^[\w@.\/:~-][^\s'"(),;&|<>`{}]*$/; // what a JS specifier can look like; anything else is not one
 
 // ---- code masks: same length as the text, comments blanked, string contents kept but marked
-type Mask = { code: string; inStr: Uint8Array };
+export type Mask = { code: string; inStr: Uint8Array };
 // Python and shell-like texts: `#` comments, quotes, and (Python) triple-quoted strings blanked whole.
 function maskHash(text: string, triple: boolean): Mask {
   const out = text.split(''), inStr = new Uint8Array(text.length);
@@ -71,7 +71,7 @@ function maskHash(text: string, triple: boolean): Mask {
 // JavaScript: a small lexer, because a regex literal holding a quote (/"/) or code inside a template's ${...} would
 // otherwise desynchronise a naive quote scan and swallow real code (it hid `join(root, 'tests/morph_order.txt')` on
 // HORDE). Template literal text is blanked; code inside ${...} is lexed as code; regex literals are skipped.
-function maskJs(text: string): Mask {
+export function maskJs(text: string, opts: { cppRawStrings?: boolean } = {}): Mask {
   const out = text.split(''), inStr = new Uint8Array(text.length), n = text.length;
   const blank = (a: number, b: number) => { for (let k = a; k < b; k++) if (out[k] !== '\n') out[k] = ' '; };
   // Can a `/` here start a regex? After an operator, an opening bracket, a keyword, or at the start.
@@ -89,6 +89,11 @@ function maskJs(text: string): Mask {
       const c = text[i], d = text[i + 1];
       if (c === '/' && d === '/') { const e = text.indexOf('\n', i); const end = e < 0 ? n : e; blank(i, end); i = end; continue; }
       if (c === '/' && d === '*') { const e = text.indexOf('*/', i + 2); const end = e < 0 ? n : e + 2; blank(i, end); i = end; continue; }
+      // C++ raw string R"d(...)d": may hold quotes and newlines; masked whole (the dialect scans C++ with this mask)
+      if (opts.cppRawStrings && c === '"' && /(?:^|[^\w])(?:u8|[uUL])?R$/.test(text.slice(Math.max(0, i - 3), i))) {
+        const m = /^"([^()\\\s]{0,16})\(/.exec(text.slice(i, i + 20));
+        if (m) { const close = ')' + m[1] + '"', e = text.indexOf(close, i + m[0].length), end = e < 0 ? n : e + close.length; blank(i, end); i = end; continue; }
+      }
       if (c === '"' || c === "'") { let k = i + 1; while (k < n && text[k] !== c && text[k] !== '\n') k += text[k] === '\\' ? 2 : 1; for (let x = i + 1; x < k; x++) inStr[x] = 1; i = k + 1; continue; }
       if (c === '`') { i = template(i + 1, i); continue; }
       if (c === '/' && regexOk(i)) {

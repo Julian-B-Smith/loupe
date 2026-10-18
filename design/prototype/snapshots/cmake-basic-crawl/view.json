@@ -1,15 +1,15 @@
 {
   "dialect": {
-    "name": "none",
-    "version": "0"
+    "name": "dsp-plugin",
+    "version": "1"
   },
   "elements": [],
   "exemptions": [],
   "graph": {
-    "hash": "sha256:8b2a9c3420960f9f1223dcbff8af706e003fd2eaf6efa980a94826d29c3313a8"
+    "hash": "sha256:6f454266144f0a7ff27aa12c76072beebbefb4923c879da23ce42512c6e8a6a0"
   },
   "overlay": {
-    "hash": "sha256:fc471f9b94d801b8d8a892bd036ad3537308019f0ea6b081bcc657b9bd7d4321"
+    "hash": "sha256:7f64ed71665c58ae5e40dff9086b7ff1088c76e96a7b95b33452173d6eba2543"
   },
   "schema": "loupe.view/0.2",
   "settings": {
