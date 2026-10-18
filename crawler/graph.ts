@@ -48,7 +48,9 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   let repo = repoIn; try { repo = realpathSync(repoIn); } catch {}
   // Mode from the index: 160000 is a submodule (a gitlink, not a file here), 120000 a symlink (following it would make
   // the hash depend on this machine). Both are counted in the inventory, never read.
-  const entries = git(repo, ['ls-files', '-s', '-z', '--', '.']).split('\0').filter(Boolean).map((l) => { const t = l.indexOf('\t'); return { mode: l.slice(0, 6), path: l.slice(t + 1) }; });
+  const entries = git(repo, ['ls-files', '-s', '-z', '--', '.']).split('\0').filter(Boolean).map((l) => { const t = l.indexOf('\t'); return { mode: l.slice(0, 6), sha: l.split(' ')[1], path: l.slice(t + 1) }; });
+  const subs = entries.filter((e) => e.mode === '160000');
+  const subOf = (p: string) => subs.find((x) => p.startsWith(x.path + '/'));
   const tracked = entries.map((e) => e.path).sort(by);
   const special = new Map(entries.filter((e) => e.mode === '160000' || e.mode === '120000').map((e) => [e.path, e.mode === '160000' ? 'submodule' : 'symlink']));
   let commit: string, commitTime: string, dirty: boolean;
@@ -79,8 +81,11 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   for (const m of build.membership) if (m.generated) genOut.add(m.source);
   for (const pc of build.perConfiguration) for (const c of pc.customCommands) for (const o of [...c.outputs, ...c.byproducts]) genOut.add(o);
   const missing = (path: string, reason: string, note?: string) => {
-    const id = 'miss:' + path;
-    if (!nodes.has(id)) nodes.set(id, { id, kind: 'missing', path, hash: 'none', missing: note ? { reason, note } : { reason } });
+    const id = 'miss:' + path, was = nodes.get(id);
+    if (!was) nodes.set(id, { id, kind: 'missing', path, hash: 'none', missing: note ? { reason, note } : { reason } });
+    // Unknown wins a merge: two facts naming one missing path must not let an explained one absorb an unexplained one
+    // (critic M3: a quoted "clap/clap.h" once sat in an angle include's external node).
+    else if (reason === 'unknown' && was.missing.reason !== 'unknown') was.missing = note ? { reason, note } : { reason };
     return id;
   };
   const nodeFor = (p: string) => nodes.has('file:' + p) ? 'file:' + p
@@ -88,6 +93,8 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
     : p.startsWith('${external}/') ? missing(p, 'external', 'a source outside the repo, listed by the build')
     : binaryPaths.has(p) ? missing(p, 'unknown', 'a tracked binary file: counted in the inventory, not a node')
     : special.has(p) ? missing(p, 'unknown', `a tracked ${special.get(p)}: counted in the inventory, not read`)
+    // A file the build lists inside a submodule (HORDE's clap-wrapper sources): a pinned outside repo, not "not tracked".
+    : subOf(p) ? missing(p, 'external', `in submodule ${subOf(p)!.path} (pinned ${subOf(p)!.sha.slice(0, 12)}), which the crawl does not read`)
     : missing(p, 'unknown', 'listed by the build but not a tracked file');
   const addEdge = (src: string, dst: string, kind: string, provenance: string, ev: any, configs?: string[] | null, site = false) => {
     const id = edgeId(src, dst, kind);
@@ -177,8 +184,8 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   const fileInfo = new Map<string, any>((syntax.files || []).map((f: any) => [f.path, f]));
   const textual = new Set<string>();
   for (const i of syntax.includes) {
-    const dst = i.to.startsWith('file:') ? i.to : missing(i.to.slice(5), i.missing || 'generated',
-      i.missing === 'external' ? 'outside the repo (angle include or absolute path)' : i.missing === 'unknown' ? 'not found next to the file or on any include path' : undefined);
+    const dst = i.to.startsWith('file:') ? i.to : missing(i.to.slice(5), i.missing || 'generated', i.note
+      || (i.missing === 'external' ? 'outside the repo (angle include or absolute path)' : i.missing === 'unknown' ? 'not found next to the file or on any include path' : undefined));
     const fi = fileInfo.get(i.from);
     const cs = i.configs || (fi && fi.configs) || undefined;
     if (fi && fi.inCompile === false) textual.add(i.from);
@@ -215,6 +222,15 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
 
   // ---- dialect (Q-024): chosen by the repo's .loupe/config.json, else by `crawl --dialect` (said so), else none
   const rc = readRoleConfig(repo);
+  // The repo's own fact about what lives outside it (Q-025: siblings, ADR 0019), applied last and only to what is still
+  // unknown and is not a tracked path (a binary or symlink is there, never "a sibling repo"); a prefix that matched
+  // nothing is said, so a stale config shows.
+  const usedPrefix = new Set<string>(), trackedPaths = new Set(tracked);
+  for (const n of [...nodes.values()].sort((a, b) => by(a.id, b.id))) if (n.kind === 'missing' && n.missing.reason === 'unknown' && !trackedPaths.has(n.path)) {
+    const sib = rc.siblings.find((x) => n.path.startsWith(x));
+    if (sib) { n.missing = { reason: 'sibling', note: `a sibling repo under ${sib} (the repo's .loupe/config.json, siblings)` }; usedPrefix.add(sib); }
+  }
+  for (const k of rc.siblings) if (!usedPrefix.has(k)) notEvaluated.push({ what: '.loupe/config.json', reason: `siblings prefix ${k} matched no missing file` });
   if (opts.dialect && !DIALECTS[opts.dialect]) throw new Error(`crawl: unknown dialect "${opts.dialect}" (have: ${Object.keys(DIALECTS).join(', ')})`);
   const dialect = rc.dialect || opts.dialect || 'none';
   if (!rc.dialect && opts.dialect) notEvaluated.push({ what: 'dialect', reason: `${opts.dialect} chosen by crawl --dialect: the target has not declared one in .loupe/config.json` });

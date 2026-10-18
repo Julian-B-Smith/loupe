@@ -28,7 +28,7 @@
 // Grammars are vendored .wasm files pinned by sha256 (crawler/grammars/GRAMMARS.json); a mismatch refuses to load.
 // TypeScript is run by Node's built-in type stripping: only erasable syntax here.
 import { execFileSync } from 'node:child_process';
-import { readFileSync, realpathSync } from 'node:fs';
+import { readFileSync, realpathSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, posix, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,11 +40,11 @@ type BuildFacts = {
   membership: { source: string; target: string; generated: boolean; configs: string[] }[];
   perConfiguration: { name: string; targets: { name: string; sources: { path: string }[];
     compileGroups: { includes: string[]; sources: string[] }[] }[];
-    customCommands: { outputs: string[]; byproducts: string[] }[] }[];
+    customCommands: { outputs: string[]; byproducts: string[] }[]; fetched?: string[] }[];
 };
 export type Include = { from: string; line: number; directive: string; spelled: string; angle: boolean; guard?: string;
-  to: string; resolution: 'exact' | 'build' | 'syntactic'; missing?: 'generated' | 'external' | 'unknown';
-  configs?: string[]; via?: string[] };
+  to: string; resolution: 'exact' | 'build' | 'search' | 'syntactic'; missing?: 'generated' | 'external' | 'unknown';
+  note?: string; configs?: string[]; via?: string[] };
 
 const GRAMMAR_DIR = join(dirname(fileURLToPath(import.meta.url)), 'grammars');
 // Read for includes. .inc is a fragment, .m/.mm Objective-C: no grammar parses them, the scanner reads them all.
@@ -201,10 +201,18 @@ export async function syntaxLayer(repoIn: string, build: BuildFacts) {
   catch (e: any) { throw new Error(`syntax layer: git ls-files failed in ${repoIn}: ${String(e.stderr || e.message).trim()}`); }
   const tracked = listing.split('\0').filter(Boolean).sort(by);
   const trackedSet = new Set(tracked);
+  // Submodules (index mode 160000) and their pinned commits: a path inside one is a pinned outside repo, which the
+  // crawl does not read, never "not found" (Q-025: 38 of HORDE's 47 unknowns were clap-wrapper and choc files).
+  const subs = execFileSync('git', ['-C', repo, 'ls-files', '-s', '-z', '--', '.'], { stdio: ['ignore', 'pipe', 'pipe'] }).toString().split('\0').filter(Boolean)
+    .filter((l) => l.startsWith('160000 ')).map((l) => ({ path: l.slice(l.indexOf('\t') + 1), sha: l.split(' ')[1] })).sort((a, b) => by(a.path, b.path));
+  const subOf = (p: string) => subs.find((x) => p.startsWith(x.path + '/'));
   const allConfigs = build.configurations.map((c) => c.name);
   const generatedOutputs = new Set<string>();
   for (const m of build.membership) if (m.generated) generatedOutputs.add(m.source);
   for (const pc of build.perConfiguration) for (const c of pc.customCommands) for (const o of [...c.outputs, ...c.byproducts]) generatedOutputs.add(o);
+  // Headers in sources the build fetched (build layer, listed during configure): found there, an include is external
+  // and resolved by the build; not there, it stays unknown, so a typo is never taken for an SDK header (critic M2).
+  const fetchedFiles = new Set<string>(build.perConfiguration.flatMap((pc) => pc.fetched || []));
 
   // Roots: one context per (configuration, compiled source), with that compile group's include dirs. Fallbacks: a
   // listed but uncompiled file gets its target's include dirs, used only if no compile reaches it.
@@ -244,11 +252,11 @@ export async function syntaxLayer(repoIn: string, build: BuildFacts) {
       if (d.startsWith('${external}')) continue; // outside the repo: not looked in
       const cand = posix.normalize(posix.join(d, spelled));
       if (cand.startsWith('../') || cand === skip) continue;
-      if (d.startsWith('${build}') ? generatedOutputs.has(cand) : trackedSet.has(cand)) return cand;
+      if (d.startsWith('${build}') ? generatedOutputs.has(cand) || fetchedFiles.has(cand) : trackedSet.has(cand)) return cand;
     }
     return null;
   };
-  type One = { to: string; resolution: 'exact' | 'build' | 'syntactic'; missing?: 'generated' | 'external' | 'unknown' };
+  type One = { to: string; resolution: 'exact' | 'build' | 'search' | 'syntactic'; missing?: 'generated' | 'external' | 'unknown'; note?: string };
   // One include in one context (or in none). Windows backslashes read as `/`; an absolute spelling is never looked up.
   const resolveIn = (f: string, inc: RawInclude, c: Ctx | null): One => {
     const sp = posix.normalize(inc.spelled.replace(/\\/g, '/'));
@@ -260,9 +268,32 @@ export async function syntaxLayer(repoIn: string, build: BuildFacts) {
     let dirs = c ? c.includes : [];
     if (next && c) { const at = dirs.findIndex((d) => posix.normalize(posix.join(d, sp)) === f); if (at >= 0) dirs = dirs.slice(at + 1); }
     const hit = c ? viaDirs(sp, dirs, next ? f : null) : null;
+    if (hit && fetchedFiles.has(hit)) return { to: 'miss:' + hit, resolution: 'build', missing: 'external', note: 'in sources the build fetched (FetchContent): listed at configure, not read by the crawl' };
     if (hit) return { to: (hit.startsWith('${build}') ? 'miss:' : 'file:') + hit, resolution: 'build' };
     const gen = [...generatedOutputs].filter((o) => o === sp || o.endsWith('/' + sp)).sort(by)[0];
-    return gen ? { to: 'miss:' + gen, resolution: 'syntactic', missing: 'generated' } : { to: 'miss:' + sp, resolution: 'syntactic', missing: inc.angle ? 'external' : 'unknown' };
+    if (gen) return { to: 'miss:' + gen, resolution: 'syntactic', missing: 'generated' };
+    if (!inc.angle) {
+      // Q-025, in this order. (1) Next to the file or on a repo include dir, but inside a submodule: a pinned outside
+      // repo. Checked on disk when the submodule is checked out (the HORDE gate's clone fills them): the first candidate
+      // that exists wins, and if none does the include stays unknown. Unchecked, and said so, only when it is not.
+      const repoDirs = (c ? dirs : []).filter((d) => !d.startsWith('${'));
+      const cands = [relTo(f, sp), ...repoDirs.map((d) => posix.normalize(posix.join(d, sp)))].filter((x) => !x.startsWith('../') && subOf(x));
+      const out = (x: string) => subOf(x)!, checkedOut = (x: string) => existsSync(join(repo, out(x).path, '.git'));
+      const found = cands.find((x) => checkedOut(x) && existsSync(join(repo, x)));
+      // Found next to the file: exact; found through a -I include dir the build gave: build (critic round 2, L4).
+      if (found) return { to: 'miss:' + found, resolution: found === cands[0] && found === relTo(f, sp) ? 'exact' : 'build', missing: 'external', note: `in submodule ${out(found).path} (pinned ${out(found).sha.slice(0, 12)}), which the crawl does not read` };
+      const unchecked = cands.find((x) => !checkedOut(x));
+      if (unchecked) return { to: 'miss:' + unchecked, resolution: 'syntactic', missing: 'external', note: `in submodule ${out(unchecked).path} (pinned ${out(unchecked).sha.slice(0, 12)}), not checked out: the file's existence is unchecked` };
+      // (2) A file no compile reaches has no include path: try the nearest parent directory that has the header, as a
+      // -I of that directory would (engine2/tests/controls/x.cpp including "suite.h" finds engine2/tests/suite.h).
+      // Resolution `search`: a guess about an include path no build states, worth auditing.
+      if (!c) for (let d = posix.dirname(posix.dirname(f)); ; d = posix.dirname(d)) {
+        const cand = posix.normalize(posix.join(d, sp));
+        if (!cand.startsWith('../') && trackedSet.has(cand)) return { to: 'file:' + cand, resolution: 'search' };
+        if (d === '.' || d === '') break;
+      }
+    }
+    return { to: 'miss:' + sp, resolution: 'syntactic', missing: inc.angle ? 'external' : 'unknown' };
   };
 
   // Reached contexts, per file, from compile roots; then fallbacks for listed files no compile reached. Two phases so
@@ -327,6 +358,7 @@ export async function syntaxLayer(repoIn: string, build: BuildFacts) {
           angle: inc.angle, to: one.to, resolution: one.resolution };
         if (inc.guard) e.guard = inc.guard;
         if (one.missing) e.missing = one.missing;
+        if (one.note) e.note = one.note;
         if (configs.size && configs.size < fileCfgs.size) e.configs = [...configs].sort(by);
         if (via.size) e.via = [...via].sort(by);
         includes.push(e);

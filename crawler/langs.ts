@@ -15,7 +15,9 @@
 //
 // Resolution (0028): a path next to the file is `exact`; one from the repo root, or a Python module found by its
 // unique name, is `search`; a literal with no `/` resolves only next to the file (a bare "index.html" passed to
-// join(outDir, ...) named a repo file it never touched). Shell paths are `search` at best: the shell resolves them
+// join(outDir, ...) named a repo file it never touched), unless the code joins it onto a variable named for the repo
+// root (`ROOT / "CMakeLists.txt"`, `join(repo_root, "x")`; Q-025: four of HORDE's checks read the root CMakeLists.txt
+// that way; five, it turned out), which resolves from the repo root as `search`. Shell paths are `search` at best: the shell resolves them
 // from its working directory, which the crawl cannot know. Unresolved: an external package (`ext:`), or a missing node.
 // What cannot be evaluated (import(name), __import__(var), `${...}` specifiers, `$VAR/x.sh`) is listed in `computed`.
 // TypeScript is run by Node's built-in type stripping: only erasable syntax here.
@@ -28,9 +30,10 @@ export type Computed = { from: string; line: number; text: string };
 const by = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 export const LANG_OF: Record<string, string> = { '.py': 'python', '.js': 'js', '.mjs': 'js', '.cjs': 'js', '.html': 'html', '.htm': 'html', '.sh': 'sh', '.bash': 'sh' };
-const DATA_EXT = /\.(json|csv|tsv|ya?ml|txt|f32|wav|toml|ini|xml)$/i;
+// CMakeLists.txt ends in .txt but is build configuration: a script reading it references the build, not data (Q-025).
+const DATA_EXT = /^(?!(?:.*\/)?CMakeLists\.txt$).*\.(json|csv|tsv|ya?ml|txt|f32|wav|toml|ini|xml)$/i;
 // Fixed lists, never read from the host (the crawl must not depend on what is installed).
-const PY_STD = new Set(('__future__ abc argparse array ast asyncio base64 binascii bisect builtins bz2 calendar cmath codecs collections '
+export const PY_STD = new Set(('__future__ abc argparse array ast asyncio base64 binascii bisect builtins bz2 calendar cmath codecs collections '
   + 'colorsys concurrent configparser contextlib copy copyreg csv ctypes curses dataclasses datetime decimal difflib dis doctest email enum '
   + 'errno fcntl filecmp fileinput fnmatch fractions ftplib functools gc getopt getpass gettext glob graphlib gzip hashlib heapq hmac html '
   + 'http imaplib importlib inspect io ipaddress itertools json keyword linecache locale logging lzma mailbox marshal math mimetypes mmap '
@@ -40,15 +43,29 @@ const PY_STD = new Set(('__future__ abc argparse array ast asyncio base64 binasc
   + 'syslog tabnanny tarfile tempfile termios textwrap threading time timeit tkinter token tokenize tomllib trace traceback tracemalloc '
   + 'tty turtle types typing unicodedata unittest urllib uuid venv warnings wave weakref webbrowser wsgiref xml xmlrpc zipapp zipfile '
   + 'zipimport zlib zoneinfo').split(' '));
-const NODE_BUILTINS = new Set(('assert async_hooks buffer child_process cluster console constants crypto dgram diagnostics_channel dns '
+export const NODE_BUILTINS = new Set(('assert async_hooks buffer child_process cluster console constants crypto dgram diagnostics_channel dns '
   + 'domain events fs http http2 https inspector module net os path perf_hooks process punycode querystring readline repl stream '
   + 'string_decoder sys test timers tls trace_events tty url util v8 vm wasi worker_threads zlib').split(' '));
+// A bare name joined onto the repo root: `ROOT / "x"` (pathlib) or `join(ROOT, "x")`, with the variable named for the
+// root. Read on the code mask, so text in a comment never matches. Other names (outDir, here) stay next-to-the-file.
+// Lowercase `root`/`repo` is usually a parameter that receives ROOT (HORDE: gen_sbom.py, license_audit_check.py), but
+// also the walker's `for root, dirs, files in os.walk(...)` or a CLI argument (h2_ab.mjs writes join(outDir, ...)):
+// it counts only in a file that defines an uppercase root and never binds `root` by a loop or from argv (critic M1).
+const rootJoin = (v: string) => new RegExp(`(?:(?:^|[^\\w.])${v}\\s*\\/|\\bjoin\\(\\s*${v}\\s*,)\\s*$`);
+const ROOT_JOIN = rootJoin('(?:REPO_ROOT|ROOT|REPO)');
+const DEFINES_ROOT = /\b(?:REPO_ROOT|ROOT)\s*=/;
+// Any other binding disqualifies that name: a loop, `with ... as root` (a temporary copy, HORDE's plant-into-a-copy
+// selftests), or `root = <anything but ROOT>` (critic round 2: a scratch root once read as a write to ROADMAP.md).
+// Per name: `repo = re.search(...)` disqualifies `repo`, not the file's `root` (gen_sbom.py binds both).
+const LOWER_ROOTS = ['root', 'repo', 'repo_root', 'reporoot'];
+const bindsOtherwise = (v: string) => new RegExp(`\\bfor\\s*\\(?\\s*(?:(?:const|let|var)\\s+)?(?:[\\w\\s,]*,\\s*)?${v}\\b|\\b${v}\\s*,\\s*\\w+\\s*,\\s*\\w+\\s+in\\b|\\bas\\s+${v}\\b|\\b${v}\\s*=(?!=)\\s*(?![\\s]|(?:REPO_)?ROOT\\b|[\\w.]*\\(\\s*${v}\\s*\\))`); // root = Path(root) keeps the same root
+const BINDS = Object.fromEntries(LOWER_ROOTS.map((v) => [v, bindsOtherwise(v)]));
 const MODULE_SPEC = /^[\w@.\/:~-][^\s'"(),;&|<>`{}]*$/; // what a JS specifier can look like; anything else is not one
 
 // ---- code masks: same length as the text, comments blanked, string contents kept but marked
 export type Mask = { code: string; inStr: Uint8Array };
 // Python and shell-like texts: `#` comments, quotes, and (Python) triple-quoted strings blanked whole.
-function maskHash(text: string, triple: boolean): Mask {
+export function maskHash(text: string, triple: boolean): Mask {
   const out = text.split(''), inStr = new Uint8Array(text.length);
   const blank = (a: number, b: number) => { for (let k = a; k < b; k++) if (out[k] !== '\n') out[k] = ' '; };
   let i = 0;
@@ -152,10 +169,14 @@ export function langLayer(repo: string, tracked: string[], textFiles: Set<string
 
   // ---- string literals that name repo files; `writes(start)` says whether the literal at that offset is written
   const literals = (p: string, text: string, m: Mask, starts: number[], writes: (pos: number, lit: string) => boolean, skip: Set<number>) => {
+    const okLower = DEFINES_ROOT.test(m.code) ? LOWER_ROOTS.filter((v) => !BINDS[v].test(m.code)) : [];
+    const rootJoinLower = okLower.length ? rootJoin(`(?:${okLower.join('|')})`) : null;
     for (const x of text.matchAll(/(['"])([A-Za-z0-9_.\/-]+\.[A-Za-z0-9]+)\1/g)) {
       const pos = x.index! + 1, lit = x[2];
       if (!m.inStr[pos] || skip.has(pos) || /^https?:|^\/\//.test(lit)) continue;
-      const hit = findPath(p, lit, [''], lit.includes('/'));
+      const before = m.code.slice(Math.max(0, x.index! - 48), x.index!);
+      const rooted = ROOT_JOIN.test(before) || (!!rootJoinLower && rootJoinLower.test(before));
+      const hit = rooted && !lit.includes('/') ? (set.has(lit) ? { to: 'file:' + lit, resolution: 'search' as const } : null) : findPath(p, lit, [''], lit.includes('/'));
       if (!hit) continue;
       add({ from: p, line: lineAt(starts, pos), kind: writes(x.index!, lit) ? 'generates' : DATA_EXT.test(lit) ? 'data' : 'reference', ...hit });
     }

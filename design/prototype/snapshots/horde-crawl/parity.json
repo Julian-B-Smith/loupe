@@ -1,0 +1,2480 @@
+{
+  "counts": {
+    "expanded": 1,
+    "explained": 15,
+    "kind": 132,
+    "lost": 0,
+    "package": 254,
+    "resolved": 6,
+    "same": 768
+  },
+  "crawl": {
+    "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
+    "edges": 2538
+  },
+  "expanded": [
+    {
+      "crawlFrom": 45,
+      "dst": "miss:${build}/generated/factory_bank.h",
+      "kind": "embeds",
+      "src": "art:docs/presets/factory/**/*.json"
+    }
+  ],
+  "explained": [
+    {
+      "dst": "miss:h2/h2/harness/harness.mjs",
+      "kind": "import",
+      "src": "file:h2/harness/harness.mjs",
+      "why": "Comment, not code: line 9 is the file's doc comment showing how others import it (`import { ... } from '../h2/harness/harness.mjs'`); the crawl reads imports from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "miss:${build}/generated/gui_html.h",
+      "kind": "embeds",
+      "src": "file:src/gui/gui.html",
+      "why": "Configuration: CMakeLists.txt lines 106-111 embed gui.html only with -DHYPERSAW_GUI2=OFF; the declared Release configuration the crawl ran embeds gui2.html, which the crawl has (gui2.html generates gui_html.h, as input). The probe does not read CMake conditions."
+    },
+    {
+      "dst": "file:CMakeLists.txt",
+      "kind": "reference",
+      "src": "file:tools/build_flags_check.py",
+      "why": "Missed by the crawl, a real use: line 133 lists \"CMakeLists.txt\" among glob patterns the check scans, and line 306 looks it up by key in the dict of repo files read at lines 132-139. A name used as a pattern and a dict key, not a path the crawl can follow."
+    },
+    {
+      "dst": "file:index.html",
+      "kind": "generates",
+      "src": "file:tools/gen_lab_index.py",
+      "why": "Probe error: line 177 writes D / \"index.html\" with D = ROOT / \"docs/design\" (line 51), i.e. docs/design/index.html, not the root index.html."
+    },
+    {
+      "dst": "file:index.html",
+      "kind": "reference",
+      "src": "file:tools/gen_lab_index.py",
+      "why": "Probe error: line 72 compares a lab file's name with \"index.html\" inside docs/design (f.parent != D); it names no root file."
+    },
+    {
+      "dst": "file:index.html",
+      "kind": "generates",
+      "src": "file:tools/h2_ab.mjs",
+      "why": "Probe error: line 296 writes join(outDir, 'index.html'), a run's output folder, not the root index.html (the crawl's next-to-the-file rule for bare names exists for exactly this case)."
+    },
+    {
+      "dst": "ext:npm:y",
+      "kind": "import",
+      "src": "file:tools/labharness/sandbox_check.mjs",
+      "why": "Text, not an import: lines 147, 151 and 152 pass the string \"import { x } from 'y';...\" to unguarded() as test input for the coverage scan; the crawl reads imports from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "import",
+      "src": "file:tools/labharness/sandbox_check.mjs",
+      "why": "Text, not an import: line 150's \"import '../labharness/sandbox_guard.mjs';...\" is a string passed to unguarded() as test input; the crawl reads imports from code only (Julian, Q-023). The crawl's reference edge to the same file (lines 119, 135, 150, 151) is the file names the check copies and compares, not this import."
+    },
+    {
+      "dst": "file:tools/registry_decl.py",
+      "kind": "generates",
+      "src": "file:tools/labharness/sandbox_check.mjs",
+      "why": "Probe and crawl both misread line 204: it writes a stub at join(fx, 'tools/registry_decl.py'), inside the scratch fixture fx (defined at line 189), not the repo's file. The probe calls it a write to the repo file; the crawl a reference to it, because a literal with a / resolves from the repo root whatever it is joined onto (a known crawl false positive, recorded in Q-025's trace)."
+    },
+    {
+      "dst": "miss:tools/labharness/own.mjs",
+      "kind": "import",
+      "src": "file:tools/labharness/sandbox_check.mjs",
+      "why": "Text, not an import: line 152's import('./own.mjs') is inside a string passed to unguarded() as test input; the crawl reads imports from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "miss:tools/labharness/x.mjs",
+      "kind": "import",
+      "src": "file:tools/labharness/sandbox_check.mjs",
+      "why": "Comment, not code: line 142 is a comment saying a literal import('./x.mjs') loads the check's own module; the crawl reads imports from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "import",
+      "src": "file:tools/labharness/sandboxed_node.mjs",
+      "why": "Comment, not code: line 34 is the doc comment describing the guard (\"starts with `import './sandbox_guard.mjs'`\"); the crawl reads imports from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/sandboxed_node.mjs",
+      "why": "Comment, not code: line 34 is the doc comment describing the guard (\"starts with `import './sandbox_guard.mjs'`\"); the crawl reads paths from code only (Julian, Q-023)."
+    },
+    {
+      "dst": "file:CMakeLists.txt",
+      "kind": "reference",
+      "src": "file:tools/test_identity_check.py",
+      "why": "Missed by the crawl, a real use: line 75 binds CMAKE = \"CMakeLists.txt\", passed to git ls-files from ROOT at line 168. The crawl reads a literal where it is used, not through a constant."
+    },
+    {
+      "dst": "file:CMakeLists.txt",
+      "kind": "reference",
+      "src": "file:tools/weakening_check.py",
+      "why": "Missed by the crawl, a real use: SCOPE (line 160) is the pathspec list passed to git ls-files (line 293), run from ROOT by scan(ROOT) (line 968), which then reads every listed file, the root CMakeLists.txt among them. (Line 570 is a separate use: a key of LAYOUT, the files its must-fail controls write into a scratch git repo.)"
+    }
+  ],
+  "kind": [
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:h2/harness/harness.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/gen_patches.mjs",
+      "kind": "reference",
+      "src": "file:h2/harness/selftest.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:h2/harness/selftest.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:h2/harness/selftest.mjs"
+    },
+    {
+      "crawlKind": "generates",
+      "dst": "miss:${build}/generated/gui_html.h",
+      "kind": "embeds",
+      "src": "file:src/gui/gui2.html"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/auhost/analyse.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/click_detector_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/click_detector.mjs",
+      "kind": "reference",
+      "src": "file:tools/click_detector_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_frame_hold_check.mjs",
+      "kind": "reference",
+      "src": "file:tools/click_detector_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/gen_patches.mjs",
+      "kind": "reference",
+      "src": "file:tools/engine2_reference_renders.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/engine2_reference_renders.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_ab.mjs",
+      "kind": "reference",
+      "src": "file:tools/engine2_reference_renders.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/feedback_scan.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/extract_core.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/extract_force.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/extract_glide.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/extract_intent.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_force.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_filter_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_force.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_force_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_glide.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_glide_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_goldens_sr.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/gen_goldens.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_goldens_sr.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_goldens_sr.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_intent.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_intent_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_force.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_notch_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_spectra_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_station_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_subosc_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_swarmalator_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/golden/gen_time_goldens.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/gen_patches.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_ab.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_ab.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_ab_page.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_ab.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_scenarios.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_engine_render.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_engine_render.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_frame_hold_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_fuzz_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_output_headroom_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_scenarios.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_scalpel_render.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_scalpel_render.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_scenarios.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_soak_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_soak_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_spread_ramp_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/h2_frame_hold_check.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_spread_ramp_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:h2/harness/harness.mjs",
+      "kind": "reference",
+      "src": "file:tools/h2_steal_fade_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/composed_engine_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/composed_engine_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/composed_engine_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/divergence_ledger_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/filter_fidelity_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/filter_fidelity_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/fxlab_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/fxmorph_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/glide_roundup.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/gui_history_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/lab_load_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/lab_wheel_scroll_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/modlab_probe.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/modlab_reach.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/modlab_sweep.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/modlab_sweep_report.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/morph_editor_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/os_default_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/port_legacy_presets.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/os_default_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/port_legacy_presets.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/port_legacy_presets_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/reverb_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/reverb_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/station_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/station_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/golden/extract_core.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/subosc_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/labharness/subosc_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/fidelity.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/listening_sample.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/alias_sources.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/alias_sources.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/antialias_scope.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/antialias_scope.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/antialias_scope.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/alias_sources.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/listening_sample.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/calibrate.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/dependency_tree_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/dependency_tree_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/alias_sources.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/fidelity.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_audit.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/fidelity.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_scan_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/fidelity_scan_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/alias_sources.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet_report.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet_report.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gauntlet_report.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gen_dependency_tree.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/gen_dependency_tree.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/calibrate.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/listening_sample.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_pass_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_sample.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_sample.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gen_dependency_tree.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_sample.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_sample.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/listening_sample.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/metrics_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/metrics_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/metrics_check.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_facts.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/os_quality.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/os_quality.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/gauntlet.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/os_quality.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/metrics.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/os_quality.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/patchspace/space.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/os_quality.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/patchspace/space.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_facts.mjs",
+      "kind": "reference",
+      "src": "file:tools/port_legacy_presets.mjs"
+    },
+    {
+      "crawlKind": "import",
+      "dst": "file:tools/labharness/sandbox_guard.mjs",
+      "kind": "reference",
+      "src": "file:tools/port_legacy_presets.mjs"
+    }
+  ],
+  "lost": [],
+  "package": [
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:engine2/tests/runner.cpp"
+    },
+    {
+      "crawlDst": "miss:vector",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:engine2/tests/suite.h"
+    },
+    {
+      "crawlDst": "miss:climits",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/cores/scalpel/razor_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/cores/swarm/force_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/cores/swarm/glide_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/cores/swarm/swarm_core.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/engine/blade.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/engine/engine.h"
+    },
+    {
+      "crawlDst": "miss:climits",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/engine/js.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/engine/swarm.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/flush_to_zero.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/adapter_composed.h"
+    },
+    {
+      "crawlDst": "miss:cstring",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/adapters.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/control_fuzz.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/control_soak.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/control_spread.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/control_steal.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/harness.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:h2/harness/render_cli.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/delay_core.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/depends_graph.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/filter_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/force_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/fx_rack.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/glide_core.h"
+    },
+    {
+      "crawlDst": "miss:string_view",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/embedded_page_policy.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui.h"
+    },
+    {
+      "crawlDst": "miss:objc/runtime.h",
+      "dst": "ext:objc",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui.mm"
+    },
+    {
+      "crawlDst": "miss:Cocoa/Cocoa.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui.mm"
+    },
+    {
+      "crawlDst": "miss:memory",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui.mm"
+    },
+    {
+      "crawlDst": "miss:choc/gui/choc_WebView.h",
+      "dst": "ext:choc",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui_common.h"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui_common.h"
+    },
+    {
+      "crawlDst": "miss:windows.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui_win.cpp"
+    },
+    {
+      "crawlDst": "miss:cwchar",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/hypersaw_gui_win.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/gui/preset_store.h"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap.cpp"
+    },
+    {
+      "crawlDst": "miss:clapwrapper/vst3.h",
+      "dst": "ext:clap-wrapper",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap_entry.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap_entry.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/hypersaw_clap_entry.h"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/hypersaw_debug.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/hypersaw_debug.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/input_guards.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/intent_core.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/mod_core.h"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/morph_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/notch_core.h"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/osc_preset.h"
+    },
+    {
+      "crawlDst": "miss:atomic",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/output_latch.h"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/routing_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/spectra_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/station_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/strata_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/subosc_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/svf_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/swarm_core.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/swarmalator_core.h"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/swarmfx_clap.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/swarmfx_clap.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/swarmfx_entry.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:src/swarmfx_entry.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/time_core.h"
+    },
+    {
+      "crawlDst": "miss:cstddef",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:src/undo_tree.h"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/anchor_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/anchor_check.cpp"
+    },
+    {
+      "crawlDst": "miss:AudioToolbox/AudioToolbox.h",
+      "dst": "ext:AudioToolbox",
+      "kind": "include",
+      "src": "file:tools/auhost/auhost.cpp"
+    },
+    {
+      "crawlDst": "miss:CoreFoundation/CoreFoundation.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/auhost/auhost.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/auhost/auhost.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/bank_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/bank_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/bendsweep_probe.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:bz2",
+      "kind": "import",
+      "src": "file:tools/binary_hygiene_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:lzma",
+      "kind": "import",
+      "src": "file:tools/binary_hygiene_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:marshal",
+      "kind": "import",
+      "src": "file:tools/binary_hygiene_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:zipfile",
+      "kind": "import",
+      "src": "file:tools/binary_hygiene_check.py"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/blep_alias_incommensurate_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/blocksize_check.cpp"
+    },
+    {
+      "crawlDst": "miss:libs/choc/choc/text/choc_JSON.h",
+      "dst": "ext:choc",
+      "kind": "include",
+      "src": "file:tools/bridge_utf8_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/bridge_utf8_check.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:tokenize",
+      "kind": "import",
+      "src": "file:tools/build_flags_check.py"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/combguard_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/combguard_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/conformance_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/conformance_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/corner_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/corner_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:chrono",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/cpu_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/delay_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/denormal_check.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:base64",
+      "kind": "import",
+      "src": "file:tools/embed_file.py"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/embedded_page_policy_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/enable_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/enable_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/endprobe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/endprobe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/filter_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/force_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/fxxfade_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/fxxfade_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/fxxfade_plugin_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/fxxfade_plugin_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/gain_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/gain_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/gen_factory_bank.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/gen_factory_bank.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:uuid",
+      "kind": "import",
+      "src": "file:tools/gen_sbom.py"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/gen_state_fixtures.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/glide_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/glidepath_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/glidepath_probe.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:importlib",
+      "kind": "import",
+      "src": "file:tools/golden_registry_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:base64",
+      "kind": "import",
+      "src": "file:tools/gui_sink_check.py"
+    },
+    {
+      "crawlDst": "miss:choc/gui/choc_WebView.h",
+      "dst": "ext:choc",
+      "kind": "include",
+      "src": "file:tools/gui_webview_check.mm"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/gui_webview_check.mm"
+    },
+    {
+      "crawlDst": "miss:Cocoa/Cocoa.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/gui_webview_check.mm"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/gui_webview_check.mm"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_fz_probe.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:shlex",
+      "kind": "import",
+      "src": "file:tools/h2_engine_fz_probe.py"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_hooked_replay.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_parity_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_rtsan_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_selfdigest_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cfenv",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_engine_stream.h"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:platform",
+      "kind": "import",
+      "src": "file:tools/h2_libm_count.py"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_scalpel_parity_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdint",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_scalpel_stream.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_swarm_lift_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/h2_swarm_parity_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/hostile_events_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/hostile_events_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/identity_store_check.mm"
+    },
+    {
+      "crawlDst": "miss:Cocoa/Cocoa.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/identity_store_check.mm"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/identity_store_check.mm"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/intent_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/kstuck_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/kstuck_probe.cpp"
+    },
+    {
+      "crawlDst": "ext:node",
+      "dst": "ext:npm:fs",
+      "kind": "import",
+      "src": "file:tools/labharness/sandbox_check.mjs"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/lfoenv_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/lfoenv_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/load_handoff_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/load_handoff_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/measure_alias.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_alias.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/measure_cpu.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_cpu.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/measure_fx.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_fx.cpp"
+    },
+    {
+      "crawlDst": "miss:unistd.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/measure_h2_engine.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_h2_engine.cpp"
+    },
+    {
+      "crawlDst": "miss:chrono",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_h2_scalpel.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/measure_modsources.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/mixer_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/mod_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/modreadback_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/modreadback_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/morphlayout_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/morphlayout_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/morphscope_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/morphscope_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/mpe_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cfloat",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/nan_latch_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/ncap_check.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:platform",
+      "kind": "import",
+      "src": "file:tools/nightly/run.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:importlib",
+      "kind": "import",
+      "src": "file:tools/nightly_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:shlex",
+      "kind": "import",
+      "src": "file:tools/nightly_check.py"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/notch_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/notchslot_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/notefuzz_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/notefuzz_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/offcorner_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/offcorner_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/onset_ref_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/param_id_dump.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/paramclass_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/paramfunc_smoke.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/paramfunc_smoke.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/paramleak_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/paramleak_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/paramscope_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/parity_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/paste_cap_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/penv_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/penv_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/pitch_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/pitch_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/polarity_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/preset_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/preset_pitch_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/preset_pitch_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/presetstore_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/ratchet_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:mach/mach.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/ratchet_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/ratchet_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/registry_dump.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/render_neutral_digest.cpp"
+    },
+    {
+      "crawlDst": "miss:Accelerate/Accelerate.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/renderer_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/renderer_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/robustness_matrix.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/robustness_matrix.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/routing_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/rtsafety_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:atomic",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/rtsafety_probe.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:shlex",
+      "kind": "import",
+      "src": "file:tools/rtsan_check.py"
+    },
+    {
+      "crawlDst": "miss:sys/stat.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/rtsan_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/rtsan_probe.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/samplerate_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:cstdio",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/scenario_floor.h"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/scratch_b18_two_osc_matrix.cpp"
+    },
+    {
+      "crawlDst": "miss:chrono",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/scratch_b18_two_osc_matrix.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/shell_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/shell_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:libs/clap/include/clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/slotcontract_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/slotcontract_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/spectra_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/sr_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/stability_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/state_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/state_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/statefix_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/statefix_common.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/statefix_common.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/station_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/steal_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/steal_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/strata_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/subdiv_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/subosc_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/subosc_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/svf_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/swarm_sr_parity.h"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/swarmalator_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/tailprobe.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/tailprobe.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:ctypes",
+      "kind": "import",
+      "src": "file:tools/test_identity_check.py"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:plistlib",
+      "kind": "import",
+      "src": "file:tools/test_identity_check.py"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/time_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/trace_check.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/trace_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/trajectory_check.cpp"
+    },
+    {
+      "crawlDst": "miss:sys/stat.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/tsan_stress.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/tsan_stress.cpp"
+    },
+    {
+      "crawlDst": "ext:python-std",
+      "dst": "ext:py:shlex",
+      "kind": "import",
+      "src": "file:tools/tsan_stress_check.py"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/tseed_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/twocluster_check.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/undo_check.cpp"
+    },
+    {
+      "crawlDst": "miss:clap/clap.h",
+      "dst": "ext:clap",
+      "kind": "include",
+      "src": "file:tools/user_patch_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/user_patch_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:cmath",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/voicetap_check.cpp"
+    },
+    {
+      "crawlDst": "miss:CoreFoundation/CoreFoundation.h",
+      "dst": "ext:platform",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:algorithm",
+      "dst": "ext:std",
+      "kind": "include",
+      "src": "file:tools/waveshape_check.cpp"
+    }
+  ],
+  "probe": {
+    "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
+    "edges": 1176
+  },
+  "resolved": [
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ftypes.h",
+      "dst": "miss:pluginterfaces/base/ftypes.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ibstream.h",
+      "dst": "miss:pluginterfaces/base/ibstream.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/base/ipluginbase.h",
+      "dst": "miss:pluginterfaces/base/ipluginbase.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstaudioprocessor.h",
+      "dst": "miss:pluginterfaces/vst/ivstaudioprocessor.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivstcomponent.h",
+      "dst": "miss:pluginterfaces/vst/ivstcomponent.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    },
+    {
+      "crawlDst": "miss:${build}/_deps/horde_vst3sdk-src/pluginterfaces/vst/ivsthostapplication.h",
+      "dst": "miss:pluginterfaces/vst/ivsthostapplication.h",
+      "kind": "include",
+      "src": "file:tools/vst3_save_bench.cpp"
+    }
+  ],
+  "sameCommit": true,
+  "schema": "loupe.parity/0.0-internal"
+}

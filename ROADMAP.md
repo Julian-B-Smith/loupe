@@ -14,8 +14,9 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
-  syntax and graph tests on the fixture (goldens). `full` == `fast` until Layer-E gates exist. **Known gaps:** no
-  crawl determinism gate on HORDE itself (checked by hand at 1e6aae79); `design/tokens.css` and the prototype
+  syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
+  gates (Q-025: clone, crawl twice, leak check, probe parity, zero unknown; the fresh crawl must equal the committed
+  snapshot), skipped and said so without a local HORDE checkout. **Known gaps:** `design/tokens.css` and the prototype
   snapshots are not generated (Q-007, Q-008).
 - **Last human ratification:** 2026-10-17 (Q-020's attribution rule, by poll).
 
@@ -98,7 +99,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   the crawled configurations is "not built here" (a build-only claim, not "platform code"); build-time code is its own
   class in the outside box; the crawler now reads `add_custom_target`. HORDE at 1e6aae79: the 11 re-checked (all ten
   engines and h2 cores confirmed not in the product; hypersaw_gui_win.cpp not built here); the one file left unshipped
-  is the legacy gui.html (only with HYPERSAW_GUI2=OFF, a configuration the crawl did not run).
+  is the legacy gui.html (only with HYPERSAW_GUI2=OFF, a configuration the crawl did not run). Done (merged #33);
+  Julian, 2026-10-18: "not built here" stays a build-only claim (naming platform code would need a second platform
+  configuration).
 - **Scope:** P1 crawler, `design/prototype/lens.js`
 - **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, ADR 0027; `compile_commands.json` names no targets / CMake
   target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files
@@ -304,6 +307,40 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   5. Deterministic; fixture cases for each rule kind and a bridge; goldens; on HORDE (with `--dialect dsp-plugin`),
      roles counted by rule and the bridge edges listed.
 - **Out of scope:** symbols (P1b); Q-009's Operational lens (next).
+
+### Q-025 — P1a gates on HORDE: zero `unknown`, probe parity, determinism
+- **Status:** built, waiting on HORDE (2026-10-18; trace: traces/2026-10-18-q025-horde-gates.md). Julian (polls):
+  fix the bare names a root variable joins (5 recovered) and explain the rest in writing; propose `siblings` and
+  `dialect` to HORDE (brief-004); `./verify full` runs the gate when a HORDE checkout is present. At 1e6aae79 every
+  gate holds but one: 2 `unknown` nodes, the FOUNDATIONS headers HORDE keeps untracked, which only HORDE's config can
+  state. Criterion 1 closes when HORDE commits the proposed lines and the gate re-runs on that commit.
+- **Starting point (HORDE at 1e6aae79, after Q-009):** 47 `unknown` missing nodes: 36 clap-wrapper files the build
+  lists and 1 choc header included as `../libs/choc/...` (submodules), 6 VST3 SDK headers a bench includes through a
+  FetchContent include path (`${build}/_deps/...`), 2 quoted includes in files no compile reaches whose headers exist
+  under a parent directory (engine2/tests/suite.h, engine2/core/api/engine.h), and 2 headers of the private sibling
+  FOUNDATIONS that HORDE deliberately keeps untracked (tools/conformance_check.cpp).
+- **Decisions:** a file inside a submodule is `external` with the submodule and its pinned commit in the note, checked
+  on disk when the submodule is checked out (a missing one stays unknown); the build layer lists the headers in the
+  sources FetchContent fetched, so an include into them resolves by the build, and one that is not there stays
+  unknown; a file no compile reaches gets a nearest-parent-directory search (resolution `search`, worth auditing);
+  the target's `.loupe/config.json` gains `siblings` (prefixes ending in `/`, the key HORDE's probe config used, ADR
+  0019), applied last to what is still unknown and untracked; unknown wins when two facts name one missing path.
+  HORDE's config is human-owned: Loupe proposes.
+- **Acceptance criteria:**
+  1. On HORDE at a named commit, with HORDE's committed `.loupe/config.json`, the crawl has zero `unknown` missing
+     nodes, and its inventory closes (every tracked file a node or counted).
+  2. Probe parity: the probe (`tools/probe-crawl.mjs`) run on the same commit, compared edge by edge with the crawl;
+     every probe edge is found again (the same edge, a more precise kind, the same package, or one the crawl
+     resolves better) or has a written reason pinned to that commit (Julian, 2026-10-18: "no probe edge lost without
+     a written reason"), and the parity report listing every class is committed.
+  3. Two crawls are byte-identical, and the gate is repeatable from one command; its place in `./verify full` is a
+     human gate (editing `./verify`).
+  4. Each new rule has a fixture or synthetic case, and a plant fails it.
+- **Out of scope:** symbols (P1b); writing into HORDE beyond its mailbox; any change to HORDE's code.
+- **While it waits on HORDE (Julian, 2026-10-18):** `./verify full` stays red and names the waiting gate
+  (`tools/horde-gate-waiting.json`, pinned to the exact unknown ids). Another queue item may close on `fast` green
+  plus `full` exit 4 (red only on listed waits, every snapshot byte-compare held); exit 1 is a regression and halts
+  work. A skipped HORDE gate (no checkout) exits 3 and never counts as a pass.
 
 ### Q-022 — Acknowledged conformance findings (exemptions with a reason)
 - **Status:** open (2026-10-17, from HORDE's answer to notice-004)

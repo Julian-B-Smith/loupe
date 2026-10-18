@@ -69,10 +69,13 @@ export function globRe(glob: string): RegExp {
   return new RegExp('^' + re + '$');
 }
 
-export type RepoLoupeConfig = { dialect: string | null; roles: { match: string; role: string }[]; problems: string[] };
+// siblings (Q-025, ADR 0019: a fact the crawler cannot discover, the key HORDE's probe config used): path prefixes,
+// each ending in `/`, that name a sibling repo kept out of this one. Applied only to what the crawl still cannot find
+// and is not tracked, so a config can never hide a file that is there.
+export type RepoLoupeConfig = { dialect: string | null; roles: { match: string; role: string }[]; problems: string[]; siblings: string[] };
 export function readRoleConfig(repo: string): RepoLoupeConfig {
   const p = join(repo, '.loupe', 'config.json');
-  const out: RepoLoupeConfig = { dialect: null, roles: [], problems: [] };
+  const out: RepoLoupeConfig = { dialect: null, roles: [], problems: [], siblings: [] };
   if (!existsSync(p)) return out;
   let cfg: any; try { cfg = JSON.parse(readFileSync(p, 'utf8')); } catch { out.problems.push('.loupe/config.json is not JSON'); return out; }
   if (cfg.dialect != null) { if (DIALECTS[cfg.dialect]) out.dialect = cfg.dialect; else out.problems.push(`.loupe/config.json names dialect "${cfg.dialect}", which Loupe does not have`); }
@@ -81,6 +84,10 @@ export function readRoleConfig(repo: string): RepoLoupeConfig {
     if (typeof r?.match !== 'string' || !ROLES.includes(r?.role)) out.problems.push(`.loupe/config.json roles[${i}] needs a "match" glob and a role from: ${ROLES.join(', ')}`);
     else out.roles.push({ match: r.match, role: r.role });
   });
+  // A prefix must end in `/`: "e" would otherwise claim engine2/... (critic M6).
+  if (cfg.siblings != null && (!Array.isArray(cfg.siblings) || cfg.siblings.some((x: any) => typeof x !== 'string' || !/^[^/].*\/$/.test(x) || x.split('/').includes('..'))))
+    out.problems.push('.loupe/config.json "siblings" must be a list of folder prefixes ending in "/", e.g. ["foundations/"]');
+  else if (cfg.siblings) out.siblings = [...cfg.siblings].sort();
   return out;
 }
 
