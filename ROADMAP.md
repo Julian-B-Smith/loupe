@@ -7,10 +7,10 @@ State lives here; conversations are ephemeral. Phase plan seeded from
 ## Status
 
 - **Phase:** P0 done 2026-10-02. PA done 2026-10-11. **P1a ← current, mostly built:** the CMake build layer (Q-012),
-  the C/C++/Objective-C syntax layer (Q-013), graph.json at schema 0.3.1 with the inventory and build-target
-  conformance (Q-016, Q-020, Q-021), and the first crawl of HORDE (Q-018) are done. Still open in P1a: the other
-  languages (Python, JS, HTML, shell), the dsp-plugin dialect and its roles, the Operational lens from the build
-  (Q-009), and its gates on HORDE (zero `unknown` missing nodes, probe parity). Side track ready: engine2 from
+  the C/C++/Objective-C syntax layer (Q-013), graph.json (now schema 0.3.2) with the inventory and build-target
+  conformance (Q-016, Q-020, Q-021), the first crawl of HORDE (Q-018), the other languages (Q-023), the dsp-plugin
+  dialect and its roles (Q-024) and the Operational lens from the build (Q-009) are done. Still open in P1a: its
+  gates on HORDE (zero `unknown` missing nodes, probe parity). Side track ready: engine2 from
   HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
@@ -92,7 +92,13 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Acceptance criteria:** see PA gate.
 
 ### Q-009 — Operational lens: seeds from the build (P1)
-- **Status:** open (prototype lens done 2026-10-08, ADR 0019 update; operational = reachable from entry points)
+- **Status:** built 2026-10-18 (trace: traces/2026-10-18-q009-oplens.md). Julian (poll, 2026-10-18): the graph states
+  which side of a `generates` edge its source is on, so schema 0.3.2 adds `as: program | input` (G10). Seeds are what
+  the product targets build (plugin libraries and the libraries they link); a compiled source no product builds in
+  the crawled configurations is "not built here" (a build-only claim, not "platform code"); build-time code is its own
+  class in the outside box; the crawler now reads `add_custom_target`. HORDE at 1e6aae79: the 11 re-checked (all ten
+  engines and h2 cores confirmed not in the product; hypersaw_gui_win.cpp not built here); the one file left unshipped
+  is the legacy gui.html (only with HYPERSAW_GUI2=OFF, a configuration the crawl did not run).
 - **Scope:** P1 crawler, `design/prototype/lens.js`
 - **Acceptance criteria:** 1. lens seeds come from the product build target's sources (CMake File API codemodel, ADR 0027; `compile_commands.json` names no targets / CMake
   target), not file names; 2. platform conditions are read from the build, so `hypersaw_gui_win.cpp`-style files

@@ -25,7 +25,7 @@ type Source = { path: string; generated: boolean; compiled: boolean; language: s
 type Target = { name: string; type: string; definedIn: { file: string; line: number } | null; dependencies: string[]; sources: Source[];
   compileGroups: { language: string; includes: string[]; defines: string[]; sources: string[] }[] };
 type CustomCommand = { file: string; line: number; target: string | null; stage: string | null; outputs: string[];
-  byproducts: string[]; depends: string[]; commands: string[][] };
+  byproducts: string[]; depends: string[]; commands: string[][]; command?: string };
 
 const DEFAULT: Configuration[] = [{ name: 'default', args: [] }];
 // "Unclaimed" covers files a compiler would compile (headers are usually not listed in targets, so they would flood
@@ -163,30 +163,38 @@ function* traceLines(file: string): Generator<string> {
   } finally { closeSync(fd); }
 }
 
-// add_custom_command keywords (CMake docs). Flags take no value; ONE_KW take exactly one; the rest take a list.
+// add_custom_command and add_custom_target keywords (CMake docs). Flags take no value; ONE_KW take exactly one; the
+// rest take a list (ALL is a flag of add_custom_target only, handled there). add_custom_target is read too (Q-009): HORDE's build stamp is one, and its BYPRODUCTS were dropped
+// without a trace when only add_custom_command was read.
 const FLAG_KW = new Set(['VERBATIM', 'APPEND', 'USES_TERMINAL', 'CODEGEN', 'COMMAND_EXPAND_LISTS', 'DEPENDS_EXPLICIT_ONLY', 'PRE_BUILD', 'PRE_LINK', 'POST_BUILD']);
 const ONE_KW = new Set(['WORKING_DIRECTORY', 'COMMENT', 'DEPFILE', 'MAIN_DEPENDENCY', 'JOB_POOL', 'JOB_SERVER_AWARE', 'TARGET']);
-const MULTI_KW = new Set(['OUTPUT', 'COMMAND', 'ARGS', 'DEPENDS', 'BYPRODUCTS', 'IMPLICIT_DEPENDS']);
+const MULTI_KW = new Set(['OUTPUT', 'COMMAND', 'ARGS', 'DEPENDS', 'BYPRODUCTS', 'IMPLICIT_DEPENDS', 'SOURCES']);
 
 function parseTrace(file: string, repo: string, build: string, normPath: (p: string) => string, normText: (s: string) => string): CustomCommand[] {
   if (!existsSync(file)) return [];
   const out: CustomCommand[] = [];
   const realRepo = safeReal(repo);
   for (const line of traceLines(file)) {
-    if (!line.includes('add_custom_command')) continue;
+    if (!line.includes('add_custom_')) continue;
     let ev: { cmd?: string; file?: string; line?: number; args?: string[] };
     try { ev = JSON.parse(line); } catch { continue; } // non-JSON lines are data we skip
-    if (!ev.cmd || ev.cmd.toLowerCase() !== 'add_custom_command' || !ev.file || !Array.isArray(ev.args)) continue;
+    const cmd = (ev.cmd || '').toLowerCase();
+    if ((cmd !== 'add_custom_command' && cmd !== 'add_custom_target') || !ev.file || !Array.isArray(ev.args)) continue;
     // Only the target's own CMake files: CMake modules and included files outside the repo are not its rules.
     const f = safeReal(ev.file);
     if (!(f === realRepo || f.startsWith(realRepo + sep))) continue;
     const srcDir = dirname(f), relDir = relative(realRepo, srcDir);
     const binDir = relDir ? join(build, relDir) : build;
     const one: Record<string, string> = {};
-    const multi: Record<string, string[]> = { OUTPUT: [], DEPENDS: [], BYPRODUCTS: [], IMPLICIT_DEPENDS: [] };
+    const multi: Record<string, string[]> = { OUTPUT: [], DEPENDS: [], BYPRODUCTS: [], IMPLICIT_DEPENDS: [], SOURCES: [] };
     const commands: string[][] = [];
     let key = '', stage: string | null = null;
-    for (const a of ev.args) {
+    // add_custom_target(Name [ALL] [command args...] KEYWORDS...): the name is the owning target, and words before the
+    // first keyword are a command of their own.
+    const args = ev.args.slice();
+    if (cmd === 'add_custom_target') { one.TARGET = args.shift() || ''; stage = 'CUSTOM_TARGET'; key = 'COMMAND'; commands.push([]); }
+    for (const a of args) {
+      if (a === 'ALL' && cmd === 'add_custom_target') continue; // ALL builds it by default; the command words go on
       if (FLAG_KW.has(a)) { if (a === 'PRE_BUILD' || a === 'PRE_LINK' || a === 'POST_BUILD') stage = a; key = ''; continue; }
       if (ONE_KW.has(a) || MULTI_KW.has(a)) { key = a; if (a === 'COMMAND') commands.push([]); continue; }
       if (!key) continue;
@@ -202,12 +210,12 @@ function parseTrace(file: string, repo: string, build: string, normPath: (p: str
     const dep = (p: string) => (isAbsolute(p) ? normPath(p) : existsSync(join(srcDir, p)) ? normPath(join(srcDir, p)) : `name:${p}`);
     const deps = split([...multi.DEPENDS, ...(one.MAIN_DEPENDENCY ? [one.MAIN_DEPENDENCY] : [])]).map(dep);
     out.push({
-      file: normPath(f), line: ev.line ?? 0,
+      file: normPath(f), line: ev.line ?? 0, command: cmd,
       target: one.TARGET ?? null, stage: one.TARGET ? stage ?? 'POST_BUILD' : null,
       outputs: split(multi.OUTPUT).map(inBin).sort(by),
       byproducts: split(multi.BYPRODUCTS).map(inBin).sort(by),
       depends: [...new Set(deps)].sort(by),
-      commands: commands.map((c) => c.map((a) => (isAbsolute(a) ? normPath(a) : normText(a)))),
+      commands: commands.filter((c) => c.length).map((c) => c.map((a) => (isAbsolute(a) ? normPath(a) : normText(a)))),
     });
   }
   return out.sort((a, b) => by(a.file, b.file) || a.line - b.line);

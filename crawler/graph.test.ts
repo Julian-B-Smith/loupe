@@ -109,7 +109,9 @@ check('an include holds where its file is compiled: extra.cpp is compiled in ext
   && JSON.stringify(G.edges.find((e: any) => e.src === 'file:src/extra.cpp' && e.kind === 'include')?.evidence[0].configs) === '["extra"]');
 check('a file in no compile keeps its includes, listed as textual only', G.edges.some((e: any) => e.src === 'file:src/win_only.cpp') && G.crawler.notEvaluated.some((n: any) => n.what === 'src/win_only.cpp' && /textual only/.test(n.reason)));
 check('every custom command lands: an edge, or listed (the POST_BUILD step with no output)', build.perConfiguration[0].customCommands.every((c: any) =>
-  G.edges.some((e: any) => e.kind === 'generates' && e.evidence.some((x: any) => x.path === c.file && x.key === `add_custom_command line ${c.line}`)) || G.crawler.notEvaluated.some((n: any) => n.what === `${c.file}:${c.line}`)));
+  G.edges.some((e: any) => e.kind === 'generates' && e.evidence.some((x: any) => x.path === c.file && x.key === `${c.command} line ${c.line}`)) || G.crawler.notEvaluated.some((n: any) => n.what === `${c.file}:${c.line}`)));
+check('evidence names the command that made it: the stamp is add_custom_target, not add_custom_command (critic round 2, N4)',
+  G.edges.some((e: any) => e.kind === 'generates' && e.src === 'target:stamp' && e.evidence[0].key.startsWith('add_custom_target line ')));
 check('conformance: plugin uses lut without declaring it', C.findings.length === 1 && C.findings[0].kind === 'used-not-declared' && C.findings[0].from === 'target:plugin' && C.findings[0].to === 'target:lut' && C.findings[0].weakestResolution === 'syntactic');
 check('conformance counts what it could not judge, per configuration', Object.keys(C.notJudged).join() === 'extra,release' && Number.isInteger(C.notJudged.release.unownedFiles));
 check('a finding says which rule tied the file to its owner', JSON.stringify(C.findings[0].tiedBy) === '["listed"]');
@@ -182,7 +184,8 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   const H = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8'));
   check('on the HORDE crawl: one used-not-declared, one declared-not-seen, one generated-by-several (Q-020)',
     H.findings.map((f: any) => f.kind).join() === 'declared-not-seen,generated-by-several,used-not-declared'
-    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 42);
+    // 43: since Q-009 reads add_custom_target, build_stamp.h is a generated file only a utility target makes (no compile owns it)
+    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 43);
 }
 { // on HORDE at 1e6aae79 it names factory_bank.h, the bug HORDE fixed as B501, and nothing else
   const h = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8')).findings.filter((f: any) => f.kind === 'generated-by-several');
@@ -277,6 +280,16 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   check(`every role rule id, each on its case${bad.length ? ' — ' + bad.join('; ') : ''}`, bad.length === 0);
   check('a src/ file nothing reaches is counted; an unused config pattern is reported', rep.unreachedSources === 1 && JSON.stringify(rep.unusedConfig) === '["nothing/**"]');
 }
+// ---- the product closure follows libraries only (Q-009, critic M5): an executable the plugin waits on is not shipped
+{
+  const F = (path: string) => ({ id: 'file:' + path, kind: 'file', path, lang: 'cpp' });
+  const nodes = [F('src/plug.cpp'), F('src/lib.cpp'), F('helper/helper.cpp')];
+  const E = (src: string, dst: string) => ({ src, dst, kind: 'builds', provenance: 'config' });
+  const targets = [{ name: 'plugin', type: 'MODULE_LIBRARY', dependencies: ['core', 'helper'] }, { name: 'core', type: 'STATIC_LIBRARY', dependencies: [] }, { name: 'helper', type: 'EXECUTABLE', dependencies: [] }];
+  assignRoles(nodes, [E('target:plugin', 'file:src/plug.cpp'), E('target:core', 'file:src/lib.cpp'), E('target:helper', 'file:helper/helper.cpp')], targets, 'dsp-plugin', { dialect: 'dsp-plugin', roles: [], problems: [] }, new Set());
+  const rr = (p: string) => nodes.find((n: any) => n.path === p)!.roleRule;
+  check('product closure: a linked library is product, an executable the plugin depends on is not', rr('src/lib.cpp') === 'dsp-plugin:build/product-target' && rr('helper/helper.cpp') !== 'dsp-plugin:build/product-target');
+}
 // ---- the bridge's edge cases (critic M2/M3/L6/L7)
 {
   const t = mkdtempSync(join(tmpdir(), 'loupe-bridge-'));
@@ -317,6 +330,40 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
     commitAll(t);
     const s1 = await syntaxLayer(t, plain);
     check('with and without the dialect, every other fact is the same', strip(JSON.parse(emitGraph(t, plain, s1).graph)) === strip(JSON.parse(emitGraph(t, plain, s1, { dialect: 'dsp-plugin' }).graph)));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- 0.3.2 `as` (Q-009): which side of each generates edge its source is on, from the command line
+{
+  const cc = (line: number, commands: string[][], depends: string[], outs: string[], target: string | null = null) =>
+    ({ file: 'CMakeLists.txt', line, commands, depends, outputs: target ? [] : outs, byproducts: target ? outs : [], target, stage: target ? 'POST_BUILD' : null });
+  const targets = [{ name: 'tool', type: 'EXECUTABLE', dependencies: [], compileGroups: [], sources: [] }, { name: 'stamp', type: 'UTILITY', dependencies: [], compileGroups: [], sources: [] }];
+  const build = { configurations: [{ name: 'default', args: [] }], declared: true, membership: [], unclaimedSources: [],
+    perConfiguration: [{ name: 'default', targets, customCommands: [
+      cc(1, [['python3', 'gen/run.py', 'data/in.json']], ['data/in.json'], ['${build}/a.h']), // program not in DEPENDS
+      cc(2, [['codesign', '-s', '-', '$<TARGET_FILE:tool>'], ['$<TARGET_FILE:tool>', '--explicit']], [], ['${build}/b.plist'], 'tool'),
+      cc(3, [['codesign', '$<TARGET_FILE:tool>']], ['name:tool'], ['${build}/c.sig']), // the target is only an argument
+      cc(4, [['tool', 'x']], ['name:tool', 'name:stamp'], ['${build}/d.h']), // a bare executable runs; a utility is waited on
+      // The critic's plants (2026-10-18): programs the first version read as inputs, which the lens follows into the product.
+      cc(5, [['${external}/cmake', '-P', 'tools/stamp.cmake']], ['tools/stamp.cmake'], ['${build}/e.h']),
+      cc(6, [['perl', 'tools/gen.pl']], ['tools/gen.pl'], ['${build}/f.h']),
+      cc(7, [['${PY}', 'gen.py']], ['tools/gen2.py', 'data/in.json'], ['${build}/g.h']), // the program is not recognised
+      cc(8, [['python3', 'gen/run.py', 'web/app.js']], ['gen/run.py', 'web/app.js'], ['${build}/h.h']), // an embedded script asset
+    ] }] };
+  const t = mkdtempSync(join(tmpdir(), 'loupe-as-'));
+  try {
+    for (const [p, x] of [['gen/run.py', 'import json\n'], ['data/in.json', '{}\n'], ['tools/stamp.cmake', 'file(WRITE x y)\n'], ['tools/gen.pl', 'print 1;\n'], ['tools/gen2.py', 'import os\n'], ['web/app.js', 'let a = 1;\n']]) { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), x); }
+    commitAll(t);
+    const g = JSON.parse(emitGraph(t, build, await syntaxLayer(t, build)).graph);
+    const as = (src: string, out: string) => g.edges.find((e: any) => e.kind === 'generates' && e.src === src && e.dst === 'miss:${build}/' + out)?.evidence.map((x: any) => x.as).join(',');
+    check('the script a command runs is its program, even when DEPENDS does not list it', as('file:gen/run.py', 'a.h') === 'program' && as('file:data/in.json', 'a.h') === 'input');
+    check('the target owning a command runs it; an executable target only named as an argument is an input', as('target:tool', 'b.plist') === 'program' && as('target:tool', 'c.sig') === 'input');
+    check('a bare executable target that a command starts with runs; a utility it waits on is an input', as('target:tool', 'd.h') === 'program' && as('target:stamp', 'd.h') === 'input');
+    check('a script in DEPENDS besides the program is marked program, and the graph says so (critic round 2, N2)', as('file:web/app.js', 'h.h') === 'program'
+      && g.crawler.notEvaluated.some((x: any) => x.what === 'CMakeLists.txt:8' && /besides the program gen\/run.py/.test(x.reason)));
+    check('a bare executable target as the program is not reported as "no program recognised" (N5)', !g.crawler.notEvaluated.some((x: any) => x.what === 'CMakeLists.txt:4' && /no program/.test(x.reason)));
+    check('cmake -P and perl scripts are programs (critic H2)', as('file:tools/stamp.cmake', 'e.h') === 'program' && as('file:tools/gen.pl', 'f.h') === 'program');
+    check('with no program recognised, a script in DEPENDS is still a program, data stays input, and the graph says so',
+      as('file:tools/gen2.py', 'g.h') === 'program' && as('file:data/in.json', 'g.h') === 'input' && g.crawler.notEvaluated.some((x: any) => x.what === 'CMakeLists.txt:7' && /no program recognised/.test(x.reason)));
   } finally { rmSync(t, { recursive: true, force: true }); }
 }
 console.log(failed ? `${failed} failed` : 'all graph cases behave');

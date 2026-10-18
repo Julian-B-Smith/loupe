@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://loupe.dev/schema/graph-0.3.1.json",
+  "$id": "https://loupe.dev/schema/graph-0.3.2.json",
   "title": "Loupe graph",
   "description": "Deterministic crawler output. Same commit + same crawler version + same dialect rules = byte-identical canonical JSON. Agents and humans never write this file.",
   "type": "object",
@@ -17,9 +17,10 @@
       "enum": [
         "loupe.graph/0.2",
         "loupe.graph/0.3",
-        "loupe.graph/0.3.1"
+        "loupe.graph/0.3.1",
+        "loupe.graph/0.3.2"
       ],
-      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2. 0.3.1 adds `via` (the compiled sources whose include path found the file) and `configs` on site evidence."
+      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2. 0.3.1 adds `via` (the compiled sources whose include path found the file) and `configs` on site evidence. 0.3.2 adds `as` on generates evidence: program (what the command runs) or input (what it reads)."
     },
     "source": {
       "type": "object",
@@ -510,6 +511,13 @@
                 "type": "string"
               },
               "description": "0.3.1: the configurations in which this directive holds, when narrower than all; the edge's configs is the union of its sites'."
+            },
+            "as": {
+              "enum": [
+                "program",
+                "input"
+              ],
+              "description": "0.3.2, generates edges only: program = the source is what makes the output (the script a custom command runs, the target that owns the command, an executable target the command starts with, or code that writes the file); input = the command reads or waits for the source. Build-time code is the program side; an input is compiled into whatever consumes the output."
             }
           }
         },
@@ -545,6 +553,13 @@
                 "syntactic"
               ],
               "description": "How the target was found (ADR 0028). exact = path as written exists; compile-db = via compile_commands.json; search = heuristic path search, worth auditing; build = read from the build system; syntactic = matched by name in a parse tree, unresolved. Required in 0.3."
+            },
+            "as": {
+              "enum": [
+                "program",
+                "input"
+              ],
+              "description": "0.3.2, generates edges only: program = the source is what makes the output (the script a custom command runs, the target that owns the command, an executable target the command starts with, or code that writes the file); input = the command reads or waits for the source. Build-time code is the program side; an input is compiled into whatever consumes the output."
             }
           }
         }
@@ -586,7 +601,8 @@
       "schema": {
         "enum": [
           "loupe.graph/0.3",
-          "loupe.graph/0.3.1"
+          "loupe.graph/0.3.1",
+          "loupe.graph/0.3.2"
         ]
       }
     }
@@ -661,7 +677,8 @@
                     }
                   },
                   "via": false,
-                  "configs": false
+                  "configs": false,
+                  "as": false
                 }
               }
             }
@@ -688,7 +705,34 @@
                   "items": {
                     "properties": {
                       "via": false,
-                      "configs": false
+                      "configs": false,
+                      "as": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema": {
+            "const": "loupe.graph/0.3.1"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "edges": {
+            "items": {
+              "properties": {
+                "evidence": {
+                  "items": {
+                    "properties": {
+                      "as": false
                     }
                   }
                 }

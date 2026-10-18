@@ -121,7 +121,7 @@ const DATA = {
     { id: 'dialect', name: 'dsp-plugin dialect', status: 'built', v1: true, rows: ['P1a'], adrs: ['0018'], deps: [['langs', 'P1a'], ['emit', 'P1a']],
       what: 'Deterministic roles for files and edges in an audio plugin (audio, param, mod, gui), including the GUI bridge rule (web.bind -> JS calls). Built at file level (Q-024); symbol-level bridge edges come with P1b.',
       decisions: [] },
-    { id: 'oplens', name: 'Operational lens from the build', status: 'planned', v1: true, rows: ['Q-009'], adrs: ['0019'], deps: [['buildlayer', 'Q-009'], ['viewer', 'Q-009']],
+    { id: 'oplens', name: 'Operational lens from the build', status: 'built', v1: true, rows: ['Q-009'], adrs: ['0019'], deps: [['buildlayer', 'Q-009'], ['viewer', 'Q-009']],
       what: 'The lens that shows only what the product depends on, seeded from the product target\'s sources instead of file names.' },
     { id: 'p1gates', name: 'P1a gates on HORDE', status: 'planned', v1: true, rows: ['P1a'], adrs: [], deps: [['langs', 'P1a'], ['dialect', 'P1a'], ['hordecrawl', 'P1a']],
       what: 'The crawler\'s exit test: zero `unknown` missing nodes on HORDE, everything the old probe found found again, the crawl byte-identical in `./verify full`.' },

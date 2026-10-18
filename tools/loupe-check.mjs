@@ -128,6 +128,15 @@ export function check(dir, { schemaDir } = {}) {
     for (const v of x.via) if (nodes.get('file:' + v)?.kind !== 'file') err('G9', `edge ${e.id} site ${x.path}:${x.line} via ${v}, which is not a file in the graph`);
   }
 
+  // G10 (0.3.2): `as` says which side of a generates edge the source is on, so the Operational lens reads the
+  // crawler's fact instead of guessing from names or roles. Only on generates; in 0.3.2 on every generates evidence (a
+  // missing one would let the lens silently treat build-time code as product); code that writes a file is its program.
+  for (const e of G.edges) for (const x of e.evidence) {
+    if (x.as != null && e.kind !== 'generates') err('G10', `${e.kind} edge ${e.id} evidence carries as=${x.as}; only generates edges may`);
+    if (e.kind === 'generates' && G.schema === 'loupe.graph/0.3.2' && x.as == null) err('G10', `generates edge ${e.id} evidence ${x.path} does not say whether its source is program or input`);
+    if (e.kind === 'generates' && x.type === 'site' && x.as === 'input') err('G10', `generates edge ${e.id} site ${x.path}:${x.line} is code writing a file, so its source is the program, not an input`);
+  }
+
   for (const n of G.nodes) {
     if (n.kind === 'missing' && !n.missing) err('G6', `missing node ${n.id} has no reason`);
     if (n.kind !== 'missing' && n.missing) err('G6', `node ${n.id} carries a missing reason but is kind ${n.kind}`);

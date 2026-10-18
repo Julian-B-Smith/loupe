@@ -694,12 +694,17 @@ export function render(container, data, state) {
   if (designish && D.lens) {
     const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;
     const on = !!(state.selection && state.selection.type === 'lensout');
-    let g = `<g data-lensout="${esc(Z.name)}" style="cursor:pointer"><title>${esc(`Outside the ${Z.label} lens: ${c.outsideFiles} files and the ${c.outsideEdges} edges among them. ${c.crossing} edges cross into the lens, drawn with counts.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="8" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:5 4"/>`;
+    let g = `<g data-lensout="${esc(Z.name)}" style="cursor:pointer"><title>${esc(`Outside the ${Z.label} lens: ${c.outsideFiles} nodes and the ${c.outsideEdges} edges among them. ${c.crossing} edges cross into the lens, drawn with counts.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="8" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:5 4"/>`;
     if (r.h >= 40) {
-      g += ln(r.y + 18, `Outside ${Z.label.toLowerCase()} · ${c.outsideFiles} files`, 'type-group-label-compact', 'ink');
+      g += ln(r.y + 18, `Outside · ${c.outsideFiles} nodes`, 'type-group-label-compact', 'ink');
       g += ln(r.y + 34, `${c.outsideEdges} edges inside · ${c.crossing} crossing`, 'type-count', 'ink-faint');
       // Text keeps a fixed screen size while the box scales with zoom: draw only the role lines that fit.
-      Object.entries(Z.outsideRoles).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).forEach(([role, n], i) => { const y = r.y + 52 + i * 16; if (y < r.y + r.h - 6) g += ln(y, `${role} · ${n}`, 'type-count', 'ink-muted'); });
+      // Classes the build decides come first, in full ink (Q-009): build-time code, and compiled sources no product target
+      // builds in the crawled configurations. Then the rest by role, muted.
+      // Count first: when a line is cut to fit, the number survives (critic L4).
+      const cls = Z.outsideClass || {}, lines = [...(cls.buildTime ? [[`${cls.buildTime} build-time`, 'ink']] : []), ...(cls.notBuilt ? [[`${cls.notBuilt} not built here`, 'ink']] : []),
+        ...Object.entries(Z.outsideRoles).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).map(([role, n]) => [`${n} ${role}`, 'ink-muted'])];
+      lines.forEach(([t, ink], i) => { const y = r.y + 52 + i * 16; if (y < r.y + r.h - 6) g += ln(y, t, 'type-count', ink); });
     }
     ng.push(g + '</g>');
     map.drawn.add('lens-outside');
