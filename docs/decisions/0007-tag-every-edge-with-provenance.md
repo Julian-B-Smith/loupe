@@ -1,6 +1,6 @@
 # 0007. Tag every edge with provenance
 
-- **Status:** Proposed
+- **Status:** Accepted 2026-10-17 (Julian, ratified after the autonomous audit noted code relied on it while Proposed)
 - **Date:** 2026-09-29
 - **Source:** Claude
 

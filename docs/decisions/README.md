@@ -10,7 +10,7 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0004](0004-horde-is-the-first-client.md) | HORDE is the first client | Accepted |
 | [0005](0005-visuals-and-ui-before-the-graph-schema.md) | Visuals and UI before the graph schema | Accepted |
 | [0006](0006-split-canonical-flow-view-from-agent-design-view.md) | Split canonical flow view from agent design view | Accepted (direction); specifics Proposed |
-| [0007](0007-tag-every-edge-with-provenance.md) | Tag every edge with provenance | Proposed |
+| [0007](0007-tag-every-edge-with-provenance.md) | Tag every edge with provenance | Accepted 2026-10-17 |
 | [0008](0008-project-context-lives-in-this-folder.md) | Project context lives in this folder | Accepted |
 | [0009](0009-ship-first-as-a-claude-code-skill.md) | Ship first as a Claude Code skill | Accepted (direction); mechanics Proposed |
 | [0010](0010-bus-edges-in-section-cohesion.md) | Bus edges in section cohesion | Accepted |
@@ -22,7 +22,7 @@ Numbered, append-only. Status is Accepted only when Julian has agreed; otherwise
 | [0016](0016-five-provenances-and-roles.md) | Five provenances; roles separate from kinds | Accepted (legend always on screen) |
 | [0017](0017-design-delivers-a-working-prototype.md) | Design delivers a working prototype | Accepted |
 | [0018](0018-schema-0-2-from-the-first-real-crawl.md) | Graph schema 0.2, from the first real crawl | Accepted; scope moved to 0019 |
-| [0019](0019-crawl-config-and-focus-lenses.md) | Crawl config and focus lenses | Proposed |
+| [0019](0019-crawl-config-and-focus-lenses.md) | Crawl config and focus lenses | Accepted 2026-10-17 |
 | [0020](0020-drag-offsets-live-in-the-view.md) | Drag offsets live in the view | Accepted |
 | [0021](0021-the-current-map-stays-out-of-main.md) | The current map stays out of the target repo's main branch | Accepted |
 | [0022](0022-design-moves-in-house.md) | Design moves in-house | Accepted (direction); subagent setup Proposed |
