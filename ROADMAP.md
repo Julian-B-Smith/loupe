@@ -342,6 +342,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   plus `full` exit 4 (red only on listed waits, every snapshot byte-compare held); exit 1 is a regression and halts
   work. A skipped HORDE gate (no checkout) exits 3 and never counts as a pass.
 
+### Q-026 — TypeScript at file level
+- **Status:** next, after P1a closes (Julian, poll, 2026-10-20, answering autonomous-loupe-001: "TypeScript, then
+  P2"). Python, JS, HTML and shell shipped in Q-023; `.ts`/`.tsx` carry a language tag and no edges, and TypeScript
+  is the dominant language in 9 fleet repos (autonomous's count).
+- **Acceptance criteria:** to be written when it starts (the import forms TS adds over JS: `import type`, `export
+  ... from`, `import x = require()`, path aliases from `tsconfig.json`), and agreed before work begins.
+- **Delivery decision recorded here (same poll):** the skill now (ADR 0009, 0021), distributed through the kit when P6
+  has a `SKILL.md`; a Layer-0 `./verify` hook in targets later, observe-only, after P6 gives it a snapshot to diff.
+
 ### Q-022 — Acknowledged conformance findings (exemptions with a reason)
 - **Status:** open (2026-10-17, from HORDE's answer to notice-004)
 - **Why:** both Q-020 leads on HORDE were deliberate: `vst3_save_bench` depends on the VST3 target for build order
