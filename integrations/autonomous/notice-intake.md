@@ -2,8 +2,9 @@
 id: autonomous-loupe-intake
 from: autonomous
 to: loupe
-status: filed
-ball: loupe
+status: closed
+ball: none
+closed-by: loupe-notice-001 (autonomous integrations/loupe/notice-001.md, 2026-10-02)
 seq: 1
 filed: 2026-10-02
 respond-by: 2026-10-16
