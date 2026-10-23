@@ -1,6 +1,6 @@
 {
-  "about": "Probe edges no graph fact can account for, each with its reason (ROADMAP Q-025; Julian, 2026-10-18: no probe edge lost without a written reason). Reviewed like code: each entry is a claim about HORDE's source at `commit`, citing the lines that show it; the gate ignores the whole file for any other commit, so a stale reason can never pass. Keyed 'src kind dst' as tools/parity.mjs reports them.",
-  "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
+  "about": "Probe edges no graph fact can account for, each with its reason (ROADMAP Q-025; Julian, 2026-10-18: no probe edge lost without a written reason). Reviewed like code: each entry is a claim about HORDE's source at `commit`, citing the lines that show it; the gate ignores the whole file for any other commit, so a stale reason can never pass. Keyed 'src kind dst' as tools/parity.mjs reports them. Re-pinned 2026-10-23 from 1e6aae79 to d412a28 after checking that no cited file changed between the two except CMakeLists.txt, whose cited lines 106-111 are unchanged.",
+  "commit": "d412a28b03976135a403f5b4d4555574659941e5",
   "explained": {
     "file:h2/harness/harness.mjs import miss:h2/h2/harness/harness.mjs": "Comment, not code: line 9 is the file's doc comment showing how others import it (`import { ... } from '../h2/harness/harness.mjs'`); the crawl reads imports from code only (Julian, Q-023).",
     "file:src/gui/gui.html embeds miss:${build}/generated/gui_html.h": "Configuration: CMakeLists.txt lines 106-111 embed gui.html only with -DHYPERSAW_GUI2=OFF; the declared Release configuration the crawl ran embeds gui2.html, which the crawl has (gui2.html generates gui_html.h, as input). The probe does not read CMake conditions.",

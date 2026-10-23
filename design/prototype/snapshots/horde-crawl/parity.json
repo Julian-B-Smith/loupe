@@ -6,11 +6,11 @@
     "lost": 0,
     "package": 254,
     "resolved": 6,
-    "same": 768
+    "same": 769
   },
   "crawl": {
-    "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
-    "edges": 2538
+    "commit": "d412a28b03976135a403f5b4d4555574659941e5",
+    "edges": 2541
   },
   "expanded": [
     {
@@ -2434,8 +2434,8 @@
     }
   ],
   "probe": {
-    "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
-    "edges": 1176
+    "commit": "d412a28b03976135a403f5b4d4555574659941e5",
+    "edges": 1177
   },
   "resolved": [
     {

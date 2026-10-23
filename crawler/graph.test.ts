@@ -180,19 +180,22 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
   const ok = conformance(canonicalGraph(await crawlTree(files, mk(['LIB'])))).findings;
   check('with the dependency declared, the same use is no finding, and the dependency counts as seen (interface overlap)', ok.length === 0);
 }
-{ // on HORDE at 1e6aae79: the Q-020 rule turns 94 noise findings into one of each kind, plus B501
+{ // on HORDE at d412a28 (P1a's gate commit): the Q-020 rule turns 94 noise findings into one of each kind; B501 is gone
   const H = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8'));
-  check('on the HORDE crawl: one used-not-declared, one declared-not-seen, one generated-by-several (Q-020)',
-    H.findings.map((f: any) => f.kind).join() === 'declared-not-seen,generated-by-several,used-not-declared'
+  check('on the HORDE crawl: one used-not-declared, one declared-not-seen (Q-020)',
+    H.findings.map((f: any) => f.kind).join() === 'declared-not-seen,used-not-declared'
     // 43: since Q-009 reads add_custom_target, build_stamp.h is a generated file only a utility target makes (no compile
     // owns it); 49: since Q-025 the six VST3 headers vst3_save_bench includes resolve into the fetched SDK, which no
-    // target lists
-    && H.notJudged.release.dependencies === 26 && H.notJudged.release.unownedFiles === 49);
+    // target lists; 50 at d412a28: HORDE's B501 fix moved factory_bank.h out of the targets' sources into the
+    // factory_bank_gen utility. 26 -> 29 undecided dependencies: the three targets that now depend on that utility.
+    && H.notJudged.release.dependencies === 29 && H.notJudged.release.unownedFiles === 50);
 }
-{ // on HORDE at 1e6aae79 it names factory_bank.h, the bug HORDE fixed as B501, and nothing else
-  const h = conformance(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8')).findings.filter((f: any) => f.kind === 'generated-by-several');
-  check('on the HORDE crawl, generated-by-several names exactly factory_bank.h (horde B501)', h.length === 1 && h[0].from === 'miss:${build}/generated/factory_bank.h'
-    && JSON.stringify(h[0].owners) === '["target:HYPERSAW-impl","target:presetstore_check"]');
+{ // B501, the race Loupe's first crawl found (notice-003), fixed by HORDE: one target owns factory_bank.h's generation
+  // now, so conformance finds no generated-by-several. The rule itself is covered by the synthetic case above.
+  const G = JSON.parse(readFileSync('design/prototype/snapshots/horde-crawl/graph.json', 'utf8'));
+  const h = conformance(JSON.stringify(G)).findings.filter((f: any) => f.kind === 'generated-by-several');
+  check('on the HORDE crawl at d412a28, generated-by-several is gone: HORDE fixed B501, and factory_bank_gen owns the rule',
+    h.length === 0 && G.edges.some((e: any) => e.kind === 'depends' && e.src === 'target:presetstore_check' && e.dst === 'target:factory_bank_gen'));
 }
 { // custom commands: a TARGET-form command's byproduct, a name: DEPENDS on another output, an unknown name:
   const bf = { configurations: [{ name: 'default', args: [] }], declared: true, unclaimedSources: [], membership: [],

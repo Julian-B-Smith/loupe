@@ -17,7 +17,7 @@
     },
     "granularity": "file",
     "inventory": {
-      "crawled": 1293,
+      "crawled": 1322,
       "excluded": [
         {
           "byExt": {
@@ -35,7 +35,7 @@
           "reason": "submodule"
         }
       ],
-      "files": 1304
+      "files": 1333
     },
     "languages": [
       "cmake",
@@ -58,8 +58,8 @@
         "what": ".kit/stop-gate.sh:84"
       },
       {
-        "reason": "dsp-plugin chosen by crawl --dialect: the target has not declared one in .loupe/config.json",
-        "what": "dialect"
+        "reason": "custom command with no OUTPUT or BYPRODUCTS (CUSTOM_TARGET step of factory_bank_gen): makes no file Loupe can see",
+        "what": "CMakeLists.txt:145"
       },
       {
         "reason": "computed import import(new URL('../../tools/patchspace/metrics.mjs', location.href): needs evaluation",
@@ -470,13 +470,13 @@
       "dst": "file:tools/golden/gen_intent_goldens.mjs",
       "evidence": [
         {
-          "line": 1482,
+          "line": 1512,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1483,
+          "line": 1513,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -632,7 +632,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target robustness_matrix dependencies (defined at line 637)",
+          "key": "target robustness_matrix dependencies (defined at line 643)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -729,7 +729,7 @@
       "evidence": [
         {
           "as": "program",
-          "key": "add_custom_target line 162",
+          "key": "add_custom_target line 170",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -821,7 +821,7 @@
       "dst": "file:reference/scalpel/verify/verify.js",
       "evidence": [
         {
-          "line": 853,
+          "line": 883,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -891,7 +891,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target enable_probe dependencies (defined at line 558)",
+          "key": "target enable_probe dependencies (defined at line 564)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -939,13 +939,13 @@
       "dst": "file:tools/golden/gen_station_goldens.mjs",
       "evidence": [
         {
-          "line": 1431,
+          "line": 1461,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1432,
+          "line": 1462,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -1043,7 +1043,7 @@
       "dst": "file:tools/measure_fx.cpp",
       "evidence": [
         {
-          "key": "target measure_fx sources (defined at line 731)",
+          "key": "target measure_fx sources (defined at line 737)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -1235,7 +1235,7 @@
       "dst": "file:tools/ncap_check.cpp",
       "evidence": [
         {
-          "key": "target ncap_check sources (defined at line 486)",
+          "key": "target ncap_check sources (defined at line 492)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -1401,7 +1401,7 @@
       "dst": "file:tools/labharness/fxmorph_check.mjs",
       "evidence": [
         {
-          "line": 731,
+          "line": 761,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -1545,7 +1545,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target bank_check dependencies (defined at line 1183)",
+          "key": "target bank_check dependencies (defined at line 1191)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -1673,7 +1673,7 @@
       "dst": "file:tools/test_table_check.py",
       "evidence": [
         {
-          "line": 197,
+          "line": 216,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -1705,7 +1705,7 @@
       "dst": "file:tools/labharness/morph_editor_check.mjs",
       "evidence": [
         {
-          "line": 409,
+          "line": 428,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -1785,7 +1785,7 @@
       "dst": "file:tests/morph_order.txt",
       "evidence": [
         {
-          "line": 822,
+          "line": 852,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -1852,7 +1852,7 @@
       "dst": "file:tools/h2_frame_hold_check.mjs",
       "evidence": [
         {
-          "line": 1027,
+          "line": 1057,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -2077,7 +2077,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target param_id_dump dependencies (defined at line 387)",
+          "key": "target param_id_dump dependencies (defined at line 393)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -2277,7 +2277,7 @@
       "dst": "file:tools/h2_engine_parity_check.cpp",
       "evidence": [
         {
-          "key": "target h2_engine_fma_control sources (defined at line 1061)",
+          "key": "target h2_engine_fma_control sources (defined at line 1068)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -2309,7 +2309,7 @@
       "dst": "file:tools/measure_h2_engine.cpp",
       "evidence": [
         {
-          "key": "target measure_h2_engine sources (defined at line 1089)",
+          "key": "target measure_h2_engine sources (defined at line 1096)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -2341,7 +2341,7 @@
       "dst": "file:tools/waveshape_check.cpp",
       "evidence": [
         {
-          "key": "target waveshape_check sources (defined at line 536)",
+          "key": "target waveshape_check sources (defined at line 542)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -2531,7 +2531,7 @@
       "dst": "file:tools/gui_webview_check.mm",
       "evidence": [
         {
-          "key": "target gui_webview_check sources (defined at line 870)",
+          "key": "target gui_webview_check sources (defined at line 876)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -2788,7 +2788,7 @@
       "dst": "file:tools/manual_scaffold_check.py",
       "evidence": [
         {
-          "line": 177,
+          "line": 196,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -2884,7 +2884,7 @@
       "dst": "file:tools/measure_h2_scalpel.cpp",
       "evidence": [
         {
-          "key": "target measure_h2_scalpel sources (defined at line 999)",
+          "key": "target measure_h2_scalpel sources (defined at line 1006)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -3077,7 +3077,7 @@
       "dst": "file:tools/stability_check.cpp",
       "evidence": [
         {
-          "key": "target stability_check sources (defined at line 772)",
+          "key": "target stability_check sources (defined at line 778)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -3566,13 +3566,13 @@
       "dst": "file:tools/build_flags_check.py",
       "evidence": [
         {
-          "line": 142,
+          "line": 161,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 759,
+          "line": 789,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -4074,13 +4074,13 @@
       "dst": "file:tools/h2_ab.mjs",
       "evidence": [
         {
-          "line": 528,
+          "line": 547,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1058,
+          "line": 1088,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -4176,7 +4176,7 @@
       "dst": "file:tools/presetstore_check.cpp",
       "evidence": [
         {
-          "key": "target presetstore_check sources (defined at line 1170)",
+          "key": "target presetstore_check sources (defined at line 1177)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -4341,22 +4341,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:${build}/generated/factory_bank.h",
-      "evidence": [
-        {
-          "key": "target presetstore_check sources (defined at line 1170)",
-          "path": "CMakeLists.txt",
-          "resolution": "build",
-          "type": "config"
-        }
-      ],
-      "id": "e:178e61a14b917173",
-      "kind": "builds",
-      "provenance": "config",
-      "src": "target:presetstore_check"
-    },
-    {
-      "count": 1,
       "dst": "miss:clap/clap.h",
       "evidence": [
         {
@@ -4392,7 +4376,7 @@
       "dst": "file:tools/gui_sink_check.py",
       "evidence": [
         {
-          "line": 231,
+          "line": 250,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -4478,7 +4462,7 @@
       "dst": "file:tools/voicetap_check.cpp",
       "evidence": [
         {
-          "key": "target voicetap_check sources (defined at line 681)",
+          "key": "target voicetap_check sources (defined at line 687)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -4616,7 +4600,7 @@
       "dst": "file:tools/labharness/composed_engine_check.mjs",
       "evidence": [
         {
-          "line": 655,
+          "line": 685,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -4760,7 +4744,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target ratchet_probe dependencies (defined at line 617)",
+          "key": "target ratchet_probe dependencies (defined at line 623)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -5084,7 +5068,7 @@
       "dst": "file:tools/patchspace/fidelity_scan_check.mjs",
       "evidence": [
         {
-          "line": 691,
+          "line": 721,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -5309,7 +5293,7 @@
       "dst": "file:CLAUDE.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -5405,7 +5389,7 @@
       "dst": "file:tools/fxxfade_plugin_check.cpp",
       "evidence": [
         {
-          "key": "target fxxfade_plugin_check sources (defined at line 1158)",
+          "key": "target fxxfade_plugin_check sources (defined at line 1165)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -5571,7 +5555,7 @@
       "dst": "file:tools/strata_check.cpp",
       "evidence": [
         {
-          "key": "target strata_check sources (defined at line 784)",
+          "key": "target strata_check sources (defined at line 790)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -5619,7 +5603,7 @@
       "dst": "file:tools/ratchet_probe.cpp",
       "evidence": [
         {
-          "key": "target ratchet_probe sources (defined at line 617)",
+          "key": "target ratchet_probe sources (defined at line 623)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -5635,7 +5619,7 @@
       "dst": "file:tools/release_path_check.py",
       "evidence": [
         {
-          "line": 308,
+          "line": 327,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -5683,7 +5667,7 @@
       "dst": "file:LIBRARY.md",
       "evidence": [
         {
-          "line": 323,
+          "line": 342,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -5715,7 +5699,7 @@
       "dst": "file:tools/measure_alias.cpp",
       "evidence": [
         {
-          "key": "target alias_check sources (defined at line 754)",
+          "key": "target alias_check sources (defined at line 760)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -5897,7 +5881,7 @@
       "dst": "file:tools/gui_reach.py",
       "evidence": [
         {
-          "line": 318,
+          "line": 337,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -5993,13 +5977,13 @@
       "dst": "file:tools/golden/gen_notch_goldens.mjs",
       "evidence": [
         {
-          "line": 1415,
+          "line": 1445,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1416,
+          "line": 1446,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -6851,7 +6835,7 @@
       "dst": "file:tools/mixer_check.cpp",
       "evidence": [
         {
-          "key": "target mixer_check sources (defined at line 401)",
+          "key": "target mixer_check sources (defined at line 407)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -6915,7 +6899,7 @@
       "dst": "file:ROADMAP.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7342,7 +7326,7 @@
       "dst": "file:tools/golden_registry_check.py",
       "evidence": [
         {
-          "line": 169,
+          "line": 188,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7486,7 +7470,7 @@
       "dst": "file:tools/blocksize_check.cpp",
       "evidence": [
         {
-          "key": "target blocksize_check sources (defined at line 771)",
+          "key": "target blocksize_check sources (defined at line 777)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -7534,7 +7518,7 @@
       "dst": "file:tools/mpe_check.cpp",
       "evidence": [
         {
-          "key": "target mpe_check sources (defined at line 368)",
+          "key": "target mpe_check sources (defined at line 374)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -7550,7 +7534,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target fxxfade_check dependencies (defined at line 626)",
+          "key": "target fxxfade_check dependencies (defined at line 632)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -7566,7 +7550,7 @@
       "dst": "file:tools/embedded_page_policy_check.py",
       "evidence": [
         {
-          "line": 258,
+          "line": 277,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7726,7 +7710,7 @@
       "dst": "file:tools/labharness/port_legacy_presets_check.mjs",
       "evidence": [
         {
-          "line": 451,
+          "line": 470,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7791,7 +7775,7 @@
       "dst": "file:tools/h2_steal_fade_check.mjs",
       "evidence": [
         {
-          "line": 1051,
+          "line": 1081,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7919,7 +7903,7 @@
       "dst": "file:tools/engine_enrolment_check.py",
       "evidence": [
         {
-          "line": 117,
+          "line": 136,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -7979,7 +7963,7 @@
       "dst": "file:src/swarmfx_clap.cpp",
       "evidence": [
         {
-          "key": "target SWARMFX-impl sources (defined at line 300)",
+          "key": "target SWARMFX-impl sources (defined at line 306)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -8033,7 +8017,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target paramleak_probe dependencies (defined at line 586)",
+          "key": "target paramleak_probe dependencies (defined at line 592)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -8209,7 +8193,7 @@
       "dst": "file:tools/onset_ref_check.cpp",
       "evidence": [
         {
-          "key": "target onset_ref_check sources (defined at line 497)",
+          "key": "target onset_ref_check sources (defined at line 503)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -8337,7 +8321,7 @@
       "dst": "file:tools/labharness/onset_ref_cpp.json",
       "evidence": [
         {
-          "line": 1172,
+          "line": 1202,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -8417,7 +8401,7 @@
       "dst": "file:tools/trace_check.cpp",
       "evidence": [
         {
-          "key": "target trace_check sources (defined at line 891)",
+          "key": "target trace_check sources (defined at line 898)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -8604,6 +8588,22 @@
       "kind": "include",
       "provenance": "static",
       "src": "file:tools/gain_probe.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "target:factory_bank_gen",
+      "evidence": [
+        {
+          "key": "target identity_store_check dependencies (defined at line 888)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:309b44317f20bd46",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:identity_store_check"
     },
     {
       "count": 1,
@@ -8852,7 +8852,7 @@
       "dst": "file:reference/swarmfilter.html",
       "evidence": [
         {
-          "line": 325,
+          "line": 344,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -8980,7 +8980,7 @@
       "dst": "file:tools/swarmalator_check.cpp",
       "evidence": [
         {
-          "key": "target swarmalator_check sources (defined at line 927)",
+          "key": "target swarmalator_check sources (defined at line 934)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -9138,7 +9138,7 @@
       "dst": "file:tools/paramscope_check.cpp",
       "evidence": [
         {
-          "key": "target paramscope_check sources (defined at line 395)",
+          "key": "target paramscope_check sources (defined at line 401)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -9588,7 +9588,7 @@
       "dst": "file:engine2/build.sh",
       "evidence": [
         {
-          "line": 565,
+          "line": 584,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -9746,7 +9746,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target paramclass_check dependencies (defined at line 518)",
+          "key": "target paramclass_check dependencies (defined at line 524)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -9810,7 +9810,7 @@
       "dst": "file:reference/swarmspectra.html",
       "evidence": [
         {
-          "line": 324,
+          "line": 343,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -10291,7 +10291,7 @@
       "dst": "file:tools/filter_check.cpp",
       "evidence": [
         {
-          "key": "target filter_check sources (defined at line 913)",
+          "key": "target filter_check sources (defined at line 920)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -10355,7 +10355,7 @@
       "dst": "file:tools/pitch_probe.cpp",
       "evidence": [
         {
-          "key": "target pitch_probe sources (defined at line 645)",
+          "key": "target pitch_probe sources (defined at line 651)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -10881,7 +10881,7 @@
       "dst": "file:tools/anchor_check.cpp",
       "evidence": [
         {
-          "key": "target anchor_check sources (defined at line 1113)",
+          "key": "target anchor_check sources (defined at line 1120)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -10945,7 +10945,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target identity_store_check dependencies (defined at line 882)",
+          "key": "target identity_store_check dependencies (defined at line 888)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -10999,7 +10999,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target kstuck_probe dependencies (defined at line 596)",
+          "key": "target kstuck_probe dependencies (defined at line 602)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -11063,7 +11063,7 @@
       "dst": "file:tools/offcorner_check.cpp",
       "evidence": [
         {
-          "key": "target offcorner_check sources (defined at line 1142)",
+          "key": "target offcorner_check sources (defined at line 1149)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -11260,13 +11260,13 @@
       "dst": "file:tools/golden/gen_spectra_goldens.mjs",
       "evidence": [
         {
-          "line": 1403,
+          "line": 1433,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1404,
+          "line": 1434,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -11380,7 +11380,7 @@
       "dst": "file:tools/workflow_pin_check.py",
       "evidence": [
         {
-          "line": 307,
+          "line": 326,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -11428,7 +11428,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target gui_webview_check dependencies (defined at line 870)",
+          "key": "target gui_webview_check dependencies (defined at line 876)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -11508,13 +11508,13 @@
       "dst": "file:tools/golden/gen_subosc_goldens.mjs",
       "evidence": [
         {
-          "line": 1443,
+          "line": 1473,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1444,
+          "line": 1474,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -11765,7 +11765,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target fxxfade_plugin_check dependencies (defined at line 1158)",
+          "key": "target fxxfade_plugin_check dependencies (defined at line 1165)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -11991,7 +11991,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target slotcontract_check dependencies (defined at line 418)",
+          "key": "target slotcontract_check dependencies (defined at line 424)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -12007,7 +12007,7 @@
       "dst": "file:tools/save_bench.cpp",
       "evidence": [
         {
-          "key": "target save_bench sources (defined at line 567)",
+          "key": "target save_bench sources (defined at line 573)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -12372,7 +12372,7 @@
       "dst": "target:hypersaw_build_stamp",
       "evidence": [
         {
-          "key": "target HYPERSAW-impl dependencies (defined at line 168)",
+          "key": "target HYPERSAW-impl dependencies (defined at line 176)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -12640,7 +12640,7 @@
       "dst": "file:tools/tseed_check.cpp",
       "evidence": [
         {
-          "key": "target tseed_check sources (defined at line 507)",
+          "key": "target tseed_check sources (defined at line 513)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -12656,7 +12656,7 @@
       "dst": "file:tools/h2_rules_check.py",
       "evidence": [
         {
-          "line": 116,
+          "line": 135,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -12896,6 +12896,58 @@
       "src": "file:src/gui/hypersaw_gui_common.h"
     },
     {
+      "count": 7,
+      "dst": "ext:python-std",
+      "evidence": [
+        {
+          "line": 51,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 52,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 53,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 54,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 55,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 56,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        },
+        {
+          "line": 57,
+          "path": "tools/store_logs_check.py",
+          "resolution": "syntactic",
+          "type": "site"
+        }
+      ],
+      "id": "e:4848df06cb24aa35",
+      "kind": "import",
+      "provenance": "static",
+      "src": "file:tools/store_logs_check.py"
+    },
+    {
       "count": 1,
       "dst": "miss:vector",
       "evidence": [
@@ -12962,19 +13014,19 @@
       "dst": "file:tools/parity_floor_check.py",
       "evidence": [
         {
-          "line": 897,
+          "line": 927,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 951,
+          "line": 981,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1473,
+          "line": 1503,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -13060,7 +13112,7 @@
       "dst": "target:HYPERSAW_vst3",
       "evidence": [
         {
-          "key": "target vst3_save_bench dependencies (defined at line 574)",
+          "key": "target vst3_save_bench dependencies (defined at line 580)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -13156,7 +13208,7 @@
       "dst": "file:tools/sluice_hold_check.py",
       "evidence": [
         {
-          "line": 84,
+          "line": 103,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -13172,7 +13224,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target notchslot_check dependencies (defined at line 411)",
+          "key": "target notchslot_check dependencies (defined at line 417)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -13252,7 +13304,7 @@
       "dst": "file:tools/h2_output_headroom_check.mjs",
       "evidence": [
         {
-          "line": 1097,
+          "line": 1127,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -13589,7 +13641,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target gain_probe dependencies (defined at line 826)",
+          "key": "target gain_probe dependencies (defined at line 832)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -13605,7 +13657,7 @@
       "dst": "file:reference/swarmsaw.html",
       "evidence": [
         {
-          "line": 324,
+          "line": 343,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -13956,7 +14008,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target morphscope_probe dependencies (defined at line 651)",
+          "key": "target morphscope_probe dependencies (defined at line 657)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -14004,7 +14056,7 @@
       "dst": "file:tools/h2_swarm48_check.cpp",
       "evidence": [
         {
-          "key": "target h2_swarm48_check sources (defined at line 1042)",
+          "key": "target h2_swarm48_check sources (defined at line 1049)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -14042,7 +14094,7 @@
       "dst": "file:tools/morphscope_probe.cpp",
       "evidence": [
         {
-          "key": "target morphscope_probe sources (defined at line 651)",
+          "key": "target morphscope_probe sources (defined at line 657)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -14058,13 +14110,13 @@
       "dst": "file:tools/test_identity_check.py",
       "evidence": [
         {
-          "line": 156,
+          "line": 175,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 769,
+          "line": 799,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14097,7 +14149,7 @@
       "dst": "file:tools/labharness/lab_wheel_scroll_check.mjs",
       "evidence": [
         {
-          "line": 437,
+          "line": 456,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14113,7 +14165,7 @@
       "dst": "file:tools/patchspace/dependency_tree_check.mjs",
       "evidence": [
         {
-          "line": 674,
+          "line": 704,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14257,7 +14309,7 @@
       "dst": "file:tools/golden_pin_check.py",
       "evidence": [
         {
-          "line": 168,
+          "line": 187,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14337,7 +14389,7 @@
       "dst": "file:tools/rtsafety_probe.cpp",
       "evidence": [
         {
-          "key": "target rtsafety_probe sources (defined at line 439)",
+          "key": "target rtsafety_probe sources (defined at line 445)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -14407,13 +14459,13 @@
       "dst": "file:tools/golden/gen_time_goldens.mjs",
       "evidence": [
         {
-          "line": 1458,
+          "line": 1488,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1459,
+          "line": 1489,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14779,7 +14831,7 @@
       "dst": "file:tools/endprobe.cpp",
       "evidence": [
         {
-          "key": "target endprobe sources (defined at line 541)",
+          "key": "target endprobe sources (defined at line 547)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -14951,13 +15003,13 @@
       "dst": "file:tools/click_detector_check.mjs",
       "evidence": [
         {
-          "line": 544,
+          "line": 563,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1111,
+          "line": 1141,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -14989,13 +15041,13 @@
       "dst": "file:tools/golden/gen_filter_goldens.mjs",
       "evidence": [
         {
-          "line": 1409,
+          "line": 1439,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1410,
+          "line": 1440,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -15011,7 +15063,7 @@
       "dst": "file:tools/gen_gui_controls.py",
       "evidence": [
         {
-          "line": 191,
+          "line": 210,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -15235,7 +15287,7 @@
       "dst": "file:tools/tailprobe.cpp",
       "evidence": [
         {
-          "key": "target tailprobe sources (defined at line 580)",
+          "key": "target tailprobe sources (defined at line 586)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -15251,7 +15303,7 @@
       "dst": "file:src/hypersaw_clap.cpp",
       "evidence": [
         {
-          "key": "target HYPERSAW-impl sources (defined at line 168)",
+          "key": "target HYPERSAW-impl sources (defined at line 176)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -15354,6 +15406,22 @@
       "kind": "reference",
       "provenance": "static",
       "src": "file:tools/paste_cap_check.py"
+    },
+    {
+      "count": 1,
+      "dst": "target:factory_bank_gen",
+      "evidence": [
+        {
+          "key": "target presetstore_check dependencies (defined at line 1177)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:56936bbfacc41465",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:presetstore_check"
     },
     {
       "count": 1,
@@ -16182,7 +16250,7 @@
       "dst": "file:tools/h2_ab.mjs",
       "evidence": [
         {
-          "line": 57,
+          "line": 63,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "exact",
           "type": "site"
@@ -16230,7 +16298,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target mpe_check dependencies (defined at line 368)",
+          "key": "target mpe_check dependencies (defined at line 374)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -16434,7 +16502,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target intent_check dependencies (defined at line 669)",
+          "key": "target intent_check dependencies (defined at line 675)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -16450,7 +16518,7 @@
       "dst": "file:tools/labharness/fxlab_check.mjs",
       "evidence": [
         {
-          "line": 384,
+          "line": 403,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -16514,7 +16582,7 @@
       "dst": "file:tools/mailbox_delivery_check.py",
       "evidence": [
         {
-          "line": 91,
+          "line": 110,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -16610,7 +16678,7 @@
       "dst": "file:tools/load_handoff_check.cpp",
       "evidence": [
         {
-          "key": "target load_handoff_check sources (defined at line 855)",
+          "key": "target load_handoff_check sources (defined at line 861)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -17004,7 +17072,7 @@
       "dst": "file:tools/playbook_check.py",
       "evidence": [
         {
-          "line": 514,
+          "line": 533,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -17138,7 +17206,7 @@
       "dst": "file:reference/swarmtime.html",
       "evidence": [
         {
-          "line": 325,
+          "line": 344,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -17564,7 +17632,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target pitch_probe dependencies (defined at line 645)",
+          "key": "target pitch_probe dependencies (defined at line 651)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -17885,7 +17953,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target modreadback_check dependencies (defined at line 1151)",
+          "key": "target modreadback_check dependencies (defined at line 1158)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -17933,7 +18001,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target load_handoff_check dependencies (defined at line 855)",
+          "key": "target load_handoff_check dependencies (defined at line 861)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18093,7 +18161,7 @@
       "dst": "file:tools/h2_engine_parity_check.cpp",
       "evidence": [
         {
-          "key": "target h2_engine_parity_check sources (defined at line 1051)",
+          "key": "target h2_engine_parity_check sources (defined at line 1058)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18197,7 +18265,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target glidepath_probe dependencies (defined at line 578)",
+          "key": "target glidepath_probe dependencies (defined at line 584)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18359,7 +18427,7 @@
       "dst": "file:tools/fxxfade_check.cpp",
       "evidence": [
         {
-          "key": "target fxxfade_check sources (defined at line 626)",
+          "key": "target fxxfade_check sources (defined at line 632)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18512,7 +18580,7 @@
       "dst": "file:tools/h2_engine_rtsan_check.py",
       "evidence": [
         {
-          "line": 1286,
+          "line": 1316,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -18560,7 +18628,7 @@
       "dst": "file:tools/h2_fuzz_check.mjs",
       "evidence": [
         {
-          "line": 1002,
+          "line": 1032,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -18812,7 +18880,7 @@
       "dst": "file:tools/h2_swarm_lift_check.cpp",
       "evidence": [
         {
-          "key": "target h2_swarm_lift_check sources (defined at line 1018)",
+          "key": "target h2_swarm_lift_check sources (defined at line 1025)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18932,11 +19000,51 @@
       "src": "file:docs/design/detune-lab.html"
     },
     {
+      "count": 5,
+      "dst": "file:tools/store_logs_check.py",
+      "evidence": [
+        {
+          "line": 631,
+          "path": "verify",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 1522,
+          "path": "verify",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 1524,
+          "path": "verify",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 1527,
+          "path": "verify",
+          "resolution": "search",
+          "type": "site"
+        },
+        {
+          "line": 1529,
+          "path": "verify",
+          "resolution": "search",
+          "type": "site"
+        }
+      ],
+      "id": "e:6849f845884657cb",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:verify"
+    },
+    {
       "count": 1,
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target user_patch_bench dependencies (defined at line 560)",
+          "key": "target user_patch_bench dependencies (defined at line 566)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -18952,7 +19060,7 @@
       "dst": "file:tools/paramfunc_smoke.cpp",
       "evidence": [
         {
-          "key": "target paramfunc_smoke sources (defined at line 583)",
+          "key": "target paramfunc_smoke sources (defined at line 589)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19000,7 +19108,7 @@
       "dst": "file:tools/statefix_check.cpp",
       "evidence": [
         {
-          "key": "target statefix_check sources (defined at line 526)",
+          "key": "target statefix_check sources (defined at line 532)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19016,7 +19124,7 @@
       "dst": "file:tools/vst3_save_bench.cpp",
       "evidence": [
         {
-          "key": "target vst3_save_bench sources (defined at line 574)",
+          "key": "target vst3_save_bench sources (defined at line 580)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19080,7 +19188,7 @@
       "dst": "file:tools/labharness/lab_load_check.mjs",
       "evidence": [
         {
-          "line": 362,
+          "line": 381,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -19272,7 +19380,7 @@
       "dst": "file:tools/intent_check.cpp",
       "evidence": [
         {
-          "key": "target intent_check sources (defined at line 669)",
+          "key": "target intent_check sources (defined at line 675)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19760,7 +19868,7 @@
       "dst": "file:tools/h2_scalpel_parity_check.cpp",
       "evidence": [
         {
-          "key": "target h2_scalpel_parity_check sources (defined at line 974)",
+          "key": "target h2_scalpel_parity_check sources (defined at line 981)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19808,7 +19916,7 @@
       "dst": "file:tools/spectra_check.cpp",
       "evidence": [
         {
-          "key": "target spectra_check sources (defined at line 906)",
+          "key": "target spectra_check sources (defined at line 913)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19856,7 +19964,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target paramfunc_smoke dependencies (defined at line 583)",
+          "key": "target paramfunc_smoke dependencies (defined at line 589)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19888,7 +19996,7 @@
       "dst": "file:tools/license_audit_check.py",
       "evidence": [
         {
-          "line": 110,
+          "line": 129,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -19920,7 +20028,7 @@
       "dst": "file:tools/steal_check.cpp",
       "evidence": [
         {
-          "key": "target steal_check sources (defined at line 605)",
+          "key": "target steal_check sources (defined at line 611)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -19968,7 +20076,7 @@
       "dst": "file:tools/banned_api_check.py",
       "evidence": [
         {
-          "line": 206,
+          "line": 225,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -20032,7 +20140,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target measure_cpu dependencies (defined at line 705)",
+          "key": "target measure_cpu dependencies (defined at line 711)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20205,7 +20313,7 @@
       "dst": "target:base-sdk-vst3",
       "evidence": [
         {
-          "key": "target vst3_save_bench dependencies (defined at line 574)",
+          "key": "target vst3_save_bench dependencies (defined at line 580)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20221,7 +20329,7 @@
       "dst": "file:tools/gen_state_fixtures.cpp",
       "evidence": [
         {
-          "key": "target gen_state_fixtures sources (defined at line 524)",
+          "key": "target gen_state_fixtures sources (defined at line 530)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20285,7 +20393,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target tailprobe dependencies (defined at line 580)",
+          "key": "target tailprobe dependencies (defined at line 586)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20659,7 +20767,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target tseed_check dependencies (defined at line 507)",
+          "key": "target tseed_check dependencies (defined at line 513)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20675,7 +20783,7 @@
       "dst": "file:tools/subosc_check.cpp",
       "evidence": [
         {
-          "key": "target subosc_check sources (defined at line 819)",
+          "key": "target subosc_check sources (defined at line 825)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -20723,7 +20831,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target subosc_check dependencies (defined at line 819)",
+          "key": "target subosc_check dependencies (defined at line 825)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -21272,7 +21380,7 @@
       "dst": "file:tools/routing_check.cpp",
       "evidence": [
         {
-          "key": "target routing_check sources (defined at line 350)",
+          "key": "target routing_check sources (defined at line 356)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -21428,7 +21536,7 @@
       "dst": "file:README.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -21588,7 +21696,7 @@
       "dst": "file:tools/svf_check.cpp",
       "evidence": [
         {
-          "key": "target svf_check sources (defined at line 695)",
+          "key": "target svf_check sources (defined at line 701)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -21604,7 +21712,7 @@
       "dst": "file:tools/polarity_check.cpp",
       "evidence": [
         {
-          "key": "target polarity_check sources (defined at line 475)",
+          "key": "target polarity_check sources (defined at line 481)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -21796,7 +21904,7 @@
       "dst": "file:tools/notefuzz_check.cpp",
       "evidence": [
         {
-          "key": "target notefuzz_check sources (defined at line 832)",
+          "key": "target notefuzz_check sources (defined at line 838)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -21964,7 +22072,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target preset_pitch_check dependencies (defined at line 1120)",
+          "key": "target preset_pitch_check dependencies (defined at line 1127)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -22044,7 +22152,7 @@
       "dst": "file:tools/labharness/gui_history_check.mjs",
       "evidence": [
         {
-          "line": 423,
+          "line": 442,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -22060,7 +22168,7 @@
       "dst": "file:tools/nan_latch_check.py",
       "evidence": [
         {
-          "line": 269,
+          "line": 288,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -22576,7 +22684,7 @@
       "dst": "file:tools/compact_lab_table_check.py",
       "evidence": [
         {
-          "line": 506,
+          "line": 525,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -22720,7 +22828,7 @@
       "dst": "file:reference/swarmdynamics.html",
       "evidence": [
         {
-          "line": 324,
+          "line": 343,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -22800,7 +22908,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target rtsafety_probe dependencies (defined at line 439)",
+          "key": "target rtsafety_probe dependencies (defined at line 445)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -22908,7 +23016,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target measure_alias dependencies (defined at line 703)",
+          "key": "target measure_alias dependencies (defined at line 709)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23004,13 +23112,13 @@
       "dst": "file:tools/golden/gen_goldens.mjs",
       "evidence": [
         {
-          "line": 780,
+          "line": 810,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 781,
+          "line": 811,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -23026,7 +23134,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target twocluster_check dependencies (defined at line 1162)",
+          "key": "target twocluster_check dependencies (defined at line 1169)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23042,7 +23150,7 @@
       "dst": "file:tools/slotcontract_check.cpp",
       "evidence": [
         {
-          "key": "target slotcontract_check sources (defined at line 418)",
+          "key": "target slotcontract_check sources (defined at line 424)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23138,7 +23246,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target cpu_check dependencies (defined at line 758)",
+          "key": "target cpu_check dependencies (defined at line 764)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23234,13 +23342,13 @@
       "dst": "file:tools/golden/gen_swarmalator_goldens.mjs",
       "evidence": [
         {
-          "line": 1421,
+          "line": 1451,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1422,
+          "line": 1452,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -23256,7 +23364,7 @@
       "dst": "file:tools/glidepath_probe.cpp",
       "evidence": [
         {
-          "key": "target glidepath_probe sources (defined at line 578)",
+          "key": "target glidepath_probe sources (defined at line 584)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23320,7 +23428,7 @@
       "dst": "file:tools/undo_check.cpp",
       "evidence": [
         {
-          "key": "target undo_check sources (defined at line 466)",
+          "key": "target undo_check sources (defined at line 472)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23572,7 +23680,7 @@
       "dst": "file:tools/modreadback_check.cpp",
       "evidence": [
         {
-          "key": "target modreadback_check sources (defined at line 1151)",
+          "key": "target modreadback_check sources (defined at line 1158)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23620,7 +23728,7 @@
       "dst": "file:tools/denormal_check.cpp",
       "evidence": [
         {
-          "key": "target denormal_check sources (defined at line 773)",
+          "key": "target denormal_check sources (defined at line 779)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23910,7 +24018,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target trace_check dependencies (defined at line 891)",
+          "key": "target trace_check dependencies (defined at line 898)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -23958,7 +24066,7 @@
       "dst": "file:specs/SPEC-EFFECTS.md",
       "evidence": [
         {
-          "line": 325,
+          "line": 344,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -23974,7 +24082,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target measure_fx dependencies (defined at line 731)",
+          "key": "target measure_fx dependencies (defined at line 737)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -24134,7 +24242,7 @@
       "dst": "file:tools/shell_bench.cpp",
       "evidence": [
         {
-          "key": "target shell_bench sources (defined at line 562)",
+          "key": "target shell_bench sources (defined at line 568)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -24150,7 +24258,7 @@
       "dst": "file:tools/nightly/run.py",
       "evidence": [
         {
-          "line": 1492,
+          "line": 1533,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -24441,7 +24549,7 @@
       "dst": "file:tools/labharness/divergence_ledger_check.mjs",
       "evidence": [
         {
-          "line": 495,
+          "line": 514,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -24537,7 +24645,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target paramscope_check dependencies (defined at line 395)",
+          "key": "target paramscope_check dependencies (defined at line 401)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -24553,7 +24661,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target combguard_check dependencies (defined at line 621)",
+          "key": "target combguard_check dependencies (defined at line 627)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -24729,7 +24837,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target endprobe dependencies (defined at line 541)",
+          "key": "target endprobe dependencies (defined at line 547)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -24777,7 +24885,7 @@
       "dst": "file:tools/combguard_check.cpp",
       "evidence": [
         {
-          "key": "target combguard_check sources (defined at line 621)",
+          "key": "target combguard_check sources (defined at line 627)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -25083,7 +25191,7 @@
       "dst": "file:tools/labharness/os_default_check.mjs",
       "evidence": [
         {
-          "line": 464,
+          "line": 483,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -25309,31 +25417,31 @@
       "dst": "ext:node",
       "evidence": [
         {
-          "line": 50,
+          "line": 56,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "syntactic",
           "type": "site"
         },
         {
-          "line": 51,
+          "line": 57,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "syntactic",
           "type": "site"
         },
         {
-          "line": 52,
+          "line": 58,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "syntactic",
           "type": "site"
         },
         {
-          "line": 53,
+          "line": 59,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "syntactic",
           "type": "site"
         },
         {
-          "line": 54,
+          "line": 60,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "syntactic",
           "type": "site"
@@ -25438,13 +25546,13 @@
       "dst": "file:tools/golden/gen_glide_goldens.mjs",
       "evidence": [
         {
-          "line": 1452,
+          "line": 1482,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1453,
+          "line": 1483,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -25637,7 +25745,7 @@
       "dst": "file:specs/SPEC-ENGINE.md",
       "evidence": [
         {
-          "line": 65,
+          "line": 71,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "search",
           "type": "site"
@@ -25669,7 +25777,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target corner_probe dependencies (defined at line 556)",
+          "key": "target corner_probe dependencies (defined at line 562)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -25717,7 +25825,7 @@
       "dst": "file:tools/armor_coverage_check.py",
       "evidence": [
         {
-          "line": 284,
+          "line": 303,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -25813,7 +25921,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target save_bench dependencies (defined at line 567)",
+          "key": "target save_bench dependencies (defined at line 573)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -25877,7 +25985,7 @@
       "dst": "file:reference/swarmphaser.html",
       "evidence": [
         {
-          "line": 325,
+          "line": 344,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -25909,7 +26017,7 @@
       "dst": "file:tools/mod_check.cpp",
       "evidence": [
         {
-          "key": "target mod_check sources (defined at line 660)",
+          "key": "target mod_check sources (defined at line 666)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -25941,7 +26049,7 @@
       "dst": "file:h2/harness/selftest.mjs",
       "evidence": [
         {
-          "line": 993,
+          "line": 1023,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -25957,7 +26065,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target shell_bench dependencies (defined at line 562)",
+          "key": "target shell_bench dependencies (defined at line 568)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -25995,13 +26103,13 @@
       "dst": "file:tools/golden/gen_goldens_sr.mjs",
       "evidence": [
         {
-          "line": 798,
+          "line": 828,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 800,
+          "line": 830,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -26145,7 +26253,7 @@
       "dst": "file:tools/measure_alias.cpp",
       "evidence": [
         {
-          "key": "target measure_alias sources (defined at line 703)",
+          "key": "target measure_alias sources (defined at line 709)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -26161,7 +26269,7 @@
       "dst": "file:tools/presentation_check.py",
       "evidence": [
         {
-          "line": 97,
+          "line": 116,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -26279,7 +26387,7 @@
       "dst": "file:src/gui/hypersaw_gui.mm",
       "evidence": [
         {
-          "key": "target HYPERSAW-impl sources (defined at line 168)",
+          "key": "target HYPERSAW-impl sources (defined at line 176)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -26568,7 +26676,7 @@
       "dst": "file:DECISIONS.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -26600,7 +26708,7 @@
       "dst": "file:tools/h2_engine_selfdigest_check.cpp",
       "evidence": [
         {
-          "key": "target h2_engine_selfdigest_product sources (defined at line 1081)",
+          "key": "target h2_engine_selfdigest_product sources (defined at line 1088)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -26680,7 +26788,7 @@
       "dst": "file:tools/morphlayout_check.cpp",
       "evidence": [
         {
-          "key": "target morphlayout_check sources (defined at line 1124)",
+          "key": "target morphlayout_check sources (defined at line 1131)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -26728,7 +26836,7 @@
       "dst": "file:tools/labharness/subosc_check.mjs",
       "evidence": [
         {
-          "line": 639,
+          "line": 669,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -26824,7 +26932,7 @@
       "dst": "file:tools/swarm48_check.cpp",
       "evidence": [
         {
-          "key": "target swarm48_check sources (defined at line 1038)",
+          "key": "target swarm48_check sources (defined at line 1045)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -26920,7 +27028,7 @@
       "dst": "file:tools/force_check.cpp",
       "evidence": [
         {
-          "key": "target force_check sources (defined at line 899)",
+          "key": "target force_check sources (defined at line 906)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27032,7 +27140,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target gen_state_fixtures dependencies (defined at line 524)",
+          "key": "target gen_state_fixtures dependencies (defined at line 530)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27112,7 +27220,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target hostile_events_check dependencies (defined at line 845)",
+          "key": "target hostile_events_check dependencies (defined at line 851)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27128,7 +27236,7 @@
       "dst": "file:tools/renderer_bench.cpp",
       "evidence": [
         {
-          "key": "target renderer_bench sources (defined at line 955)",
+          "key": "target renderer_bench sources (defined at line 962)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27240,7 +27348,7 @@
       "dst": "file:tools/robustness_matrix.cpp",
       "evidence": [
         {
-          "key": "target robustness_matrix sources (defined at line 637)",
+          "key": "target robustness_matrix sources (defined at line 643)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27370,7 +27478,7 @@
       "dst": "file:tools/param_id_dump.cpp",
       "evidence": [
         {
-          "key": "target param_id_dump sources (defined at line 387)",
+          "key": "target param_id_dump sources (defined at line 393)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27531,7 +27639,7 @@
       "dst": "file:tools/engine2_cleanroom_check.py",
       "evidence": [
         {
-          "line": 563,
+          "line": 582,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -27671,7 +27779,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target undo_check dependencies (defined at line 466)",
+          "key": "target undo_check dependencies (defined at line 472)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27735,7 +27843,7 @@
       "dst": "file:tools/state_check.cpp",
       "evidence": [
         {
-          "key": "target state_check sources (defined at line 452)",
+          "key": "target state_check sources (defined at line 458)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27783,7 +27891,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target morphlayout_check dependencies (defined at line 1124)",
+          "key": "target morphlayout_check dependencies (defined at line 1131)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27799,7 +27907,7 @@
       "dst": "file:tools/h2_spread_ramp_check.mjs",
       "evidence": [
         {
-          "line": 1082,
+          "line": 1112,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -27832,7 +27940,7 @@
       "dst": "file:tools/measure_cpu.cpp",
       "evidence": [
         {
-          "key": "target measure_cpu sources (defined at line 705)",
+          "key": "target measure_cpu sources (defined at line 711)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -27962,7 +28070,7 @@
       "dst": "file:tools/registry_dump.cpp",
       "evidence": [
         {
-          "key": "target registry_dump sources (defined at line 379)",
+          "key": "target registry_dump sources (defined at line 385)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -28517,7 +28625,7 @@
       "dst": "file:engine2/data/envelopes/presets.json",
       "evidence": [
         {
-          "line": 64,
+          "line": 70,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "search",
           "type": "site"
@@ -28804,7 +28912,7 @@
       "dst": "file:tools/labharness/filter_fidelity_check.mjs",
       "evidence": [
         {
-          "line": 396,
+          "line": 415,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -28820,7 +28928,7 @@
       "dst": "file:tools/measure_h2_engine.cpp",
       "evidence": [
         {
-          "key": "target measure_h2_engine_stages sources (defined at line 1104)",
+          "key": "target measure_h2_engine_stages sources (defined at line 1111)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -29014,7 +29122,7 @@
       "dst": "file:tools/nightly_check.py",
       "evidence": [
         {
-          "line": 198,
+          "line": 217,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -29192,7 +29300,7 @@
       "dst": "file:tools/labharness/sandboxed_node.mjs",
       "evidence": [
         {
-          "line": 853,
+          "line": 883,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -29416,7 +29524,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target lfoenv_check dependencies (defined at line 1133)",
+          "key": "target lfoenv_check dependencies (defined at line 1140)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -29574,7 +29682,7 @@
       "dst": "file:h2/harness/gen_patches.mjs",
       "evidence": [
         {
-          "line": 56,
+          "line": 62,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "exact",
           "type": "site"
@@ -30197,7 +30305,7 @@
       "dst": "file:tools/identity_store_check.mm",
       "evidence": [
         {
-          "key": "target identity_store_check sources (defined at line 882)",
+          "key": "target identity_store_check sources (defined at line 888)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -30583,7 +30691,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target state_check dependencies (defined at line 452)",
+          "key": "target state_check dependencies (defined at line 458)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -30599,7 +30707,7 @@
       "dst": "file:tools/auhost/auhost.cpp",
       "evidence": [
         {
-          "key": "target auhost sources (defined at line 1008)",
+          "key": "target auhost sources (defined at line 1015)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -30647,7 +30755,7 @@
       "dst": "file:tools/samplerate_check.cpp",
       "evidence": [
         {
-          "key": "target samplerate_check sources (defined at line 342)",
+          "key": "target samplerate_check sources (defined at line 348)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -30952,22 +31060,6 @@
     },
     {
       "count": 1,
-      "dst": "miss:${build}/generated/factory_bank.h",
-      "evidence": [
-        {
-          "key": "target HYPERSAW-impl sources (defined at line 168)",
-          "path": "CMakeLists.txt",
-          "resolution": "build",
-          "type": "config"
-        }
-      ],
-      "id": "e:b29f6dd5b06bb815",
-      "kind": "builds",
-      "provenance": "config",
-      "src": "target:HYPERSAW-impl"
-    },
-    {
-      "count": 1,
       "dst": "file:reference/subosc.html",
       "evidence": [
         {
@@ -31124,7 +31216,7 @@
       "dst": "file:reference/swarmalator.html",
       "evidence": [
         {
-          "line": 326,
+          "line": 345,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -31234,7 +31326,7 @@
       "dst": "file:tools/gain_probe.cpp",
       "evidence": [
         {
-          "key": "target gain_probe sources (defined at line 826)",
+          "key": "target gain_probe sources (defined at line 832)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -31266,7 +31358,7 @@
       "dst": "file:tools/h2_swarm_parity_check.cpp",
       "evidence": [
         {
-          "key": "target h2_swarm_parity_check sources (defined at line 1030)",
+          "key": "target h2_swarm_parity_check sources (defined at line 1037)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -31420,7 +31512,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target steal_check dependencies (defined at line 605)",
+          "key": "target steal_check dependencies (defined at line 611)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -31468,7 +31560,7 @@
       "dst": "file:tools/binary_hygiene_check.py",
       "evidence": [
         {
-          "line": 74,
+          "line": 93,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -31484,7 +31576,7 @@
       "dst": "file:engine2/data/phrases/phrases.json",
       "evidence": [
         {
-          "line": 65,
+          "line": 71,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "search",
           "type": "site"
@@ -31516,7 +31608,7 @@
       "dst": "file:engine2/data/bank/presets.json",
       "evidence": [
         {
-          "line": 64,
+          "line": 70,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "search",
           "type": "site"
@@ -31692,7 +31784,7 @@
       "dst": "file:tools/ledger_owner_check.py",
       "evidence": [
         {
-          "line": 216,
+          "line": 235,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -31811,7 +31903,7 @@
       "dst": "file:specs/SPEC-SWARMALATOR.md",
       "evidence": [
         {
-          "line": 326,
+          "line": 345,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -31843,7 +31935,7 @@
       "dst": "file:tools/bank_check.cpp",
       "evidence": [
         {
-          "key": "target bank_check sources (defined at line 1183)",
+          "key": "target bank_check sources (defined at line 1191)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -31967,7 +32059,7 @@
       "dst": "file:tools/penv_check.cpp",
       "evidence": [
         {
-          "key": "target penv_check sources (defined at line 1128)",
+          "key": "target penv_check sources (defined at line 1135)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -31983,7 +32075,7 @@
       "dst": "file:tools/weakening_check.py",
       "evidence": [
         {
-          "line": 215,
+          "line": 234,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -31999,7 +32091,7 @@
       "dst": "file:tools/depends_check.py",
       "evidence": [
         {
-          "line": 101,
+          "line": 120,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -32219,7 +32311,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target gen_factory_bank dependencies (defined at line 1181)",
+          "key": "target gen_factory_bank dependencies (defined at line 1189)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32251,7 +32343,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target penv_check dependencies (defined at line 1128)",
+          "key": "target penv_check dependencies (defined at line 1135)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32484,7 +32576,7 @@
       "dst": "file:tools/h2_lift_check.py",
       "evidence": [
         {
-          "line": 161,
+          "line": 180,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -32578,7 +32670,7 @@
       "dst": "file:tools/gen_factory_bank.cpp",
       "evidence": [
         {
-          "key": "target gen_factory_bank sources (defined at line 1181)",
+          "key": "target gen_factory_bank sources (defined at line 1189)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32610,7 +32702,7 @@
       "dst": "file:tools/h2_engine_selfdigest_check.cpp",
       "evidence": [
         {
-          "key": "target h2_engine_selfdigest_check sources (defined at line 1073)",
+          "key": "target h2_engine_selfdigest_check sources (defined at line 1080)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32680,7 +32772,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target statefix_check dependencies (defined at line 526)",
+          "key": "target statefix_check dependencies (defined at line 532)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32744,7 +32836,7 @@
       "dst": "file:tools/enable_probe.cpp",
       "evidence": [
         {
-          "key": "target enable_probe sources (defined at line 558)",
+          "key": "target enable_probe sources (defined at line 564)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -32857,7 +32949,7 @@
       "dst": "file:tools/delay_check.cpp",
       "evidence": [
         {
-          "key": "target delay_check sources (defined at line 793)",
+          "key": "target delay_check sources (defined at line 799)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -33007,7 +33099,7 @@
       "dst": "file:tools/tsan_stress_check.py",
       "evidence": [
         {
-          "line": 1299,
+          "line": 1329,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -33023,7 +33115,7 @@
       "dst": "file:tools/patchspace/listening_pass_check.mjs",
       "evidence": [
         {
-          "line": 711,
+          "line": 741,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -33351,13 +33443,13 @@
       "dst": "file:tools/golden/gen_force_goldens.mjs",
       "evidence": [
         {
-          "line": 1397,
+          "line": 1427,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 1398,
+          "line": 1428,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -33373,7 +33465,7 @@
       "dst": "file:tools/notchslot_check.cpp",
       "evidence": [
         {
-          "key": "target notchslot_check sources (defined at line 411)",
+          "key": "target notchslot_check sources (defined at line 417)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -33519,7 +33611,7 @@
       "dst": "file:tools/patchspace/metrics_check.mjs",
       "evidence": [
         {
-          "line": 476,
+          "line": 495,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -33567,7 +33659,7 @@
       "dst": "file:tools/preset_check.cpp",
       "evidence": [
         {
-          "key": "target preset_check sources (defined at line 446)",
+          "key": "target preset_check sources (defined at line 452)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -33708,7 +33800,7 @@
       "dst": "file:tools/choc_patch_check.py",
       "evidence": [
         {
-          "line": 249,
+          "line": 268,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -33805,7 +33897,7 @@
       "evidence": [
         {
           "as": "program",
-          "key": "add_custom_target line 162",
+          "key": "add_custom_target line 170",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -34305,7 +34397,7 @@
       "dst": "file:specs/ACCEPTANCE.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -34337,7 +34429,7 @@
       "dst": "file:tools/corner_probe.cpp",
       "evidence": [
         {
-          "key": "target corner_probe sources (defined at line 556)",
+          "key": "target corner_probe sources (defined at line 562)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -34528,13 +34620,13 @@
       "dst": "file:tools/h2_engine_render.mjs",
       "evidence": [
         {
-          "line": 927,
+          "line": 957,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 928,
+          "line": 958,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -34700,7 +34792,7 @@
       "dst": "file:tests/state_fixtures/chunk-v2-rev1.txt",
       "evidence": [
         {
-          "line": 838,
+          "line": 868,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -34732,7 +34824,7 @@
       "dst": "file:tools/deny_hook_check.py",
       "evidence": [
         {
-          "line": 217,
+          "line": 236,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -34824,7 +34916,7 @@
       "dst": "file:tools/labharness/sandbox_check.mjs",
       "evidence": [
         {
-          "line": 374,
+          "line": 393,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -35126,7 +35218,7 @@
       "dst": "file:tools/bendsweep_probe.cpp",
       "evidence": [
         {
-          "key": "target bendsweep_probe sources (defined at line 688)",
+          "key": "target bendsweep_probe sources (defined at line 694)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -35255,7 +35347,7 @@
       "dst": "file:tools/h2_soak_check.mjs",
       "evidence": [
         {
-          "line": 1014,
+          "line": 1044,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -35471,7 +35563,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target routing_check dependencies (defined at line 350)",
+          "key": "target routing_check dependencies (defined at line 356)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -35503,7 +35595,7 @@
       "dst": "target:SWARMFX-impl",
       "evidence": [
         {
-          "key": "target registry_dump dependencies (defined at line 379)",
+          "key": "target registry_dump dependencies (defined at line 385)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -35535,7 +35627,7 @@
       "dst": "file:INDEX.md",
       "evidence": [
         {
-          "line": 323,
+          "line": 342,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -35843,7 +35935,7 @@
       "dst": "file:tools/engine2_reference_renders.mjs",
       "evidence": [
         {
-          "line": 581,
+          "line": 600,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -35971,7 +36063,7 @@
       "dst": "file:tools/bridge_utf8_check.cpp",
       "evidence": [
         {
-          "key": "target bridge_utf8_check sources (defined at line 843)",
+          "key": "target bridge_utf8_check sources (defined at line 849)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -36127,7 +36219,7 @@
       "dst": "file:tools/twocluster_check.cpp",
       "evidence": [
         {
-          "key": "target twocluster_check sources (defined at line 1162)",
+          "key": "target twocluster_check sources (defined at line 1169)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -36351,13 +36443,13 @@
       "dst": "file:tools/param_id_lock_check.py",
       "evidence": [
         {
-          "line": 129,
+          "line": 148,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 758,
+          "line": 788,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -36491,7 +36583,7 @@
       "dst": "file:project.manifest.json",
       "evidence": [
         {
-          "line": 323,
+          "line": 342,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -36507,7 +36599,7 @@
       "dst": "file:tools/paramclass_check.cpp",
       "evidence": [
         {
-          "key": "target paramclass_check sources (defined at line 518)",
+          "key": "target paramclass_check sources (defined at line 524)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -36730,7 +36822,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target offcorner_check dependencies (defined at line 1142)",
+          "key": "target offcorner_check dependencies (defined at line 1149)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -36874,7 +36966,7 @@
       "dst": "file:tools/notch_check.cpp",
       "evidence": [
         {
-          "key": "target notch_check sources (defined at line 920)",
+          "key": "target notch_check sources (defined at line 927)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -37002,7 +37094,7 @@
       "dst": "file:tools/parity_check.cpp",
       "evidence": [
         {
-          "key": "target parity_check sources (defined at line 320)",
+          "key": "target parity_check sources (defined at line 326)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -37433,7 +37525,7 @@
       "dst": "miss:${build}/generated/gui_html.h",
       "evidence": [
         {
-          "key": "target HYPERSAW-impl sources (defined at line 168)",
+          "key": "target HYPERSAW-impl sources (defined at line 176)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -37561,7 +37653,7 @@
       "dst": "file:h2/harness/harness.mjs",
       "evidence": [
         {
-          "line": 55,
+          "line": 61,
           "path": "tools/engine2_reference_renders.mjs",
           "resolution": "exact",
           "type": "site"
@@ -37577,7 +37669,7 @@
       "dst": "file:tools/engine2_structure_check.py",
       "evidence": [
         {
-          "line": 598,
+          "line": 617,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -37593,7 +37685,7 @@
       "dst": "file:tools/time_check.cpp",
       "evidence": [
         {
-          "key": "target time_check sources (defined at line 934)",
+          "key": "target time_check sources (defined at line 941)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -37753,7 +37845,7 @@
       "dst": "file:tools/user_patch_bench.cpp",
       "evidence": [
         {
-          "key": "target user_patch_bench sources (defined at line 560)",
+          "key": "target user_patch_bench sources (defined at line 566)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -37865,7 +37957,7 @@
       "dst": "file:tools/armor_dashboard.py",
       "evidence": [
         {
-          "line": 289,
+          "line": 308,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -37897,7 +37989,7 @@
       "dst": "file:tools/labharness/station_check.mjs",
       "evidence": [
         {
-          "line": 621,
+          "line": 651,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -37913,7 +38005,7 @@
       "dst": "file:tools/serve_labs_check.py",
       "evidence": [
         {
-          "line": 296,
+          "line": 315,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -38418,7 +38510,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target anchor_check dependencies (defined at line 1113)",
+          "key": "target anchor_check dependencies (defined at line 1120)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -39318,7 +39410,7 @@
       "dst": "file:tools/paste_cap_check.py",
       "evidence": [
         {
-          "line": 276,
+          "line": 295,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -39750,6 +39842,22 @@
     },
     {
       "count": 1,
+      "dst": "target:factory_bank_gen",
+      "evidence": [
+        {
+          "key": "target HYPERSAW-impl dependencies (defined at line 176)",
+          "path": "CMakeLists.txt",
+          "resolution": "build",
+          "type": "config"
+        }
+      ],
+      "id": "e:e49d99e33bd98864",
+      "kind": "depends",
+      "provenance": "config",
+      "src": "target:HYPERSAW-impl"
+    },
+    {
+      "count": 1,
       "dst": "miss:libs/clap-wrapper/src/detail/auv2/parameter.cpp",
       "evidence": [
         {
@@ -40005,7 +40113,7 @@
       "dst": "file:specs/SPEC.md",
       "evidence": [
         {
-          "line": 322,
+          "line": 341,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -40297,7 +40405,7 @@
       "dst": "file:tools/render_neutral_digest.cpp",
       "evidence": [
         {
-          "key": "target render_neutral_digest sources (defined at line 860)",
+          "key": "target render_neutral_digest sources (defined at line 866)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -40363,7 +40471,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target mixer_check dependencies (defined at line 401)",
+          "key": "target mixer_check dependencies (defined at line 407)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -40573,7 +40681,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target registry_dump dependencies (defined at line 379)",
+          "key": "target registry_dump dependencies (defined at line 385)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -40756,7 +40864,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target alias_check dependencies (defined at line 754)",
+          "key": "target alias_check dependencies (defined at line 760)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -40820,7 +40928,7 @@
       "dst": "file:tools/station_check.cpp",
       "evidence": [
         {
-          "key": "target station_check sources (defined at line 804)",
+          "key": "target station_check sources (defined at line 810)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -41064,7 +41172,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target notefuzz_check dependencies (defined at line 832)",
+          "key": "target notefuzz_check dependencies (defined at line 838)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -41172,7 +41280,7 @@
       "dst": "file:tools/trajectory_check.cpp",
       "evidence": [
         {
-          "key": "target trajectory_check sources (defined at line 326)",
+          "key": "target trajectory_check sources (defined at line 332)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -41404,7 +41512,7 @@
       "dst": "file:tools/glide_check.cpp",
       "evidence": [
         {
-          "key": "target glide_check sources (defined at line 943)",
+          "key": "target glide_check sources (defined at line 950)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -41568,7 +41676,7 @@
       "dst": "file:tools/preset_pitch_check.cpp",
       "evidence": [
         {
-          "key": "target preset_pitch_check sources (defined at line 1120)",
+          "key": "target preset_pitch_check sources (defined at line 1127)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -41616,7 +41724,7 @@
       "dst": "file:tools/measure_modsources.cpp",
       "evidence": [
         {
-          "key": "target measure_modsources sources (defined at line 719)",
+          "key": "target measure_modsources sources (defined at line 725)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -42005,7 +42113,7 @@
       "dst": "file:tools/tolerance_registry_check.py",
       "evidence": [
         {
-          "line": 186,
+          "line": 205,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -42053,7 +42161,7 @@
       "dst": "file:tools/cpu_bench.cpp",
       "evidence": [
         {
-          "key": "target cpu_bench sources (defined at line 949)",
+          "key": "target cpu_bench sources (defined at line 956)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -42069,7 +42177,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target polarity_check dependencies (defined at line 475)",
+          "key": "target polarity_check dependencies (defined at line 481)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -42085,7 +42193,7 @@
       "dst": "file:tools/subdiv_check.cpp",
       "evidence": [
         {
-          "key": "target subdiv_check sources (defined at line 362)",
+          "key": "target subdiv_check sources (defined at line 368)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -42165,7 +42273,7 @@
       "dst": "file:tools/labs_preview_check.py",
       "evidence": [
         {
-          "line": 299,
+          "line": 318,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -42278,7 +42386,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target bridge_utf8_check dependencies (defined at line 843)",
+          "key": "target bridge_utf8_check dependencies (defined at line 849)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -42342,7 +42450,7 @@
       "dst": "file:tools/h2_rt_lint_check.py",
       "evidence": [
         {
-          "line": 515,
+          "line": 534,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -42902,7 +43010,7 @@
       "dst": "file:tools/measure_cpu.cpp",
       "evidence": [
         {
-          "key": "target cpu_check sources (defined at line 758)",
+          "key": "target cpu_check sources (defined at line 764)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -43338,7 +43446,7 @@
       "dst": "file:tools/lfoenv_check.cpp",
       "evidence": [
         {
-          "key": "target lfoenv_check sources (defined at line 1133)",
+          "key": "target lfoenv_check sources (defined at line 1140)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -43638,7 +43746,7 @@
       "dst": "file:tools/kstuck_probe.cpp",
       "evidence": [
         {
-          "key": "target kstuck_probe sources (defined at line 596)",
+          "key": "target kstuck_probe sources (defined at line 602)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -43944,7 +44052,7 @@
       "dst": "file:tools/hostile_events_check.cpp",
       "evidence": [
         {
-          "key": "target hostile_events_check sources (defined at line 845)",
+          "key": "target hostile_events_check sources (defined at line 851)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -43976,7 +44084,7 @@
       "dst": "file:tools/stop_gate_check.py",
       "evidence": [
         {
-          "line": 225,
+          "line": 244,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -43992,7 +44100,7 @@
       "dst": "target:HYPERSAW-impl",
       "evidence": [
         {
-          "key": "target render_neutral_digest dependencies (defined at line 860)",
+          "key": "target render_neutral_digest dependencies (defined at line 866)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -44849,7 +44957,7 @@
       "dst": "file:tools/rtsan_check.py",
       "evidence": [
         {
-          "line": 1285,
+          "line": 1315,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -45009,13 +45117,13 @@
       "dst": "file:tools/h2_scalpel_render.mjs",
       "evidence": [
         {
-          "line": 877,
+          "line": 907,
           "path": "verify",
           "resolution": "search",
           "type": "site"
         },
         {
-          "line": 878,
+          "line": 908,
           "path": "verify",
           "resolution": "search",
           "type": "site"
@@ -45063,7 +45171,7 @@
       "dst": "file:tools/paramleak_probe.cpp",
       "evidence": [
         {
-          "key": "target paramleak_probe sources (defined at line 586)",
+          "key": "target paramleak_probe sources (defined at line 592)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -45111,7 +45219,7 @@
       "dst": "file:h2/harness/render_cli.cpp",
       "evidence": [
         {
-          "key": "target h2_harness_render sources (defined at line 1097)",
+          "key": "target h2_harness_render sources (defined at line 1104)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -45127,7 +45235,7 @@
       "dst": "file:tools/h2_scalpel_parity_check.cpp",
       "evidence": [
         {
-          "key": "target h2_scalpel_fma_control sources (defined at line 984)",
+          "key": "target h2_scalpel_fma_control sources (defined at line 991)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -45207,7 +45315,7 @@
       "dst": "file:tools/sr_check.cpp",
       "evidence": [
         {
-          "key": "target sr_check sources (defined at line 770)",
+          "key": "target sr_check sources (defined at line 776)",
           "path": "CMakeLists.txt",
           "resolution": "build",
           "type": "config"
@@ -45365,11 +45473,11 @@
       "roleRule": "default:path/repo-tooling"
     },
     {
-      "hash": "sha256:ec1559be2088ec98240a8228f6c8bd91344f5a8f8e542ca191d236d812669cb6",
+      "hash": "sha256:7ccbb4f75a77eb64b41fb81e4cd2859752187d3d52fb4737dcb493f6f4b69a7e",
       "id": "file:.github/workflows/ci.yml",
       "kind": "file",
       "lang": "yaml",
-      "loc": 362,
+      "loc": 394,
       "path": ".github/workflows/ci.yml",
       "role": "build",
       "roleRule": "default:path/build"
@@ -45445,21 +45553,21 @@
       "roleRule": "default:path/repo-tooling"
     },
     {
-      "hash": "sha256:f86c0aaa0b7d3df85f790e0134191a884d6edaaf31345ef91950bb8f8a5c3e05",
+      "hash": "sha256:2567635af778461cc4573ef6a1b13feb63a183d00f7aefeec7d4bf0be00d27ec",
       "id": "file:.loupe/config.json",
       "kind": "file",
       "lang": "json",
-      "loc": 5,
+      "loc": 7,
       "path": ".loupe/config.json",
       "role": "data",
       "roleRule": "default:path/data-ext"
     },
     {
-      "hash": "sha256:2bfee2ae77796044f3e03f4c4cce75f60f10df706e841ce5c79b30c37f3c479c",
+      "hash": "sha256:67beac43d9b7fd3c086c0821dd2146355d437465476e45182a897728b32624c8",
       "id": "file:CHANGELOG.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 220,
+      "loc": 228,
       "path": "CHANGELOG.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -45475,21 +45583,21 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:06db01bfe948b0e77a1838430b095ac5002d5933ab9d4b35e869fc1cb9c9e326",
+      "hash": "sha256:845a567cd72d10ac438136bd3eb74720a361239fd9f8d30d0cb0c231fe1000b5",
       "id": "file:CMakeLists.txt",
       "kind": "file",
       "lang": "cmake",
-      "loc": 1246,
+      "loc": 1254,
       "path": "CMakeLists.txt",
       "role": "build",
       "roleRule": "default:path/build"
     },
     {
-      "hash": "sha256:08e3860e93da6eebd78f7ccbf9df510b571fa2efdf92b21e353f3e2ea1f7c093",
+      "hash": "sha256:0e173c5291dd89591304483e6cf3b1c5d3fe8367fb61bc0a984d95be98a2e561",
       "id": "file:DECISIONS.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 8279,
+      "loc": 8487,
       "path": "DECISIONS.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -45525,11 +45633,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:72fd7e3b6c8cfebac12d59a91f638ff1b7dbae8b5f4b8a3e7e8e4d3f47fc2cfd",
+      "hash": "sha256:e1ddad933cc1e3c63c2240d89786d63aba06edead8bd99ba98d5e57c57bd0417",
       "id": "file:README.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 528,
+      "loc": 621,
       "path": "README.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -45545,11 +45653,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:dab608ad920065eba8ae97c3e35bb1123cd04226192dd5353725677a9b14e4af",
+      "hash": "sha256:ba53b3c2057c756733c1a2427277e021eb93fa29ac9ee4781ff1994ad8fa6b0d",
       "id": "file:ROADMAP.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 9131,
+      "loc": 9143,
       "path": "ROADMAP.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -45785,11 +45893,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:d4877311303580f0c4c7e14b2eb6c6888c8c822e385b125ace7d9241d667ccce",
+      "hash": "sha256:b894bad79d9f7fdff14f3c813d6ddec33709f170274420d7571ccce3ac25cac3",
       "id": "file:docs/H2-PLAN.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 765,
+      "loc": 1029,
       "path": "docs/H2-PLAN.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -45875,7 +45983,7 @@
       "roleRule": "default:path/docs-dir"
     },
     {
-      "hash": "sha256:e5f264ef70e9947ca4f92e1931cb73e8e1a6087462fd85e65631e7350557047a",
+      "hash": "sha256:c663bf5dc60e1b6d3583e7f6c62a0edb938239eded3ee156cd9f9b362c0b4f14",
       "id": "file:docs/armor/catalogue.json",
       "kind": "file",
       "lang": "json",
@@ -45885,7 +45993,7 @@
       "roleRule": "default:path/docs-dir"
     },
     {
-      "hash": "sha256:96e3b7fbc7b8d5a268f4daaacdf998bd4283d0085a3d8901b35e9e0a6e23dc48",
+      "hash": "sha256:668504c59541b3d3799781754a2c08ad09e9ee80215d86eac863c3b36a8d9f98",
       "id": "file:docs/armor/dashboard.html",
       "kind": "file",
       "lang": "html",
@@ -46051,6 +46159,16 @@
       "lang": "markdown",
       "loc": 670,
       "path": "docs/audits/2026-10-15-engine-rebuild-audit.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:2059f1bb823236227aa683a71c417f972b08071e565a953ef913a516423d4bdf",
+      "id": "file:docs/audits/2026-10-17-module-cutoff-audit.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 419,
+      "path": "docs/audits/2026-10-17-module-cutoff-audit.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -46385,11 +46503,11 @@
       "roleRule": "default:path/docs-dir"
     },
     {
-      "hash": "sha256:450854f56679d61f9e24493f0254fee209d00d6a0fb928d8d5be486a5db7887e",
+      "hash": "sha256:20b858aa8ec836e2bf42ad6d87ce61eddd9ede520e0299419a045b4a9b50be8b",
       "id": "file:docs/design/h2-plan-map.html",
       "kind": "file",
       "lang": "html",
-      "loc": 795,
+      "loc": 813,
       "path": "docs/design/h2-plan-map.html",
       "role": "doc",
       "roleRule": "default:path/docs-dir"
@@ -47155,11 +47273,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:0246092899d34839956d4a9e83c28538c668b5f940fcd6a07c5d21facf4a3d30",
+      "hash": "sha256:424587bc94c5e9923b293cd5d97a37118cac3d3f0b0a86b6cb46110db9bb4d46",
       "id": "file:docs/port/spec-engine-provenance.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 511,
+      "loc": 518,
       "path": "docs/port/spec-engine-provenance.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -47191,8 +47309,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/bass/BS - Growl Bass.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:dd0001f309ac89bb5321c9387ebc4f81b04bf011dea5b33f9ba3ba946b87f56f",
@@ -47201,8 +47319,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/bass/BS - Reese.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:f376d09e247056916d41c8fc52f0ad113f22a8aa027649dc2ff9b483e8fc4c8c",
@@ -47211,8 +47329,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/bass/BS - Sub Anchor.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:6e6ce5395c27b2593354f5ac98df65a2ffaffdc2bdfb6564a88fa41b009c0162",
@@ -47221,8 +47339,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/bass/BS - Tight Stack.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:971e10e7d59325a989cc9a348cf8ad1a0c2712ab163289db7e7c992bb6debe37",
@@ -47231,8 +47349,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/bass/BS - Wobble Frame.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:2fb7b73c7bfa73fbd5b8940dad387b248849d8df14fa01bfe8164683da1f14bc",
@@ -47241,8 +47359,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/corners/MISC - Cloud.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:569a173526fa75e0a42f610568f28d59120fdbac6bea1b6af2f28037457f520e",
@@ -47251,8 +47369,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/corners/MISC - Lock.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:c8aaf35208d47e83beb234464bdc7b3226fb75c38b30ab8f6c6ed9321feade46",
@@ -47261,8 +47379,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/corners/MISC - Splay.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:c79da51e50c8c127c190e58721900597a3d2444ef6479b695d14a593f502b5c9",
@@ -47271,8 +47389,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/corners/MISC - Two Cluster.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:50eb284d1f623467aa24ab46c9c8333ef47a665d11715e071aa0f6a051b5e4b8",
@@ -47281,8 +47399,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/demo/MISC - Cloud To Lock Sweep.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:462db9b9c70a726509f36da482fcea750bde1e823906b671ade78bd15af22108",
@@ -47291,8 +47409,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/demo/MISC - Consonance Gravity Chord.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:815f5cbe5206a52516a7c332166d4175ec8cb35cc6e229f40bc4d53fed34029b",
@@ -47301,8 +47419,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/demo/MISC - Onset Scatter Ensemble.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:39a31a9c785755385be859010eea87ff7d9848f8a7fc0e7b74afd49f9dbd8a4b",
@@ -47311,8 +47429,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/demo/MISC - Splay Interference.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:d6cf032bbb68630f2fcff76288ea21ec5070f71edf9f5c7f577da8e174c62fb2",
@@ -47321,8 +47439,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/demo/MISC - Tempo Grid Lattice.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:a9c8687c9b0ce27ee841f73b87da6472b46e62f00153c08b51d0207a84d20956",
@@ -47331,8 +47449,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Comb Throat.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:41ae4e4bd602d8be26ae8afcb4b3e75ebdb9867ab130e16bc734424cea2eb075",
@@ -47341,8 +47459,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Comp Glue.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:661b974c1d80b785857893ac6b6eab86dc0b135a07c7f6244d74c121ec3805be",
@@ -47351,8 +47469,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Delay Dotted.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:a78ced1a660aa471430709c09060cabc1595e110e7fff9b4edb840ade01924fd",
@@ -47361,8 +47479,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Drive Stack.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:87b0e2cd28ec8704396756418c2923b185bb2c078cbf997031b6db194df0bcb4",
@@ -47371,8 +47489,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Echo Canyon.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:c56297aa5e5cf4c7d0a6b4fc1c7689103de5e2f53d594bbaa4410b9c906ba90c",
@@ -47381,8 +47499,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Filter Sweep.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:87cb43462814388f34f2611a2277b3ff58554dd47cbdfb16effc59e735e2ebfe",
@@ -47391,8 +47509,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Gain Trim.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:eb9ff6896b679f9014106f106453a903e9a79081e900cfe2f06078baa1e018de",
@@ -47401,8 +47519,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Notch Phase.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:6bfbd5a41a77f6714795ab43e1ad593db8472d8a4c06a90c51865e50a678acf7",
@@ -47411,8 +47529,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/fx/FX - Room Chamber.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:8dd155c2d4310d6b81d2a4f54d8b75e35c0a2c1d1fb189a4f3ec009670508142",
@@ -47421,8 +47539,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/init/INIT - Init.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:b29bac9ad50d41ee45c63b53220ff47486595da51b3599bf7f0fb860f918221e",
@@ -47431,8 +47549,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/keys/KY - Clav Swarm.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:229d9bc6ba32fea20be40a3ac7dfb1ae1f0a374210b574e8b0362a7bc17e9422",
@@ -47441,8 +47559,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/keys/KY - Hymnal.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:cc98aa80ed748270f4d6d87e47c92734cc918174c5326857b89ff162a9b7a423",
@@ -47451,8 +47569,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/keys/KY - Music Box.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:c9784a1ab20401cd9a7059a9f07782f67565147015bf32887411aa89c71b7455",
@@ -47461,8 +47579,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/keys/KY - Paper Rhodes.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:0484facec42d4fe381f0c7922928946b1383134c36c3420cfff752c20fc5693a",
@@ -47471,8 +47589,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/lead/LD - Glass Reed.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:1bfaf259931e1be496d4fb1adbc3cd2810df663a66d7cd377e59f02597071afe",
@@ -47481,8 +47599,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/lead/LD - Hoover.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:5e204cae9460cc425ca0b833515d5471ba0abeb18495cd7c765b57130fa87f52",
@@ -47491,8 +47609,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/lead/LD - Hyper Lead.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:772c8192549dc090c495b47de40578ab500bdae7feb30f451bfc963800957d9c",
@@ -47501,8 +47619,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/lead/LD - Knife Fifth.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:2391eaa3aa0f61b727bdcbe69451681e268507643a3502a46d3ec495f708909b",
@@ -47511,8 +47629,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/lead/LD - Talk Lead.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:82e8eb0775e0c7ce4fa59c4808021f2a06ecb27bb93aa5241c76a58d36adba7e",
@@ -47521,8 +47639,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/morph/MO - Blend Drift.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:53b1299cde32217c62a74b2ffcc5a33072360cc60782cf9a316219ded158aefe",
@@ -47531,8 +47649,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/morph/MO - Quantum Morph.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:a25c94d46adf832e630a182f7cfe03ac2b92c062dfcf96345f3cbdeb1cd50e5f",
@@ -47541,8 +47659,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/morph/MO - Two State.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:0d004372b93756482cb0e4db372e02bf9a5a1a3de74f79453ec753735e5e27a0",
@@ -47551,8 +47669,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pad/PD - Breath Field.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:bdddb76777c67550abe52c395b67dd4c63e6d79a4121530a46aa9fe026a586ce",
@@ -47561,8 +47679,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pad/PD - Drift Choir.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:8e3c5ac608d31a05da807225cf6a2a32da1a1c484d6e4a162d32861796e6aa23",
@@ -47571,8 +47689,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pad/PD - Glacier.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:8ef817d96a9d3a095dde66164faaa43637be0e507d58128e93d0ab431bfe2872",
@@ -47581,8 +47699,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pad/PD - Slow Consensus.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:311faf28b9d9f2efe1e102e2a9663912b0c89fd2d5851118ecfc23bd300c2865",
@@ -47591,8 +47709,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pad/PD - Stasis.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:941474d86d46134ab74768ef7b8ac344870390d2e8f8ae9c7249a631ce570414",
@@ -47601,8 +47719,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pluck/PL - Bell Lattice.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:5e035c295bbd3b1ca20d820476f179efe6dcb6c027df64b239dc95f6dfc193da",
@@ -47611,8 +47729,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pluck/PL - Koto Swarm.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:131a6a323c1bbc7443615ecd31889e84b23f23289b95d4e8d45c48f83482e1e0",
@@ -47621,8 +47739,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pluck/PL - Porcelain.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:17af4575e4d002823354e38621f2f198116c621d3cb62563602d12c0785fe2e5",
@@ -47631,8 +47749,8 @@
       "lang": "json",
       "loc": 1,
       "path": "docs/presets/factory/pluck/PL - Spark.json",
-      "role": "data",
-      "roleRule": "dsp-plugin:build/product-input"
+      "role": "doc",
+      "roleRule": "default:path/docs-dir"
     },
     {
       "hash": "sha256:c5a553087fc46a8cb7b826f7ac0380548f5331b93f65ac6418f380a4a36e6553",
@@ -47805,11 +47923,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:d76e23b38b53df1f1a20065527d4be554ca28534ff6c8c5fc4ed336948721212",
+      "hash": "sha256:d3cebde507f4c6756079713b664d3e47c7a55ce83c8c0c539f9ef5ca1f4142ae",
       "id": "file:docs/proposals/module-1.0-bar.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 129,
+      "loc": 133,
       "path": "docs/proposals/module-1.0-bar.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -47845,11 +47963,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:e31586e72fef5e86fd5d22e4a3dfbdfbd0165726e94cdfb12b13f5a8f2db0d67",
+      "hash": "sha256:945108a733c7a4b0941ac20523e523bdc3672da34e53c4c217490182596c6374",
       "id": "file:docs/proposals/rack-slot-contract.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 422,
+      "loc": 456,
       "path": "docs/proposals/rack-slot-contract.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -48479,14 +48597,24 @@
       "path": "engine2/data/reference-renders/.gitignore"
     },
     {
-      "hash": "sha256:e54bb978a14031ad5fba3fb50c4c56b994f56c5532b94cffa6edb8cf9fb6c246",
+      "hash": "sha256:a8711cf96555a5986d8f0ad1a3a45d45008667b097ae1adaaa8a3fc2d59919a5",
       "id": "file:engine2/data/reference-renders/README.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 88,
+      "loc": 125,
       "path": "engine2/data/reference-renders/README.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:786fca879e80c751648727ef70411901292a92e4b8b45ec2a8bf1907d12b0a60",
+      "id": "file:engine2/data/reference-renders/manifest-48k.json",
+      "kind": "file",
+      "lang": "json",
+      "loc": 10690,
+      "path": "engine2/data/reference-renders/manifest-48k.json",
+      "role": "data",
+      "roleRule": "default:path/data-ext"
     },
     {
       "hash": "sha256:8f4064a718b751a9556370f232e8cbb861e8e2ff2baf7221ea6232168df9be82",
@@ -48659,11 +48787,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:eab2eb9d3b2e60d765a0e786eda54f0917a66a8971d4544f3032818285c22ab8",
+      "hash": "sha256:b64380db5bd015973abf4560554935a6385829cd7eb75d6ff7392e263ff8fdf9",
       "id": "file:engine2/structure/engine-structure.json",
       "kind": "file",
       "lang": "json",
-      "loc": 1931,
+      "loc": 1932,
       "path": "engine2/structure/engine-structure.json",
       "role": "data",
       "roleRule": "default:path/data-ext"
@@ -48747,11 +48875,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:4efa0fe647f53bf7761a408242c0079ccd708709eefb5a98d82a944d33d1284c",
+      "hash": "sha256:3c5f881362c06b22a4982213c6130824e09ba1b0180ea266178d3cd5d1aceb90",
       "id": "file:h2/README.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 203,
+      "loc": 205,
       "path": "h2/README.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -49093,6 +49221,16 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:c684ccb3ea8121982e230527d762f6bfc873ccfa490c391fa19061f8143fe062",
+      "id": "file:integrations/bulwark/brief-switch-classes.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 137,
+      "path": "integrations/bulwark/brief-switch-classes.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:883a4fa5e7485a0c4c29341069075bb7c897dba0d0c988bfa4208b47a7e9a4c1",
       "id": "file:integrations/bulwark/notice-ceiling-adopted.md",
       "kind": "file",
@@ -49109,6 +49247,16 @@
       "lang": "markdown",
       "loc": 35,
       "path": "integrations/bulwark/notice-citation-correction.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:ed790154f88e798284a161369464e47631064c8687b190c2c7be4a976c3cf559",
+      "id": "file:integrations/bulwark/notice-engine-rebuild-audit.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 92,
+      "path": "integrations/bulwark/notice-engine-rebuild-audit.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -49173,6 +49321,16 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:d87ed119f3d63e3f88df5552ee89109b04bfdfbee9fca4722f53c3890a2c1d01",
+      "id": "file:integrations/bulwark/response-switch-classes.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 44,
+      "path": "integrations/bulwark/response-switch-classes.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:d757bc3e4c199ef5c1f826388e443658d7e59a329d8b4c2539b920981ba28032",
       "id": "file:integrations/loupe/brief-001.md",
       "kind": "file",
@@ -49203,12 +49361,42 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:daa192732be256951f8903b77a87ebdebe65a2bf0fa2d39045eb17cd0ab4351f",
+      "id": "file:integrations/loupe/brief-004.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 76,
+      "path": "integrations/loupe/brief-004.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:3c15ccad4c49a76e5e0176ddcc384ac109bb3e50c230a3b1511d6f8034c8e049",
       "id": "file:integrations/loupe/notice-002.md",
       "kind": "file",
       "lang": "markdown",
       "loc": 27,
       "path": "integrations/loupe/notice-002.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:afdb4ec797800f4c08aa71ff68e4d46c051538fde8878fe75c1af005f6576ac4",
+      "id": "file:integrations/loupe/notice-003.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 74,
+      "path": "integrations/loupe/notice-003.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:66e197932d4da350ff7b4910c632750efbd31cca5e6cfe6d9dc797b063401187",
+      "id": "file:integrations/loupe/notice-004.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 57,
+      "path": "integrations/loupe/notice-004.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -49239,6 +49427,26 @@
       "lang": "markdown",
       "loc": 38,
       "path": "integrations/loupe/response-003.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:d5ef5d58aa14f1a00e84db33804eff32798450f1c369cecbcfad27eedbc43054",
+      "id": "file:integrations/loupe/response-004.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 28,
+      "path": "integrations/loupe/response-004.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:5f955f79e5c1a03bdd13b91c0398d803a475d073c2ca0371f0d32aaced0b82e9",
+      "id": "file:integrations/maw/brief-b439-oversampled-defaults.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 68,
+      "path": "integrations/maw/brief-b439-oversampled-defaults.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -49333,6 +49541,66 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:9158002da4f556d5acc0391bf0fd21df2bfd8d85d1957d9320b9f77ccc615dd6",
+      "id": "file:integrations/maw/notice-d066-automode.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 30,
+      "path": "integrations/maw/notice-d066-automode.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:57a74b113ddb7fdd72461a50c5482c8899c9e741c04115cdac0d0ecd22b0076a",
+      "id": "file:integrations/maw/notice-d067-taper.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 37,
+      "path": "integrations/maw/notice-d067-taper.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:151d4f964e99d0829b1e53d78d2451db3a64cbe91c9cab4b8c7635002a36157e",
+      "id": "file:integrations/maw/notice-d068-classes.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 36,
+      "path": "integrations/maw/notice-d068-classes.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:265114578c832b2b54f62bf1d7d6f27b920256f4d2356cd888259fda1015d1b2",
+      "id": "file:integrations/maw/notice-d069-design.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 30,
+      "path": "integrations/maw/notice-d069-design.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:29caf90a499d57effe65fd97627b34f660738a743aeb6546a0075c0619dfc8e4",
+      "id": "file:integrations/maw/notice-d070-2x.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 31,
+      "path": "integrations/maw/notice-d070-2x.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:a6ef9ce39e1cd67cde238aece46e6e14ecc8695866fc7b958dbf6ddcae014217",
+      "id": "file:integrations/maw/notice-engine-rebuild-audit.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 65,
+      "path": "integrations/maw/notice-engine-rebuild-audit.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:3088b18c92791fe8ff5476271301b1359af0da7fa2412fc79c3317e310862216",
       "id": "file:integrations/maw/notice-phase-p.md",
       "kind": "file",
@@ -49349,6 +49617,16 @@
       "lang": "markdown",
       "loc": 53,
       "path": "integrations/maw/notice-spinup.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:43a3be3a411d295006501cb1c9c3df0002a3b5bbef6a379c417cda5af878b8bb",
+      "id": "file:integrations/maw/response-b439-oversampled-defaults.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 37,
+      "path": "integrations/maw/response-b439-oversampled-defaults.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -49373,12 +49651,62 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:7eaab0dbc420bf7dd43d0b8a9705b9b0eb51e34ec02e2ecead48a241d9e24d32",
+      "id": "file:integrations/scape/brief-morph-corner-designs.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 49,
+      "path": "integrations/scape/brief-morph-corner-designs.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:892c6d18f8748868e7aec6c173d4870ad78efc86efff8c81f6846e52ee3ffb49",
+      "id": "file:integrations/scape/notice-engine-rebuild-audit.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 66,
+      "path": "integrations/scape/notice-engine-rebuild-audit.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:ab3e62bb3ec635faccf942112721c248b83467bf5f679e51a85ddbb17ab99b64",
       "id": "file:integrations/scape/notice-spinup.md",
       "kind": "file",
       "lang": "markdown",
       "loc": 42,
       "path": "integrations/scape/notice-spinup.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:233c0aabfd505eaaf34409b7562ebced452ccddc4688c15df910839b9ac8cfc7",
+      "id": "file:integrations/scape/response-morph-corner-designs-accepted.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 30,
+      "path": "integrations/scape/response-morph-corner-designs-accepted.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:4ee553fd20620332b2d4d574f065865bb1896df2b5c8b7c9c31800fbf8416e21",
+      "id": "file:integrations/scape/response-morph-corner-designs-review.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 36,
+      "path": "integrations/scape/response-morph-corner-designs-review.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:d6cc298389229622adfd50a322fea49e40af40aea3f70dcf76cedc1e8938935f",
+      "id": "file:integrations/scape/response-morph-corner-designs.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 43,
+      "path": "integrations/scape/response-morph-corner-designs.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
     },
@@ -49841,11 +50169,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:0cebcf72e6ba75bcc4f835df5de806682be4c030816706d14397adabd21b0c4e",
+      "hash": "sha256:3393187cfe997b6665eac365fb60dc9694f2ba4a7d0831d5b40b407c3cfd5c9e",
       "id": "file:specs/SPEC-ENGINE.md",
       "kind": "file",
       "lang": "markdown",
-      "loc": 1187,
+      "loc": 1188,
       "path": "specs/SPEC-ENGINE.md",
       "role": "doc",
       "roleRule": "default:path/doc-ext"
@@ -50371,7 +50699,7 @@
       "roleRule": "dsp-plugin:build/product-reach"
     },
     {
-      "hash": "sha256:7b08b3a7d2e40b83dd12ab60921fbe99d8264eadad056010d40a767aff90c4c2",
+      "hash": "sha256:bcd300dd7f86a3c945022f3e2f8466e7b508dd88f6f8fa80623ca3694cc22f61",
       "id": "file:tests/feature_tests.tsv",
       "kind": "file",
       "lang": "tsv",
@@ -50831,11 +51159,11 @@
       "roleRule": "dsp-plugin:path/check-name"
     },
     {
-      "hash": "sha256:00c1d7c342cfce48e39b357521bd971a15ce3fef74c4d1493b9cabb4861a2d4a",
+      "hash": "sha256:70bb4534aedbecd680cee91154457636a3f7d3bfe16d46e0eb4f8e61c15a9908",
       "id": "file:tools/engine2_reference_renders.mjs",
       "kind": "file",
       "lang": "js",
-      "loc": 404,
+      "loc": 478,
       "path": "tools/engine2_reference_renders.mjs",
       "role": "tool",
       "roleRule": "default:path/tools-dir"
@@ -52721,11 +53049,11 @@
       "roleRule": "dsp-plugin:build/test-target"
     },
     {
-      "hash": "sha256:eada802b7783da082b05b949a13941978ec51ae66c2c4106fe9c0edf295152a8",
+      "hash": "sha256:55533fa9828f3d4edbf12b6bb34224447d427957a109fa67cbae15519c2b0537",
       "id": "file:tools/sanitize_oracles.sh",
       "kind": "file",
       "lang": "sh",
-      "loc": 121,
+      "loc": 285,
       "path": "tools/sanitize_oracles.sh",
       "role": "tool",
       "roleRule": "default:path/tools-dir"
@@ -52897,6 +53225,16 @@
       "lang": "python",
       "loc": 279,
       "path": "tools/stop_gate_check.py",
+      "role": "test",
+      "roleRule": "dsp-plugin:path/check-name"
+    },
+    {
+      "hash": "sha256:5b3ee60d31ef3bfdaa02f420fc2207e427ef005f6346a2f0f0e51bc1463c31aa",
+      "id": "file:tools/store_logs_check.py",
+      "kind": "file",
+      "lang": "python",
+      "loc": 262,
+      "path": "tools/store_logs_check.py",
       "role": "test",
       "roleRule": "dsp-plugin:path/check-name"
     },
@@ -57981,6 +58319,66 @@
       "roleRule": "default:path/doc-ext"
     },
     {
+      "hash": "sha256:a5aec04ad8e9576c6efed942ddf6d38eec4650df48bf3cafb118deedd600baa6",
+      "id": "file:traces/2026-10-17-b497-renders-48k.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 10,
+      "path": "traces/2026-10-17-b497-renders-48k.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:f42d9be95501fee0e5dc457fda79474b4dfae175bf37af740d32a0cb3f97c939",
+      "id": "file:traces/2026-10-17-b505-faster-ci.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 65,
+      "path": "traces/2026-10-17-b505-faster-ci.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:afb4aa5a30551f0b7818c5bb09ebb37440a73532e63429dba58dbfbcea395c1b",
+      "id": "file:traces/2026-10-17-b507-scratch-home.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 10,
+      "path": "traces/2026-10-17-b507-scratch-home.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:5f19ec44b067c955ee6dd4a298b72b816f01253f3fb49a0eae0429aa14a5970d",
+      "id": "file:traces/2026-10-17-h2-plan-refresh-r2.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 24,
+      "path": "traces/2026-10-17-h2-plan-refresh-r2.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:320b40ebdbf7ad46615a3737056f68f3c8b9a737b9f3167559d88d988f256b36",
+      "id": "file:traces/2026-10-17-h2-plan-refresh.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 54,
+      "path": "traces/2026-10-17-h2-plan-refresh.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
+      "hash": "sha256:04d2d9a7e2f2f794d7f43e9088b527c54bd1ae63516f4d16ce547988b19649de",
+      "id": "file:traces/2026-10-17-readme-refresh.md",
+      "kind": "file",
+      "lang": "markdown",
+      "loc": 50,
+      "path": "traces/2026-10-17-readme-refresh.md",
+      "role": "doc",
+      "roleRule": "default:path/doc-ext"
+    },
+    {
       "hash": "sha256:fe5938cda76882e22f47ffc015434d8ff8354852b45a4825a5564136d2fb81ec",
       "id": "file:traces/README.md",
       "kind": "file",
@@ -57991,11 +58389,11 @@
       "roleRule": "default:path/doc-ext"
     },
     {
-      "hash": "sha256:9fe332c40b7658b5c948c33e173aef02a7be0d0849fe7f30cd0bab89e26f6cd2",
+      "hash": "sha256:21270ad4e9b036285b542fde54ed7318629bc9f5cf64ad98decc790c06221bcd",
       "id": "file:verify",
       "kind": "file",
       "lang": "sh",
-      "loc": 1495,
+      "loc": 1536,
       "path": "verify"
     },
     {
@@ -58896,8 +59294,8 @@
       "id": "miss:foundations/note.h",
       "kind": "missing",
       "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
+        "note": "a sibling repo under foundations/ (the repo's .loupe/config.json, siblings)",
+        "reason": "sibling"
       },
       "path": "foundations/note.h"
     },
@@ -58906,8 +59304,8 @@
       "id": "miss:foundations/note_conformance.h",
       "kind": "missing",
       "missing": {
-        "note": "not found next to the file or on any include path",
-        "reason": "unknown"
+        "note": "a sibling repo under foundations/ (the repo's .loupe/config.json, siblings)",
+        "reason": "sibling"
       },
       "path": "foundations/note_conformance.h"
     },
@@ -59804,6 +60202,13 @@
     },
     {
       "hash": "none",
+      "id": "target:factory_bank_gen",
+      "kind": "target",
+      "path": "factory_bank_gen",
+      "targetType": "UTILITY"
+    },
+    {
+      "hash": "none",
       "id": "target:filter_check",
       "kind": "target",
       "path": "filter_check",
@@ -60463,8 +60868,8 @@
   ],
   "schema": "loupe.graph/0.3.2",
   "source": {
-    "commit": "1e6aae7961d99dbb4c985bfa592a952b0fecd486",
-    "commitTime": "2026-10-16T18:31:54-04:00",
+    "commit": "d412a28b03976135a403f5b4d4555574659941e5",
+    "commitTime": "2026-10-18T03:00:45-04:00",
     "dirty": false,
     "repo": "github.com/Julian-B-Smith/horde"
   }

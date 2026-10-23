@@ -1,12 +1,4 @@
 {
   "about": "HORDE gates that fail for a reason outside Loupe, each pinned to exactly what it waits on (Julian, 2026-10-18: full stays red, but says why). ./verify full exits 4 (not 1) only when every failing gate is listed here with exactly these ids and every snapshot byte-compare held; tools/gate.test.mjs fails if an entry names a passing gate or other ids, so a stale entry cannot linger and a new unknown cannot hide behind an old reason.",
-  "waiting": {
-    "unknownMissing": {
-      "reason": "waiting on HORDE: brief-004 proposes \"siblings\": [\"foundations/\"] for the two FOUNDATIONS headers HORDE keeps untracked on purpose (ROADMAP Q-025)",
-      "ids": [
-        "miss:foundations/note.h",
-        "miss:foundations/note_conformance.h"
-      ]
-    }
-  }
+  "waiting": {}
 }
