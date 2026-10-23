@@ -25,11 +25,13 @@ import { readFileSync, openSync, readSync, closeSync } from 'node:fs';
 import { join, posix } from 'node:path';
 
 export type LangEdge = { from: string; line: number; kind: 'import' | 'reference' | 'data' | 'generates';
-  to: string; resolution: 'exact' | 'search' | 'syntactic'; missing?: 'unknown' | 'external' };
+  to: string; resolution: 'exact' | 'search' | 'syntactic'; missing?: 'unknown' | 'external'; note?: string;
+  typeOnly?: boolean }; // TypeScript `import type` / `export type ... from`: erased at compile time (Q-026)
 export type Computed = { from: string; line: number; text: string };
 const by = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
-export const LANG_OF: Record<string, string> = { '.py': 'python', '.js': 'js', '.mjs': 'js', '.cjs': 'js', '.html': 'html', '.htm': 'html', '.sh': 'sh', '.bash': 'sh' };
+export const LANG_OF: Record<string, string> = { '.py': 'python', '.js': 'js', '.mjs': 'js', '.cjs': 'js', '.html': 'html', '.htm': 'html', '.sh': 'sh', '.bash': 'sh',
+  '.ts': 'ts', '.tsx': 'ts', '.mts': 'ts', '.cts': 'ts' }; // TypeScript reads with the JS lexer (Q-026)
 // CMakeLists.txt ends in .txt but is build configuration: a script reading it references the build, not data (Q-025).
 const DATA_EXT = /^(?!(?:.*\/)?CMakeLists\.txt$).*\.(json|csv|tsv|ya?ml|txt|f32|wav|toml|ini|xml)$/i;
 // Fixed lists, never read from the host (the crawl must not depend on what is installed).
@@ -60,6 +62,7 @@ const DEFINES_ROOT = /\b(?:REPO_ROOT|ROOT)\s*=/;
 const LOWER_ROOTS = ['root', 'repo', 'repo_root', 'reporoot'];
 const bindsOtherwise = (v: string) => new RegExp(`\\bfor\\s*\\(?\\s*(?:(?:const|let|var)\\s+)?(?:[\\w\\s,]*,\\s*)?${v}\\b|\\b${v}\\s*,\\s*\\w+\\s*,\\s*\\w+\\s+in\\b|\\bas\\s+${v}\\b|\\b${v}\\s*=(?!=)\\s*(?![\\s]|(?:REPO_)?ROOT\\b|[\\w.]*\\(\\s*${v}\\s*\\))`); // root = Path(root) keeps the same root
 const BINDS = Object.fromEntries(LOWER_ROOTS.map((v) => [v, bindsOtherwise(v)]));
+const DTS = /\.d\.[cm]?ts$/; // a declaration file: emits nothing, so all it imports is type-only (Q-026)
 const MODULE_SPEC = /^[\w@.\/:~-][^\s'"(),;&|<>`{}]*$/; // what a JS specifier can look like; anything else is not one
 
 // ---- code masks: same length as the text, comments blanked, string contents kept but marked
@@ -140,7 +143,7 @@ const lineStarts = (t: string) => { const s = [0]; for (let i = 0; i < t.length;
 const lineAt = (starts: number[], pos: number) => { let lo = 0, hi = starts.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (starts[m] <= pos) lo = m; else hi = m - 1; } return lo + 1; };
 
 export function langLayer(repo: string, tracked: string[], textFiles: Set<string> = new Set(tracked)) {
-  const set = new Set(tracked), out: LangEdge[] = [], computed: Computed[] = [];
+  const set = new Set(tracked), out: LangEdge[] = [], computed: Computed[] = [], notes: { what: string; reason: string }[] = [];
   // A file with no extension is a script when its first line says so (`#!/usr/bin/env bash`): HORDE's ./verify is one.
   const shebang = (p: string): string | null => {
     if (posix.extname(p) || !textFiles.has(p)) return null;
@@ -184,27 +187,117 @@ export function langLayer(repo: string, tracked: string[], textFiles: Set<string
 
   // ---- JS specifiers
   const JS_EXT = ['', '.js', '.mjs', '.cjs', '/index.js', '/index.mjs'];
-  const jsSpec = (p: string, spec: string, line: number, kind: 'import' | 'reference') => {
+  // TypeScript's module resolution (Q-026): its own extensions first, declaration files, index files, and the ESM
+  // convention of writing the OUTPUT name (`./x.js`) for a source that is `x.ts`.
+  const TS_EXT = ['', '.ts', '.tsx', '.d.ts', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs', '/index.ts', '/index.tsx', '/index.d.ts', '/index.js'];
+  // The source name first: with both b.js and b.ts tracked, tsc picks b.ts for './b.js' (critic L2).
+  const tsSpecs = (spec: string) => { const m = /^(.*)\.(m|c)?jsx?$/.exec(spec); return m ? [m[1] + '.' + (m[2] ? m[2] + 'ts' : 'ts'), m[1] + '.tsx', spec] : [spec]; };
+  const findTs = (from: string, spec: string) => { for (const s0 of tsSpecs(spec)) { const h = findPath(from, s0, TS_EXT); if (h) return h; } return null; };
+  // tsconfig (Q-026): which config governs a file, then its paths and baseUrl, as tsc reads them. JSON with comments,
+  // trailing commas and a BOM. What cannot be applied is said in `notes`, never silently skipped (critic H2): a config
+  // that does not parse, an `extends` naming a package. Approximation, documented: a file is governed by the nearest
+  // tsconfig.json above it; a solution-style one (`references`, no own options) hands over to the referenced config
+  // whose `include` covers the file. tsc assigns files by include/files, so a file two projects both reach may differ.
+  type TsCfg = { dir: string; baseUrl: string | null; paths: Record<string, string[]> | null; pathsDir: string; include: string[]; refs: string[] };
+  const tsconfigs = new Map<string, TsCfg | null>();
+  const readJsonc = (p: string) => { try { const t = readFileSync(join(repo, p), 'utf8').replace(/^﻿/, ''), m = maskJs(t); let code = '';
+    for (let i = 0; i < t.length; i++) code += m.code[i] === ' ' && t[i] !== ' ' && !m.inStr[i] ? ' ' : t[i]; // drop comments, keep strings
+    return JSON.parse(code.replace(/,(\s*[}\]])/g, '$1')); } catch { return null; } };
+  const cfgPath = (dir: string, ref: string) => { const q = posix.normalize(posix.join(dir || '.', ref)); return q.endsWith('.json') ? q : q + '/tsconfig.json'; };
+  const loadTsconfig = (p: string, seen: Set<string> = new Set()): TsCfg | null => {
+    if (tsconfigs.has(p)) return tsconfigs.get(p)!;
+    if (seen.has(p)) return null; seen.add(p);
+    const j = readJsonc(p), dir = posix.dirname(p) === '.' ? '' : posix.dirname(p);
+    if (!j || typeof j !== 'object') { notes.push({ what: p, reason: 'tsconfig does not parse as JSON with comments: its paths and baseUrl are not applied' }); tsconfigs.set(p, null); return null; }
+    // `extends`, one or a list, later bases winning option by option (critic H2c); a package base is not followed.
+    const cfg: TsCfg = { dir, baseUrl: null, paths: null, pathsDir: dir, include: [], refs: [] };
+    for (const ext of ([] as unknown[]).concat(j.extends || [])) {
+      if (typeof ext !== 'string') continue;
+      if (!ext.startsWith('.')) { notes.push({ what: p, reason: `tsconfig extends the package ${ext}: not followed, so options it sets are not applied` }); continue; }
+      const q = posix.normalize(posix.join(dir || '.', ext.endsWith('.json') ? ext : ext + '.json'));
+      const b = set.has(q) ? loadTsconfig(q, seen) : null;
+      if (!b) { if (!set.has(q)) notes.push({ what: p, reason: `tsconfig extends ${ext}, which is not a tracked file` }); continue; }
+      if (b.baseUrl != null) cfg.baseUrl = b.baseUrl;
+      if (b.paths) { cfg.paths = b.paths; cfg.pathsDir = b.pathsDir; }
+    }
+    const co = j.compilerOptions || {};
+    if (typeof co.baseUrl === 'string') cfg.baseUrl = posix.normalize(posix.join(dir || '.', co.baseUrl));
+    if (co.paths && typeof co.paths === 'object') { cfg.paths = co.paths; cfg.pathsDir = dir; }
+    cfg.include = Array.isArray(j.include) ? j.include.filter((x: unknown) => typeof x === 'string').map((x: string) => posix.normalize(posix.join(dir || '.', x))) : [];
+    cfg.refs = Array.isArray(j.references) ? j.references.map((r: any) => r && typeof r.path === 'string' ? cfgPath(dir, r.path) : null).filter((q: string | null) => q && set.has(q)) : [];
+    tsconfigs.set(p, cfg); return cfg;
+  };
+  const covers = (c: TsCfg, file: string) => !c.include.length ? file.startsWith(c.dir ? c.dir + '/' : '') : c.include.some((g) => { const pre = g.split('*')[0].replace(/\/$/, ''); return pre === '' || pre === '.' || file === pre || file.startsWith(pre + '/'); });
+  const tsconfigFor = (file: string): TsCfg | null => {
+    for (let d = posix.dirname(file); ; d = posix.dirname(d)) {
+      const c = (d === '.' ? '' : d + '/') + 'tsconfig.json';
+      if (set.has(c)) {
+        const cfg = loadTsconfig(c);
+        // Solution style (critic H2a): no options of its own, references to the real projects.
+        if (cfg && cfg.paths == null && cfg.baseUrl == null && cfg.refs.length) for (const r of cfg.refs) { const rc = loadTsconfig(r); if (rc && covers(rc, file)) return rc; }
+        return cfg;
+      }
+      if (d === '.' || d === '') return null;
+    }
+  };
+  // A bare TS specifier: `paths` (the longest prefix first, which puts an exact pattern first, as tsc), resolved from the effective
+  // baseUrl (own or inherited), else from the config that declares paths (critic M2); then baseUrl alone. Found:
+  // `search`. A pattern that matches but finds no file falls back to module resolution, as tsc does, and is said in
+  // `notes` (criterion 3: reported, never dropped; critic M1: a catch-all "*" must not turn every package unknown).
+  const tsAlias = (p: string, spec: string, line: number): LangEdge | null => {
+    const cfg = tsconfigFor(p); if (!cfg) return null;
+    const pats = Object.entries(cfg.paths || {}).filter(([, v]) => Array.isArray(v))
+      .sort((a, b) => b[0].split('*')[0].length - a[0].split('*')[0].length || by(a[0], b[0])); // longest prefix: an exact pattern's prefix is the whole specifier, so it comes first ('ab' before 'ab*' on the tie)
+    const base = cfg.baseUrl ?? (cfg.pathsDir || '.');
+    for (const [pat, targets] of pats) {
+      const star = pat.indexOf('*'), pre = star < 0 ? pat : pat.slice(0, star), post = star < 0 ? '' : pat.slice(star + 1);
+      if (star < 0 ? spec !== pat : !(spec.startsWith(pre) && spec.endsWith(post) && spec.length >= pre.length + post.length)) continue;
+      const mid = star < 0 ? '' : spec.slice(pre.length, spec.length - post.length);
+      for (const t of targets as string[]) {
+        const cand = posix.normalize(posix.join(base, String(t).replace('*', mid)));
+        if (cand.startsWith('../')) return { from: p, line, kind: 'import', to: 'miss:' + posix.basename(cand), resolution: 'syntactic', missing: 'external', note: `tsconfig paths alias ${pat} points outside the repo` };
+        for (const s0 of tsSpecs(cand)) for (const e of TS_EXT) if (set.has(s0 + e)) return { from: p, line, kind: 'import', to: 'file:' + s0 + e, resolution: 'search' };
+      }
+      notes.push({ what: `${p}:${line}`, reason: `tsconfig paths alias ${pat} matches ${spec} but no file is there: resolved as a module instead, as tsc does` });
+      break;
+    }
+    if (cfg.baseUrl != null) for (const s0 of tsSpecs(posix.normalize(posix.join(cfg.baseUrl, spec)))) for (const e of TS_EXT) if (set.has(s0 + e)) return { from: p, line, kind: 'import', to: 'file:' + s0 + e, resolution: 'search' };
+    return null;
+  };
+  // An npm name: optional @scope/, then a name; `@/util` or `~/util` cannot be a package (critic H2: an alias whose
+  // config was not found must not pass as one).
+  const NPM_NAME = /^(?:@[a-z0-9][\w.~-]*\/)?[a-z0-9_.~-][\w.~-]*$/i;
+  const jsSpec = (p: string, spec: string, line: number, kind: 'import' | 'reference', ts = false, typeOnly = false) => {
+    const addT = (e: LangEdge) => add(typeOnly ? { ...e, typeOnly: true } : e);
     if (/^(https?:)?\/\//.test(spec)) { let host = spec; try { host = new URL(spec.startsWith('//') ? 'https:' + spec : spec).host; } catch {} return add({ from: p, line, kind, to: 'ext:web:' + host, resolution: 'syntactic' }); }
     if (/^(data|blob|mailto|javascript|about):/.test(spec) || spec.startsWith('#')) return;
     if (spec.includes('${') || !MODULE_SPEC.test(spec)) { if (kind === 'import') computed.push({ from: p, line, text: spec.slice(0, 80) }); return; }
     if (spec.startsWith('.') || spec.startsWith('/') || kind === 'reference') {
-      const clean = spec.split(/[?#]/)[0], hit = findPath(p, clean, kind === 'import' ? JS_EXT : ['']);
-      if (hit) return add({ from: p, line, kind, to: hit.to, resolution: hit.resolution });
-      return add({ from: p, line, kind, resolution: 'syntactic', ...missTo(p, clean) });
+      const clean = spec.split(/[?#]/)[0], hit = ts && kind === 'import' ? findTs(p, clean) : findPath(p, clean, kind === 'import' ? JS_EXT : ['']);
+      if (hit) return addT({ from: p, line, kind, to: hit.to, resolution: hit.resolution });
+      return addT({ from: p, line, kind, resolution: 'syntactic', ...missTo(p, clean) });
     }
+    if (ts) { const a = tsAlias(p, spec, line); if (a) return addT(a); }
     const pkg = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0];
-    add({ from: p, line, kind, to: pkg.startsWith('node:') || NODE_BUILTINS.has(pkg) ? 'ext:node' : 'ext:npm:' + pkg, resolution: 'syntactic' });
+    if (!pkg.startsWith('node:') && !NPM_NAME.test(pkg)) return addT({ from: p, line, kind, to: 'miss:' + spec, resolution: 'syntactic', missing: 'unknown', note: 'not a package name, and no tsconfig alias resolves it' });
+    addT({ from: p, line, kind, to: pkg.startsWith('node:') || NODE_BUILTINS.has(pkg) ? 'ext:node' : 'ext:npm:' + pkg, resolution: 'syntactic' });
   };
   // Import statements in a masked JS text; returns the offsets of specifier strings it consumed.
-  const JS_IMPORT = /(?<![\w$.'"-])(?:import\s*(?:[\w*{}\s,$]+?\s*from\s*)?(['"])([^'"\n]+)\1|export\s+(?:\*|\{[^}]*\}|\*\s+as\s+\w+)\s*from\s*(['"])([^'"\n]+)\3|import\s*\(\s*(['"])([^'"\n]+)\5\s*\)|require\s*\(\s*(['"])([^'"\n]+)\7\s*\))/g;
+  // `export type { A } from` and `export type * from` are TypeScript's (Q-026); `import type` already fits the first form.
+  const JS_IMPORT = /(?<![\w$.'"-])(?:import\s*(?:[\w*{}\s,$]+?\s*from\s*)?(['"])([^'"\n]+)\1|export\s+(?:type\s+)?(?:\*|\{[^}]*\}|\*\s+as\s+\w+)\s*from\s*(['"])([^'"\n]+)\3|import\s*\(\s*(['"])([^'"\n]+)\5\s*\)|require\s*\(\s*(['"])([^'"\n]+)\7\s*\))/g;
   const JS_COMPUTED = /(?<![\w$.'"-])(?:import|require)\s*\(\s*(?![\s'")])([^)\n]{1,60})\)/g;
-  const jsImports = (p: string, text: string, m: Mask, starts: number[], base = 0) => {
+  const jsImports = (p: string, text: string, m: Mask, starts: number[], base = 0, ts = false) => {
     const used = new Set<number>();
     for (const x of m.code.matchAll(JS_IMPORT)) {
       if (m.inStr[x.index!]) continue; // the keyword itself sits inside a string
       const spec = x[2] || x[4] || x[6] || x[8], q = x.index! + x[0].indexOf(spec);
-      used.add(q); jsSpec(p, spec, base + lineAt(starts, x.index!), 'import');
+      // Type-only for a whole statement (`import type`, `export type`, `import type X = require()`), and for anything a
+      // declaration file imports (it emits nothing; critic M3). `import { type A, B }`, and even `import { type A }`,
+      // count as possibly runtime: tsc keeps them under verbatimModuleSyntax. `import type from 'x'` is a default
+      // import named type.
+      const typeOnly = ts && (DTS.test(p) || /^(?:import|export)\s+type(?:\s+(?!from\b)|(?=[{*]))/.test(x[0])
+        || /\bimport\s+type\s+[\w$]+\s*=\s*$/.test(m.code.slice(Math.max(0, x.index! - 80), x.index!)));
+      used.add(q); jsSpec(p, spec, base + lineAt(starts, x.index!), 'import', ts, typeOnly);
     }
     for (const x of m.code.matchAll(JS_COMPUTED)) if (!m.inStr[x.index!]) computed.push({ from: p, line: base + lineAt(starts, x.index!), text: x[0].slice(0, 80) });
     return used;
@@ -213,9 +306,14 @@ export function langLayer(repo: string, tracked: string[], textFiles: Set<string
   for (const p of files) {
     let text: string; try { text = readFileSync(join(repo, p), 'utf8'); } catch { continue; }
     const lang = langOfFile.get(p)!, starts = lineStarts(text);
-    if (lang === 'js') {
+    if (lang === 'js' || lang === 'ts') {
       const m = maskJs(text);
-      const used = jsImports(p, text, m, starts);
+      const used = jsImports(p, text, m, starts, 0, lang === 'ts');
+      // Triple-slash directives live in comments, so the mask hides them: read on the raw lines (critic L1). Both are
+      // compile-time: `path` names a file, `types` a package's declarations.
+      if (lang === 'ts') for (const x of text.matchAll(/^[ \t]*\/\/\/[ \t]*<reference\s+(path|types)\s*=\s*(['"])([^'"\n]+)\2/gm))
+        if (x[1] === 'path') { const h = findTs(p, x[3]); add({ from: p, line: lineAt(starts, x.index!), kind: 'import', resolution: h ? h.resolution : 'syntactic', ...(h ? { to: h.to } : missTo(p, x[3])), typeOnly: true }); }
+        else jsSpec(p, x[3], lineAt(starts, x.index!), 'import', true, true);
       // a literal is written when it is the first argument of a write call
       literals(p, text, m, starts, (pos) => /(writeFileSync|writeFile|appendFileSync|appendFile|createWriteStream)\s*\(\s*$/.test(text.slice(Math.max(0, pos - 40), pos)), used);
     } else if (lang === 'html') {
@@ -299,9 +397,13 @@ export function langLayer(repo: string, tracked: string[], textFiles: Set<string
       });
     }
   }
-  const seen = new Set<string>();
-  const edges = out.filter((e) => { const k = `${e.from}|${e.line}|${e.kind}|${e.to}`; if (seen.has(k)) return false; seen.add(k); return true; })
+  // One edge per (file, line, kind, target). Two statements on one line, one `import type` and one runtime, are one
+  // runtime site: type-only survives only if every copy is (critic H1: the first copy used to win).
+  const kept = new Map<string, LangEdge>();
+  for (const e of out) { const k = `${e.from}|${e.line}|${e.kind}|${e.to}`, was = kept.get(k); if (!was) { kept.set(k, e); continue; } if (was.typeOnly && !e.typeOnly) kept.set(k, { ...was, typeOnly: undefined }); }
+  const edges = [...kept.values()]
     .sort((a, b) => by(a.from, b.from) || a.line - b.line || by(a.kind, b.kind) || by(a.to, b.to));
   computed.sort((a, b) => by(a.from, b.from) || a.line - b.line || by(a.text, b.text));
-  return { schema: 'loupe.langfacts/0.0-internal', files: files.length, langOf: Object.fromEntries(langOfFile), edges, computed };
+  notes.sort((a, b) => by(a.what, b.what) || by(a.reason, b.reason));
+  return { schema: 'loupe.langfacts/0.0-internal', files: files.length, langOf: Object.fromEntries(langOfFile), edges, computed, notes: [...new Map(notes.map((n) => [n.what + '|' + n.reason, n])).values()] };
 }

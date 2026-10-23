@@ -24,7 +24,7 @@ import { assignRoles, guiBridge, readRoleConfig, DIALECTS } from './dialect.ts';
 const by = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const LANG: Record<string, string> = { '.cjs': 'js', '.htm': 'html', '.bash': 'sh', '.c': 'c', '.h': 'cpp', '.cc': 'cpp', '.cpp': 'cpp', '.cxx': 'cpp', '.hh': 'cpp', '.hpp': 'cpp', '.hxx': 'cpp',
   '.inl': 'cpp', '.ipp': 'cpp', '.tpp': 'cpp', '.inc': 'cpp', '.m': 'objc', '.mm': 'objcpp', '.cmake': 'cmake', '.py': 'python', '.js': 'js', '.mjs': 'js',
-  '.ts': 'ts', '.sh': 'sh', '.json': 'json', '.md': 'markdown', '.txt': 'text', '.csv': 'csv', '.tsv': 'tsv', '.yml': 'yaml', '.yaml': 'yaml', '.html': 'html' };
+  '.ts': 'ts', '.tsx': 'ts', '.mts': 'ts', '.cts': 'ts', '.sh': 'sh', '.json': 'json', '.md': 'markdown', '.txt': 'text', '.csv': 'csv', '.tsv': 'tsv', '.yml': 'yaml', '.yaml': 'yaml', '.html': 'html' };
 const langOf = (p: string) => (basename(p) === 'CMakeLists.txt' ? 'cmake' : LANG[extname(p).toLowerCase()] || 'text');
 
 // The repo's public identity: host/owner/name from the origin remote, and nothing else. Only a scheme URL
@@ -199,22 +199,31 @@ export function emitGraph(repoIn: string, build: any, syntax: any, opts: { diale
   // ---- Python, JS, HTML, shell (Q-023): imports, references, data and generated files, one site per line.
   // The layer sees every tracked file (so a link to a tracked binary resolves) and knows which are text (it reads only
   // those); a target that is not a node (binary, submodule, symlink) gets nodeFor's note, never "not found".
+  // TypeScript type-only imports (Q-026): an edge whose EVERY site is `import type` / `export type` is erased at compile
+  // time, so it carries role "type-only"; one runtime site makes the whole edge runtime.
+  const typeSites = new Map<string, { type: number; all: number }>();
   for (const e of langs.edges) {
     let dst = e.to;
     if (dst.startsWith('ext:') && !nodes.has(dst)) nodes.set(dst, { id: dst, kind: 'external', path: dst.slice(4), hash: 'none' });
     else if (dst.startsWith('file:') && !nodes.has(dst)) dst = nodeFor(dst.slice(5));
-    else if (dst.startsWith('miss:')) dst = missing(dst.slice(5), e.missing || 'unknown', e.missing === 'external' ? 'a path that leaves the repo' : 'named by the code, not found next to it or from the repo root');
+    else if (dst.startsWith('miss:')) dst = missing(dst.slice(5), e.missing || 'unknown', e.note || (e.missing === 'external' ? 'a path that leaves the repo' : 'named by the code, not found next to it or from the repo root'));
     // Code that writes a file is that file's program (0.3.2: every generates evidence says which side it is).
     addEdge('file:' + e.from, dst, e.kind, 'static', { type: 'site', path: e.from, line: e.line, resolution: e.resolution, ...(e.kind === 'generates' ? { as: 'program' } : {}) }, null, true);
+    if (e.kind === 'import' && langs.langOf[e.from] === 'ts') { const id = edgeId('file:' + e.from, dst, e.kind), t = typeSites.get(id) || { type: 0, all: 0 }; t.all++; if (e.typeOnly) t.type++; typeSites.set(id, t); }
   }
+  for (const [id, t] of typeSites) if (t.type === t.all) { const e = edges.get(id); e.role = 'type-only'; e.roleRule = 'ts:import-type'; }
+  // The build layer's own notes (a repo with no build, an unlistable tree) are facts about coverage: said, not dropped.
+  for (const n of build.notes || []) notEvaluated.push({ what: 'build', reason: n });
   for (const c of langs.computed) notEvaluated.push({ what: `${c.from}:${c.line}`, reason: `computed import ${c.text}: needs evaluation` });
+  for (const n of langs.notes || []) notEvaluated.push(n); // tsconfig that does not parse, an alias with no file (Q-026)
 
   // ---- what cannot be an edge
   for (const c of syntax.computed) notEvaluated.push({ what: `${c.from}:${c.line}`, reason: `computed include ${c.text}: needs macro evaluation` });
   for (const s of syntax.skipped) notEvaluated.push({ what: `${s.from}:${s.line}`, reason: `include-like line not read: ${s.reason}` });
   for (const p of syntax.problems) notEvaluated.push({ what: p.line ? `${p.from}:${p.line}` : p.from, reason: p.text });
   for (const u of build.unclaimedSources || []) notEvaluated.push({ what: u, reason: 'tracked source claimed by no target in any declared configuration (may be platform-only)' });
-  if (!build.declared) notEvaluated.push({ what: 'configurations', reason: 'none declared in .loupe/config.json: one default configure stands for all' });
+  // A no-build crawl ran no configure at all: its own note says so, and this one would contradict it (critic L5).
+  if (!build.declared && !build.configurations.some((c: any) => c.name === 'no-build')) notEvaluated.push({ what: 'configurations', reason: 'none declared in .loupe/config.json: one default configure stands for all' });
 
   // A generated missing node needs a generates edge or a note (G6).
   for (const n of nodes.values()) if (n.kind === 'missing' && n.missing.reason === 'generated' && !n.missing.note && ![...edges.values()].some((e) => e.dst === n.id && e.kind === 'generates'))

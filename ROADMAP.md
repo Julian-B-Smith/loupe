@@ -346,13 +346,39 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   work. A skipped HORDE gate (no checkout) exits 3 and never counts as a pass.
 
 ### Q-026 — TypeScript at file level
-- **Status:** next (P1a closed 2026-10-23; Julian, poll, 2026-10-20, answering autonomous-loupe-001: "TypeScript,
-  then P2"). Python, JS, HTML and shell shipped in Q-023; `.ts`/`.tsx` carry a language tag and no edges, and TypeScript
-  is the dominant language in 9 fleet repos (autonomous's count).
-- **Acceptance criteria:** to be written when it starts (the import forms TS adds over JS: `import type`, `export
-  ... from`, `import x = require()`, path aliases from `tsconfig.json`), and agreed before work begins.
+- **Status:** built 2026-10-23 (trace: traces/2026-10-23-q026-typescript.md); Julian, poll, 2026-10-20, answering
+  autonomous-loupe-001: "TypeScript, then P2". Before it, `.ts`/`.tsx` carried a language tag and no edges, and
+  TypeScript is the dominant language in 9 fleet repos (autonomous's count). Audiology at 8051d57 (local scratch
+  clone, deleted, counts only): 76 TS files, 202 import edges over 228 sites, matching a grep of its import lines
+  site by site (the only differences: 3 lines of Python inside a test string, and one triple-slash reference the
+  grep's comment filter dropped); 39 type-only; 0 unknown; byte-identical twice. Found on the way: a repo without
+  CMake could not be crawled at all; it is now `no-build`, said in the graph. Critic (opus): FIX FIRST, all fixed
+  (trace). **Known gap:** text inside JSX tags (`<p>see /* note</p>`, a lone backtick) can desynchronise the mask
+  for the rest of a .tsx file, losing or inventing imports after it; JSX-aware masking is not built.
+- **Acceptance criteria (proposed 2026-10-23, Julian: "go with your recommendations"):**
+  1. `.ts`, `.tsx`, `.mts`, `.cts` files get import edges by the same lexer and rules as JS: static and dynamic
+     `import`, `export ... from`, `require`.
+  2. `import type` / `export type ... from` are edges; an edge whose every site is type-only carries
+     `role: "type-only"` (erased at compile time; a mixed edge stays runtime); `import x = require("...")` is read.
+     Consumers: the Operational lens does not follow a type-only edge; the viewer shows it like any import until
+     Q-027 (critic M4: the first wording promised more than shipped).
+  3. `tsconfig.json` `compilerOptions.paths` and `baseUrl` resolve aliased imports as `search`; an alias that matches
+     nothing is reported, never dropped.
+  4. A fixture or synthetic case for each form, and a plant that fails it.
+  5. A real fleet repo: Audiology (the fleet's largest TypeScript codebase, 76 files) crawled locally in Loupe's
+     scratch, with zero `unknown` imports or each explained; only aggregate counts are committed (a snapshot of its
+     code would need a brief to it first, as with HORDE).
+- **Out of scope:** symbols and type-level edges beyond imports (P1b); bundler-specific resolution (webpack/vite
+  aliases outside `tsconfig.json`); `.d.ts` generation.
 - **Delivery decision recorded here (same poll):** the skill now (ADR 0009, 0021), distributed through the kit when P6
   has a `SKILL.md`; a Layer-0 `./verify` hook in targets later, observe-only, after P6 gives it a snapshot to diff.
+
+### Q-027 — The viewer shows type-only edges as compile-time
+- **Status:** open (from Q-026's critic, M4). `role: "type-only"` ships in the graph and the Operational lens skips
+  it, but the viewer draws it as a plain import, and its legend makes "type-only" a separate toggle that dimming
+  "import" does not reach.
+- **Acceptance criteria:** to be written with the design: a glyph from `design/system/tokens.json` (no hard-coded
+  value), the legend grouping it under imports, a screenshot critic pass (visual change).
 
 ### Q-022 — Acknowledged conformance findings (exemptions with a reason)
 - **Status:** open (2026-10-17, from HORDE's answer to notice-004)

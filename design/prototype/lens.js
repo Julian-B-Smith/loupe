@@ -59,7 +59,9 @@ export function computeLens(data, name) {
   data.edges.forEach(e => {
     if (!CRAWLED.has(e.provenance)) { ignored++; return; }
     if (e.kind === 'embeds') push(dep, e.dst, e.src);
-    else if (FORWARD.has(e.kind)) push(dep, e.src, e.dst);
+    // A TypeScript type-only import is erased at compile time (Q-026): not something the product depends on at run
+    // time. The edge stays in the graph and is counted as crossing like any other; it just does not pull files in.
+    else if (FORWARD.has(e.kind) && e.role !== 'type-only') push(dep, e.src, e.dst);
     else if (e.kind === 'builds') { push(builds, e.src, e.dst); anyBuilt.add(e.dst); }
     else if (e.kind === 'depends') push(needs, e.src, e.dst);
     if (e.kind === 'include') push(inc, e.src, e.dst);

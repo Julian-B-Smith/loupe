@@ -125,6 +125,10 @@ check('a planted agent (inferred) edge changes neither membership nor leaks', !i
   const lib = 'target:labs', withLib = (prov) => plantH((d) => { d.nodeIds.push(lib); d.nodes[lib] = { id: lib, kind: 'target', path: 'labs', targetType: 'STATIC_LIBRARY' };
     d.edges.push({ id: 'pd2', src: 'target:HYPERSAW_clap', dst: lib, kind: 'depends', provenance: prov, origin: prov === 'config' ? 'graph' : 'overlay' }); });
   check('plant: an agent-written depends edge never makes a library product; a crawled one does', !withLib('inferred').products.includes(lib) && withLib('config').products.includes(lib) && Q.products.length === B.products.length);
+  // A type-only import (TypeScript, Q-026) does not pull its target into focus; the same edge as a runtime import does.
+  const tdst = H.nodeIds.find((id) => H.nodes[id].role === 'test' && !B.inside.has(id) && !/\.(c|cc|cpp|mm)$/.test(H.nodes[id].path)); // not a compiled source: those are "not built here"
+  const TO = (role) => plantH((d) => d.edges.push({ id: 'pt', src: B.seeds.find((x) => x.startsWith('file:')), dst: tdst, kind: 'import', provenance: 'static', origin: 'graph', ...(role ? { role } : {}) }));
+  check('plant: a type-only import does not pull its target into focus; a runtime import does', !TO('type-only').inside.has(tdst) && TO(null).inside.has(tdst));
   // An agent-written edge never changes membership, with build seeds too.
   const T2 = H.nodeIds.find((id) => H.nodes[id].role === 'test');
   const d2 = load(dir); d2.edges = d2.edges.concat({ id: 'plant', src: B.seeds.find((x) => x.startsWith('file:')), dst: T2, kind: 'include', provenance: 'inferred', origin: 'overlay' });
