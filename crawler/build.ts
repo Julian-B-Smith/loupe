@@ -344,7 +344,15 @@ function trackedSources(repo: string): { files: string[] | null; note: string | 
 export function buildLayer(repoIn: string) {
   const repo = safeReal(repoIn);
   const { configurations, declared } = readLoupeConfig(repo);
-  const all = configurations.map((c) => configureOnce(repo, c));
+  // A repo with no CMake build (most of the fleet: Python, TypeScript, shell) is crawled as its tracked files, under
+  // one configuration named `no-build`, said in the notes (Q-026). A configuration the repo DECLARES still needs a
+  // CMakeLists.txt: that is a misconfiguration, and configure's error says so.
+  // Tracked, not on disk: an untracked CMakeLists.txt must not change what the crawl is (critic L5).
+  let trackedCMake: string[] = [];
+  try { trackedCMake = execFileSync('git', ['-C', repo, 'ls-files', '-z', '--', 'CMakeLists.txt', '*/CMakeLists.txt'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().split('\0').filter(Boolean).sort(by); } catch {}
+  const noBuild = !declared && !trackedCMake.includes('CMakeLists.txt');
+  const all = noBuild ? [{ runs: [{ name: 'no-build', args: [] as string[], buildType: null, targets: [] as Target[], customCommands: [] as CustomCommand[], fetched: [] as string[] }], env: [] as Record<string, unknown>[] }]
+    : configurations.map((c) => configureOnce(repo, c));
   const runs = all.flatMap((r) => r.runs);
   // Union across configurations (0026): membership is (source, target) with the configurations it was seen in.
   const member = new Map<string, { source: string; target: string; generated: boolean; configs: Set<string> }>();
@@ -365,7 +373,8 @@ export function buildLayer(repoIn: string) {
     declared,
     membership,
     unclaimedSources: tracked.files ? tracked.files.filter((p) => !claimed.has(p)) : null,
-    notes: tracked.note ? [tracked.note] : [],
+    notes: [...(tracked.note ? [tracked.note] : []), ...(noBuild ? ['no CMakeLists.txt at the repo root and no configuration declared: no build was run; files are read as tracked, with no build targets'
+      + (trackedCMake.length ? ` (a CMake project lies deeper: ${trackedCMake.slice(0, 3).join(', ')}${trackedCMake.length > 3 ? ', ...' : ''}; declaring a configuration in .loupe/config.json would crawl it)` : '')] : [])],
     perConfiguration: runs,
   };
   const environment = { host: process.platform, clearedEnv: CLEARED_ENV, perConfiguration: all.flatMap((r) => r.env) };

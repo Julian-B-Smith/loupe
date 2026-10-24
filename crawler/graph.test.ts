@@ -456,5 +456,100 @@ const noBuild = { configurations: [{ name: 'default', args: [] }], declared: fal
     check('config: siblings must be a list of prefixes ending in "/"; anything else is reported', bad('{"siblings":"foundations/"}') && bad('{"siblings":["e"]}') && !bad('{"siblings":["foundations/"]}'));
   } finally { rmSync(t2, { recursive: true, force: true }); }
 }
+// ---- Q-026: TypeScript at file level, on a synthetic project
+{
+  const t = mkdtempSync(join(tmpdir(), 'loupe-ts-'));
+  try {
+    const W = (p: string, x: string) => { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), x); };
+    W('tsconfig.json', '{\n  // tsc reads comments and trailing commas\n  "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"], "@gone/*": ["nowhere/*"], }, },\n}\n');
+    W('src/a.ts', [
+      "import { b } from './b';",                 // 1 relative, extension added
+      "import type { T } from './types';",        // 2 type-only
+      "export type { U } from './types2';",       // 3 type-only re-export
+      "import x = require('./c');",               // 4 import-equals
+      "import '@/d';",                            // 5 paths alias -> src/d.tsx
+      "import y from '@gone/z';",                 // 6 alias that matches, no file
+      "import z from 'lib/e';",                   // 7 baseUrl
+      "import type R from './b';",                // 8 type-only, but b is also imported at runtime (line 1)
+      "import react from 'react';",               // 9 npm package
+      "import e from './e.js';",                  // 10 ESM output name for e.ts
+      "import type from './f';",                  // 11 a default import NAMED type: runtime
+      "const m = await import('./g.mts');",       // 12 dynamic import
+    ].join('\n') + '\n');
+    for (const f of ['src/b.ts', 'src/types.ts', 'src/types2.ts', 'src/c.cts', 'src/d.tsx', 'lib/e.ts', 'src/e.ts', 'src/f.ts', 'src/g.mts']) W(f, 'export const v = 1;\n');
+    W('pkg/sub/tsconfig.json', '{ "extends": "../../tsconfig.json" }\n');   // inherits paths, relative to the root config
+    W('pkg/sub/h.tsx', "import '@/b';\nexport const C = () => <p>Don't stop</p>;\n");
+    commitAll(t);
+    const g = JSON.parse(emitGraph(t, noBuild, await syntaxLayer(t, noBuild)).graph);
+    const E = (src: string, dst: string) => g.edges.find((e: any) => e.src === 'file:' + src && e.dst === dst && e.kind === 'import');
+    const res = (src: string, dst: string) => E(src, dst)?.evidence.map((v: any) => v.resolution).join(',');
+    check('TS: a relative import finds its .ts file; import-equals and a dynamic import of .mts are read',
+      res('src/a.ts', 'file:src/b.ts') === 'exact,exact' && res('src/a.ts', 'file:src/c.cts') === 'exact' && res('src/a.ts', 'file:src/g.mts') === 'exact');
+    check('TS: import type and export type ... from are edges marked type-only (criterion 2)',
+      E('src/a.ts', 'file:src/types.ts')?.role === 'type-only' && E('src/a.ts', 'file:src/types2.ts')?.role === 'type-only');
+    check('TS: an edge with one runtime site is runtime, and `import type from` is a default import named type',
+      !E('src/a.ts', 'file:src/b.ts')?.role && E('src/a.ts', 'file:src/b.ts')?.count === 2 && !E('src/a.ts', 'file:src/f.ts')?.role);
+    check('TS: a paths alias resolves (search), through an extends chain too (criterion 3)',
+      res('src/a.ts', 'file:src/d.tsx') === 'search' && res('pkg/sub/h.tsx', 'file:src/b.ts') === 'search');
+    check('TS: an alias that matches but finds no file falls back to module resolution, as tsc, and is reported (criterion 3)',
+      !!E('src/a.ts', 'ext:npm:@gone/z') && g.crawler.notEvaluated.some((x: any) => x.what === 'src/a.ts:6' && /alias @gone\/\* matches @gone\/z but no file/.test(x.reason)));
+    check('TS: baseUrl resolves a bare path (search); a package stays a package; ./e.js finds e.ts',
+      res('src/a.ts', 'file:lib/e.ts') === 'search' && !!E('src/a.ts', 'ext:npm:react') && res('src/a.ts', 'file:src/e.ts') === 'exact');
+    const nb = buildLayer(t).facts;
+    check('a repo with no CMakeLists.txt is crawled as no-build, and the graph says so (Q-026)', JSON.stringify(nb.configurations.map((c: any) => c.name)) === '["no-build"]'
+      && JSON.parse(emitGraph(t, nb, await syntaxLayer(t, nb)).graph).crawler.notEvaluated.some((x: any) => x.what === 'build' && /no build was run/.test(x.reason)));
+    check('TS: every TypeScript extension gets the ts language', ['src/a.ts', 'src/d.tsx', 'src/g.mts', 'src/c.cts'].every((p) => g.nodes.find((n: any) => n.path === p)?.lang === 'ts'));
+  } finally { rmSync(t, { recursive: true, force: true }); }
+}
+// ---- Q-026 critic round: each finding on its own small project
+{
+  const proj = async (files: Record<string, string>) => {
+    const t = mkdtempSync(join(tmpdir(), 'loupe-ts2-'));
+    for (const [p, x] of Object.entries(files)) { mkdirSync(join(t, dirname(p)), { recursive: true }); writeFileSync(join(t, p), x); }
+    commitAll(t);
+    try { return JSON.parse(emitGraph(t, noBuild, await syntaxLayer(t, noBuild)).graph); } finally { rmSync(t, { recursive: true, force: true }); }
+  };
+  const ex = 'export const v = 1;\n';
+  const E = (g: any, src: string, dst: string) => g.edges.find((e: any) => e.src === 'file:' + src && e.dst === dst && e.kind === 'import');
+  // H1: two statements on one line, one type-only, one runtime: the edge is runtime, whichever comes first.
+  for (const line of ["import type { A } from './b'; import { c } from './b';", "import { c } from './b'; import type { A } from './b';"]) {
+    const g = await proj({ 'a.ts': line + '\n', 'b.ts': ex });
+    check(`H1: a runtime and a type-only import on one line make a runtime edge (${line.slice(0, 13)}...)`, !!E(g, 'a.ts', 'file:b.ts') && !E(g, 'a.ts', 'file:b.ts').role);
+  }
+  // H2a: solution-style tsconfig.json hands over to the referenced config that includes the file.
+  let g = await proj({ 'tsconfig.json': '{ "files": [], "references": [{ "path": "./tsconfig.app.json" }] }', 'tsconfig.app.json': '{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "include": ["src"] }',
+    'src/a.ts': "import '@/util';\n", 'src/util.ts': ex });
+  check('H2a: a solution-style tsconfig hands over to the referenced project that includes the file', E(g, 'src/a.ts', 'file:src/util.ts')?.evidence[0].resolution === 'search');
+  // H2b: a tsconfig that does not parse is reported; a BOM is not a parse failure.
+  g = await proj({ 'tsconfig.json': '{ "compilerOptions": {} } oops', 'a.ts': "import '@/x';\n" });
+  check('H2b: a tsconfig that does not parse is reported, and @/x is never an npm package', g.crawler.notEvaluated.some((x: any) => x.what === 'tsconfig.json' && /does not parse/.test(x.reason))
+    && g.nodes.find((n: any) => n.id === 'miss:@/x')?.missing.reason === 'unknown' && !g.nodes.some((n: any) => n.id.startsWith('ext:npm:@/')));
+  g = await proj({ 'tsconfig.json': '\uFEFF{ "compilerOptions": { "baseUrl": "." } }', 'a.ts': "import 'lib/x';\n", 'lib/x.ts': ex });
+  check('H2b: a tsconfig with a byte-order mark parses', E(g, 'a.ts', 'file:lib/x.ts')?.evidence[0].resolution === 'search');
+  // H2c: an extends list merges option by option.
+  g = await proj({ 'tsconfig.json': '{ "extends": ["./tsconfig.paths.json", "./tsconfig.strict.json"] }', 'tsconfig.paths.json': '{ "compilerOptions": { "paths": { "~lib/*": ["lib/*"] } } }',
+    'tsconfig.strict.json': '{ "compilerOptions": { "strict": true } }', 'a.ts': "import '~lib/x';\n", 'lib/x.ts': ex });
+  check('H2c: with an extends list, the first base\'s paths survive the second base', E(g, 'a.ts', 'file:lib/x.ts')?.evidence[0].resolution === 'search');
+  // M1: a catch-all "*" pattern does not turn packages unknown.
+  g = await proj({ 'tsconfig.json': '{ "compilerOptions": { "baseUrl": ".", "paths": { "*": ["types/*"] } } }', 'a.ts': "import 'react';\nimport 'node:fs';\n" });
+  check('M1: under a catch-all "*" alias, packages stay packages', !!E(g, 'a.ts', 'ext:npm:react') && !!E(g, 'a.ts', 'ext:node') && !g.nodes.some((n: any) => n.kind === 'missing' && n.missing.reason === 'unknown'));
+  // M2: an inherited baseUrl is the base for a child's paths.
+  g = await proj({ 'tsconfig.base.json': '{ "compilerOptions": { "baseUrl": "." } }', 'packages/app/tsconfig.json': '{ "extends": "../../tsconfig.base.json", "compilerOptions": { "paths": { "@lib/*": ["packages/lib/src/*"] } } }',
+    'packages/app/a.ts': "import '@lib/util';\n", 'packages/lib/src/util.ts': ex });
+  check('M2: a child\'s paths resolve from the baseUrl it inherits', E(g, 'packages/app/a.ts', 'file:packages/lib/src/util.ts')?.evidence[0].resolution === 'search');
+  // M3: a declaration file, import type X = require, import type{ with no space.
+  g = await proj({ 'types.d.ts': "import { B } from './b';\n", 'a.ts': "import type Z = require('./c');\nimport type{ W } from './d';\n", 'b.ts': ex, 'c.ts': ex, 'd.ts': ex });
+  check('M3: imports in a .d.ts, import type X = require, and import type{ are type-only',
+    E(g, 'types.d.ts', 'file:b.ts')?.role === 'type-only' && E(g, 'a.ts', 'file:c.ts')?.role === 'type-only' && E(g, 'a.ts', 'file:d.ts')?.role === 'type-only');
+  // L1: triple-slash references are type-only edges.
+  g = await proj({ 'env.d.ts': '/// <reference types="vite/client" />\n/// <reference path="./g.d.ts" />\n', 'g.d.ts': 'declare const x: 1;\n' });
+  check('L1: /// <reference types> and <reference path> are type-only edges', E(g, 'env.d.ts', 'ext:npm:vite')?.role === 'type-only' && E(g, 'env.d.ts', 'file:g.d.ts')?.role === 'type-only');
+  // L2: './b.js' with both b.js and b.ts tracked is b.ts, as tsc.
+  g = await proj({ 'a.ts': "import './b.js';\n", 'b.js': ex, 'b.ts': ex });
+  check('L2: ./b.js finds b.ts when both exist', !!E(g, 'a.ts', 'file:b.ts') && !E(g, 'a.ts', 'file:b.js'));
+  // L3: exact patterns first; a target outside the repo is external.
+  g = await proj({ 'tsconfig.json': '{ "compilerOptions": { "paths": { "a*b": ["one/*"], "ab": ["two/x"], "@out/*": ["../shared/*"] } } }', 'a.ts': "import 'ab';\nimport '@out/y';\n", 'two/x.ts': ex });
+  check('L3: an exact pattern wins over a wildcard; a target outside the repo is external', !!E(g, 'a.ts', 'file:two/x.ts') && g.nodes.find((n: any) => n.id === 'miss:y')?.missing.reason === 'external');
+}
 console.log(failed ? `${failed} failed` : 'all graph cases behave');
 process.exit(failed ? 1 : 0);
