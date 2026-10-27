@@ -164,5 +164,106 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   check(`every ×N bundle opens to exactly the edges the meter attributes to it, each running between its two ends (${bundles} bundles, ${frames} frames, ${iso} isolated)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && bundles > 0 && iso > 0);
 }
 
+// Q-028 (ADR 0029, the rest of its rule): every drawn element that stands for several edges (fold row, port, elsewhere
+// chip, overview loose block) opens to the edges whose recorded ends name it. Its stated count (data-count: the "N
+// edges" it shows) equals that list, and each listed edge has an end inside the element by graph data and the layout
+// alone. Over all recorded ends (section boxes too), no edge names an element it does not touch. Buses: the panel's
+// list (the view's `edges`) equals the edges the meter counts in that bus.
+{
+  const { heldEdges } = await import('../design/prototype/inspect.js');
+  const unesc = (x) => x.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  const touches = (data, P, state, key, e) => {
+    if (key === 'elsewhere') { const ins = P.iso && P.iso.inside; return !!ins && !ins.has(e.src) && !ins.has(e.dst); }
+    const at = (x) => {
+      const k = key.slice(0, 2), id = key.slice(2);
+      if (k === 'n:') return x === id;
+      if (k === 's:') return data.descendants(id).includes(data.home[x]);
+      if (k === 'f:') return !!(P.folds[id] && P.folds[id].members.includes(x));
+      if (key === 'o:lens') return !!(P.lens && !P.lens.inside.has(x));
+      if (key === 'o:loose') return !!(P.loose && P.loose.members.includes(x));
+      if (k === 'p:') return !!(P.iso && (P.iso.portOf.in[x] === id || P.iso.portOf.out[x] === id));
+      return false;
+    };
+    return at(e.src) || at(e.dst);
+  };
+  let elements = 0, ends = 0, buses = 0;
+  const bad = [];
+  const dirs = ['design/prototype/snapshots/horde-crawl/', 'schema/examples/horde-probe/', 'schema/examples/horde-sample/', 'design/prototype/snapshots/horde-sample/', 'design/prototype/snapshots/cmake-basic-crawl/'];
+  for (const dir of dirs) {
+    let data; try { data = snap(dir); } catch { continue; }
+    const tops = data.sections.filter((s) => !data.parentOf[s]);
+    // Every top isolated, then with each of its section ports open (critic H2: the first test never opened a port);
+    // collapsed tops, and a collapsed child inside a collapsed parent (critic M2).
+    const openPorts = (isolate) => { const m = render(container, data, { view: 'design', stage: 2, settings: {}, zoom: { auto: true }, isolate });
+      return Object.values(m.layout.iso.ports).filter((p) => p.kind === 'section').map((p) => p.key); };
+    const child = data.sections.find((s) => data.parentOf[s]);
+    const states = [...ZOOMS.flatMap((zoom) => [null, 'operational'].map((lens) => ({ zoom, ...(lens ? { lens } : {}) }))),
+      ...tops.map((isolate) => ({ zoom: { auto: true }, isolate })), ...tops.map((isolate) => ({ zoom: { auto: true }, isolate, isoOpen: openPorts(isolate) })),
+      { zoom: { auto: true }, collapsed: tops.slice(0, 3) }, ...(child ? [{ zoom: { auto: true }, collapsed: [child] }, { zoom: { auto: true }, collapsed: [child, data.parentOf[child]] }] : [])];
+    for (const extra of states) {
+      const state = { view: 'design', stage: 2, settings: {}, ...extra };
+      const map = render(container, data, state), html = svg.innerHTML, P = map.layout;
+      for (const x of html.matchAll(/data-holds="([^"]*)"(?: data-count="(\d+)")?/g)) {
+        const key = unesc(x[1]), list = heldEdges(data, map, key);
+        elements++;
+        if (x[2] != null && Number(x[2]) !== list.length) bad.push(`${dir} ${key}: shows ${x[2]} edges, holds ${list.length}`);
+        const wrong = list.filter((e) => !touches(data, P, state, key, e));
+        if (wrong.length) bad.push(`${dir} ${key}: ${wrong.length} listed edges do not touch it (e.g. ${wrong[0].src} -> ${wrong[0].dst})`);
+      }
+      const keys = new Set(Object.values(map.edges).flatMap((m) => m.ends || []));
+      for (const key of keys) {
+        if (key.startsWith('n:')) continue; // a single file: its edges are its own, drawn as lines
+        ends++;
+        const wrong = heldEdges(data, map, key).filter((e) => !touches(data, P, state, key, e));
+        if (wrong.length) bad.push(`${dir} end ${key}: ${wrong.length} edges name it but do not touch it`);
+      }
+      // Buses (critic H3, no filter): the count on the rail's label equals the edges the meter counts on that rail.
+      const railCounts = new Map([...html.matchAll(/data-el="([^"]*)" data-bus-count="(\d+)"/g)].map((x) => [unesc(x[1]), Number(x[2])]));
+      for (const b of (data.byPrimitive.bus || [])) {
+        const counted = Object.entries(map.edges).filter(([, m]) => m.via === 'bus' && m.bus === b).length;
+        if (!counted && !railCounts.has(b)) continue; // not drawn as a rail in this frame
+        buses++;
+        if (railCounts.get(b) !== counted) bad.push(`${dir} bus ${b}: the rail says ${railCounts.get(b)}, the meter counts ${counted} on it`);
+      }
+      // A box that replaces its contents (collapsed, or a top in the overview) holds every edge touching its files,
+      // not merely edges that touch it (critic M2: under-listing passed). Without lens or isolate, which re-route.
+      if (!extra.lens && !extra.isolate) {
+        const outer = (x) => { for (let p = data.parentOf[x]; p; p = data.parentOf[p]) if ((extra.collapsed || []).includes(p)) return true; return false; };
+        const boxes = [...(extra.collapsed || []).filter((x) => !outer(x)), ...(map.lod === 'overview' ? tops : [])];
+        for (const X of new Set(boxes)) {
+          if (!P.sections[X]) continue;
+          const under = new Set(data.descendants(X));
+          const want = data.edges.filter((e) => under.has(data.home[e.src]) || under.has(data.home[e.dst])).length, got = heldEdges(data, map, 's:' + X).length;
+          if (want !== got) bad.push(`${dir} box ${X}${map.lod === 'overview' ? ' (overview)' : ' (collapsed)'}: ${want} edges touch its files, it holds ${got}`);
+        }
+      }
+      const unrecorded = Object.entries(map.edges).filter(([, m]) => !m.ends).map(([id]) => id);
+      if (unrecorded.length) bad.push(`${dir}: ${unrecorded.length} routed edges without recorded ends`);
+    }
+  }
+  check(`every element standing for several edges opens to exactly them (${elements} elements, ${ends} element ends, ${buses} bus frames)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && elements > 0);
+}
+
+// Every inline script in the viewers' HTML parses (Q-028: a template-literal slip broke the whole viewer while every
+// other test, which imports only the .js modules, stayed green). Module scripts are checked as modules.
+{
+  const { spawnSync } = await import('node:child_process'), { mkdtempSync, writeFileSync: wf, rmSync } = await import('node:fs'), { join } = await import('node:path'), { tmpdir } = await import('node:os');
+  const t = mkdtempSync(join(tmpdir(), 'loupe-pages-')), bad = [];
+  let n = 0;
+  try {
+    for (const page of ['design/prototype/index.html', 'viewer/index.html', 'docs/plan-map.html', 'prototype/index.html']) {
+      let html; try { html = readFileSync(page, 'utf8'); } catch { continue; }
+      for (const m of html.matchAll(/<script(\s[^>]*)?>([\s\S]*?)<\/script>/g)) {
+        if (/\ssrc=/.test(m[1] || '') || !m[2].trim()) continue;
+        const f = join(t, `s${n++}.${/type=["']module["']/.test(m[1] || '') ? 'mjs' : 'cjs'}`);
+        wf(f, m[2]);
+        const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' });
+        if (r.status !== 0) bad.push(`${page}: ${(r.stderr.split('\n').find((l) => /Error/.test(l)) || 'does not parse').trim()}`);
+      }
+    }
+  } finally { rmSync(t, { recursive: true, force: true }); }
+  check(`every inline script in the viewer pages parses (${n} scripts)${bad.length ? ' — ' + bad.join(' | ') : ''}`, bad.length === 0 && n > 0);
+}
+
 console.log(failed ? `${failed} failed` : 'all render cases behave');
 process.exit(failed ? 1 : 0);

@@ -18,3 +18,12 @@ export function bundleEnds(key) {
   const side = (k) => (WHOLE[k] ? { kind: WHOLE[k], id: null } : { kind: KIND[k[0]] || k[0], id: k.slice(2), port: k[0] === 'p' });
   return i < 0 ? [side(key)] : [side(key.slice(0, i)), side(key.slice(i + 1))];
 }
+
+// Q-028: what any element that stands for several edges holds: the edges whose recorded ends name it (render() writes
+// `ends` on every routed edge). Keys: 'f:<section>' a fold row, 'p:<port>' an isolate port, 's:<section>' a section
+// box (collapsed or proxied), 'o:loose' the overview's loose block, 'elsewhere' the isolate view's elsewhere chip.
+export function heldEdges(data, map, key) {
+  const by = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  return data.edges.filter((e) => { const m = map && map.edges[e.id]; return m && m.ends && m.ends.includes(key); })
+    .sort((a, b) => by(a.src, b.src) || by(a.dst, b.dst) || by(a.id, b.id));
+}
