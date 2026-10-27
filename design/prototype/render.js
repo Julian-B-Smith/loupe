@@ -288,7 +288,7 @@ export function render(container, data, state) {
     if (D.loose) {
       const r = S(D.loose);
       map.drawn.add('loose');
-      bg.push(`<g data-loose="1"><title>Files homed in no section: the view has not placed them yet</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="rx:${v('radius-group')};fill:transparent;stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
+      bg.push(`<g data-loose="1"${ovw ? ' data-holds="o:loose" style="cursor:pointer"' : ''}><title>Files homed in no section: the view has not placed them yet${ovw ? '. Click to list the edges folded into this block.' : ''}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="rx:${v('radius-group')};fill:transparent;stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
       if (L.header * z.k >= 15) lg.push(`<text x="${f1(r.x + 12)}" y="${f1(r.y + 16)}" style="font:${v('type-eyebrow')};letter-spacing:${v('tracking-eyebrow')};text-transform:uppercase;fill:${v('ink-faint')}">${esc(D.loose.label)}</text>`);
     }
     if (D.gutter) {
@@ -451,15 +451,18 @@ export function render(container, data, state) {
     if (iso) {
       const si = iso.inside.has(e.src), di = iso.inside.has(e.dst);
       // One rule: an edge with no end in the isolated section is not drawn, so it is folded into the elsewhere count.
-      if (!si && !di) { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere' }; elsewhere.edges++; return; }
+      if (!si && !di) { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere', ends: ['elsewhere'] }; elsewhere.edges++; return; }
       a = si ? endpoint(e.src) : portEnd('in', e.src); b = di ? endpoint(e.dst) : portEnd('out', e.dst);
     } else { a = endpoint(e.src); b = endpoint(e.dst); }
     // Record how this frame routed the edge relative to the lens box; conserve() checks it against the lens's own counts.
     if (lensSeen && a && b) { const oa = a.key === 'o:lens', ob = b.key === 'o:lens'; lensSeen[oa && ob ? 'out' : oa || ob ? 'cross' : 'in']++; }
     if (!a || !b) return;
-    if (a.key === b.key) { map.edges[e.id] = { via: 'collapsed', group: a.key.slice(2) }; return; }
+    // `ends`: the element keys this edge is drawn between (Q-028). Every element that stands for several edges opens
+    // to the edges whose ends name it (inspect.js heldEdges). It sits on the same map.edges entry whose `via`
+    // conserve() counts; conserve() itself reads only `via`.
+    if (a.key === b.key) { map.edges[e.id] = { via: 'collapsed', group: a.key.slice(2), ends: [a.key] }; return; }
     const bus = busOf[e.id];
-    if (designish && bus && D.rails[bus] && a.node && b.node) { onRail.push(e); map.edges[e.id] = { via: 'bus', bus }; return; }
+    if (designish && bus && D.rails[bus] && a.node && b.node) { onRail.push(e); map.edges[e.id] = { via: 'bus', bus, ends: [a.key, b.key] }; return; }
     let key = null, ra = a.rect, rb = b.rect;
     if ('sfpo'.includes(a.key[0]) || 'sfpo'.includes(b.key[0])) key = a.key + '>' + b.key;
     // Both ends need a laid-out home section: a loose node (Q-017) has none and is routed as itself (critic).
@@ -468,11 +471,12 @@ export function render(container, data, state) {
       ra = S(D.sections[data.home[e.src]]); rb = S(D.sections[data.home[e.dst]]);
     }
     if (key) { (bundles[key] = bundles[key] || { ra, rb, edges: [] }).edges.push(e); }
-    else singles.push({ e, ra, rb });
+    else singles.push({ e, ra, rb, ends: [a.key, b.key] });
   });
   Object.entries(bundles).forEach(([key, b]) => {
-    if (b.edges.length === 1) { singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb }); return; }
-    b.edges.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key }; });
+    const cut = key.indexOf('>', 2), ends = [key.slice(0, cut), key.slice(cut + 1)];
+    if (b.edges.length === 1) { singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb, ends }); return; }
+    b.edges.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends }; });
     const slots = new Set(b.edges.map(slotOf)), provs = new Set(b.edges.map(e => e.provenance));
     const slot = slots.size === 1 ? [...slots][0] : 0, prov = provs.size === 1 ? [...provs][0] : 'static';
     const anyFocus = rel && b.edges.some(e => rel.has(e.src) && rel.has(e.dst));
@@ -490,11 +494,11 @@ export function render(container, data, state) {
     const nodeF = focus.type === 'node' ? (e.src === focus.id || e.dst === focus.id) : focus.type === 'edge' ? e.id === focus.id : rel.has(e.src) && rel.has(e.dst);
     return { emph: nodeF, dim: !nodeF };
   };
-  singles.forEach(({ e, ra, rb }) => {
+  singles.forEach(({ e, ra, rb, ends }) => {
     const { emph, dim } = edgeFocus(e), off = dimK.has(e.role || e.kind);
     // No bus fade here: a single always draws. (A fade to 0 once counted an edge as drawn that was invisible; review v4 B2.)
     const op = dim || off ? 0.22 : 1;
-    map.edges[e.id] = { via: 'drawn' };
+    map.edges[e.id] = { via: 'drawn', ends };
     eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}" marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"><title>${esc(edgeTitle(e))}</title></path>`);
   });
   // rails
@@ -521,7 +525,7 @@ export function render(container, data, state) {
           eg.push(`<path data-edge="${e.id}" d="M${f1(ax)} ${f1(ay)}H${f1(rx)}" style="${edgeStyle(e, emph, hoverTier(e, emph))}"><title>${esc(edgeTitle(e))}</title></path><circle cx="${f1(rx)}" cy="${f1(ay)}" r="3" style="fill:${c}"/>`);
           if (!exits.has(e.dst)) { exits.add(e.dst); eg.push(`<path d="M${f1(rx)} ${f1(by)}H${f1(bx)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slot}-${glyphOf(e)})"/><circle cx="${f1(rx)}" cy="${f1(by)}" r="2.5" style="fill:${v('surface-canvas')};stroke:${c};stroke-width:1.25px"/>`); }
         });
-        lg.push(`<g style="opacity:${decor * gOp}">${pill(rx, y2 + 20, `${el.label} · ${mine.length}`, { anchor: 'middle', stroke: c, ink: v('ink'), attr: `data-el="${id}" style="cursor:pointer"`, title: el.contract && el.contract.signature })}${on && el.contract ? pill(rx, y2 + 40, el.contract.signature, { anchor: 'middle', stroke: c, ink: v('ink'), fill: v('surface-node') }) : ''}</g>`);
+        lg.push(`<g style="opacity:${decor * gOp}">${pill(rx, y2 + 20, `${el.label} · ${mine.length}`, { anchor: 'middle', stroke: c, ink: v('ink'), attr: `data-el="${id}" data-bus-count="${mine.length}" style="cursor:pointer"`, title: el.contract && el.contract.signature })}${on && el.contract ? pill(rx, y2 + 40, el.contract.signature, { anchor: 'middle', stroke: c, ink: v('ink'), fill: v('surface-node') }) : ''}</g>`);
       } else {
         const ry = R.y * z.k + z.y, x1 = R.x1 * z.k + z.x, x2 = R.x2 * z.k + z.x;
         eg.push(`<line x1="${f1(x1 - 6)}" x2="${f1(x2 + 6)}" y1="${f1(ry)}" y2="${f1(ry)}" style="stroke:${c};stroke-width:${on ? 4.5 : v('stroke-rail')};stroke-linecap:round"/>`);
@@ -536,7 +540,7 @@ export function render(container, data, state) {
             else { eg.push(`<path d="M${f1(b.x - 18)} ${f1(ry)}H${f1(b.x)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slot}-${glyphOf(e)})"/><path d="M${f1(b.x + b.w + 18)} ${f1(ry)}H${f1(b.x + b.w)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slot}-${glyphOf(e)})"/>`); }
           }
         });
-        lg.push(`<g style="opacity:${decor * gOp}">${pill(x1 - 6, ry - 14, `${el.label} · ${mine.length}`, { stroke: c, ink: v('ink'), attr: `data-el="${id}" style="cursor:pointer"`, title: el.contract && el.contract.signature })}${on && el.contract ? pill(x1 - 6, ry - 34, el.contract.signature, { stroke: c, ink: v('ink'), fill: v('surface-node') }) : ''}</g>`);
+        lg.push(`<g style="opacity:${decor * gOp}">${pill(x1 - 6, ry - 14, `${el.label} · ${mine.length}`, { stroke: c, ink: v('ink'), attr: `data-el="${id}" data-bus-count="${mine.length}" style="cursor:pointer"`, title: el.contract && el.contract.signature })}${on && el.contract ? pill(x1 - 6, ry - 34, el.contract.signature, { stroke: c, ink: v('ink'), fill: v('surface-node') }) : ''}</g>`);
       }
       eg.push('</g>');
     });
@@ -691,7 +695,7 @@ export function render(container, data, state) {
     const ec = data.edges.filter(e => ins.has(e.src) || ins.has(e.dst)).length;
     const text = fit(`+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
     map.drawn.add('fold:' + sec);
-    ng.push(`<g data-unfold="${esc(sec)}" style="cursor:pointer"><title>${esc(`${n} less-connected files folded here, with ${ec} edges. Click to show all.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
+    ng.push(`<g data-unfold="${esc(sec)}" data-holds="f:${esc(sec)}" data-count="${ec}" style="cursor:pointer"><title>${esc(`${n} less-connected files folded here, with ${ec} edges. Click to show all; right-click to list the edges.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
   });
   if (designish && D.lens) {
     const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;
@@ -723,7 +727,7 @@ export function render(container, data, state) {
       const cnt = `${tail}`, room = r.w - 16 - cnt.length * cw * 0.92 - (mark ? 14 : 0);
       const on = !!(selNode && (iso.portOf.in[selNode] === P.key || iso.portOf.out[selNode] === P.key));
       map.drawn.add(P.key);
-      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="${P.kind === 'file' && pks.pill ? `rx:${v('radius-pill')};` : ''}fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : pks.fill)};stroke:${v(on ? 'accent' : P.kind === 'file' ? pks.stroke : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : P.kind === 'file' ? pks.dash : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
+      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`}${P.open ? '' : ` data-holds="p:${esc(P.key)}" data-count="${P.edges}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}${P.open ? '' : '. Right-click to list the edges'}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="${P.kind === 'file' && pks.pill ? `rx:${v('radius-pill')};` : ''}fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : pks.fill)};stroke:${v(on ? 'accent' : P.kind === 'file' ? pks.stroke : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : P.kind === 'file' ? pks.dash : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
     });
     ['in', 'out'].forEach(side => {
       const ps = Object.values(iso.ports).filter(p => p.side === side); if (!ps.length) return;
@@ -732,7 +736,7 @@ export function render(container, data, state) {
     });
     if (elsewhere.edges || elsewhere.files) map.drawn.add('elsewhere');
     if (elsewhere.edges || elsewhere.files)
-      lg.push(`<g data-exit="isolate" style="cursor:pointer">${pill(box.x + box.w / 2, box.y - 30, `Elsewhere: ${elsewhere.files} files · ${elsewhere.edges} edges not shown`, { anchor: 'middle', stroke: v('rule'), dash: '3 3', title: 'Files and edges that do not touch this section. Click to go back to the full map.' })}</g>`);
+      lg.push(`<g data-exit="isolate" data-holds="elsewhere" data-count="${elsewhere.edges}" style="cursor:pointer">${pill(box.x + box.w / 2, box.y - 30, `Elsewhere: ${elsewhere.files} files · ${elsewhere.edges} edges not shown`, { anchor: 'middle', stroke: v('rule'), dash: '3 3', title: 'Files and edges that do not touch this section. Click to go back to the full map; right-click to list the edges.' })}</g>`);
     map.elsewhere = elsewhere;
   }
 

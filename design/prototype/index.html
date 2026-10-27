@@ -162,7 +162,7 @@ import { createStore, createHistory, STAGES } from './state.js';
 import { render, SPEC, slotOf, glyphOf, kindStyle } from './render.js';
 import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
-import { bundleEdges, bundleEnds } from './inspect.js';
+import { bundleEdges, bundleEnds, heldEdges } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 
@@ -404,7 +404,7 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge]');
+  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge],[data-holds]');
   if (!c) return null;
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
   if (c.dataset.unfold) return { type: 'unfold', id: c.dataset.unfold };
@@ -416,6 +416,9 @@ const hit = t => {
   if (c.dataset.step) return { type: 'step', id: c.dataset.step };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
   if (c.dataset.el) return { type: 'element', id: c.dataset.el };
+  // Last: only an element with no other click lists on a left click (the overview's loose block); a file port stays a
+  // file (critic H1), and lists from its menu.
+  if (c.dataset.holds) return { type: 'holds', id: c.dataset.holds };
   return { type: 'edge', id: c.dataset.edge };
 };
 let drag = null;
@@ -472,6 +475,7 @@ canvas.addEventListener('pointerup', e => {
   if (h.type === 'unfold') return A.toggleUnfold(h.id);
   if (h.type === 'port') return A.togglePort(h.id);
   if (h.type === 'exit') return A.isolate(null);
+  if (h.type === 'holds') return A.select({ type: 'holds', id: h.id });
   A.select(h);
   if (phone()) $('panel').classList.add('open');
 });
@@ -522,9 +526,14 @@ function showMenu(target, cx, cy) {
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
   items.push({ label: 'Back', sub: H.backLabel, hint: kb, disabled: !H.canBack, run: H.back });
   items.push({ label: 'Forward', sub: H.forwardLabel, hint: kf, disabled: !H.canForward, run: H.forward });
+  // ADR 0029 / Q-028: an element that stands for several edges lists them; its own click keeps its action.
+  const listItem = (key, what) => { const n = map ? heldEdges(data, map, key).length : 0; if (n) items.push({ label: `List the ${n} edges ${what}`, sub: 'exactly what the meter counts there', run: () => A.select({ type: 'holds', id: key }) }); };
   const forSection = (id, skipFold) => {
     if (!data.elements[id]) return;
     items.push(null);
+    // Only a box that replaces its contents stands for edges (critic H4): collapsed, or drawn whole in the overview.
+    // An expanded box draws its files and edges, and its ×N lines open on their own (Q-011).
+    if (s.collapsed.includes(id) || (map && map.lod === 'overview')) listItem('s:' + id, `this box stands for`);
     if (s.isolate !== id) items.push({ label: `Isolate ${label(id)}`, run: () => A.isolate(id) });
     items.push({ label: `${s.collapsed.includes(id) ? 'Expand' : 'Collapse'} ${label(id)}`, run: () => A.toggleCollapsed(id) });
     const fold = map && map.layout.folds[id];
@@ -532,15 +541,18 @@ function showMenu(target, cx, cy) {
   };
   if (h && h.type === 'node') {
     items.push(null, { label: `Select ${label(h.id)}`, run: () => A.select({ type: 'node', id: h.id }) });
+    const hk = target && target.closest && target.closest('[data-holds]'); if (hk) listItem(hk.dataset.holds, 'through this port');
     forSection(data.home[h.id]);
   } else if (h && h.type === 'unfold') {
     const f = map.layout.folds[h.id];
     items.push(null, { label: `Show ${f ? f.members.length : ''} folded files`, run: () => A.toggleUnfold(h.id) });
+    listItem('f:' + h.id, 'of the folded files');
     forSection(h.id, true);
   } else if (h && h.type === 'port') {
     const all = h.id.includes(':all:'), open = s.isoOpen.includes(h.id), peer = h.id.split(/:(?:s|all):/)[1];
     items.push(null, { label: all ? (open ? 'Fold these files again' : 'Show every file') : (open ? `Close ${label(peer)} port` : `List files in ${label(peer)} port`), run: () => A.togglePort(h.id) });
     if (data.elements[peer] && peer !== s.isolate) items.push({ label: `Isolate ${label(peer)}`, sub: 'walk to this section; Back returns', run: () => A.isolate(peer) });
+    listItem('p:' + h.id, 'through this port');
   } else if (h && (h.type === 'element' || h.type === 'collapse')) {
     const el = data.elements[h.id];
     if (el && el.primitive === 'section') forSection(h.id);
@@ -552,6 +564,14 @@ function showMenu(target, cx, cy) {
       { label: 'Add step after', run: () => storyAction('st-add', h.id) },
       { label: 'Delete step', run: () => storyAction('st-del', h.id) },
       { label: 'Ask the agent to redraw…', run: () => { A.select({ type: 'step', id: h.id }); setTimeout(() => { const t = $('stAsk'); if (t) t.focus(); }, 30); } });
+  } else if (h && h.type === 'lensout') {
+    items.push(null, { label: 'List the crossing edges', run: () => A.select({ type: 'lensout', id: h.id }) });
+    listItem('o:lens', 'this box stands for (among and across the files outside)'); // critic M3
+  } else if (h && h.type === 'exit') {
+    items.push(null, { label: 'Back to the full map', run: () => A.isolate(null) });
+    listItem('elsewhere', 'not shown here');
+  } else if (h && h.type === 'holds') {
+    listItem(h.id, 'folded into this block');
   } else if (h && h.type === 'storyout') {
     items.push(null, { label: 'List files not in this story', run: () => A.select({ type: 'storyout', id: 'story' }) });
   } else if (h && h.type === 'edge') {
@@ -667,9 +687,12 @@ function elementPanel(id) {
       ${data.children[id].length ? `<div class="list">${data.children[id].map(elCard).join('')}</div>` : ''}
       ${files.length ? `<div><span class="eyebrow">Files</span>${files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m">${data.edges.filter(e => e.src === f || e.dst === f).length} edges</span>`, 'erow')).join('')}</div>` : ''}`;
   } else if (p === 'bus') {
-    const es = el.edges.map(x => data.edgeById[x]).filter(Boolean);
+    // Two lists from the meter (critic H3): what this frame draws on the rail, and members routed some other way.
+    const all = el.edges.map(x => data.edgeById[x]).filter(Boolean), onRail = all.filter(e => map && map.edges[e.id] && map.edges[e.id].via === 'bus' && map.edges[e.id].bus === eid);
+    const off = all.filter(e => !onRail.includes(e)), es = onRail;
     body = `<dl class="kv"><dt>Contract</dt><dd class="mono">${esc(el.contract.signature)}</dd><dt>Role</dt><dd>${esc(el.contract.role)}</dd>${el.contract.dst ? `<dt>Target</dt><dd>${go('node', el.contract.dst, esc(label(el.contract.dst)))}</dd>` : ''}</dl>
-      <div><span class="eyebrow">Members · ${es.length}</span>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${e.provenance}</span>`, 'erow')).join('')}</div>`;
+      <div><span class="eyebrow">On this rail · ${es.length}</span>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${e.provenance}</span>`, 'erow')).join('')}</div>
+      ${off.length ? `<div><span class="eyebrow">Members routed another way in this frame · ${off.length}</span>${off.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${esc(map.edges[e.id] ? map.edges[e.id].via : 'not routed')}</span>`, 'erow')).join('')}</div>` : ''}`;
   } else if (p === 'lane') {
     const src = el.source || {};
     body = `<dl class="kv"><dt>Order from</dt><dd>${esc(src.provenance)}${src.evidence ? ' · ' + esc(src.evidence) : ''}</dd></dl>
@@ -750,6 +773,17 @@ function stagePanel(s, c) {
 
 // A ×N bundle opens to its edges (ADR 0029, Q-011): the rows come from the meter's own record (inspect.js), so the list
 // is exactly what the meter counts in this line. Each row opens its edge.
+// Any element that stands for several edges (Q-028): the edges whose recorded ends name it, from the meter's record.
+function holdsPanel(key) {
+  const es = heldEdges(data, map, key);
+  const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
+    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}` : esc(key);
+  if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
+  return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
+    <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>
+    <div>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${esc(e.kind)} · ${esc(map.edges[e.id].via)}</span>`, 'erow')).join('')}</div>`;
+}
+
 function bundlePanel(key) {
   const es = bundleEdges(data, map, key), ends = bundleEnds(key);
   const side = x => x.id == null ? esc(x.kind) : `${esc(x.kind)} <span class="mono">${esc(x.port ? portName(x.id) : label(x.id))}</span>`;
@@ -870,6 +904,12 @@ function panel(s, c) {
     if (node !== lastTourNode) { lastTourNode = node; }
   }
   const sel = s.selection;
+  const noPos = Object.fromEntries(Object.entries(s.storyEdits || {}).map(([k, e]) => [k, { ...e, pos: undefined }]));
+  // The level of detail and the open ports change what a box or port stands for (critic M1).
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.isoOpen, s.lens, s.view, s.story, noPos, map && map.lod]);
+  // An unchanged edge list is not rebuilt on every paint (critic L3: the elsewhere chip holds 629 rows on HORDE, and
+  // a hover repaints): the key says everything the list depends on.
+  if (pb.dataset.key === key && sel && (sel.type === 'holds' || sel.type === 'bundle')) return;
   let html = '', title = '';
   if (sel && sel.type === 'node') { html = nodePanel(sel.id); title = label(sel.id); }
   else if (sel && sel.type === 'element') { html = elementPanel(sel.id); title = label(sel.id); }
@@ -877,12 +917,11 @@ function panel(s, c) {
   else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
   else if (sel && sel.type === 'lensout') { html = lensPanel(); title = 'Outside the lens'; }
   else if (sel && sel.type === 'bundle') { html = bundlePanel(sel.id); title = 'Folded edges'; }
+  else if (sel && sel.type === 'holds') { html = holdsPanel(sel.id); title = 'Edges it stands for'; }
   else if (sel && sel.type === 'step') { html = stepPanel(sel.id); title = 'Step'; }
   else if (sel && sel.type === 'storyout') { html = storyOutPanel(s); title = 'Not in this story'; }
   if (!html) { html = stagePanel(s, c); title = s.diff ? 'Re-run diff' : `Stage ${s.stage} · ${STAGES[s.stage - 1].label}`; }
   else html = `<div class="row"><span></span><button class="path" data-type="clear" data-go="x" style="color:${v('ink-muted')}">Back to stage</button></div>` + html;
-  const noPos = Object.fromEntries(Object.entries(s.storyEdits || {}).map(([k, e]) => [k, { ...e, pos: undefined }]));
-  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.lens, s.view, s.story, noPos]);
   if (pb.dataset.key !== key) { pb.innerHTML = html; pb.dataset.key = key; pb.scrollTop = 0; }
   $('handleText').textContent = title;
 }

@@ -442,7 +442,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   `conserve()` check that the listed edges equal the edges the meter attributes to that bundle; 3. critic review.
 
 ### Q-028 — Every other element that stands for several edges opens to them (0029, rest of the first half)
-- **Status:** open (from Q-011's critic, H1: ADR 0029 says "a bundle, a bus, a fold row, a port, a counted box").
+- **Status:** done 2026-10-27 (trace: traces/2026-10-27-q028-open-all.md). "Stands for" means an element that
+  replaces what it holds: a collapsed box, a box in the overview, a fold row, a closed port, the elsewhere chip, the
+  lens box, the loose block; an expanded box draws its edges, and its ×N lines open (Q-011). The story-outside box
+  in "How it works" is Q-032. Opened from: (from Q-011's critic, H1: ADR 0029 says "a bundle, a bus, a fold row, a port, a counted box").
   Today these stand for many edges and do not list them: the isolate view's "elsewhere" chip (it exits isolate; 629
   edges on horde-probe), fold rows (they unfold), isolate ports (they list files), collapsed sections (edges counted
   as `collapsed`), the overview's loose block; buses list their members but no test holds the list to the meter.
@@ -450,6 +453,12 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   its current click action (a second control, or the panel offers it); 2. the Q-011 render test extended to each:
   the list equals the meter's attribution, and each listed edge runs between the element's ends, from graph data
   and the layout; 3. critic review with screenshots.
+
+### Q-032 — The story-outside box opens to its edges (0029)
+- **Status:** open (from Q-028's critic, M3). In "How it works", the box for files outside the story lists those
+  files; the edges it stands for cannot be listed or tested.
+- **Acceptance criteria:** as Q-028's, for that box: it opens to its exact edge list (from the meter's record), the
+  render test holds the list to the box's ends, and a critic pass with a screenshot.
 
 ### Q-029 — The ten stress cases render (P2 gate)
 - **Status:** open. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030 and Q-031.
