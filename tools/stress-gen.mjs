@@ -77,10 +77,12 @@ export const CASES = {
   // Truncation and tooltip: 48-character stems that share long prefixes and suffixes, so a plain end-cut would make
   // several of them read the same; a 48-character section label too.
   'long-names'() {
-    const stem = (mid) => `spectral_resynthesis_${mid}_partial_tracker_impl`.padEnd(48, 'x').slice(0, 48);
-    const mids = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot'];
+    // Every stem is exactly 48 characters and the word that tells them apart sits in the middle, so only a cut that
+    // keeps it (or the tooltip) can tell them apart: no padding to lean on (critic: "echo" was padded with "xx").
+    const stem = (mid) => { const s = `spectral_resynthesis_${mid}_partial_tracker_`; return s + 'implementation_stage'.slice(0, 48 - s.length); };
+    const mids = ['alpha', 'bravo', 'charlie', 'delta', 'kilo', 'foxtrot'];
     const longs = mids.map((m) => `src/dsp/${stem(m)}.cpp`);
-    const shared = range(4).map((i) => `src/dsp/${'oversampled_polyphase_halfband_filter_bank_stage'.slice(0, 46)}${i}.h`);
+    const shared = range(4).map((i) => `src/dsp/${'oversampled_polyphase_halfband_filter_bank_stage'.slice(0, 47)}${i}.h`);
     const shorts = ['src/dsp/fft.cpp', 'src/dsp/window.h'];
     const host = ['src/host/plugin_entry_point_for_every_supported_host_format.cpp', 'src/host/main.cpp'];
     const files = [...longs, ...shared, ...shorts, ...host];
@@ -164,7 +166,8 @@ export const CASES = {
     const SLOTS = [['call', null, 'Calls'], ['include', null, 'Includes'], ['call', 'audio', 'Audio'], ['call', 'param', 'Params'], ['call', 'mod', 'Modulation'], ['test', null, 'Tests'], ['data', null, 'Data'], ['reference', null, 'References']];
     const PROVS = ['static', 'config', 'runtime', 'annotated', 'inferred'], files = [], edges = [], els = [];
     SLOTS.forEach(([kind, role, label], s) => {
-      const dst = `src/slot${s + 1}/target.cpp`, srcs = PROVS.map((prov) => `src/slot${s + 1}/${prov}.cpp`);
+      // Names unique across the repo, so the viewer never prefixes the folder and the provenance stays readable.
+      const name = label.toLowerCase(), dst = `src/slot${s + 1}/${name}_target.cpp`, srcs = PROVS.map((prov) => `src/slot${s + 1}/${name}_${prov}.cpp`);
       files.push(...srcs, dst); els.push(sec('slot' + (s + 1), label, [...srcs, dst]));
       PROVS.forEach((prov, i) => edges.push({ src: F(srcs[i]), dst: F(dst), kind, role, provenance: prov }));
     });

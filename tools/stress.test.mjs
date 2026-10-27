@@ -10,10 +10,12 @@ import { tmpdir } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { check as loupeCheck } from './loupe-check.mjs';
 
-// The DOM render() touches (same stub as render.test.mjs): text width is 7.2 px a character.
+// The DOM render() touches (same stub as render.test.mjs): text width is 7.2 px a character. The container is the
+// viewer's map pane on a 1440×900 screen (index.html: a 360 px inspector, about 130 px of bars), not the whole window:
+// fit zoom is what a user lands on, and the critic found checks passing at a zoom no one sees.
 const svg = { setAttribute() {}, getAttribute: () => 'l1', style: {}, innerHTML: '' };
 globalThis.document = { createElement: () => ({ getContext: () => ({ font: '', measureText: () => ({ width: 27 * 7.2 }) }) }), createElementNS: () => svg, fonts: null };
-const container = { querySelector: () => svg, appendChild() {}, clientWidth: 1440, clientHeight: 900 };
+const container = { querySelector: () => svg, appendChild() {}, clientWidth: 1080, clientHeight: 770 };
 const CW = 7.2;
 
 const { indexSnapshot } = await import('../design/prototype/snapshot.js');
@@ -33,7 +35,7 @@ check('the generator is deterministic: two generations of every case are byte-id
   Object.keys(CASES).every((n) => { const b = generate(n); return Object.keys(fresh[n]).every((f) => fresh[n][f] === b[f]); }));
 const stale = [];
 for (const n of COMMITTED) for (const [f, text] of Object.entries(fresh[n])) if (!existsSync(DIR + n + '/' + f) || readFileSync(DIR + n + '/' + f, 'utf8') !== text) stale.push(n + '/' + f);
-const extra = existsSync(DIR) ? readdirSync(DIR).filter((d) => !COMMITTED.includes(d)) : [];
+const extra = existsSync(DIR) ? readdirSync(DIR).flatMap((d) => !COMMITTED.includes(d) ? [d] : readdirSync(DIR + d).filter((f) => !(f in fresh[d])).map((f) => d + '/' + f)) : [];
 check('the nine committed cases equal a fresh generation, and no other case is committed', stale.length === 0 && extra.length === 0,
   `${stale.length ? 'stale: ' + stale.join(', ') + ' (run: node tools/stress-gen.mjs)' : ''}${extra.length ? ' not generated: ' + extra.join(', ') : ''}`);
 const W = fresh['whole-repo'];
@@ -111,25 +113,34 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   }
 }
 { // Big bus: rail length, tap spacing, count label.
+  // Every bus edge is a tap: a tap stands for one edge, or for data-taps of them once Q-033 merges taps past 20 (the
+  // bus spec); either way the taps add up to the 50 edges, so the check never asserts the opposite of the spec.
   for (const zoom of [{ k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }]) {
     const { map, html } = frame('big-bus', { zoom });
     const rail = (html.split('<g data-el="bus:audio"')[1] || '').split('</g>')[0];
-    const line = attrs((/<line ([^>]*)\/>/.exec(rail) || [])[1] || ''), taps = [...rail.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="3"/g)].map((m) => [+m[1], +m[2]]);
+    const line = attrs((/<line ([^>]*)\/>/.exec(rail) || [])[1] || ''), taps = [...rail.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="3"(?: data-taps="(\d+)")?/g)].map((m) => [+m[1], +m[2], +(m[3] || 1)]);
     const vert = line.x1 === line.x2, along = taps.map((t) => (vert ? t[1] : t[0])).sort((a, b) => a - b);
     const lo = Math.min(+(vert ? line.y1 : line.x1), +(vert ? line.y2 : line.x2)), hi = Math.max(+(vert ? line.y1 : line.x1), +(vert ? line.y2 : line.x2));
     const gaps = along.slice(1).map((p, i) => p - along[i]), minGap = Math.min(...gaps);
     const label = /data-bus-count="(\d+)"[^>]*>(?:<title>[^<]*<\/title>)?<rect[^>]*\/><text[^>]*>([^<]*)</.exec(html);
-    check(`big-bus (${map.lod}): 50 taps on one rail, none overlapping (min gap ${minGap.toFixed(1)} px ≥ 6), the rail spans them all, the count label says 50`,
-      taps.length === 50 && new Set(along).size === 50 && minGap >= 6 && along[0] >= lo && along[49] <= hi && label && label[1] === '50' && label[2] === 'Audio bus · 50',
-      `taps ${taps.length}, rail ${lo}..${hi}, taps ${along[0]}..${along[along.length - 1]}, label ${label && label[2]}`);
+    const tapped = taps.reduce((a, t) => a + t[2], 0), last = along[along.length - 1];
+    check(`big-bus (${map.lod}): the taps on the rail stand for all 50 edges, none overlapping (min gap ${minGap.toFixed(1)} px ≥ 6), the rail spans them all, the count label says 50`,
+      tapped === 50 && new Set(along).size === taps.length && (taps.length < 2 || minGap >= 6) && along[0] >= lo && last <= hi && !!label && label[1] === '50' && label[2] === 'Audio bus · 50',
+      `taps ${taps.length} for ${tapped} edges, rail ${lo}..${hi}, taps ${along[0]}..${last}, label ${label && label[2]}`);
   }
+  // At fit zoom (overview: 50 rows make the Voices box tall) the rail is not drawn; its 50 edges must still read as 50.
+  const fit = frame('big-bus', { zoom: { auto: true } });
+  const fifty = fit.map.elements['bus:audio'] === 'drawn' && /data-bus-count="50"/.test(fit.html) || /data-bundle="[^"]*" data-count="50"/.test(fit.html);
+  check(`big-bus (${fit.map.lod}, fit zoom): the 50 bus edges read as one count of 50, on the rail or on its bundle`, fifty);
 }
 { // Wide hub: spoke crowding, badge placement.
   const d = data['wide-hub'], hub = 'file:src/core/registry.h', fanIn = d.edges.filter((e) => e.dst === hub).length;
-  const { html, S, D } = frame('wide-hub'), g = nodeGroup(html, hub), r = S(D.nodes[hub]);
+  for (const zoom of [{ k: 1, x: 0, y: 0 }, { auto: true }]) {
+  const { html, S, D, map } = frame('wide-hub', { zoom }), g = nodeGroup(html, hub), r = S(D.nodes[hub]);
   const mark = /<text x="([\d.]+)" y="[\d.]+" text-anchor="end" style="font:var\(--loupe-type-count\);fill:var\(--loupe-hub\)[^>]*>(\d+)<\/text>/.exec(g), t = nodeLabel(g);
   const labelEnd = r.x + SPEC.node.inset + (t || '').length * CW, markStart = mark ? +mark[1] - mark[2].length * CW - 2 : 0;
-  check(`wide-hub: the hub badge says its fan-in (${fanIn}), sits inside the node and clear of the label`, !!mark && +mark[2] === fanIn && markStart >= labelEnd && +mark[1] <= r.x + r.w, `badge ${mark && mark[2]}, label ends ${labelEnd}, badge starts ${markStart}`);
+  check(`wide-hub (${map.lod}): the hub badge says its fan-in (${fanIn}), sits inside the node and clear of the label`, !!mark && +mark[2] === fanIn && markStart >= labelEnd && +mark[1] <= r.x + r.w, `badge ${mark && mark[2]}, label ends ${labelEnd}, badge starts ${markStart}`);
+  }
   // A label that fits whole is never cut, however short its room (the screenshot pass: "UI" read "U…").
   // Checked across zooms down to where the room gets tight (the viewer's map pane is narrower than this stub's).
   const cutHeads = [];
@@ -141,9 +152,11 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     }
   }
   check('wide-hub: the two-letter headers UI and IO are drawn whole at every zoom from 1 to 0.6', cutHeads.length === 0, cutHeads.slice(0, 3).join('; '));
-  for (const zoom of [{ k: 0.5, x: 0, y: 0 }, { auto: true }]) {
+  // Only where bundles exist (structure zoom): a frame with no pills proves nothing (critic). Overview pills collide at
+  // scale; that is Q-034, and its check lands with it.
+  for (const zoom of [{ k: 0.5, x: 0, y: 0 }, { k: 0.4, x: 0, y: 0 }]) {
     const f = frame('wide-hub', { zoom }), pills = pillRects(f.html), clash = pairs(pills, overlap);
-    check(`wide-hub (${f.map.lod}): no two ×N count pills overlap (${pills.length} pills)`, clash.length === 0, `${clash.length} overlapping pairs`);
+    check(`wide-hub (${f.map.lod}, k ${zoom.k}): no two ×N count pills overlap (${pills.length} pills)`, f.map.lod === 'structure' && pills.length > 0 && clash.length === 0, `${pills.length} pills, ${clash.length} overlapping pairs`);
   }
 }
 { // Deep nesting: container depth.
@@ -168,11 +181,17 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   const hp = (hull || '').split(' ').filter(Boolean).map((p) => p.split(',').map(Number)), hx = hp.map((p) => p[0]), hy = hp.map((p) => p[1]);
   const hb = hp.length ? { x: Math.min(...hx), y: Math.min(...hy), w: Math.max(...hx) - Math.min(...hx), h: Math.max(...hy) - Math.min(...hy) } : null;
   const chip = /<text[^>]*>∩3<\/text>/.test(nodeGroup(html, m));
-  // A hull's label must not sit on a file's box (the screenshot pass: "Realtime · 2" across the next row's box).
+  // A hull's label must cover no file, no section header and no other set label (critic: moved off a file, it landed
+  // on the Presets label under the DSP header). The other labels are read from the svg, not from the renderer's rules.
   for (const zoom of [{ k: 1, x: 0, y: 0 }, { auto: true }]) {
     const f = frame('triple-overlap', { zoom }), la = attrs((/<text data-el="set:realtime" ([^>]*)>/.exec(f.html) || [])[1] || ''), t = (/<text data-el="set:realtime" [^>]*>([^<]*)</.exec(f.html) || [])[1] || '';
-    const box = { x: +la.x, y: +la.y - 10, w: t.length * CW * 0.92, h: 13 }, hits = Object.keys(f.D.nodes).filter((n) => overlap(box, f.S(f.D.nodes[n])));
-    check(`triple-overlap (${f.map.lod}): the Realtime hull's label sits on no file's box`, !!la.x && hits.length === 0, hits.join(', '));
+    const box = { x: +la.x, y: +la.y - 10, w: t.length * CW * 0.92, h: 13 };
+    const pillsOf = [...f.html.matchAll(/<g data-el="set:[^"]*" style="cursor:pointer"><title>[^<]*<\/title><rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ id: 'pill', x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
+    const heads = f.map.layout && Object.entries(f.D.sections).map(([id, s]) => { const g = (f.html.split(`<g data-el="${id}" style="cursor:pointer">`)[1] || '').split('</g>')[0], a = attrs((/<text ([^>]*)>/.exec(g) || [])[1] || ''), tx = (/<text [^>]*>([^<]*)</.exec(g) || [])[1] || '';
+      return { id: 'header ' + id, x: +a.x, y: +a.y - 12, w: tx.length * 8.2, h: 15 }; });
+    const others = [...Object.keys(f.D.nodes).map((n) => ({ id: n, ...f.S(f.D.nodes[n]) })), ...pillsOf, ...heads];
+    const hits = others.filter((o) => overlap(box, o)).map((o) => o.id);
+    check(`triple-overlap (${f.map.lod}): the Realtime hull's label covers no file, header or other set label`, !!la.x && hits.length === 0, hits.join(', '));
   }
   check('triple-overlap: morph sits inside its section, a Presets mark and the Realtime hull, and carries a ∩3 chip',
     inside(r, S(D.sections['sec:dsp'])) && marks.some((x) => inside(r, x)) && hb && inside(r, hb) && chip, `presets marks ${marks.length}, hull ${!!hb}, chip ${chip}`);
@@ -198,25 +217,29 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   for (const sec of t.members) {
     const r = S(D.sections[sec]), got = [...html.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="12" height="12" rx="2"[^>]*\/><text[^>]*>([✓~✕])<\/text>/g)]
       .filter((x) => +x[1] >= r.x && +x[1] <= r.x + r.w && +x[2] >= r.y && +x[2] <= r.y + 24).sort((a, b) => +a[1] - +b[1]);
-    if (got.map((x) => x[3]).join('') !== conf[sec].map((c) => want[c]).join('')) bad.push(`${sec}: ${got.map((x) => x[3]).join('')} ≠ ${conf[sec].map((c) => want[c]).join('')}`);
+    // Six marks in port order, or (Q-033, the twins spec: past 4 ports) one "k/6" chip, k the ports matched statically.
+    const head = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0], chip = (new RegExp(`>(\\d+)/${t.interface.length}<`).exec(head) || [])[1];
+    const shown = chip != null ? chip + '/' + t.interface.length : got.map((x) => x[3]).join(''), expect = chip != null ? conf[sec].filter((c) => c === 'ok').length + '/' + t.interface.length : conf[sec].map((c) => want[c]).join('');
+    if (shown !== expect) bad.push(`${sec}: ${shown} ≠ ${expect}`);
     const hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0], lt = (/<text [^>]*>([^<]*)<\/text>/.exec(hg) || [])[1] || '';
     const big = r.w >= 100, labelEnd = r.x + (big ? 10 : 7) + lt.length * (big ? 8.2 : 6.9);
     if (got.length && labelEnd > +got[0][1]) bad.push(`${sec}: label runs into the marks (${labelEnd.toFixed(0)} > ${got[0][1]})`);
   }
   const kinds = new Set(Object.values(conf).flat());
   check('big-family: one plate with its caption, all 6 port chips drawn', !!plate && caption && chips.length === 6, `plate ${!!plate}, caption ${caption}, chips ${chips.map((p) => p.name).join(', ')}`);
-  check('big-family: each of the 8 twins shows its 6 marks in port order, matching conformity, all three kinds present, clear of its label', bad.length === 0 && kinds.size === 3, bad.slice(0, 3).join('; '));
+  check('big-family: each of the 8 twins shows its conformity (6 marks in port order, or one k/6 chip) matching conformity(), all three kinds present, clear of its label', bad.length === 0 && kinds.size === 3, bad.slice(0, 3).join('; '));
 }
 { // Edge matrix: every slot × provenance on one screen, each its own line with its own stroke and dash.
-  const { html, map } = frame('edge-matrix', { zoom: { auto: true } }), d = data['edge-matrix'], bad = [], combos = new Set();
+  const { html, map } = frame('edge-matrix', { zoom: { auto: true } }), d = data['edge-matrix'], bad = [], combos = new Set(), paths = new Set();
   for (const e of d.edges) {
     if (map.edges[e.id].via !== 'drawn') { bad.push(`${e.id} ${map.edges[e.id].via}`); continue; }
     const st = (new RegExp(`data-edge="${e.id}" d="[^"]*" style="([^"]*)"`).exec(html) || [])[1] || '';
     const stroke = (/stroke:var\(--loupe-edge-(\d)\)/.exec(st) || [])[1], dash = (/stroke-dasharray:([^;]*)/.exec(st) || [])[1];
     if (+stroke !== slotOf(e) || dash !== SPEC.dash[e.provenance]) bad.push(`${e.id}: slot ${stroke} dash ${dash}, want ${slotOf(e)} ${SPEC.dash[e.provenance]}`);
     combos.add(stroke + '|' + dash);
+    paths.add((new RegExp(`data-edge="${e.id}" d="([^"]*)"`).exec(html) || [])[1]);
   }
-  check(`edge-matrix (${map.lod}, auto zoom): all 40 slot × provenance edges drawn as single lines, each with its slot colour and provenance dash, 40 distinct`, bad.length === 0 && combos.size === 40, bad.slice(0, 3).join('; '));
+  check(`edge-matrix (${map.lod}, auto zoom): all 40 slot × provenance edges drawn as single lines, each with its slot colour and provenance dash, 40 distinct styles on 40 distinct paths`, bad.length === 0 && combos.size === 40 && paths.size === 40, bad.slice(0, 3).join('; ') + ` paths ${paths.size}`);
 }
 { // Big diff: marks at volume, after and before.
   const d = data['big-diff'], D0 = d.diff;

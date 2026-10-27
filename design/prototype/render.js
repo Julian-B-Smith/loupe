@@ -300,6 +300,9 @@ export function render(container, data, state) {
     // sets
     let slot = 0;
     const setSlot = {};
+    // Boxes a set's label must not cover: files, section header bands, and the set labels already placed (critic: a hull
+    // label moved off a file landed on the Presets label, under the DSP header).
+    const setLabelBoxes = [], keepOut = () => [...Object.values(D.nodes).map(S), ...Object.values(D.sections).map(s => { const r = S(s); return { ...r, h: Math.min(r.h, L.header * z.k) }; }), ...setLabelBoxes];
     (data.byPrimitive.set || []).forEach(id => {
       const el = data.elements[id]; setSlot[id] = Math.min(4, ++slot);
       const rs = el.members.map(m => D.nodes[m] && S(D.nodes[m])).filter(Boolean);
@@ -311,19 +314,26 @@ export function render(container, data, state) {
         // Members in different sections: a hull would sweep across unrelated boxes. Mark each member instead.
         rs.forEach(r => {
           setMarks.push(`<rect data-el="${id}" x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${c};stroke:${on ? v('accent') : c};stroke-width:${on ? 1.5 : 3}px"><title>${esc(el.label + ': ' + el.claim)}</title></rect>`);
+          if (detail) setLabelBoxes.push({ x: r.x - 4, y: r.y - 12.5, w: el.label.length * cw * 0.85 + 14, h: 17 });
           if (detail) lg.push(pill(r.x - 4, r.y - 4, el.label, { stroke: c, fill: v('surface-node'), ink: v('ink-muted'), cw: cw * 0.85, attr: `data-el="${id}" style="cursor:pointer"`, title: el.label + ' · ' + el.members.length + ' files: ' + el.claim }));
         });
         return;
       }
       const pts = hull(rs.flatMap(r => rectPts(r, 7)));
       bg.push(`<polygon data-el="${id}" points="${pts.map(p => p.map(f1).join(',')).join(' ')}" style="fill:${c};stroke:${on ? v('accent') : c};stroke-width:${on ? 1.5 : 10}px;stroke-linejoin:round"><title>${esc(el.label + ': ' + el.claim)}</title></polygon>`);
-      // The label goes under the hull, or over it when a file sits right below (stress case triple-overlap: "Realtime · 2"
-      // was drawn across the next row's box); nodes only, since a hull's own section header is above it by design.
+      // The label goes where it covers nothing (stress case triple-overlap: "Realtime · 2" was drawn across the next
+      // row's box, then, moved up, onto the Presets label under the DSP header).
       const text = `${el.label} · ${el.members.length}`, tw = text.length * cw * 0.92;
       const bot = pts.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a)), topP = pts.reduce((a, b) => (b[1] < a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a));
-      const clear = (x, y) => !Object.keys(D.nodes).some(n => { const r = S(D.nodes[n]); return x < r.x + r.w && r.x < x + tw && y - 10 < r.y + r.h && r.y < y + 3; });
-      const [lx, ly] = clear(bot[0] + 4, bot[1] + 13) || !clear(topP[0] + 4, topP[1] - 5) ? [bot[0] + 4, bot[1] + 13] : [topP[0] + 4, topP[1] - 5];
-      lg.push(`<text data-el="${id}" x="${f1(lx)}" y="${f1(ly)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo('surface-canvas')}">${esc(text)}</text>`);
+      const boxes = keepOut(), hb = { x: Math.min(...pts.map(p => p[0])), y: Math.min(...pts.map(p => p[1])), x2: Math.max(...pts.map(p => p[0])), y2: Math.max(...pts.map(p => p[1])) };
+      const clear = ([x, y]) => !boxes.some(r => x < r.x + r.w && r.x < x + tw && y - 10 < r.y + r.h && r.y < y + 3);
+      // Below, above, then right of the hull; the first spot clear of every keep-out box, else below as before.
+      const spots = [[bot[0] + 4, bot[1] + 13], [topP[0] + 4, topP[1] - 5], [hb.x2 + 6, (hb.y + hb.y2) / 2 + 4]];
+      const [lx, ly] = spots.find(clear) || spots[0];
+      setLabelBoxes.push({ x: lx, y: ly - 10, w: tw, h: 13 });
+      // Its halo matches what it sits on: a section's fill (deepest box under it), else the canvas.
+      const under = Object.values(D.sections).filter(sr => { const r = S(sr); return lx >= r.x && lx <= r.x + r.w && ly >= r.y && ly <= r.y + r.h; }).sort((a, b) => b.depth - a.depth)[0];
+      lg.push(`<text data-el="${id}" x="${f1(lx)}" y="${f1(ly)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo(under ? (under.depth % 2 ? 'surface-group-nested' : 'surface-group') : 'surface-canvas')}">${esc(text)}</text>`);
     });
     // sections
     const secs = Object.entries(D.sections).sort((a, b) => a[1].depth - b[1].depth);
