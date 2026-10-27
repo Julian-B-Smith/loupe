@@ -435,10 +435,21 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   5. a mutation case for each new rule; 6. Julian approves the schema diff before it lands.
 
 ### Q-011 — Every bundle opens to its edges (0029, first half)
-- **Status:** open
+- **Status:** done 2026-10-27 for `×N` bundles (trace: traces/2026-10-27-q011-bundles.md). ADR 0029's rule covers
+  more elements than this item's criteria name; the rest are Q-028, so closing this does not close the rule.
 - **Scope:** `design/prototype/`
 - **Acceptance criteria:** 1. clicking a `×N` bundle lists its member edges in the inspector; 2. a test or
   `conserve()` check that the listed edges equal the edges the meter attributes to that bundle; 3. critic review.
+
+### Q-028 — Every other element that stands for several edges opens to them (0029, rest of the first half)
+- **Status:** open (from Q-011's critic, H1: ADR 0029 says "a bundle, a bus, a fold row, a port, a counted box").
+  Today these stand for many edges and do not list them: the isolate view's "elsewhere" chip (it exits isolate; 629
+  edges on horde-probe), fold rows (they unfold), isolate ports (they list files), collapsed sections (edges counted
+  as `collapsed`), the overview's loose block; buses list their members but no test holds the list to the meter.
+- **Acceptance criteria:** 1. each of those elements opens to its exact edge list in the inspector, without losing
+  its current click action (a second control, or the panel offers it); 2. the Q-011 render test extended to each:
+  the list equals the meter's attribution, and each listed edge runs between the element's ends, from graph data
+  and the layout; 3. critic review with screenshots.
 
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`

@@ -162,6 +162,7 @@ import { createStore, createHistory, STAGES } from './state.js';
 import { render, SPEC, slotOf, glyphOf, kindStyle } from './render.js';
 import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
+import { bundleEdges, bundleEnds } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 
@@ -234,7 +235,10 @@ function describe(a, b) {
   if (a.view !== b.view) return `switch to ${b.view}`;
   if (JSON.stringify(a.offsets) !== JSON.stringify(b.offsets)) return 'move a section';
   if (JSON.stringify(a.diff) !== JSON.stringify(b.diff)) return b.diff ? `re-run diff, ${b.diff.side}` : 'hide re-run diff';
-  if (JSON.stringify(a.selection) !== JSON.stringify(b.selection)) return b.selection && b.selection.id ? `select ${label(b.selection.id)}` : 'clear selection';
+  if (JSON.stringify(a.selection) !== JSON.stringify(b.selection)) {
+    if (b.selection && b.selection.type === 'bundle') { const [x, y] = bundleEnds(b.selection.id), w = e => e.id == null ? e.kind : e.port ? portName(e.id) : label(e.id); return `open the folded line ${w(x)} → ${y ? w(y) : ''}`; } // critic L2
+    return b.selection && b.selection.id ? `select ${label(b.selection.id)}` : 'clear selection';
+  }
   if (JSON.stringify(a.dimmedKinds) !== JSON.stringify(b.dimmedKinds)) return 'dim or show an edge kind';
   if (JSON.stringify(a.settings) !== JSON.stringify(b.settings)) return 'hub placement';
   return 'tour step';
@@ -400,13 +404,14 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-node],[data-step],[data-el],[data-edge]');
+  const c = t.closest && t.closest('[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge]');
   if (!c) return null;
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
   if (c.dataset.unfold) return { type: 'unfold', id: c.dataset.unfold };
   if (c.dataset.port) return { type: 'port', id: c.dataset.port };
   if (c.dataset.exit) return { type: 'exit', id: c.dataset.exit };
   if (c.dataset.lensout) return { type: 'lensout', id: c.dataset.lensout };
+  if (c.dataset.bundle) return { type: 'bundle', id: c.dataset.bundle };
   if (c.dataset.storyout) return { type: 'storyout', id: 'story' };
   if (c.dataset.step) return { type: 'step', id: c.dataset.step };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
@@ -743,6 +748,18 @@ function stagePanel(s, c) {
   return h;
 }
 
+// A ×N bundle opens to its edges (ADR 0029, Q-011): the rows come from the meter's own record (inspect.js), so the list
+// is exactly what the meter counts in this line. Each row opens its edge.
+function bundlePanel(key) {
+  const es = bundleEdges(data, map, key), ends = bundleEnds(key);
+  const side = x => x.id == null ? esc(x.kind) : `${esc(x.kind)} <span class="mono">${esc(x.port ? portName(x.id) : label(x.id))}</span>`;
+  // After a zoom or lens change the same two ends may hold one edge, which is drawn as a plain line (critic L3).
+  if (!es.length) return '<p>At this zoom or lens these two ends are not joined by a folded line any more: what they hold is drawn as plain lines, or folded elsewhere. Pick a ×N on the map.</p>';
+  return `<span class="eyebrow">Folded into one line · ${es.length} edges</span><h2>${side(ends[0])}${ends[1] ? ' → ' + side(ends[1]) : ''}</h2>
+    <p>The line on the map stands for these ${es.length} edges. The conservation meter counts exactly these as folded here.</p>
+    <div>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${esc(e.kind)} · ${esc(e.provenance)}</span>`, 'erow')).join('')}</div>`;
+}
+
 function lensPanel() {
   const lz = map && map.layout.lens; if (!lz) return '';
   const p = id => esc(data.nodes[id] ? data.nodes[id].path : id), out = id => !lz.inside.has(id);
@@ -859,6 +876,7 @@ function panel(s, c) {
   else if (sel && sel.type === 'edge') { html = edgePanel(sel.id); title = 'Edge'; }
   else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
   else if (sel && sel.type === 'lensout') { html = lensPanel(); title = 'Outside the lens'; }
+  else if (sel && sel.type === 'bundle') { html = bundlePanel(sel.id); title = 'Folded edges'; }
   else if (sel && sel.type === 'step') { html = stepPanel(sel.id); title = 'Step'; }
   else if (sel && sel.type === 'storyout') { html = storyOutPanel(s); title = 'Not in this story'; }
   if (!html) { html = stagePanel(s, c); title = s.diff ? 'Re-run diff' : `Stage ${s.stage} · ${STAGES[s.stage - 1].label}`; }
