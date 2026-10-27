@@ -10,6 +10,7 @@ export const L = {
   laneHead: 54, laneGutter: 34, laneNotch: 10, lanePoint: 16,
   plateH: 56, twinGap: 18, stackSlack: 1.15,
   foldAt: 12, foldSlack: 2,
+  wrapAspect: 1.6,                          // with no band, top-level columns wrap into rows near this width:height
   looseKeep: 60,                            // the loose block shows this many files (most connected first) before folding the rest                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
   railGap: 170, portW: 250, portGap: 10,    // isolate: side rails of ports
   flow: { colGap: 56, rowGap: 8 }
@@ -161,7 +162,7 @@ function designLayout(data, state) {
 
   // ---- levels and columns
   const tops = iso ? [iso] : data.sections.filter(s => !data.parentOf[s] && secHas(s));
-  const levelDefs = band ? band.levels.map(l => ({ label: l.label, members: l.members.filter(m => tops.includes(m)) })) : [{ label: null, members: tops }];
+  let levelDefs = band ? band.levels.map(l => ({ label: l.label, members: l.members.filter(m => tops.includes(m)) })) : [{ label: null, members: tops }];
   const inLevel = new Set(levelDefs.flatMap(l => l.members));
   const outside = band ? tops.filter(t => !inLevel.has(t)) : [];
 
@@ -176,8 +177,22 @@ function designLayout(data, state) {
     });
     return cols;
   };
-  const plan = levelDefs.map(l => ({ ...l, alone: band && l.members.length === 1, cols: columnsFor(l.members) }));
   const colWidth = cols => cols.reduce((a, c) => a + c.w, 0) + Math.max(0, cols.length - 1) * L.colGap;
+  // No band: the top sections are one row of columns. Many of them make that row far wider than a screen, and the
+  // fitted zoom too small to label any box (stress case whole-repo: 40 columns, 8.6:1, every box 20 px wide). So the
+  // columns break into unlabelled rows, in order, near the screen's aspect. A band's levels are the view's claim and
+  // never wrap. Rows are levels with no label: bus rails between them route as between band levels.
+  if (!band && !iso) {
+    const cols = columnsFor(tops), area = cols.reduce((a, c) => a + (c.w + L.colGap) * (c.h + L.levelGap), 0);
+    const rowW = Math.max(...cols.map(c => c.w), Math.sqrt(area * L.wrapAspect));
+    if (colWidth(cols) > rowW * 1.5) {
+      levelDefs = [];
+      let row = null;
+      cols.forEach(c => { if (!row || colWidth(row.cols.concat(c)) > rowW) levelDefs.push((row = { label: null, members: [], cols: [] })); row.cols.push(c); row.members.push(...c.items.map(it => it.id)); });
+      levelDefs.forEach(l => delete l.cols);
+    }
+  }
+  const plan = levelDefs.map(l => ({ ...l, alone: band && l.members.length === 1, cols: columnsFor(l.members) }));
   const contentW = Math.max(N.w * 4, ...plan.filter(l => !l.alone).map(l => colWidth(l.cols)));
   const x0 = band ? L.bandPadX : 0;
 

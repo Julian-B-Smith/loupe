@@ -1,0 +1,53 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Spectral resynthesis and partial tracking engine (stress case).",
+      "id": "sec:dsp",
+      "label": "Spectral resynthesis and partial tracking engine",
+      "members": [
+        "file:src/dsp/spectral_resynthesis_alpha_partial_tracker_implx.cpp",
+        "file:src/dsp/spectral_resynthesis_bravo_partial_tracker_implx.cpp",
+        "file:src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp",
+        "file:src/dsp/spectral_resynthesis_delta_partial_tracker_implx.cpp",
+        "file:src/dsp/spectral_resynthesis_echo_partial_tracker_implxx.cpp",
+        "file:src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp",
+        "file:src/dsp/oversampled_polyphase_halfband_filter_bank_sta0.h",
+        "file:src/dsp/oversampled_polyphase_halfband_filter_bank_sta1.h",
+        "file:src/dsp/oversampled_polyphase_halfband_filter_bank_sta2.h",
+        "file:src/dsp/oversampled_polyphase_halfband_filter_bank_sta3.h",
+        "file:src/dsp/fft.cpp",
+        "file:src/dsp/window.h"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Host (stress case).",
+      "id": "sec:host",
+      "label": "Host",
+      "members": [
+        "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+        "file:src/host/main.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:0c09944dc637a911fa92f5fbd105c452d68926e617db1509713013b4f05e407a"
+  },
+  "overlay": {
+    "hash": "sha256:b7c1123b1979233b4a9305ef063904593b0b995d2cc0d8668978e68c6d40f350"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

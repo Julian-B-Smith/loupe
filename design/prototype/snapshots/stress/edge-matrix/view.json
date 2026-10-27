@@ -1,0 +1,147 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Calls (stress case).",
+      "id": "sec:slot1",
+      "label": "Calls",
+      "members": [
+        "file:src/slot1/static.cpp",
+        "file:src/slot1/config.cpp",
+        "file:src/slot1/runtime.cpp",
+        "file:src/slot1/annotated.cpp",
+        "file:src/slot1/inferred.cpp",
+        "file:src/slot1/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Includes (stress case).",
+      "id": "sec:slot2",
+      "label": "Includes",
+      "members": [
+        "file:src/slot2/static.cpp",
+        "file:src/slot2/config.cpp",
+        "file:src/slot2/runtime.cpp",
+        "file:src/slot2/annotated.cpp",
+        "file:src/slot2/inferred.cpp",
+        "file:src/slot2/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Audio (stress case).",
+      "id": "sec:slot3",
+      "label": "Audio",
+      "members": [
+        "file:src/slot3/static.cpp",
+        "file:src/slot3/config.cpp",
+        "file:src/slot3/runtime.cpp",
+        "file:src/slot3/annotated.cpp",
+        "file:src/slot3/inferred.cpp",
+        "file:src/slot3/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Params (stress case).",
+      "id": "sec:slot4",
+      "label": "Params",
+      "members": [
+        "file:src/slot4/static.cpp",
+        "file:src/slot4/config.cpp",
+        "file:src/slot4/runtime.cpp",
+        "file:src/slot4/annotated.cpp",
+        "file:src/slot4/inferred.cpp",
+        "file:src/slot4/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Modulation (stress case).",
+      "id": "sec:slot5",
+      "label": "Modulation",
+      "members": [
+        "file:src/slot5/static.cpp",
+        "file:src/slot5/config.cpp",
+        "file:src/slot5/runtime.cpp",
+        "file:src/slot5/annotated.cpp",
+        "file:src/slot5/inferred.cpp",
+        "file:src/slot5/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Tests (stress case).",
+      "id": "sec:slot6",
+      "label": "Tests",
+      "members": [
+        "file:src/slot6/static.cpp",
+        "file:src/slot6/config.cpp",
+        "file:src/slot6/runtime.cpp",
+        "file:src/slot6/annotated.cpp",
+        "file:src/slot6/inferred.cpp",
+        "file:src/slot6/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Data (stress case).",
+      "id": "sec:slot7",
+      "label": "Data",
+      "members": [
+        "file:src/slot7/static.cpp",
+        "file:src/slot7/config.cpp",
+        "file:src/slot7/runtime.cpp",
+        "file:src/slot7/annotated.cpp",
+        "file:src/slot7/inferred.cpp",
+        "file:src/slot7/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "References (stress case).",
+      "id": "sec:slot8",
+      "label": "References",
+      "members": [
+        "file:src/slot8/static.cpp",
+        "file:src/slot8/config.cpp",
+        "file:src/slot8/runtime.cpp",
+        "file:src/slot8/annotated.cpp",
+        "file:src/slot8/inferred.cpp",
+        "file:src/slot8/target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:5bde0d8ce65cafa41bf995d2bb9b94e4c86fb1421a341640a26c05005dc7608e"
+  },
+  "overlay": {
+    "hash": "sha256:085711dde92f16f0b88df7a84b556cb0b38980a7aaa3c74e39913d5e1a3ebe65"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

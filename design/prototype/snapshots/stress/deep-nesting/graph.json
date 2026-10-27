@@ -1,0 +1,282 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 11,
+      "excluded": [],
+      "files": 11
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/voice_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/engine_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:014df7972d50f969",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/engine_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/voice/voice_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:06a7d90d665bb619",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/voice/voice_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/voice_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/engine_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:304ef6720adacfcd",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/engine_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/voice/voice_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4481814900ba2538",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/voice/voice_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/engine_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/app/main.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4b0b3796fe2cad0b",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/app/main.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/app/ui.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8474c2d8978f0892",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:src/app/ui.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/voice/osc/osc_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9005aceab503e916",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine/voice/osc/osc_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/voice/voice_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9d620291fd0740a6",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/voice/voice_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/osc/osc_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/voice/osc/osc_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d9a673128fe8ccd6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/engine/voice/osc/osc_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engine/voice/voice_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engine/engine_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ff638472db6f4ef5",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/engine/engine_01.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/app/main.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/app/main.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/app/ui.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/app/ui.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/engine_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/engine_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/engine_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/engine_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/engine_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/engine_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/osc/osc_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/osc/osc_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/osc/osc_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/osc/osc_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/osc/osc_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/osc/osc_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/voice_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/voice_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/voice_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/voice_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/engine/voice/voice_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/engine/voice/voice_03.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/deep-nesting"
+  }
+}

@@ -57,7 +57,8 @@ export function distinctCuts(labels, n) {
   }
   return out;
 }
-export const fitMid = (s, px, cw) => { const n = Math.floor(px / cw); if (n < 3) return ''; if (s.length <= n) return s; const head = Math.ceil((n - 1) / 2), tail = n - 1 - head; return s.slice(0, head) + '…' + (tail ? s.slice(-tail) : ''); };
+// A label that fits whole is never cut, however short the room (stress case wide-hub: "UI" read "U…").
+export const fitMid = (s, px, cw) => { const n = Math.floor(px / cw); if (s.length <= n) return s; if (n < 3) return ''; const head = Math.ceil((n - 1) / 2), tail = n - 1 - head; return s.slice(0, head) + '…' + (tail ? s.slice(-tail) : ''); };
 export const glyphOf = e => SPEC.glyph.role[e.role] || SPEC.glyph.kind[e.kind] || 'arrow-filled';
 export const lodFor = k => (SPEC.lod.find(l => l.maxScale != null && k < l.maxScale) || SPEC.lod[SPEC.lod.length - 1]).name;
 
@@ -79,7 +80,7 @@ function charW() {
   if (document.fonts && document.fonts.check('500 11px "Martian Mono"')) CW = w;
   return w || 7.2;
 }
-const fit = (s, px, cw) => { const n = Math.floor(px / cw); return n < 3 ? '' : s.length <= n ? s : s.slice(0, n - 1) + '…'; };
+const fit = (s, px, cw) => { const n = Math.floor(px / cw); return s.length <= n ? s : n < 3 ? '' : s.slice(0, n - 1) + '…'; };
 
 const caches = new WeakMap();
 function memo(data, key, fn) {
@@ -316,8 +317,13 @@ export function render(container, data, state) {
       }
       const pts = hull(rs.flatMap(r => rectPts(r, 7)));
       bg.push(`<polygon data-el="${id}" points="${pts.map(p => p.map(f1).join(',')).join(' ')}" style="fill:${c};stroke:${on ? v('accent') : c};stroke-width:${on ? 1.5 : 10}px;stroke-linejoin:round"><title>${esc(el.label + ': ' + el.claim)}</title></polygon>`);
-      const top = pts.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a));
-      lg.push(`<text data-el="${id}" x="${f1(top[0] + 4)}" y="${f1(top[1] + 13)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo('surface-canvas')}">${esc(el.label)} · ${el.members.length}</text>`);
+      // The label goes under the hull, or over it when a file sits right below (stress case triple-overlap: "Realtime · 2"
+      // was drawn across the next row's box); nodes only, since a hull's own section header is above it by design.
+      const text = `${el.label} · ${el.members.length}`, tw = text.length * cw * 0.92;
+      const bot = pts.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a)), topP = pts.reduce((a, b) => (b[1] < a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a));
+      const clear = (x, y) => !Object.keys(D.nodes).some(n => { const r = S(D.nodes[n]); return x < r.x + r.w && r.x < x + tw && y - 10 < r.y + r.h && r.y < y + 3; });
+      const [lx, ly] = clear(bot[0] + 4, bot[1] + 13) || !clear(topP[0] + 4, topP[1] - 5) ? [bot[0] + 4, bot[1] + 13] : [topP[0] + 4, topP[1] - 5];
+      lg.push(`<text data-el="${id}" x="${f1(lx)}" y="${f1(ly)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo('surface-canvas')}">${esc(text)}</text>`);
     });
     // sections
     const secs = Object.entries(D.sections).sort((a, b) => a[1].depth - b[1].depth);
@@ -343,13 +349,16 @@ export function render(container, data, state) {
       const ty = r.y + (big ? Math.min(19, hs * 0.66) : Math.min(13.5, Math.max(10, hs * 0.7)));
       const headerFits = ovw || hs >= 15;
       if (ovw && !isTwin) {
-        const short = r.w - 14 >= countText.length * ccw ? countText : r.w - 14 >= (files + ' files').length * ccw ? files + ' files' : String(files);
-        const ol = fit(el.label, r.w - 14, gcw) || el.label.slice(0, 1) + '…';
+        // Zoomed out a box can be narrower than any text: draw only what fits inside it (stress case whole-repo: a
+        // fallback "M…" ran past 40 narrow boxes into their neighbours); the tooltip always has the full label and count.
+        const room = r.w - 14, short = room >= countText.length * ccw ? countText : room >= (files + ' files').length * ccw ? files + ' files' : room >= String(files).length * ccw ? String(files) : '';
+        const ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
         lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text x="${f1(r.x + 7)}" y="${f1(r.y + 14)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(ol)}</text><text x="${f1(r.x + 7)}" y="${f1(r.y + 26)}" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${esc(short)}</text></g>`);
         const a0 = auditOf(el); if (a0) lg.push(badge(r.x + r.w, r.y, a0));
         return;
       }
-      if (headerFits) lg.push(`<g data-el="${id}" style="cursor:pointer"><text x="${f1(r.x + (big ? 10 : 7))}" y="${f1(ty)}" style="font:${gFont};letter-spacing:${v('tracking-group-label')};fill:${v('ink')};${halo(fillC)}">${esc(label)}</text>${showCount ? `<text x="${f1(r.x + r.w - 24)}" y="${f1(ty)}" text-anchor="end" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${countText}</text>` : ''}</g>`);
+      // A header cut to fit names its section in full in a tooltip (stress case long-names).
+      if (headerFits) lg.push(`<g data-el="${id}" style="cursor:pointer">${label !== el.label ? `<title>${esc(el.label + ' · ' + countText)}</title>` : ''}<text x="${f1(r.x + (big ? 10 : 7))}" y="${f1(ty)}" style="font:${gFont};letter-spacing:${v('tracking-group-label')};fill:${v('ink')};${halo(fillC)}">${esc(label)}</text>${showCount ? `<text x="${f1(r.x + r.w - 24)}" y="${f1(ty)}" text-anchor="end" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${countText}</text>` : ''}</g>`);
       if (big && !ovw && !isTwin) lg.push(`<g data-collapse="${id}" style="cursor:pointer"><title>${s.collapsed ? 'Expand' : 'Collapse'}</title><rect x="${f1(r.x + r.w - 20)}" y="${f1(ty - 10)}" width="14" height="14" rx="3" style="fill:transparent"/><text x="${f1(r.x + r.w - 13)}" y="${f1(ty + 0.5)}" text-anchor="middle" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${s.collapsed ? '+' : '−'}</text></g>`);
       const a = auditOf(el); if (a) lg.push(badge(r.x + r.w, r.y, a));
     });

@@ -1,0 +1,9 @@
+{
+  "conditions": [],
+  "edges": [],
+  "graph": {
+    "hash": "sha256:efb97c1465f389c0780194ca54167dd170594ee3a7a7137bb654f7e42862acc1"
+  },
+  "roles": [],
+  "schema": "loupe.overlay/0.2"
+}

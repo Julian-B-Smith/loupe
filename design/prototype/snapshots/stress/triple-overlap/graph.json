@@ -1,0 +1,144 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 5,
+      "excluded": [],
+      "files": 5
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/dsp/morph.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/filter.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:124e549aa1c57e74",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/filter.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/preset_io.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/morph.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:5ffe9f0a9d303b82",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/morph.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/filter.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/delay.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:63ee00bca00529d6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/delay.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/preset_io.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/undo.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:725b978652a4a8fa",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/undo.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/dsp/delay.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/delay.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/filter.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/filter.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/morph.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/morph.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/preset_io.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/preset_io.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/undo.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/undo.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/triple-overlap"
+  }
+}

@@ -461,12 +461,21 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   render test holds the list to the box's ends, and a critic pass with a screenshot.
 
 ### Q-029 — The ten stress cases render (P2 gate)
-- **Status:** open. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030 and Q-031.
-- **Draft criteria (to agree before it starts):** 1. a deterministic generator emits one snapshot per stress case
-  in docs/design-handoff.md ("Stress cases every design must survive": long names, a 50-member bus, a 40-spoke hub,
-  3-level nesting, a file in three sets, a 12-step lane, 8 twins × 6 ports, 4,000 files, an 8 × 5 edge matrix, a big
-  diff); 2. each renders headless at every level of detail with the meter balanced, in `./verify full`; 3. what each
-  case tests (truncation, rail length, spoke crowding...) has a check, or a screenshot critic pass where it is visual.
+- **Status:** in progress (branch p2/q029-stress). Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
+  and Q-031; criteria agreed by poll the same day.
+- **Scope:** a generator in `tools/`, `design/prototype/snapshots/stress/`, `tools/render.test.mjs` (or a stress test
+  beside it), `verify` (fast), viewer fixes the cases expose.
+- **Acceptance criteria:** 1. a deterministic generator emits one snapshot per stress case in docs/design-handoff.md
+  ("Stress cases every design must survive": long names, a 50-member bus, a 40-spoke hub, 3-level nesting, a file in
+  three sets, a 12-step lane, 8 twins × 6 ports, 4,000 files, an 8 × 5 edge matrix, a big diff); 2. nine are committed
+  in `design/prototype/snapshots/stress/<case>/` and regenerated and byte-compared in `./verify fast`; the 4,000-file
+  case is generated into a temp dir each run and never committed; 3. each renders headless at every level of detail
+  with the meter balanced, in `./verify fast` (moved to `full`, and said so, if it pushes fast past about 30 s); 4.
+  what each case tests has a deterministic geometry check on the rendered frame, planted to fail; 5. one Opus critic
+  pass over screenshots of all ten, for what geometry cannot judge.
+- **Gaps (Julian, poll):** small fixes land in Q-029; a gap needing a new primitive gets its own queue item and Q-029
+  stays open until it closes. No check is marked waiting.
+- **Out of scope:** the matrix lens (Q-030), side by side (Q-031).
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.

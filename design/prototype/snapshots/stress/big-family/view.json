@@ -1,0 +1,214 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Engines (stress case).",
+      "id": "sec:engines",
+      "label": "Engines",
+      "members": [],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "SAW (stress case).",
+      "id": "sec:saw",
+      "label": "SAW",
+      "members": [
+        "file:src/engines/saw/saw_voice.cpp",
+        "file:src/engines/saw/saw_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "CHOIR (stress case).",
+      "id": "sec:choir",
+      "label": "CHOIR",
+      "members": [
+        "file:src/engines/choir/choir_voice.cpp",
+        "file:src/engines/choir/choir_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "STATION (stress case).",
+      "id": "sec:station",
+      "label": "STATION",
+      "members": [
+        "file:src/engines/station/station_voice.cpp",
+        "file:src/engines/station/station_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "WARP (stress case).",
+      "id": "sec:warp",
+      "label": "WARP",
+      "members": [
+        "file:src/engines/warp/warp_voice.cpp",
+        "file:src/engines/warp/warp_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "GRAIN (stress case).",
+      "id": "sec:grain",
+      "label": "GRAIN",
+      "members": [
+        "file:src/engines/grain/grain_voice.cpp",
+        "file:src/engines/grain/grain_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "MODAL (stress case).",
+      "id": "sec:modal",
+      "label": "MODAL",
+      "members": [
+        "file:src/engines/modal/modal_voice.cpp",
+        "file:src/engines/modal/modal_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "FM (stress case).",
+      "id": "sec:fm",
+      "label": "FM",
+      "members": [
+        "file:src/engines/fm/fm_voice.cpp",
+        "file:src/engines/fm/fm_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "WAVE (stress case).",
+      "id": "sec:wave",
+      "label": "WAVE",
+      "members": [
+        "file:src/engines/wave/wave_voice.cpp",
+        "file:src/engines/wave/wave_core.cpp"
+      ],
+      "parent": "sec:engines",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Core (stress case).",
+      "id": "sec:core",
+      "label": "Core",
+      "members": [
+        "file:src/core/voice_alloc.cpp",
+        "file:src/core/params.h",
+        "file:src/core/mod_matrix.cpp",
+        "file:src/core/midi_in.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Out (stress case).",
+      "id": "sec:out",
+      "label": "Out",
+      "members": [
+        "file:src/fx/router.cpp",
+        "file:src/ui/meters.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Eight engines implement one interface.",
+      "id": "twins:engines",
+      "interface": [
+        {
+          "direction": "in",
+          "kind": "call",
+          "name": "voice in",
+          "peer": "file:src/core/voice_alloc.cpp"
+        },
+        {
+          "direction": "out",
+          "name": "audio out",
+          "peer": "file:src/fx/router.cpp",
+          "role": "audio"
+        },
+        {
+          "direction": "out",
+          "name": "param read",
+          "peer": "file:src/core/params.h",
+          "role": "param"
+        },
+        {
+          "direction": "in",
+          "name": "mod in",
+          "peer": "file:src/core/mod_matrix.cpp",
+          "role": "mod"
+        },
+        {
+          "direction": "in",
+          "kind": "reference",
+          "name": "midi in",
+          "peer": "file:src/core/midi_in.cpp"
+        },
+        {
+          "direction": "out",
+          "kind": "data",
+          "name": "meter out",
+          "peer": "file:src/ui/meters.cpp"
+        }
+      ],
+      "label": "Engine interface",
+      "members": [
+        "sec:saw",
+        "sec:choir",
+        "sec:station",
+        "sec:warp",
+        "sec:grain",
+        "sec:modal",
+        "sec:fm",
+        "sec:wave"
+      ],
+      "primitive": "twins",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:87c4dec25d3309c062f2bcc69334a3648b9e164f4e0951888f63a8605d95461b"
+  },
+  "overlay": {
+    "hash": "sha256:5196737ec6cbbea4992c01a96ea8fc7e21e1272c66e37db5e58ac367f4a9c0ad"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

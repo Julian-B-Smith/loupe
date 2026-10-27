@@ -1,0 +1,72 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Engine (stress case).",
+      "id": "sec:engine",
+      "label": "Engine",
+      "members": [
+        "file:src/engine/engine_01.cpp",
+        "file:src/engine/engine_02.cpp",
+        "file:src/engine/engine_03.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Voice (stress case).",
+      "id": "sec:engine-voice",
+      "label": "Voice",
+      "members": [
+        "file:src/engine/voice/voice_01.cpp",
+        "file:src/engine/voice/voice_02.cpp",
+        "file:src/engine/voice/voice_03.cpp"
+      ],
+      "parent": "sec:engine",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Oscillators (stress case).",
+      "id": "sec:engine-voice-osc",
+      "label": "Oscillators",
+      "members": [
+        "file:src/engine/voice/osc/osc_01.cpp",
+        "file:src/engine/voice/osc/osc_02.cpp",
+        "file:src/engine/voice/osc/osc_03.cpp"
+      ],
+      "parent": "sec:engine-voice",
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "App (stress case).",
+      "id": "sec:app",
+      "label": "App",
+      "members": [
+        "file:src/app/main.cpp",
+        "file:src/app/ui.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:a34019d2fc2938870ee6fccafe2a5c8a3966d04ec91caec87f5dc1de45c839b6"
+  },
+  "overlay": {
+    "hash": "sha256:d9452e6151f69b8e37ad62142b6bd1a0dba89a85582b75191144bc5cd61d6387"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

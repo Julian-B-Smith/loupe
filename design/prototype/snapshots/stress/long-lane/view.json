@@ -1,0 +1,159 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Chain (stress case).",
+      "id": "sec:chain",
+      "label": "Chain",
+      "members": [
+        "file:src/chain/stage_01.cpp",
+        "file:src/chain/stage_02.cpp",
+        "file:src/chain/stage_03.cpp",
+        "file:src/chain/stage_04.cpp",
+        "file:src/chain/stage_05.cpp",
+        "file:src/chain/stage_06.cpp",
+        "file:src/chain/stage_07.cpp",
+        "file:src/chain/stage_08.cpp",
+        "file:src/chain/stage_09.cpp",
+        "file:src/chain/stage_10.cpp",
+        "file:src/chain/stage_11.cpp",
+        "file:src/chain/stage_12.cpp",
+        "file:src/chain/util_01.h",
+        "file:src/chain/util_02.h",
+        "file:src/chain/util_03.h",
+        "file:src/chain/util_04.h",
+        "file:src/chain/util_05.h",
+        "file:src/chain/util_06.h",
+        "file:src/chain/util_07.h",
+        "file:src/chain/util_08.h",
+        "file:src/chain/util_09.h",
+        "file:src/chain/util_10.h",
+        "file:src/chain/util_11.h",
+        "file:src/chain/util_12.h",
+        "file:src/chain/util_13.h",
+        "file:src/chain/util_14.h",
+        "file:src/chain/util_15.h",
+        "file:src/chain/util_16.h"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Input (stress case).",
+      "id": "sec:input",
+      "label": "Input",
+      "members": [
+        "file:src/input/input_01.cpp",
+        "file:src/input/input_02.cpp",
+        "file:src/input/input_03.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Analysis (stress case).",
+      "id": "sec:analysis",
+      "label": "Analysis",
+      "members": [
+        "file:src/analysis/analysis_01.cpp",
+        "file:src/analysis/analysis_02.cpp",
+        "file:src/analysis/analysis_03.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Synthesis (stress case).",
+      "id": "sec:synthesis",
+      "label": "Synthesis",
+      "members": [
+        "file:src/synthesis/synthesis_01.cpp",
+        "file:src/synthesis/synthesis_02.cpp",
+        "file:src/synthesis/synthesis_03.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Output (stress case).",
+      "id": "sec:output",
+      "label": "Output",
+      "members": [
+        "file:src/output/output_01.cpp",
+        "file:src/output/output_02.cpp",
+        "file:src/output/output_03.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Audio runs through the twelve stages in order.",
+      "id": "lane:chain",
+      "label": "Signal chain",
+      "primitive": "lane",
+      "source": {
+        "provenance": "static"
+      },
+      "status": "proposed",
+      "steps": [
+        "file:src/chain/stage_01.cpp",
+        "file:src/chain/stage_02.cpp",
+        "file:src/chain/stage_03.cpp",
+        "file:src/chain/stage_04.cpp",
+        "file:src/chain/stage_05.cpp",
+        "file:src/chain/stage_06.cpp",
+        "file:src/chain/stage_07.cpp",
+        "file:src/chain/stage_08.cpp",
+        "file:src/chain/stage_09.cpp",
+        "file:src/chain/stage_10.cpp",
+        "file:src/chain/stage_11.cpp",
+        "file:src/chain/stage_12.cpp"
+      ]
+    },
+    {
+      "by": "agent:structure",
+      "claim": "A frame travels input → analysis → synthesis → output.",
+      "id": "lane:across",
+      "label": "Analysis to output",
+      "primitive": "lane",
+      "source": {
+        "provenance": "static"
+      },
+      "status": "proposed",
+      "steps": [
+        "file:src/input/input_01.cpp",
+        "file:src/input/input_02.cpp",
+        "file:src/input/input_03.cpp",
+        "file:src/analysis/analysis_01.cpp",
+        "file:src/analysis/analysis_02.cpp",
+        "file:src/analysis/analysis_03.cpp",
+        "file:src/synthesis/synthesis_01.cpp",
+        "file:src/synthesis/synthesis_02.cpp",
+        "file:src/synthesis/synthesis_03.cpp",
+        "file:src/output/output_01.cpp",
+        "file:src/output/output_02.cpp",
+        "file:src/output/output_03.cpp"
+      ]
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:d07976911ea8c09982020ffb64a39e3faec1bd821db5f0301148731f07e53743"
+  },
+  "overlay": {
+    "hash": "sha256:fe904315e2736ce66b927d66d4abd0664197fadee2363aa510b39b1b212999e5"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

@@ -1,0 +1,242 @@
+{
+  "conditions": [],
+  "edges": [
+    {
+      "dst": "file:src/engines/choir/choir_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:029ef1d437442ef1",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "dst": "file:src/engines/wave/wave_core.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:06b6561354e29e5f",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/core/mod_matrix.cpp"
+    },
+    {
+      "dst": "file:src/engines/grain/grain_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0bc164a84e4de9f9",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "dst": "file:src/ui/meters.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:19b4fbdd9384d7c5",
+      "kind": "data",
+      "provenance": "inferred",
+      "src": "file:src/engines/station/station_core.cpp"
+    },
+    {
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:262593cbf6f8f625",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:src/engines/warp/warp_core.cpp"
+    },
+    {
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:40b88d6b08c24206",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:src/engines/fm/fm_core.cpp"
+    },
+    {
+      "dst": "file:src/engines/saw/saw_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:57f76d4e4db29156",
+      "kind": "reference",
+      "provenance": "inferred",
+      "src": "file:src/core/midi_in.cpp"
+    },
+    {
+      "dst": "file:src/core/params.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:706590519f89ecf7",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:src/engines/modal/modal_voice.cpp"
+    },
+    {
+      "dst": "file:src/engines/fm/fm_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:ad0b57415b2ba56c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "src": "file:src/core/midi_in.cpp"
+    },
+    {
+      "dst": "file:src/engines/choir/choir_core.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:b72504c050fd8eb8",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/core/mod_matrix.cpp"
+    },
+    {
+      "dst": "file:src/core/params.h",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:be7fcc4405006643",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:src/engines/station/station_voice.cpp"
+    },
+    {
+      "dst": "file:src/engines/warp/warp_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c9c44f5b9a216ca6",
+      "kind": "reference",
+      "provenance": "inferred",
+      "src": "file:src/core/midi_in.cpp"
+    },
+    {
+      "dst": "file:src/ui/meters.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d79f7c20852dd627",
+      "kind": "data",
+      "provenance": "inferred",
+      "src": "file:src/engines/modal/modal_core.cpp"
+    },
+    {
+      "dst": "file:src/engines/wave/wave_voice.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:deb293b1201c407c",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "dst": "file:src/engines/grain/grain_core.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:e474bb9ae8cabec6",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/core/mod_matrix.cpp"
+    },
+    {
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:f6203c7412735417",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:src/engines/saw/saw_core.cpp"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:87c4dec25d3309c062f2bcc69334a3648b9e164f4e0951888f63a8605d95461b"
+  },
+  "roles": [],
+  "schema": "loupe.overlay/0.2"
+}

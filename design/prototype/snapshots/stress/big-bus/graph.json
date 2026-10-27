@@ -1,0 +1,1375 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 52,
+      "excluded": [],
+      "files": 52
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_32.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:0830b5b010ca33a0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_32.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_35.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:09dc214e608b3bf0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_35.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_09.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:1df2aafd768c2571",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_30.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:1e3874ece8a229e1",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_30.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_26.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:210d06434c33b086",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_26.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_48.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:28042ade9fd84d8b",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_48.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_14.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:2ca18513fbfede23",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_14.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/output.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/mix/mixer.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2e0f442673d40cf8",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/mix/mixer.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_41.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:305f9167b424b9fa",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_41.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_43.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:323d2c6b94d341f9",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_43.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_13.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:357aff27c816201c",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_13.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_03.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:368c9be837696734",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_15.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:41759f62fe03836c",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_15.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_28.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:43b2a6b52965424a",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_28.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_45.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:47e7d62f06b14fca",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_45.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_22.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:4f6af96a28e7efe8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_22.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_05.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:5119754a6e8a29fc",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_17.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:614c93a8dae8e3e5",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_17.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_38.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:62ce5688ec295387",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_38.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_21.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:64ee2e8cf54892c2",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_21.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_07.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:6709c3f9aab5b5f8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_12.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:6acaaded8ad66e86",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_12.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_16.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:6be2af47593688fd",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_16.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_37.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:7419198a88f09e07",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_37.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_19.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:75a6f3006c5e4374",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_19.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_02.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:77d339395fe08694",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_39.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:7cebf3dcedf1d37e",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_39.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_11.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:7d4e332dfdef46a5",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_18.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:83e84cce1cf51d78",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_18.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_31.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:8540df25677be99a",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_31.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_29.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:8704c7c5c025abc4",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_29.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_33.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:8ddebdc6930ce9cd",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_33.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_47.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:8f8a782d6484ef32",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_47.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_06.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:995fb788a8a20201",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_46.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:a513d1e3c9432fbd",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_46.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_23.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:a883d3faa1f3d589",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_23.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_24.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:a8fa66454b1375b0",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_24.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_40.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:a96fca51c034261c",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_40.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_42.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:aab4fa3bd09a6ccb",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_42.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_44.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:b7da9a6aabcd2da4",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_44.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_01.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:b9f07fb2ee17e5b7",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_20.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:c9b93bdbfef4d447",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_20.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_27.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:cbc73f9fd6765dd8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_27.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_34.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d10adc415e99aaf4",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_34.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_10.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d13bf5b7bd0c810e",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_49.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d65e21b8b8a520e9",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_49.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_08.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d8f440e000955cbe",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_36.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:e47a0d637dc5b659",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_36.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_04.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:ec856915318ee98e",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_50.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:ee8fe4379efc60aa",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_50.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/voices/voice_25.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:f90e56bc2e826377",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/voices/voice_25.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/mix/mixer.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mix/mixer.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/mix/output.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/mix/output.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_13.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_13.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_14.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_14.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_15.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_15.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_16.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_16.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_17.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_17.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_18.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_18.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_19.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_19.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_20.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_20.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_21.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_21.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_22.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_22.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_23.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_23.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_24.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_24.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_25.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_25.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_26.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_26.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_27.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_27.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_28.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_28.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_29.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_29.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_30.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_30.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_31.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_31.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_32.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_32.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_33.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_33.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_34.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_34.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_35.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_35.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_36.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_36.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_37.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_37.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_38.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_38.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_39.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_39.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_40.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_40.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_41.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_41.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_42.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_42.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_43.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_43.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_44.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_44.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_45.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_45.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_46.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_46.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_47.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_47.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_48.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_48.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_49.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_49.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/voices/voice_50.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/voices/voice_50.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/big-bus"
+  }
+}

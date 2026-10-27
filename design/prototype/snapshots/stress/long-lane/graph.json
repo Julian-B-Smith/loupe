@@ -1,0 +1,933 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 40,
+      "excluded": [],
+      "files": 40
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_05.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0526618acf18b494",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/analysis/analysis_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/analysis/analysis_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0c516926f363476b",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/analysis/analysis_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_08.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:13dfa16016b4f697",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_08.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:17e4a2692bfe1c22",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_01.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2b8a3f3d6256c3da",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_02.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2f100ca257164924",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_11.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:369f449505d8c324",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_12.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:39d461a9df57a4cd",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/synthesis/synthesis_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/synthesis/synthesis_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4191466e1e8b8789",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/synthesis/synthesis_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_05.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4912a734f9d3ac74",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/synthesis/synthesis_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/analysis/analysis_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4db0a6b69eb77817",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/analysis/analysis_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/synthesis/synthesis_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/synthesis/synthesis_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:59f382fae626e853",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/synthesis/synthesis_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/analysis/analysis_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/input/input_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7a70780d4ce1d044",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/input/input_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_07.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7c86dccb40eaf3c7",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:82212fde2b4b514e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/input/input_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/input/input_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:83186512e076330e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/input/input_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_09.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8677f7ac1b168971",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_07.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8bb09b1c1c6e2965",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_16.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9255193a76d1c58d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_10.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9830884688b1edd2",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_04.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9a495bbd7982068d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_04.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9bf1df4813fade6e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_11.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a5ac0d6e766f0274",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/input/input_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/input/input_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a8fbde2b79d2caaa",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/input/input_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/analysis/analysis_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/analysis/analysis_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b66e494e76d2ad3d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/analysis/analysis_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_14.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c8458f97ea55dae1",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_03.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d258030979d5798e",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_09.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d3da13ce42b486f7",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_13.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d49fb572d0a311a7",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/output/output_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/synthesis/synthesis_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d77ef70f47b8d058",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/synthesis/synthesis_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_06.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d8728d918d9468b0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/output/output_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/output/output_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:dee33553a9864609",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/output/output_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:df2e53af2f7897d0",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_10.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e06e0093f010e962",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_15.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e78911fc98cc31ed",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/stage_06.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ea1a9fec3820f97a",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/chain/stage_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/output/output_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/output/output_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:f18516550c255269",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/output/output_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/chain/util_12.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/chain/stage_12.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:fdf6017b2273f14d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/chain/stage_12.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/analysis/analysis_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/analysis/analysis_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/analysis/analysis_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/analysis/analysis_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/analysis/analysis_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/analysis/analysis_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/stage_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/stage_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_01.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_01.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_02.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_02.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_03.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_03.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_04.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_04.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_05.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_05.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_06.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_06.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_07.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_07.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_08.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_08.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_09.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_09.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_10.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_10.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_11.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_11.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_12.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_12.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_13.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_13.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_14.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_14.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_15.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_15.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/chain/util_16.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/chain/util_16.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/input/input_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/input/input_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/input/input_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/input/input_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/input/input_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/input/input_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/output/output_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/output/output_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/output/output_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/output/output_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/output/output_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/output/output_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/synthesis/synthesis_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/synthesis/synthesis_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/synthesis/synthesis_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/synthesis/synthesis_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/synthesis/synthesis_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/synthesis/synthesis_03.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/long-lane"
+  }
+}

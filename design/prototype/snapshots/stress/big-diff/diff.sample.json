@@ -1,0 +1,123 @@
+{
+  "added": [
+    "file:src/ui/ui_01.cpp",
+    "file:src/ui/ui_02.cpp",
+    "file:src/ui/ui_03.cpp",
+    "file:src/ui/ui_09.cpp",
+    "file:src/ui/ui_10.cpp",
+    "file:src/ui/ui_11.cpp",
+    "file:src/ui/ui_17.cpp",
+    "file:src/ui/ui_18.cpp",
+    "file:src/ui/ui_19.cpp",
+    "file:src/dsp/dsp_05.cpp",
+    "file:src/dsp/dsp_06.cpp",
+    "file:src/dsp/dsp_07.cpp",
+    "file:src/dsp/dsp_13.cpp",
+    "file:src/dsp/dsp_14.cpp",
+    "file:src/dsp/dsp_15.cpp",
+    "file:src/io/io_01.cpp",
+    "file:src/io/io_02.cpp",
+    "file:src/io/io_03.cpp",
+    "file:src/io/io_09.cpp",
+    "file:src/io/io_10.cpp",
+    "file:src/io/io_11.cpp",
+    "file:src/io/io_17.cpp",
+    "file:src/io/io_18.cpp",
+    "file:src/io/io_19.cpp",
+    "file:src/state/state_05.cpp",
+    "file:src/state/state_06.cpp",
+    "file:src/state/state_07.cpp",
+    "file:src/state/state_13.cpp",
+    "file:src/state/state_14.cpp",
+    "file:src/state/state_15.cpp"
+  ],
+  "changed": [
+    "file:src/ui/ui_07.cpp",
+    "file:src/dsp/dsp_11.cpp",
+    "file:src/io/io_07.cpp",
+    "file:src/state/state_03.cpp"
+  ],
+  "note": "Stand-in re-run diff for the big-diff stress case.",
+  "removed": [
+    {
+      "home": "sec:ui",
+      "id": "file:src/ui/ui_old_01.cpp",
+      "kind": "file",
+      "path": "src/ui/ui_old_01.cpp"
+    },
+    {
+      "home": "sec:dsp",
+      "id": "file:src/dsp/dsp_old_02.cpp",
+      "kind": "file",
+      "path": "src/dsp/dsp_old_02.cpp"
+    },
+    {
+      "home": "sec:io",
+      "id": "file:src/io/io_old_03.cpp",
+      "kind": "file",
+      "path": "src/io/io_old_03.cpp"
+    },
+    {
+      "home": "sec:state",
+      "id": "file:src/state/state_old_04.cpp",
+      "kind": "file",
+      "path": "src/state/state_old_04.cpp"
+    },
+    {
+      "home": "sec:ui",
+      "id": "file:src/ui/ui_old_05.cpp",
+      "kind": "file",
+      "path": "src/ui/ui_old_05.cpp"
+    },
+    {
+      "home": "sec:dsp",
+      "id": "file:src/dsp/dsp_old_06.cpp",
+      "kind": "file",
+      "path": "src/dsp/dsp_old_06.cpp"
+    },
+    {
+      "home": "sec:io",
+      "id": "file:src/io/io_old_07.cpp",
+      "kind": "file",
+      "path": "src/io/io_old_07.cpp"
+    },
+    {
+      "home": "sec:state",
+      "id": "file:src/state/state_old_08.cpp",
+      "kind": "file",
+      "path": "src/state/state_old_08.cpp"
+    },
+    {
+      "home": "sec:ui",
+      "id": "file:src/ui/ui_old_09.cpp",
+      "kind": "file",
+      "path": "src/ui/ui_old_09.cpp"
+    },
+    {
+      "home": "sec:dsp",
+      "id": "file:src/dsp/dsp_old_10.cpp",
+      "kind": "file",
+      "path": "src/dsp/dsp_old_10.cpp"
+    },
+    {
+      "home": "sec:io",
+      "id": "file:src/io/io_old_11.cpp",
+      "kind": "file",
+      "path": "src/io/io_old_11.cpp"
+    },
+    {
+      "home": "sec:state",
+      "id": "file:src/state/state_old_12.cpp",
+      "kind": "file",
+      "path": "src/state/state_old_12.cpp"
+    }
+  ],
+  "schema": "loupe.diff-sample/0",
+  "stale": [
+    "file:src/ui/ui_06.cpp",
+    "file:src/dsp/dsp_10.cpp",
+    "file:src/io/io_06.cpp",
+    "file:src/state/state_02.cpp",
+    "file:src/state/state_18.cpp"
+  ]
+}

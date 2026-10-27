@@ -1,0 +1,995 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 42,
+      "excluded": [],
+      "files": 42
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:016c017a4d6782be",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2005df743037a9be",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2a26bbfbb4a5a3cf",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:304e6077f5633b6f",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3197fb805b2827e8",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3655d7248468e3a9",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4005a986fb60efc4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:40f337eece24af72",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:417a82e563617233",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:44b0773c5029ac4e",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/registry.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:45e3ff00526f1dff",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/core/registry.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:468101f8783cc731",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:48c335d700bb97c5",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4ae0d7f7b24e3db4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:52d2a37f53c4805a",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:55e504e2448ee4ee",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:57ec56627e216b51",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:5862ab4ca241ece0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:5bc58b51e43ee5ff",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:5cd2791cba4c4aaf",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6a8a141eec514cea",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6eabe2f94767d3a4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:724934875b7b2135",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7bda4f0a25261f2d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:80d80aaef0004e3a",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8255b79f2f29e3ac",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:853a4fe376251dbe",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8b134bf20b8943d4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9a24a0e525e54798",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a947f6461197eb6a",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a977118c2819773f",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:aba1f79c29b923c6",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ae1b29f7eaf8d875",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b24542589165ea6b",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ba11dde2c449e57d",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c1563469cf5efde8",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:cca0ba41e4ffc1bf",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:de0f55b41700ed58",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e0d7466c73e8a8e7",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e6e87d2b70aa541c",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/registry.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:e718be3b4305b1e0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_09.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/core/registry.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/core/registry.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/core/registry.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/core/registry.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_10.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/wide-hub"
+  }
+}
