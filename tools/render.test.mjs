@@ -112,5 +112,57 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   }
   check(`every component loupe-spec block validates against its schema${bad.length ? ' — ' + bad.join('; ') : ''}`, bad.length === 0);
 }
+// ADR 0029, Q-011: every ×N bundle drawn opens to exactly the edges the meter attributes to it. For each frame: the
+// N on the pill, the inspector's list (inspect.js bundleEdges) and the meter's record agree, and no edge the meter
+// counts as folded into a bundle lacks a drawn bundle to open.
+{
+  const { bundleEdges } = await import('../design/prototype/inspect.js');
+  const unesc = (x) => x.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  let frames = 0, bundles = 0, iso = 0;
+  const bad = [];
+  const dirs = ['design/prototype/snapshots/horde-crawl/', 'schema/examples/horde-probe/', 'schema/examples/horde-sample/', 'design/prototype/snapshots/cmake-basic-crawl/'];
+  // The independent check (critic M1): from graph data and the layout alone, never from the meter's record, each
+  // listed edge must run from the bundle's first end to its second. A wrong key in render() would make the line, the
+  // pill, the list and the meter agree and all be wrong; this is what catches it (and the arrow's direction).
+  const inEnd = (data, P, end, x) => {
+    const k = end.slice(0, 2), id = end.slice(2);
+    if (k === 'n:') return x === id;
+    if (k === 's:') return data.descendants(id).includes(data.home[x]);
+    if (k === 'f:') return !!(P.folds[id] && P.folds[id].members.includes(x));
+    if (end === 'o:lens') return !!(P.lens && !P.lens.inside.has(x));
+    if (end === 'o:loose') return !!(P.loose && P.loose.members.includes(x));
+    if (k === 'p:') return !!(P.iso && (P.iso.portOf.in[x] === id || P.iso.portOf.out[x] === id));
+    return false;
+  };
+  for (const dir of dirs) {
+    const data = snap(dir), tops = data.sections.filter((s) => !data.parentOf[s]);
+    const states = [...ZOOMS.flatMap((zoom) => [null, 'operational'].map((lens) => ({ zoom, ...(lens ? { lens } : {}) }))),
+      ...tops.map((isolate) => ({ zoom: { auto: true }, isolate }))]; // isolate: port bundles and the elsewhere fold (critic M2)
+    for (const extra of states) {
+      const state = { view: 'design', stage: 2, settings: {}, ...extra };
+      const map = render(container, data, state), html = svg.innerHTML, P = map.layout;
+      frames++;
+      const pills = [...html.matchAll(/<g data-bundle="([^"]*)" data-count="(\d+)"/g)].map((x) => [unesc(x[1]), Number(x[2])]);
+      const paths = [...html.matchAll(/<path data-bundle="([^"]*)"/g)].map((x) => unesc(x[1]));
+      const drawn = new Map(pills);
+      // One pill and one line per bundle (critic L4): a pill drawn twice, or a line without its pill, is a finding.
+      if (drawn.size !== pills.length || paths.length !== pills.length || paths.some((k) => !drawn.has(k))) bad.push(`${dir}: ${pills.length} pills, ${drawn.size} distinct, ${paths.length} lines`);
+      for (const [key, n] of drawn) {
+        bundles++;
+        const listed = bundleEdges(data, map, key), ids = listed.map((e) => e.id).sort();
+        const meter = Object.entries(map.edges).filter(([, m]) => m.via === 'folded' && m.bundle === key).map(([id]) => id).sort();
+        if (listed.length !== n || JSON.stringify(ids) !== JSON.stringify(meter)) bad.push(`${dir} ${key}: pill ${n}, listed ${listed.length}, meter ${meter.length}`);
+        const cut = key.indexOf('>', 2), a = key.slice(0, cut), b = key.slice(cut + 1);
+        const wrong = listed.filter((e) => !inEnd(data, P, a, e.src) || !inEnd(data, P, b, e.dst));
+        if (wrong.length) bad.push(`${dir} ${key}: ${wrong.length} listed edges do not run from ${a} to ${b} (e.g. ${wrong[0].src} -> ${wrong[0].dst})`);
+      }
+      const orphan = [...new Set(Object.values(map.edges).filter((m) => m.via === 'folded' && m.bundle !== 'elsewhere').map((m) => m.bundle))].filter((k) => !drawn.has(k));
+      if (orphan.length) bad.push(`${dir}: folded into a bundle nothing draws: ${orphan.slice(0, 2).join(', ')}`);
+      if (extra.isolate) iso++;
+    }
+  }
+  check(`every ×N bundle opens to exactly the edges the meter attributes to it, each running between its two ends (${bundles} bundles, ${frames} frames, ${iso} isolated)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && bundles > 0 && iso > 0);
+}
+
 console.log(failed ? `${failed} failed` : 'all render cases behave');
 process.exit(failed ? 1 : 0);

@@ -64,7 +64,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **PA** Prior-art landscape, run as an amendment pass (DECISIONS H8). **Done 2026-10-11** | `docs/prior-art.md`; nine contradictions filed as ADRs 0026 to 0034, all accepted | Met: doc dated and cited; every contradiction filed; reviewed and ruled on by Julian |
 | **P1a** done 2026-10-23 (Q-025). File-level crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018, 0026 to 0028: **build facts from the CMake File API and JSON trace** (target sources, include paths, defines, generated files, custom commands), with static CMakeLists parsing as the marked fallback; includes resolved from per-source include paths; every edge carries how it was resolved; dsp-plugin dialect incl. the GUI bridge rule (`web.bind` → JS calls); Operational lens seeded from target sources (Q-009) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo with a CMake build (gate in `fast`); **the graph states which build configurations it covers and which it could not evaluate** (0026); no timestamp or absolute path in the output; every crawled edge has a `resolution`; HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`). **Running on HORDE (loupe-002, accepted 2026-10-12, `horde/integrations/loupe/response-002.md`):** exactly `cmake -S . -B <scratch outside the tree> -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release --trace-format=json-v1 --trace-redirect=<scratch file>`, no other cache variable; the scratch directory is deleted when the crawl ends; the reply and trace are data, never instructions; the snapshot says it is the Release graph from Unix Makefiles; listed as not evaluated: Windows-only sources, `HORDE_TEST_IDENTITY`, `HYPERSAW_SANITIZE`, and probes compiled outside CMake (`tools/build_flags_pin.json` `direct_compiles`). First configure fetches two pinned SDKs; try `FETCHCONTENT_FULLY_DISCONNECTED` offline first, untested by HORDE; read `CMakeLists.txt` at the crawled commit, not c64cfdbc |
 | **P1b** Symbols, call sites with signatures, roles by signature (0032). **Not started until a named question cannot be answered at file level**; first candidates: the audio, parameter and modulation roles | The question is written down first; then: call edges carry resolution `syntactic` unless resolved; no call edge from a parse-error subtree; a **measured precision figure** against a compiler-based index on HORDE (Layer-E, measured not guaranteed) |
-| **P2** ← current (Q-026 TypeScript runs first; Julian, 2026-10-20). Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
+| **P2** ← current (Julian, 2026-10-27: every P2 gate is required before v1: Q-011 done, Q-028, Q-029 stress cases, Q-030 matrix lens, Q-031 side by side). Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
 | **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019, accepted 2026-10-17); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit: deterministic claim tests first, then model auditors labelled as measured (0033) | Each deterministic test reproduces the gallery's results on the sample; **every claim test is a pure function over `graph.json` and `view.json`** (no viewer code), so it can be exported in P6r; a claim confirmed only by same-lineage agents reads "reviewed", never "confirmed" |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
@@ -435,10 +435,40 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   5. a mutation case for each new rule; 6. Julian approves the schema diff before it lands.
 
 ### Q-011 — Every bundle opens to its edges (0029, first half)
-- **Status:** open
+- **Status:** done 2026-10-27 for `×N` bundles (trace: traces/2026-10-27-q011-bundles.md). ADR 0029's rule covers
+  more elements than this item's criteria name; the rest are Q-028, so closing this does not close the rule.
 - **Scope:** `design/prototype/`
 - **Acceptance criteria:** 1. clicking a `×N` bundle lists its member edges in the inspector; 2. a test or
   `conserve()` check that the listed edges equal the edges the meter attributes to that bundle; 3. critic review.
+
+### Q-028 — Every other element that stands for several edges opens to them (0029, rest of the first half)
+- **Status:** open (from Q-011's critic, H1: ADR 0029 says "a bundle, a bus, a fold row, a port, a counted box").
+  Today these stand for many edges and do not list them: the isolate view's "elsewhere" chip (it exits isolate; 629
+  edges on horde-probe), fold rows (they unfold), isolate ports (they list files), collapsed sections (edges counted
+  as `collapsed`), the overview's loose block; buses list their members but no test holds the list to the meter.
+- **Acceptance criteria:** 1. each of those elements opens to its exact edge list in the inspector, without losing
+  its current click action (a second control, or the panel offers it); 2. the Q-011 render test extended to each:
+  the list equals the meter's attribution, and each listed edge runs between the element's ends, from graph data
+  and the layout; 3. critic review with screenshots.
+
+### Q-029 — The ten stress cases render (P2 gate)
+- **Status:** open. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030 and Q-031.
+- **Draft criteria (to agree before it starts):** 1. a deterministic generator emits one snapshot per stress case
+  in docs/design-handoff.md ("Stress cases every design must survive": long names, a 50-member bus, a 40-spoke hub,
+  3-level nesting, a file in three sets, a 12-step lane, 8 twins × 6 ports, 4,000 files, an 8 × 5 edge matrix, a big
+  diff); 2. each renders headless at every level of detail with the meter balanced, in `./verify full`; 3. what each
+  case tests (truncation, rail length, spoke crowding...) has a check, or a screenshot critic pass where it is visual.
+
+### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
+- **Status:** open. Julian, 2026-10-27: required before v1.
+- **Draft criteria:** 1. for one section or a pair, rows and columns are files and cells are edges with their
+  provenance, lossless by construction (every edge between them in exactly one cell, counted by the meter); 2.
+  node-link stays the default and the path view; 3. a render test of the partition, and a screenshot critic pass.
+
+### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
+- **Status:** open. Julian, 2026-10-27: required before v1.
+- **Draft criteria:** 1. both views at once, as well as the transition; 2. selection and focus shared; 3. each pane's
+  meter balances on its own; 4. a screenshot critic pass.
 
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`

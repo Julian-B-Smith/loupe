@@ -263,7 +263,7 @@ export function render(container, data, state) {
   (data.byPrimitive.bus || []).forEach(b => data.elements[b].edges.forEach(e => { busOf[e] = b; }));
   const pill = (x, y, text, o = {}) => {
     const w = text.length * (o.cw || cw * 0.92) + 14, ax = o.anchor === 'middle' ? x - w / 2 : o.anchor === 'end' ? x - w : x;
-    return `<g ${o.attr || ''}>${o.title ? `<title>${esc(o.title)}</title>` : ''}<rect x="${f1(ax)}" y="${f1(y - 8.5)}" width="${f1(w)}" height="17" rx="8.5" style="fill:${o.fill || v('surface-panel')};stroke:${o.stroke || v('rule')};stroke-width:1px;stroke-dasharray:${o.dash || 'none'}"/><text x="${f1(ax + w / 2)}" y="${f1(y + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${o.ink || v('ink-muted')}">${esc(text)}</text></g>`;
+    return `<g ${o.attr || ''}>${o.title ? `<title>${esc(o.title)}</title>` : ''}<rect x="${f1(ax)}" y="${f1(y - 8.5)}" width="${f1(w)}" height="17" rx="8.5" style="fill:${o.fill || v('surface-panel')};stroke:${o.stroke || v('rule')};stroke-width:${o.sw || '1px'};stroke-dasharray:${o.dash || 'none'}"/><text x="${f1(ax + w / 2)}" y="${f1(y + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${o.ink || v('ink-muted')}">${esc(text)}</text></g>`;
   };
   const badge = (x, y, kind) => {
     const c = { pass: 'state-ok', warn: 'state-warn', fail: 'state-bad' }[kind], g = { pass: '✓', warn: '!', fail: '✕' }[kind];
@@ -479,8 +479,10 @@ export function render(container, data, state) {
     const dim = rel && !anyFocus;
     const d = edgePath(b.ra, b.rb), m = bezMid(d);
     const c = slot ? v('edge-' + slot) : v('ink-muted');
-    eg.push(`<path data-bundle="${esc(key)}" d="${d}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" marker-end="url(#${uid}-${slot}-arrow-filled)"><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
-    lg.push(`<g style="opacity:${dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + b.edges.length, { anchor: 'middle', stroke: c, ink: v('ink'), title: b.edges.length + ' edges folded into one line' + (provs.size > 1 ? ' · mixed provenance: ' + [...provs].join(', ') : '') })}</g>`);
+    // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
+    const sel = !!(state.selection && state.selection.type === 'bundle' && state.selection.id === key);
+    eg.push(`<path data-bundle="${esc(key)}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" marker-end="url(#${uid}-${slot}-arrow-filled)"><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
+    lg.push(`<g data-bundle="${esc(key)}" data-count="${b.edges.length}" style="cursor:pointer;opacity:${dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + b.edges.length, { anchor: 'middle', stroke: sel ? v('accent') : c, sw: sel ? v('stroke-hub') : '1px', ink: v('ink'), title: b.edges.length + ' edges folded into one line' + (provs.size > 1 ? ' · mixed provenance: ' + [...provs].join(', ') : '') + '. Click to list them.' })}</g>`);
   });
   const edgeTitle = e => `${(nodeInfo(e.src) || {}).label} → ${(nodeInfo(e.dst) || {}).label} · ${e.kind}${e.role ? ' / ' + e.role : ''} · ${e.provenance}${e.condition ? ' · ' + e.condition.condition : ''}`;
   const edgeFocus = e => {
