@@ -131,7 +131,7 @@ const DATA = {
       what: 'Targets, files, missing nodes and packages told apart at every zoom; a missing node\'s reason as a chip at detail zoom; no two drawn labels of one kind read the same at detail zoom.' },
     { id: 'renderer', name: 'Renderer gates (P2)', status: 'planned', v1: true, rows: ['P2', 'Q-011'], adrs: ['0029', '0030'], deps: [['viewer', 'P2'], ['nodekinds', 'inferred']],
       what: 'Every bundle opens to exactly its edges, a matrix lens for dense sections, Flow and Design side by side, the ten stress cases render with the meter balanced.',
-      decisions: ['Which P2 gates must pass before v1, and which can follow'] },
+      decisions: [] }, // Julian, 2026-10-27: all of them before v1 (Q-028 to Q-031)
     { id: 'structure', name: 'Structure agent (P3)', status: 'planned', v1: true, rows: ['P3'], adrs: ['0006', '0019'], deps: [['emit', 'P3'], ['renderer', 'inferred'], ['oplens', 'P3']],
       what: 'The agent that turns a crawl into a readable design view: sections, buses, lanes, proposed lenses, each with a claim an auditor can test. Without it a crawl of HORDE is one dense block.' },
     { id: 'dialogue', name: 'Dialogue (P3)', status: 'planned', v1: true, rows: ['P3'], adrs: ['0002'], deps: [['structure', 'P3']],
