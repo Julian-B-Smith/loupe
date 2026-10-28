@@ -152,6 +152,8 @@ function edgePath(a, b) {
   const dx = Math.max(24, Math.abs(x2 - x1) * 0.45) * (fwd ? 1 : -1);
   return `M${f1(x1)} ${f1(am.y)}C${f1(x1 + dx)} ${f1(am.y)} ${f1(x2 - dx)} ${f1(bm.y)} ${f1(x2)} ${f1(bm.y)}`;
 }
+// A point at t along a cubic path "M x0 y0 C x1 y1 x2 y2 x3 y3" (Q-034 prototype: pills slide along their line).
+const bezAt = (d, t) => { const n = d.match(/-?[\d.]+/g).map(Number), c = 1 - t; return { x: c * c * c * n[0] + 3 * c * c * t * n[2] + 3 * c * t * t * n[4] + t * t * t * n[6], y: c * c * c * n[1] + 3 * c * c * t * n[3] + 3 * c * t * t * n[5] + t * t * t * n[7] }; };
 const bezMid = d => { const n = d.match(/-?[\d.]+/g).map(Number); const t = 0.5, c = 1 - t; return { x: c * c * c * n[0] + 3 * c * c * t * n[2] + 3 * c * t * t * n[4] + t * t * t * n[6], y: c * c * c * n[1] + 3 * c * c * t * n[3] + 3 * c * t * t * n[5] + t * t * t * n[7] }; };
 
 export function markerDefs(uid) {
@@ -202,6 +204,9 @@ export function render(container, data, state) {
     z = { k: lerp(zf.k, zd.k, em), x: lerp(zf.x, zd.x, em), y: lerp(zf.y, zd.y, em) };
   } else z = { k: zs.k, x: zs.x, y: zs.y };
   const lod = lodFor(z.k);
+  // Q-034 PROTOTYPE (not a decision): overview legibility versions shown to Julian side by side. 'today' is the
+  // current renderer; the others change only pill placement, overview labels and spoke arrival. Removed once chosen.
+  const VAR = state.variant || 'today', proto = VAR !== 'today';
   const ovw = designish && lod === 'overview', detail = lod === 'detail';
   // At overview a node is stood in for by its top section, or, when isolated, by its nearest ancestor that is laid out.
   const drawnTop = id => { let s = data.home[id], best = null; while (s) { if (D.sections[s]) best = s; s = data.parentOf[s]; } return best; };
@@ -362,7 +367,13 @@ export function render(container, data, state) {
         // Zoomed out a box can be narrower than any text: draw only what fits inside it (stress case whole-repo: a
         // fallback "M…" ran past 40 narrow boxes into their neighbours); the tooltip always has the full label and count.
         const room = r.w - 14, short = room >= countText.length * ccw ? countText : room >= (files + ' files').length * ccw ? files + ' files' : room >= String(files).length * ccw ? String(files) : '';
-        const ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
+        let ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
+        // Prototype: a tall narrow box that cannot hold its label across carries it down its length instead.
+        if (proto && ol !== el.label && r.h > r.w * 1.5 && el.label.length * gcw <= r.h - 24 && r.w >= 13) {
+          lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text transform="rotate(90 ${f1(r.x + r.w / 2 - 4)} ${f1(r.y + 8)})" x="${f1(r.x + r.w / 2 - 4)}" y="${f1(r.y + 8)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(el.label)}</text></g>`);
+          const a1 = auditOf(el); if (a1) lg.push(badge(r.x + r.w, r.y, a1));
+          return;
+        }
         lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text x="${f1(r.x + 7)}" y="${f1(r.y + 14)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(ol)}</text><text x="${f1(r.x + 7)}" y="${f1(r.y + 26)}" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${esc(short)}</text></g>`);
         const a0 = auditOf(el); if (a0) lg.push(badge(r.x + r.w, r.y, a0));
         return;
@@ -492,6 +503,7 @@ export function render(container, data, state) {
     if (key) { (bundles[key] = bundles[key] || { ra, rb, edges: [] }).edges.push(e); }
     else singles.push({ e, ra, rb, ends: [a.key, b.key] });
   });
+  const placedPills = [], inT = {}, outT = {};
   Object.entries(bundles).forEach(([key, b]) => {
     const cut = key.indexOf('>', 2), ends = [key.slice(0, cut), key.slice(cut + 1)];
     if (b.edges.length === 1) { singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb, ends }); return; }
@@ -500,12 +512,38 @@ export function render(container, data, state) {
     const slot = slots.size === 1 ? [...slots][0] : 0, prov = provs.size === 1 ? [...provs][0] : 'static';
     const anyFocus = rel && b.edges.some(e => rel.has(e.src) && rel.has(e.dst));
     const dim = rel && !anyFocus;
-    const d = edgePath(b.ra, b.rb), m = bezMid(d);
+    const d = edgePath(b.ra, b.rb);
+    let m = bezMid(d), leader = null;
     const c = slot ? v('edge-' + slot) : v('ink-muted');
+    const totals = VAR === 'totals' && ovw;
+    if (proto && !totals) {
+      // Slide: the first spot along the line, from the middle outwards, clear of every pill placed so far.
+      const pw = ('×' + b.edges.length).length * cw * 0.92 + 14, box = p => ({ x: p.x - pw / 2 - 2, y: p.y - 10.5, w: pw + 4, h: 21 });
+      const free = p => !placedPills.some(q => { const a = box(p); return a.x < q.x + q.w && q.x < a.x + a.w && a.y < q.y + q.h && q.y < a.y + a.h; });
+      const along = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82].map(t => bezAt(d, t));
+      let at = along.find(free);
+      if (!at && VAR === 'callout') {
+        // Callout: spiral out from the middle; a thin leader ties the pill back to its line.
+        for (let i = 1; i <= 60 && !at; i++) { const a = i * 0.9, rr = 10 + i * 3.2, p = { x: m.x + rr * Math.cos(a), y: m.y + rr * Math.sin(a) }; if (free(p)) at = p; }
+        if (at) leader = { x1: m.x, y1: m.y, x2: at.x, y2: at.y };
+      }
+      m = at || m;
+      placedPills.push(box(m));
+    }
+    if (totals) { const [ka, kb] = ends; (outT[ka] = outT[ka] || 0); outT[ka] += b.edges.length; (inT[kb] = inT[kb] || 0); inT[kb] += b.edges.length; }
     // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
     const sel = !!(state.selection && state.selection.type === 'bundle' && state.selection.id === key);
     eg.push(`<path data-bundle="${esc(key)}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" marker-end="url(#${uid}-${slot}-arrow-filled)"><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
+    if (totals) { eg.push(`<path data-bundle="${esc(key)}" d="${d}" style="cursor:pointer;stroke:${c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;fill:none;opacity:${dim ? 0.2 : 0.55}"><title>${b.edges.length} edges folded. Click to list them.</title></path>`); return; }
+    if (leader) lg.push(`<line x1="${f1(leader.x1)}" y1="${f1(leader.y1)}" x2="${f1(leader.x2)}" y2="${f1(leader.y2)}" style="stroke:${c};stroke-width:1px;stroke-dasharray:2 2"/>`);
     lg.push(`<g data-bundle="${esc(key)}" data-count="${b.edges.length}" style="cursor:pointer;opacity:${dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + b.edges.length, { anchor: 'middle', stroke: sel ? v('accent') : c, sw: sel ? v('stroke-hub') : '1px', ink: v('ink'), title: b.edges.length + ' edges folded into one line' + (provs.size > 1 ? ' · mixed provenance: ' + [...provs].join(', ') : '') + '. Click to list them.' })}</g>`);
+  });
+  // Totals (prototype): each box zoomed out says how many folded edges leave and enter it.
+  if (VAR === 'totals' && ovw) new Set([...Object.keys(inT), ...Object.keys(outT)]).forEach(k => {
+    const sec = k.startsWith('s:') ? k.slice(2) : null, r = sec && D.sections[sec] ? S(D.sections[sec]) : k === 'o:loose' && D.loose ? S(D.loose) : null;
+    if (!r) return;
+    const t = `↑${outT[k] || 0} ↓${inT[k] || 0}`;
+    lg.push(pill(r.x + r.w / 2, r.y + r.h + 11, t, { anchor: 'middle', stroke: v('rule'), ink: v('ink'), cw: cw * 0.8, title: `${outT[k] || 0} folded edges leave this box, ${inT[k] || 0} enter it. Right-click the box to list them.` }));
   });
   const edgeTitle = e => `${(nodeInfo(e.src) || {}).label} → ${(nodeInfo(e.dst) || {}).label} · ${e.kind}${e.role ? ' / ' + e.role : ''} · ${e.provenance}${e.condition ? ' · ' + e.condition.condition : ''}`;
   const edgeFocus = e => {
@@ -513,13 +551,29 @@ export function render(container, data, state) {
     const nodeF = focus.type === 'node' ? (e.src === focus.id || e.dst === focus.id) : focus.type === 'edge' ? e.id === focus.id : rel.has(e.src) && rel.has(e.dst);
     return { emph: nodeF, dim: !nodeF };
   };
+  // Collector (prototype): eight or more single edges into one element end on a short bar beside it, spread by where
+  // they come from, and one arrow runs from the bar into the element (stress case wide-hub: 40 arrowheads on one point).
+  // Every edge is still its own drawn line.
+  const arrive = {}, collectors = [];
+  if (proto) {
+    const byEnd = {}; singles.forEach(sg => { (byEnd[sg.ends[1]] = byEnd[sg.ends[1]] || []).push(sg); });
+    Object.values(byEnd).filter(g => g.length >= 8).forEach(g => {
+      g.sort((p, q) => mid(p.ra).y - mid(q.ra).y || mid(p.ra).x - mid(q.ra).x);
+      const b = g[0].rb, fromLeft = g.filter(sg => mid(sg.ra).x < b.x).length >= g.length / 2, bx = fromLeft ? b.x - 16 : b.x + b.w + 16;
+      const span = Math.max(b.h, Math.min(g.length * 5, 220)), y0 = mid(b).y - span / 2;
+      g.forEach((sg, i) => { arrive[sg.e.id] = { x: bx, y: y0 + span * (i + 0.5) / g.length, w: 0, h: 0 }; });
+      collectors.push({ x: bx, y1: y0, y2: y0 + span, to: fromLeft ? b.x : b.x + b.w, y: mid(b).y, e: g[0].e });
+    });
+  }
   singles.forEach(({ e, ra, rb, ends }) => {
+    if (arrive[e.id]) rb = arrive[e.id];
     const { emph, dim } = edgeFocus(e), off = dimK.has(e.role || e.kind);
     // No bus fade here: a single always draws. (A fade to 0 once counted an edge as drawn that was invisible; review v4 B2.)
     const op = dim || off ? 0.22 : 1;
     map.edges[e.id] = { via: 'drawn', ends };
-    eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}" marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"><title>${esc(edgeTitle(e))}</title></path>`);
+    eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}" ${arrive[e.id] ? 'data-collected="1" x-' : ''}marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"><title>${esc(edgeTitle(e))}</title></path>`);
   });
+  collectors.forEach(cl => { const c = v('edge-' + slotOf(cl.e)); eg.push(`<line x1="${f1(cl.x)}" x2="${f1(cl.x)}" y1="${f1(cl.y1)}" y2="${f1(cl.y2)}" style="stroke:${c};stroke-width:${v('stroke-rail')};stroke-linecap:round"/><path d="M${f1(cl.x)} ${f1(cl.y)}H${f1(cl.to)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slotOf(cl.e)}-${glyphOf(cl.e)})"/>`); });
   // rails
   if (decor > 0 && !ovw) {
     eg.push(`<g style="opacity:${decor}">`);

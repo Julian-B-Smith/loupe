@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loupe · Q-034 versions</title>
+<link rel="stylesheet" href="../tokens.css">
+<!-- Q-034 PROTOTYPE: the overview-legibility versions side by side on one snapshot, at fit zoom (or &k=&x=&y=), each with the meter
+     and a count of overlapping pills measured on the frame. ?snapshot=<dir>&view=<variant,...>. Removed once chosen. -->
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--loupe-surface-page);color:var(--loupe-ink);font:var(--loupe-type-panel-body);display:flex;flex-direction:column}
+header{padding:10px 16px;border-bottom:1px solid var(--loupe-rule);font:var(--loupe-type-caption);color:var(--loupe-ink-muted)}
+header b{color:var(--loupe-ink)}
+main{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:var(--loupe-rule);min-height:0}
+section{background:var(--loupe-surface-canvas);display:flex;flex-direction:column;min-height:0}
+h2{margin:0;padding:8px 12px;font:var(--loupe-type-group-label);display:flex;gap:12px;align-items:baseline;border-bottom:1px solid var(--loupe-rule)}
+h2 span{font:var(--loupe-type-caption);color:var(--loupe-ink-muted)}
+.map{flex:1;min-height:0;position:relative}
+</style>
+</head>
+<body>
+<header id="head"></header>
+<main id="grid"></main>
+<script type="module">
+import { loadSnapshot } from './snapshot.js';
+import { render } from './render.js';
+import { conserve } from './standins.js';
+
+const params = new URLSearchParams(location.search);
+const SNAP = params.get('snapshot') || 'snapshots/stress/wide-hub/';
+const VARIANTS = (params.get('view') || 'today,slide,callout,totals').split(',');
+const K = params.get('k'), ZOOM = K ? { k: +K, x: +(params.get('x') || 0), y: +(params.get('y') || 0) } : { auto: true };
+const ABOUT = {
+  today: 'The current renderer.',
+  slide: 'Pills slide along their line to a free spot; tall narrow boxes label down their length; 8+ arrivals meet a collector bar.',
+  callout: 'As slide, and a pill with no free spot on its line moves near it, tied by a leader.',
+  totals: 'Zoomed out: no pills; line weight says the count; each box says ↑out ↓in. Clicking a line still lists its edges.',
+};
+const data = await loadSnapshot(SNAP);
+document.getElementById('head').innerHTML = `<b>Q-034 versions</b> · ${SNAP} · ${K ? 'zoom ' + K : 'fit zoom'} · overlapping pills and the meter are measured on each frame`;
+const grid = document.getElementById('grid');
+const pills = (svg) => [...svg.querySelectorAll('g[data-bundle] > g > rect, g[data-bundle] > rect')].map((r) => r.getBBox());
+for (const variant of VARIANTS) {
+  const sec = document.createElement('section');
+  sec.innerHTML = `<h2>${variant}<span>${ABOUT[variant] || ''}</span></h2><div class="map"></div><h2><span class="m"></span></h2>`;
+  grid.appendChild(sec);
+  const box = sec.querySelector('.map'), state = { view: 'design', stage: 2, settings: {}, zoom: ZOOM, variant };
+  const map = render(box, data, state), c = conserve(data, state, map), ps = pills(box.querySelector('svg'));
+  let clash = 0; ps.forEach((a, i) => ps.slice(i + 1).forEach((b) => { if (a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height) clash++; }));
+  sec.querySelector('.m').textContent = `${map.lod} · meter ${c.status} (${c.accounted} of ${c.edges.total} edges) · ${ps.length} pills, ${clash} overlapping pairs`;
+}
+</script>
+</body>
+</html>
