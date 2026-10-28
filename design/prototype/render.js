@@ -536,14 +536,18 @@ export function render(container, data, state) {
   };
   // Box totals: a tab on the box's bottom border, ↑ folded edges leaving, ↓ entering (and, lines off, those inside).
   // Placed before the pills so the pills avoid them.
+  let fileBoxCache = null;
+  const fileBoxes = () => fileBoxCache || (fileBoxCache = Object.keys(D.nodes).map(id => nodeRect(id)).filter(Boolean));
   const totalsTab = k => {
     const r = boxRect(k); if (!r) return;
-    const t = `↑${outT[k] || 0} ↓${inT[k] || 0}${inBox[k] ? ' · ' + inBox[k] + ' inside' : ''}`, tw = t.length * cw * 0.8 + 14;
+    // Sized with the count font's own character width (cw × 0.92, as pill() uses): narrower, and the text ran past the tab.
+    const t = `↑${outT[k] || 0} ↓${inT[k] || 0}${inBox[k] ? ' · ' + inBox[k] + ' inside' : ''}`, tw = t.length * cw * 0.92 + 14;
     const title = `${outT[k] || 0} edges leave this box and ${inT[k] || 0} enter it${inBox[k] ? `; ${inBox[k]} run inside it` : ''}${linesOff ? ' (lines are off)' : ', folded into the lines'}. Right-click the box to list them.`;
-    const hit = (x, y, w, h) => placedPills.some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h);
-    if (tw > r.w - 4 && r.h > tw + 30 && r.w >= 15) {
-      // A box narrower than its tab carries it down the inside of its lower end, as it carries its label (whole-repo
-      // zoomed out: tabs 80 px wide on 30 px boxes ran onto their neighbours).
+    // Zoomed in a tab also keeps off every drawn file (a box's bottom padding is ~6 px at structure zoom: big-bus).
+    const hit = (x, y, w, h) => placedPills.some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h) || (!ovw && fileBoxes().some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h));
+    if (ovw && tw > r.w - 4 && r.h > tw + 30 && r.w >= 15) {
+      // Zoomed out, a box narrower than its tab carries it down the inside of its lower end, as it carries its label
+      // (whole-repo: tabs 80 px wide on 30 px boxes ran onto their neighbours). Zoomed in, the box holds files, so no.
       const x = r.x + r.w - 19, y = r.y + r.h - tw - 4;
       placedPills.push({ x, y, w: 17, h: tw });
       lg.push(`<g data-totals="${esc(k)}"><title>${esc(title)}</title><rect x="${f1(x)}" y="${f1(y)}" width="17" height="${f1(tw)}" rx="8.5" style="fill:${v('surface-panel')};stroke:${v('rule')};stroke-width:1px"/><text transform="rotate(90 ${f1(x + 5)} ${f1(y + 7)})" x="${f1(x + 5)}" y="${f1(y + 7)}" style="font:${v('type-count')};fill:${v('ink')}">${esc(t)}</text></g>`);
@@ -551,10 +555,16 @@ export function render(container, data, state) {
     }
     // Along the bottom border from the middle out, then the top border: a nested box's bottom sits just above its
     // parent's, so their tabs would otherwise stack (stress case deep-nesting, lines off).
-    const xs = [0, -0.3, 0.3, -0.45, 0.45], spots = [...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y + r.h]), ...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y])];
-    const [tx, ty] = spots.find(([x, y]) => !hit(x - tw / 2 - 2, y - 10.5, tw + 4, 21)) || spots[0];
+    // Then its side borders and just inside its lower edge (twins sit 18 px apart: big-family, lines off, structure).
+    const xs = [0, -0.3, 0.3, -0.45, 0.45], spots = [...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y + r.h]), ...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y]),
+      [r.x + r.w, r.y + r.h / 2], [r.x, r.y + r.h / 2], [r.x + r.w / 2, r.y + r.h - 13], [r.x + r.w / 2, r.y + r.h / 2]];
+    let at = spots.find(([x, y]) => !hit(x - tw / 2 - 2, y - 10.5, tw + 4, 21)), lead = null;
+    // Last resort, as for pills: spiral out from the bottom border's middle, tied back to it by a leader.
+    for (let i = 1; i <= 160 && !at; i++) { const a = i * 0.9, rr = 12 + i * 2.4, p = [r.x + r.w / 2 + rr * Math.cos(a), r.y + r.h + rr * Math.sin(a)]; if (!hit(p[0] - tw / 2 - 2, p[1] - 10.5, tw + 4, 21)) { at = p; lead = p; } }
+    const [tx, ty] = at || spots[0];
+    if (lead) lg.push(`<line data-tab-leader="${esc(k)}" x1="${f1(r.x + r.w / 2)}" y1="${f1(r.y + r.h)}" x2="${f1(tx)}" y2="${f1(ty)}" style="stroke:${v('rule')};stroke-width:1px;stroke-dasharray:2 2"/>`);
     placedPills.push({ x: tx - tw / 2 - 2, y: ty - 10.5, w: tw + 4, h: 21 });
-    lg.push(`<g data-totals="${esc(k)}">${pill(tx, ty, t, { anchor: 'middle', stroke: v('rule'), ink: v('ink'), cw: cw * 0.8, title })}</g>`);
+    lg.push(`<g data-totals="${esc(k)}">${pill(tx, ty, t, { anchor: 'middle', stroke: v('rule'), ink: v('ink'), title })}</g>`);
   };
   // A one-edge bundle is drawn as that edge.
   Object.entries(bundles).forEach(([key, b]) => { if (b.edges.length === 1) { const cut = key.indexOf('>', 2); singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb, ends: [key.slice(0, cut), key.slice(cut + 1)] }); delete bundles[key]; } });

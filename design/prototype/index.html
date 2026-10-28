@@ -366,7 +366,7 @@ function meter(c) {
   const sub = c.status === 'stale' ? 'view made for an older graph' : lz
     ? (lz.name === 'story' ? `Story · on cards ${lz.insideFiles} files, ${lz.insideEdges} edges · not in story ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`
       : `${lz.label} lens · in focus ${lz.insideFiles} nodes, ${lz.insideEdges} edges · outside ${lz.outsideFiles} nodes, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`)
-    : map && map.linesOff ? `lines hidden · every edge counted in its boxes' ↑↓ tabs (${c.edges.folded} folded, ${c.edges.collapsed} collapsed) · ${c.nodes.placed}/${c.nodes.total} nodes`
+    : map && map.linesOff ? `lines off · all counted in box tabs · ${c.nodes.placed}/${c.nodes.total} nodes`
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
   $('meter').dataset.status = c.status;

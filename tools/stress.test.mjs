@@ -285,6 +285,15 @@ const ALL = Object.keys(CASES), ZOOM5 = [{ auto: true }, { k: 1, x: 0, y: 0 }, {
   }
   check('no two count pills or box totals overlap, in any case, at any level of detail, lines on or off', bad.length === 0, bad.slice(0, 4).join('; '));
 }
+{ // At fit zoom every box's tab touches its own box: a leader is the last resort, not the layout (a plant that drew
+  // whole-repo's narrow tabs across passed the overlap check by spiralling all 40 out on leaders).
+  const bad = [];
+  for (const n of ALL) for (const linesOff of [false, true]) {
+    const f = frame(n, { zoom: { auto: true }, linesOff }), led = [...f.html.matchAll(/data-tab-leader="([^"]*)"/g)].map((m) => m[1]);
+    if (led.length) bad.push(`${n} ${f.map.lod}${linesOff ? ' lines off' : ''}: ${led.length} tabs on leaders (${led.slice(0, 2).join(', ')})`);
+  }
+  check('at fit zoom every box total sits on its own box, lines on or off', bad.length === 0, bad.slice(0, 4).join('; '));
+}
 { // At most one arrowhead on any one point (wide-hub: 40 spokes once ended on one point of registry.h).
   const bad = [];
   for (const n of ALL) for (const zoom of ZOOM5) {
@@ -315,6 +324,15 @@ const ALL = Object.keys(CASES), ZOOM5 = [{ auto: true }, { k: 1, x: 0, y: 0 }, {
       const out = es.filter((x) => x.ends.length === 2 && x.ends[0] === k).length, inn = es.filter((x) => x.ends.length === 2 && x.ends[1] === k).length, ins = es.filter((x) => x.ends.length === 1 && x.ends[0] === k).length;
       if (out !== +m[2] || inn !== +m[3] || ins !== +(m[4] || 0)) bad.push(`${n} ${k}: tab says ↑${m[2]} ↓${m[3]} ${m[4] || 0} inside, meter ${out}/${inn}/${ins}`);
     }
+    // Each tab's text fits its tab, across or down (the screenshot pass: "↑328 ↓2 · 48 inside" ran past a vertical tab).
+    for (const m of html.matchAll(/<g data-totals="[^"]*">(?:<title>[^<]*<\/title>)?(?:<g ><title>[^<]*<\/title>)?<rect x="[\d.-]+" y="[\d.-]+" width="([\d.]+)" height="([\d.]+)"[^>]*\/><text[^>]*>([^<]*)<\/text>/g)) {
+      const room = Math.max(+m[1], +m[2]), need = m[3].length * CW * 0.92 + 8;
+      if (need > room + 0.5) bad.push(`${n} ${map.lod}: tab "${m[3]}" needs ${need.toFixed(0)} px, has ${room}`);
+    }
+    // No tab sits on a file's box (the screenshot pass: a vertical tab ran over the file names of a box at structure).
+    const nodeRects = Object.values(map.layout.nodes).map((r) => ({ x: r.x * map.zoom.k + map.zoom.x, y: r.y * map.zoom.k + map.zoom.y, w: r.w * map.zoom.k, h: r.h * map.zoom.k }));
+    const onFiles = pillAll(html.replace(/<g data-bundle=/g, '<g data-x=')).filter((t) => nodeRects.some((r) => overlap(t, r)));
+    if (map.lod !== 'overview' && onFiles.length) bad.push(`${n} ${map.lod}: ${onFiles.length} tabs sit on a file's box`);
     const tabbed = new Set([...html.matchAll(/<g data-totals="([^"]*)"/g)].map((m) => m[1].replace(/&quot;/g, '"')));
     const untabbed = Object.values(map.edges).filter((x) => x.bundle === 'lines-off' && x.ends.some((k) => !tabbed.has(k)));
     if (untabbed.length) bad.push(`${n} ${map.lod}: ${untabbed.length} edges counted in no visible tab`);
