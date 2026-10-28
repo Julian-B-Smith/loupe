@@ -143,15 +143,22 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
       const map = render(container, data, state), html = svg.innerHTML, P = map.layout;
       frames++;
       const pills = [...html.matchAll(/<g data-bundle="([^"]*)" data-count="(\d+)"/g)].map((x) => [unesc(x[1]), Number(x[2])]);
-      const paths = [...html.matchAll(/<path data-bundle="([^"]*)"/g)].map((x) => unesc(x[1]));
-      const drawn = new Map(pills);
-      // One pill and one line per bundle (critic L4): a pill drawn twice, or a line without its pill, is a finding.
-      if (drawn.size !== pills.length || paths.length !== pills.length || paths.some((k) => !drawn.has(k))) bad.push(`${dir}: ${pills.length} pills, ${drawn.size} distinct, ${paths.length} lines`);
+      const paths = [...html.matchAll(/<path data-bundle="([^"]*)" data-count="(\d+)"/g)].map((x) => [unesc(x[1]), Number(x[2])]);
+      const drawn = new Map(paths), pilled = new Map(pills);
+      // One line per bundle, carrying its count; at most one pill per bundle, with the same count (critic L4). Zoomed in
+      // every line has its pill; zoomed out only each box's heaviest outgoing line does (Q-034, Julian: "heavy").
+      if (drawn.size !== paths.length || pilled.size !== pills.length || pills.some(([k, n]) => drawn.get(k) !== n)) bad.push(`${dir}: ${paths.length} lines (${drawn.size} distinct), ${pills.length} pills (${pilled.size} distinct), a pill off its line's count`);
+      if (map.lod !== 'overview' && paths.some(([k]) => !pilled.has(k))) bad.push(`${dir} (${map.lod}): a line without its pill`);
+      if (map.lod === 'overview') {
+        const heavy = new Map(); for (const [k, n] of paths) { const a = k.slice(0, k.indexOf('>', 2)), h = heavy.get(a); if (!h || h[1] < n || (h[1] === n && k < h[0])) heavy.set(a, [k, n]); }
+        const want = [...heavy.values()].map(([k]) => k).sort(), got = [...pilled.keys()].sort();
+        if (JSON.stringify(want) !== JSON.stringify(got)) bad.push(`${dir} (overview): pills on ${got.length} lines, want each box's heaviest (${want.length})`);
+      }
       for (const [key, n] of drawn) {
         bundles++;
         const listed = bundleEdges(data, map, key), ids = listed.map((e) => e.id).sort();
         const meter = Object.entries(map.edges).filter(([, m]) => m.via === 'folded' && m.bundle === key).map(([id]) => id).sort();
-        if (listed.length !== n || JSON.stringify(ids) !== JSON.stringify(meter)) bad.push(`${dir} ${key}: pill ${n}, listed ${listed.length}, meter ${meter.length}`);
+        if (listed.length !== n || JSON.stringify(ids) !== JSON.stringify(meter)) bad.push(`${dir} ${key}: line ${n}, listed ${listed.length}, meter ${meter.length}`);
         const cut = key.indexOf('>', 2), a = key.slice(0, cut), b = key.slice(cut + 1);
         const wrong = listed.filter((e) => !inEnd(data, P, a, e.src) || !inEnd(data, P, b, e.dst));
         if (wrong.length) bad.push(`${dir} ${key}: ${wrong.length} listed edges do not run from ${a} to ${b} (e.g. ${wrong[0].src} -> ${wrong[0].dst})`);

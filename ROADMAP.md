@@ -497,9 +497,22 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   wide-hub 3 pairs at k 0.2. A count under another count cannot be read. And all 40 top-level boxes of whole-repo read
   "M…" at fit zoom (critic): labelled, but indistinguishable. Also seen: the 40 spokes into wide-hub's hub end on one
   point (arrowheads stack).
-- **Next:** Julian (poll, 2026-10-27): "see a few versions" before criteria. Prototype several treatments on
-  whole-repo and wide-hub, side by side, for Julian to choose; then criteria (expected: no two pills overlap on any
-  snapshot at any level of detail; top-level labels distinct at fit zoom).
+- **Julian (poll, 2026-10-28), on four prototypes (today, slide, callout, totals; `design/prototype/versions.html`):**
+  keep vertical labels for tall narrow boxes and the collector bar for 8+ arrivals; totals is the best so far; try a
+  couple more, creative options before choosing.
+- **Julian (poll, 2026-10-28), round two (heavy, arcs, ports added):** **heavy**. Overlapping pill pairs on whole-repo
+  at overview: today 2,569 · slide 2,157 · arcs 1,543 · heavy 4 · totals 0 · ports 0.
+- **Acceptance criteria** (from the choice): 1. zoomed out, a bundle line carries no pill except each box's heaviest
+  outgoing bundle; line weight grows with the count; each box shows ↑out ↓in of its folded edges; every line, pill and
+  total still opens to its exact edges (ADR 0029); 2. zoomed in, pills slide along their line to a free spot; 3. a
+  tall narrow box that cannot hold its label across writes it down its length; 4. eight or more single edges into one
+  element end on a collector bar with one arrow in, each edge still drawn; 5. checks in the stress test, planted to
+  fail: no two pills overlap on any committed snapshot or whole-repo at any level of detail; whole-repo's top-level
+  labels are distinct at fit zoom; no more than one arrowhead lands on any one point; the meter balances; 7. a
+  "lines off" toggle (Julian, poll, 2026-10-28; the one rule holds): lines, pills and rails disappear, every box shows
+  ↑out ↓in (and edges inside it) at every zoom, so each edge is folded into a visible count; the meter says "lines
+  hidden"; any box lists its edges on right-click; the meter balances with it on; 8. the
+  prototype switch and `design/prototype/versions.html` removed; a critic pass with screenshots.
 
 ### Q-035 — The re-run diff at overview (blocks Q-029)
 - **Status:** open, filed 2026-10-27. Evidence: big-diff at k 0.25 shows no mark and no summary; a section's tooltip

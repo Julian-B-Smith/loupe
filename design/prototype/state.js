@@ -30,6 +30,7 @@ export function initialState(over = {}) {
     diff: null,                // null | { side: 'before'|'after' }
     tour: { index: 0, step: 0 },
     theme: 'light',
+    linesOff: false,           // Q-034: lines hidden, every edge counted in its boxes' ↑out ↓in tabs
     ...over
   };
 }
@@ -70,7 +71,8 @@ export function createStore(init) {
     moveSection: (id, dx, dy) => store.set(s => ({ offsets: { ...s.offsets, [id]: { dx, dy } } })),
     resetLayout: () => store.set(s => ({ offsets: {}, zoom: { ...s.zoom, auto: true } })),
     setTour: t => store.set(s => ({ tour: { ...s.tour, ...t } })),
-    setTheme: theme => store.set({ theme })
+    setTheme: theme => store.set({ theme }),
+    setLinesOff: linesOff => store.set({ linesOff })
   };
   return store;
 }

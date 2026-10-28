@@ -258,16 +258,68 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   const staleShown = marksOf(before.html, D0.stale).filter((ms) => ms.length).length, removedPlain = marksOf(before.html, D0.removed.map((r) => r.id)).filter((ms) => ms.length).length;
   check('big-diff (before): added files are ghosts marked "not in the previous run", stale and removed carry no mark', ghosts === D0.added.length && staleShown === 0 && removedPlain === 0, `ghosts ${ghosts}, stale ${staleShown}, removed ${removedPlain}`);
 }
-{ // Whole repo: level of detail at all three levels (balance is section 2); zoomed out, every top box's label fits it.
-  const { html, S, D, map } = frame('whole-repo', { zoom: { auto: true } }), d = data['whole-repo'], bad = [];
+{ // Whole repo: level of detail at all three levels (balance is section 2); zoomed out, every top box is labelled
+  // inside its bounds, across or (Q-034: a tall narrow box) down its length, and no two labels read the same.
+  const { html, S, D, map } = frame('whole-repo', { zoom: { auto: true } }), d = data['whole-repo'], bad = [], seen = new Map();
   for (const sec of d.sections.filter((s) => !d.parentOf[s])) {
-    const r = S(D.sections[sec]), hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g></g>')[0];
-    const texts = [...hg.matchAll(/<text x="([\d.]+)" y="([\d.]+)" style="font:var\(--loupe-type-group-label(-compact)?\)[^>]*>([^<]*)<\/text>/g)];
-    const [, x, y, , t] = texts[0] || [];
+    const r = S(D.sections[sec]), hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0];
+    const m = /<text (?:transform="rotate\(90 [\d.-]+ [\d.-]+\)" )?x="([\d.-]+)" y="([\d.-]+)" style="font:var\(--loupe-type-group-label(?:-compact)?\)[^>]*>([^<]*)<\/text>/.exec(hg);
+    const [, x, y, t] = m || [], down = /rotate\(90/.test(hg);
     if (!t) { bad.push(`${sec}: no label (box ${r.w.toFixed(0)} px wide)`); continue; }
-    if (+x + t.length * 6.9 > r.x + r.w || +y > r.y + r.h) bad.push(`${sec}: "${t}" overflows its box`);
+    const len = t.length * 6.9;
+    if (down ? +y + len > r.y + r.h || +x < r.x || +x > r.x + r.w : +x + len > r.x + r.w || +y > r.y + r.h) bad.push(`${sec}: "${t}" overflows its box`);
+    if (seen.has(t)) bad.push(`${sec} and ${seen.get(t)} both read "${t}"`); seen.set(t, sec);
   }
-  check(`whole-repo (${map.lod}, auto zoom): every one of the 40 top-level boxes is labelled inside its bounds`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
+  check(`whole-repo (${map.lod}, fit zoom): each of the 40 top-level boxes is labelled inside its bounds, no two alike`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
+}
+
+// ---- 4. Q-034, overview legibility at scale (Julian, 2026-10-28: "heavy", vertical labels, the collector bar, lines off).
+// Pills, box-total tabs: their rects as drawn, from the svg.
+const pillAll = (html) => [...html.matchAll(/<g data-(?:bundle|totals)="[^"]*"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
+const ALL = Object.keys(CASES), ZOOM5 = [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }, { k: 0.4, x: 0, y: 0 }, { k: 0.2, x: 0, y: 0 }];
+{
+  const bad = [];
+  for (const n of ALL) for (const zoom of ZOOM5) for (const linesOff of [false, true]) {
+    const f = frame(n, { zoom, linesOff }), ps = pillAll(f.html), clash = pairs(ps, overlap);
+    if (clash.length) bad.push(`${n} ${f.map.lod}${linesOff ? ' lines off' : ''}: ${clash.length} of ${ps.length} pills overlap`);
+  }
+  check('no two count pills or box totals overlap, in any case, at any level of detail, lines on or off', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // At most one arrowhead on any one point (wide-hub: 40 spokes once ended on one point of registry.h).
+  const bad = [];
+  for (const n of ALL) for (const zoom of ZOOM5) {
+    const f = frame(n, { zoom }), ends = new Map();
+    for (const m of f.html.matchAll(/<path (?:data-edge|data-bundle)="[^"]*"[^>]* d="([^"]*)"[^>]*marker-end=/g)) { const xs = m[1].match(/-?[\d.]+/g); const k = xs.slice(-2).join(','); ends.set(k, (ends.get(k) || 0) + 1); }
+    for (const m of f.html.matchAll(/<path data-edge="[^"]*" d="([^"]*)"[^>]*marker-end=/g)) void m;
+    const worst = Math.max(0, ...ends.values());
+    if (worst > 1) bad.push(`${n} ${f.map.lod}: ${worst} arrowheads on one point`);
+  }
+  check('no two arrowheads land on one point, in any case, at any level of detail', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // Lines off: nothing drawn as a line, every edge folded into the totals of the boxes at its ends, the meter balanced.
+  const bad = [];
+  // Also on views the stress cases lack: every file loose (the crawler's snapshot) and the lens box (critic of the plants:
+  // a tab dropped for the loose block or the lens box passed every stress case).
+  const j = (p) => JSON.parse(readFileSync(p, 'utf8')), other = (dir) => indexSnapshot({ graph: j(dir + 'graph.json'), overlay: j(dir + 'overlay.json'), view: j(dir + 'view.json'), stages: null, diff: null, hashes: {} });
+  const runs = [...ALL.map((n) => [n, data[n], {}]), ['cmake-basic-crawl (all loose)', other('design/prototype/snapshots/cmake-basic-crawl/'), {}],
+    ['horde-sample (lens)', other('schema/examples/horde-sample/'), { lens: 'operational' }], ['horde-crawl (lens)', other('design/prototype/snapshots/horde-crawl/'), { lens: 'operational' }]];
+  for (const [n, dn, extraState] of runs) for (const zoom of [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.2, x: 0, y: 0 }]) {
+    const state = { view: 'design', stage: 2, settings: {}, zoom, linesOff: true, ...extraState }, map = render(container, dn, state), html = svg.innerHTML;
+    const c = conserve(dn, state, map);
+    if (c.status !== 'balanced') bad.push(`${n}: meter ${c.status} ${c.unaccounted.slice(0, 2).join(', ')}`);
+    if (/<path data-(?:edge|bundle)=/.test(html) || /data-bus-count=/.test(html)) bad.push(`${n} ${map.lod}: a line or rail is still drawn`);
+    if (!map.linesOff) bad.push(`${n}: the frame does not say lines are off`);
+    // Each tab's numbers equal the edges the meter folded with that box at an end.
+    for (const m of html.matchAll(/<g data-totals="([^"]*)">[^]*?<text[^>]*>↑(\d+) ↓(\d+)(?: · (\d+) inside)?<\/text>/g)) {
+      const k = m[1].replace(/&quot;/g, '"'), es = Object.values(map.edges).filter((x) => x.bundle === 'lines-off');
+      const out = es.filter((x) => x.ends.length === 2 && x.ends[0] === k).length, inn = es.filter((x) => x.ends.length === 2 && x.ends[1] === k).length, ins = es.filter((x) => x.ends.length === 1 && x.ends[0] === k).length;
+      if (out !== +m[2] || inn !== +m[3] || ins !== +(m[4] || 0)) bad.push(`${n} ${k}: tab says ↑${m[2]} ↓${m[3]} ${m[4] || 0} inside, meter ${out}/${inn}/${ins}`);
+    }
+    const tabbed = new Set([...html.matchAll(/<g data-totals="([^"]*)"/g)].map((m) => m[1].replace(/&quot;/g, '"')));
+    const untabbed = Object.values(map.edges).filter((x) => x.bundle === 'lines-off' && x.ends.some((k) => !tabbed.has(k)));
+    if (untabbed.length) bad.push(`${n} ${map.lod}: ${untabbed.length} edges counted in no visible tab`);
+  }
+  check('lines off: no line or rail drawn, every edge counted in a visible box tab that matches the meter, the meter balanced', bad.length === 0, bad.slice(0, 4).join('; '));
 }
 
 if (process.env.STRESS_PROBE) {
