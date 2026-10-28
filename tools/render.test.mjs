@@ -184,6 +184,8 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
     // Q-034: a box's tab ('t:<box>') holds edges with that box at an end; a collector ('c:<end>') edges arriving at it.
     if (key.startsWith('t:')) return touches(data, P, state, key.slice(2), e);
     if (key.startsWith('c:')) { const k2 = key.slice(2); return touchAt(data, P, k2, e.dst); }
+    // Q-033: a merged bus tap holds that bus's edges from one section with one provenance.
+    if (key.startsWith('m:')) { const [bus, sec, prov] = key.slice(2).split('|'); return data.elements[bus].edges.includes(e.id) && (data.home[e.src] || '-') === sec && e.provenance === prov; }
     return touchAt(data, P, key, e.src) || touchAt(data, P, key, e.dst);
   };
   const touchAt = (data, P, key, x) => {

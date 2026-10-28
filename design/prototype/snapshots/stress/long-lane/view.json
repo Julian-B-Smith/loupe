@@ -22,6 +22,10 @@
         "file:src/chain/stage_10.cpp",
         "file:src/chain/stage_11.cpp",
         "file:src/chain/stage_12.cpp",
+        "file:src/chain/stage_13.cpp",
+        "file:src/chain/stage_14.cpp",
+        "file:src/chain/stage_15.cpp",
+        "file:src/chain/stage_16.cpp",
         "file:src/chain/util_01.h",
         "file:src/chain/util_02.h",
         "file:src/chain/util_03.h",
@@ -50,7 +54,8 @@
       "members": [
         "file:src/input/input_01.cpp",
         "file:src/input/input_02.cpp",
-        "file:src/input/input_03.cpp"
+        "file:src/input/input_03.cpp",
+        "file:src/input/input_04.cpp"
       ],
       "primitive": "section",
       "status": "proposed"
@@ -63,7 +68,8 @@
       "members": [
         "file:src/analysis/analysis_01.cpp",
         "file:src/analysis/analysis_02.cpp",
-        "file:src/analysis/analysis_03.cpp"
+        "file:src/analysis/analysis_03.cpp",
+        "file:src/analysis/analysis_04.cpp"
       ],
       "primitive": "section",
       "status": "proposed"
@@ -76,7 +82,8 @@
       "members": [
         "file:src/synthesis/synthesis_01.cpp",
         "file:src/synthesis/synthesis_02.cpp",
-        "file:src/synthesis/synthesis_03.cpp"
+        "file:src/synthesis/synthesis_03.cpp",
+        "file:src/synthesis/synthesis_04.cpp"
       ],
       "primitive": "section",
       "status": "proposed"
@@ -89,14 +96,15 @@
       "members": [
         "file:src/output/output_01.cpp",
         "file:src/output/output_02.cpp",
-        "file:src/output/output_03.cpp"
+        "file:src/output/output_03.cpp",
+        "file:src/output/output_04.cpp"
       ],
       "primitive": "section",
       "status": "proposed"
     },
     {
       "by": "agent:structure",
-      "claim": "Audio runs through the twelve stages in order.",
+      "claim": "Audio runs through the sixteen stages in order.",
       "id": "lane:chain",
       "label": "Signal chain",
       "primitive": "lane",
@@ -116,7 +124,11 @@
         "file:src/chain/stage_09.cpp",
         "file:src/chain/stage_10.cpp",
         "file:src/chain/stage_11.cpp",
-        "file:src/chain/stage_12.cpp"
+        "file:src/chain/stage_12.cpp",
+        "file:src/chain/stage_13.cpp",
+        "file:src/chain/stage_14.cpp",
+        "file:src/chain/stage_15.cpp",
+        "file:src/chain/stage_16.cpp"
       ]
     },
     {
@@ -133,24 +145,28 @@
         "file:src/input/input_01.cpp",
         "file:src/input/input_02.cpp",
         "file:src/input/input_03.cpp",
+        "file:src/input/input_04.cpp",
         "file:src/analysis/analysis_01.cpp",
         "file:src/analysis/analysis_02.cpp",
         "file:src/analysis/analysis_03.cpp",
+        "file:src/analysis/analysis_04.cpp",
         "file:src/synthesis/synthesis_01.cpp",
         "file:src/synthesis/synthesis_02.cpp",
         "file:src/synthesis/synthesis_03.cpp",
+        "file:src/synthesis/synthesis_04.cpp",
         "file:src/output/output_01.cpp",
         "file:src/output/output_02.cpp",
-        "file:src/output/output_03.cpp"
+        "file:src/output/output_03.cpp",
+        "file:src/output/output_04.cpp"
       ]
     }
   ],
   "exemptions": [],
   "graph": {
-    "hash": "sha256:d07976911ea8c09982020ffb64a39e3faec1bd821db5f0301148731f07e53743"
+    "hash": "sha256:ee6fdaef65132a6bf8ac65fbecc7441618a1a271030b36cc8c925c502421a4bd"
   },
   "overlay": {
-    "hash": "sha256:fe904315e2736ce66b927d66d4abd0664197fadee2363aa510b39b1b212999e5"
+    "hash": "sha256:d38bca58b268d2f71a633bacaf5cf191e2d0b92d428e282f210359345285cab1"
   },
   "schema": "loupe.view/0.2",
   "settings": {

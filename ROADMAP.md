@@ -483,7 +483,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   refuses it (members must share a parent section), so the omission cannot be silent.
 
 ### Q-033 — Overflow rules of bus, twins and lane (specified, not built; blocks Q-029)
-- **Status:** open, filed 2026-10-27 from the Q-029 critic.
+- Filed 2026-10-27 from the Q-029 critic.
 - **Scope:** `design/prototype/render.js`, `layout.js`, `tools/stress.test.mjs`, the big-bus, big-family and long-lane
   stress cases.
 - **Acceptance criteria:** as `design/system/components/*/README.md` specify them: 1. bus: past 20 taps on one side,
@@ -491,6 +491,13 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   "n/m" chip with the matrix on hover; 3. lane: past 12 steps the middle folds into a "+N steps" marker (long-lane
   grows past 12). Each a geometry check in the stress test, planted to fail; conservation still balances (a merged tap
   or folded step is accounted, never hidden); a critic pass with screenshots.
+- **Julian (poll, 2026-10-28):** an inline lane past 12 steps keeps its first 5 and last 5; the middle files fold into one
+  "+N steps" row, like a fold row (their edges fold into it, it opens to them, a click unfolds it). This overrides the
+  rule that lane steps never fold. A routed lane (across sections) never folds: its files stay drawn in their own
+  sections. The twins chip reads "k/m", k the static matches (✓), coloured by the twin's worst mark; hovering it draws
+  the whole twins × ports grid with that twin's row marked. Lead: big-bus spreads its 50 voices over five sections so
+  the merge shows; a merged tap opens to its edges (ADR 0029).
+- **Status:** in progress (branch p2/q033-overflow), 2026-10-28.
 
 ### Q-034 — Overview legibility at scale: count pills and section labels (blocks Q-029)
 - **Status:** built 2026-10-28 (branch p2/q034-overview; trace: traces/2026-10-28-q034-overview.md), awaiting merge.

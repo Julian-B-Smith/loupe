@@ -1,8 +1,39 @@
 {
   "conditions": [],
-  "edges": [],
+  "edges": [
+    {
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:0540413601a490e9",
+      "kind": "call",
+      "provenance": "runtime",
+      "role": "audio",
+      "src": "file:src/voices/e/voice_e09.cpp"
+    },
+    {
+      "dst": "file:src/mix/mixer.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:d6ba80e08d750549",
+      "kind": "call",
+      "provenance": "runtime",
+      "role": "audio",
+      "src": "file:src/voices/e/voice_e10.cpp"
+    }
+  ],
   "graph": {
-    "hash": "sha256:017bcd31cf54e1885466f87d87bb3df1ae6b321041d97d4506eb4ee3cc618195"
+    "hash": "sha256:cb898db591fde2906db03eb6a9fcda411b76e043e579f10ac51a65956d9406d4"
   },
   "roles": [],
   "schema": "loupe.overlay/0.2"

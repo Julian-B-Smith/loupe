@@ -4,7 +4,7 @@ A bus claims a shared contract: every member edge satisfies one signature.
 
 **Audit test.** Every member edge matches the contract signature and ends at the contract target.
 
-Vertical rails sit in the column gutter before their targets; parallel rails in one gutter offset by 9px. A horizontal rail runs in the gap above its target’s band level. Each tap keeps its own provenance pattern; the rail never does. Hover shows the contract signature in a second pill. Past 20 taps on one side, taps from the same section merge into one with a count.
+Vertical rails sit in the column gutter before their targets; parallel rails in one gutter offset by 9px. A horizontal rail runs in the gap above its target’s band level. Each tap keeps its own provenance pattern; the rail never does. Hover shows the contract signature in a second pill. Past 20 taps on one side, taps from the same section merge into one with a count: a comb along the files, one tap to the rail, split by provenance so each keeps its pattern; it opens to its edges.
 
 ```loupe-spec
 {
@@ -145,6 +145,6 @@ Vertical rails sit in the column gutter before their targets; parallel rails in 
   "labelPlacement": "above"
  },
  "overflow": "fold-end",
- "notes": "Vertical rails sit in the column gutter before their targets; parallel rails in one gutter offset by 9px. A horizontal rail runs in the gap above its target’s band level. Each tap keeps its own provenance pattern; the rail never does. Hover shows the contract signature in a second pill. Past 20 taps on one side, taps from the same section merge into one with a count."
+ "notes": "Vertical rails sit in the column gutter before their targets; parallel rails in one gutter offset by 9px. A horizontal rail runs in the gap above its target’s band level. Each tap keeps its own provenance pattern; the rail never does. Hover shows the contract signature in a second pill. Past 20 taps on one side, taps from the same section merge into one with a count: a comb along the files, one tap to the rail, split by provenance so each keeps its pattern; it opens to its edges."
 }
 ```

@@ -4,7 +4,7 @@ Twins claim parallel implementations: every member exposes the same interface.
 
 **Audit test.** Every twin has a matching edge for each port of the shared interface.
 
-Columns: n for up to 3 twins, then ceil(√n), so 8 twins sit 3 wide. Rows share a height. Each twin header carries one conformity square per port: ✓ static match (state-ok), ~ overlay-only match (state-warn), ✕ none (state-bad). Past 4 ports the strip collapses to one “5/6” chip with the matrix on hover.
+Columns: n for up to 3 twins, then ceil(√n), so 8 twins sit 3 wide. Rows share a height. Each twin header carries one conformity square per port: ✓ static match (state-ok), ~ overlay-only match (state-warn), ✕ none (state-bad). Past 4 ports the strip collapses to one “5/6” chip (the ✓ ports, coloured by the twin’s worst mark) with the twins × ports matrix on hover.
 
 ```loupe-spec
 {
@@ -148,6 +148,6 @@ Columns: n for up to 3 twins, then ceil(√n), so 8 twins sit 3 wide. Rows share
   "labelPlacement": "inside-start"
  },
  "overflow": "wrap",
- "notes": "Columns: n for up to 3 twins, then ceil(√n), so 8 twins sit 3 wide. Rows share a height. Each twin header carries one conformity square per port: ✓ static match (state-ok), ~ overlay-only match (state-warn), ✕ none (state-bad). Past 4 ports the strip collapses to one “5/6” chip with the matrix on hover."
+ "notes": "Columns: n for up to 3 twins, then ceil(√n), so 8 twins sit 3 wide. Rows share a height. Each twin header carries one conformity square per port: ✓ static match (state-ok), ~ overlay-only match (state-warn), ✕ none (state-bad). Past 4 ports the strip collapses to one “5/6” chip (the ✓ ports, coloured by the twin’s worst mark) with the twins × ports matrix on hover."
 }
 ```

@@ -80,6 +80,7 @@ const frame = (n, extraState = {}) => {
   const S = (r) => ({ x: r.x * z.k + z.x, y: r.y * z.k + z.y, w: r.w * z.k, h: r.h * z.k });
   return { map, html: svg.innerHTML, S, D: map.layout };
 };
+const D0 = (map) => map.layout, Sz = (map, r) => ({ x: r.x * map.zoom.k + map.zoom.x, y: r.y * map.zoom.k + map.zoom.y, w: r.w * map.zoom.k, h: r.h * map.zoom.k });
 const attrs = (s) => Object.fromEntries([...s.matchAll(/([\w:-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
 // One node's group: from its data-node attribute to the next node group (node groups are siblings, never nested).
 const nodeGroup = (html, id) => (html.split(`<g data-node="${id}"`)[1] || '').split('<g data-node="')[0];
@@ -113,12 +114,17 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     check(`long-names (${map.lod}): a section header cut to fit carries its full label in a tooltip`, sbad.length === 0, sbad.join('; '));
   }
 }
-{ // Big bus: rail length, tap spacing, count label.
-  // Every bus edge is a tap: a tap stands for one edge, or for data-taps of them once Q-033 merges taps past 20 (the
-  // bus spec); either way the taps add up to the 50 edges, so the check never asserts the opposite of the spec.
+{ // Big bus: rail length, tap spacing, count label, and (Q-033, the bus spec) the merge: past 20 taps on one side of the
+  // rail, taps from the same section merge into one with a count, split by provenance (each tap keeps its pattern).
+  // The expected taps are computed here from the data, not read back from render(): 50 voices on one side, five banks,
+  // bank E with two runtime edges: 10, 10, 10, 10, 8 static and 2 runtime.
+  const d = data['big-bus'], busEdges = d.elements['bus:audio'].edges.map((id) => d.edgeById[id]);
+  const want = {}; busEdges.forEach((e) => { const k = `${d.home[e.src]}|${e.provenance}`; want[k] = (want[k] || 0) + 1; });
+  const wantCounts = Object.values(want).sort((a, b) => a - b).join();
   for (const zoom of [{ k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }]) {
     const { map, html } = frame('big-bus', { zoom });
-    const rail = (html.split('<g data-el="bus:audio"')[1] || '').split('</g>')[0];
+    // The rail's group runs to the end of the edge layer (merged taps nest groups, so no closing tag bounds it).
+    const rail = (html.split('<g data-el="bus:audio"')[1] || '').split('data-layer="nodes"')[0];
     const line = attrs((/<line ([^>]*)\/>/.exec(rail) || [])[1] || ''), taps = [...rail.matchAll(/<circle cx="([\d.-]+)" cy="([\d.-]+)" r="3"(?: data-taps="(\d+)")?/g)].map((m) => [+m[1], +m[2], +(m[3] || 1)]);
     const vert = line.x1 === line.x2, along = taps.map((t) => (vert ? t[1] : t[0])).sort((a, b) => a - b);
     const lo = Math.min(+(vert ? line.y1 : line.x1), +(vert ? line.y2 : line.x2)), hi = Math.max(+(vert ? line.y1 : line.x1), +(vert ? line.y2 : line.x2));
@@ -128,6 +134,27 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     check(`big-bus (${map.lod}): the taps on the rail stand for all 50 edges, none overlapping (min gap ${minGap.toFixed(1)} px ≥ 6), the rail spans them all, the count label says 50`,
       tapped === 50 && new Set(along).size === taps.length && (taps.length < 2 || minGap >= 6) && along[0] >= lo && last <= hi && !!label && label[1] === '50' && label[2] === 'Audio bus · 50',
       `taps ${taps.length} for ${tapped} edges, rail ${lo}..${hi}, taps ${along[0]}..${last}, label ${label && label[2]}`);
+    const got = taps.map((t) => t[2]).sort((a, b) => a - b).join();
+    check(`big-bus (${map.lod}): past 20 taps on one side, one tap per section and provenance (${got}), as the data groups them (${wantCounts})`, got === wantCounts);
+    // Each merged tap: opens to exactly its edges (ADR 0029), says its count, and is drawn in its provenance's dash.
+    const bad = [];
+    for (const m of rail.matchAll(/<g data-holds="(m:[^"]*)" data-count="(\d+)"[^>]*>(?:<title>[^<]*<\/title>)<path d="[^"]*" style="([^"]*)"\/><path d="[^"]*" style="([^"]*)"\/><circle [^>]*data-taps="(\d+)"[^>]*\/>.*?<text[^>]*>(\d+)<\/text>/g)) {
+      const key = unesc(m[1]), [, sec, prov] = key.slice(2).split('|'), held = heldEdges(d, map, key);
+      const exact = busEdges.filter((e) => d.home[e.src] === sec && e.provenance === prov);
+      if (held.length !== exact.length || held.some((e) => !exact.includes(e))) bad.push(`${key}: opens to ${held.length}, the data has ${exact.length}`);
+      if (+m[2] !== exact.length || +m[5] !== exact.length || +m[6] !== exact.length) bad.push(`${key}: count ${m[2]}/${m[5]}/${m[6]} ≠ ${exact.length}`);
+      for (const st of [m[3], m[4]]) if (!st.includes(`stroke-dasharray:${SPEC.dash[prov]}`)) bad.push(`${key}: not drawn in the ${prov} dash`);
+    }
+    // A merged tap runs between file rows: its line to the rail crosses no drawn file (screenshot, 2026-10-28: banks
+    // side by side put every tap through the next bank's files).
+    const files = Object.keys(D0(map).nodes).map((id) => Sz(map, D0(map).nodes[id]));
+    for (const m of rail.matchAll(/<g data-holds="(m:[^"]*)"[^>]*>(?:<title>[^<]*<\/title>)<path d="[^"]*" style="[^"]*"\/><path d="M([\d.-]+) ([\d.-]+)H([\d.-]+)"/g)) {
+      const [x0, y, x1] = [+m[2], +m[3], +m[4]], hit = files.find((r) => y > r.y && y < r.y + r.h && Math.max(x0, x1) > r.x && Math.min(x0, x1) < r.x + r.w);
+      if (hit) bad.push(`${unesc(m[1])}: its tap at y ${y} runs through a file`);
+    }
+    const merged = (rail.match(/data-holds="m:/g) || []).length, c = conserve(d, {}, map);
+    check(`big-bus (${map.lod}): each of the ${merged} merged taps opens to exactly its edges, its count and pill say so, keeps its provenance's dash and runs between file rows; all 50 stay in the bus on the meter`,
+      merged === Object.keys(want).length && bad.length === 0 && c.edges.bus === 50 && c.status === 'balanced', bad.slice(0, 3).join('; ') || `merged ${merged}, bus ${c.edges.bus}, meter ${c.status}`);
   }
   // At fit zoom (overview: 50 rows make the Voices box tall) the rail is not drawn; its 50 edges must still read as 50.
   const fit = frame('big-bus', { zoom: { auto: true } });
@@ -197,38 +224,70 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   check('triple-overlap: morph sits inside its section, a Presets mark and the Realtime hull, and carries a ∩3 chip',
     inside(r, S(D.sections['sec:dsp'])) && marks.some((x) => inside(r, x)) && hb && inside(r, hb) && chip, `presets marks ${marks.length}, hull ${!!hb}, chip ${chip}`);
 }
-{ // Long lane: folding, twelve numbered steps in order.
-  const { html, S, D, map } = frame('long-lane'), d = data['long-lane'];
-  const chain = d.elements['lane:chain'].steps, across = d.elements['lane:across'].steps;
-  const folded = chain.filter((s) => map.nodes[s].state !== 'drawn');
-  const nums = [...html.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"[^>]*\/><text[^>]*>(\d+)<\/text>/g)].map((x) => ({ x: +x[1], y: +x[2], r: +x[3], n: +x[4] }));
-  const spine = nums.filter((c) => c.x < S(D.lanes['lane:chain']).x + 30);
-  const ys = spine.map((c) => c.y), okOrder = spine.map((c) => c.n).join() === chain.map((_, i) => i + 1).join() && ys.every((y, i) => !i || y - ys[i - 1] >= 2 * spine[i].r);
-  check(`long-lane: the chain section folds (${D.folds['sec:chain'] ? D.folds['sec:chain'].members.length : 0} files) and no step folds with it`, !!D.folds['sec:chain'] && folded.length === 0, folded.join(', '));
-  check('long-lane: the inline lane numbers its 12 steps 1 to 12 down the spine, no two circles overlapping', spine.length === 12 && okOrder, `spine ${spine.map((c) => c.n).join(',')}`);
-  const routed = across.map((s, i) => { const r = S(D.nodes[s]); return nums.some((c) => c.n === i + 1 && Math.abs(c.x - (r.x + 10)) < 0.2 && Math.abs(c.y - (r.y + r.h / 2)) < 0.2); });
-  check('long-lane: the routed lane marks each of its 12 steps with its number, on its own node', routed.every(Boolean), `${routed.filter(Boolean).length} of 12`);
+{ // Long lane: folding. The section folds its 16 util files; past 12 steps the inline lane folds its middle into one
+  // "+N steps" row, keeping its first and last 5 (lane spec, Q-033; Julian, poll 2026-10-28); the routed lane never folds.
+  const d = data['long-lane'], chain = d.elements['lane:chain'].steps, across = d.elements['lane:across'].steps;
+  const discs = (html) => [...html.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"[^>]*\/><text[^>]*>(\d+)<\/text>/g)].map((x) => ({ x: +x[1], y: +x[2], r: +x[3], n: +x[4] }));
+  const { html, S, D, map } = frame('long-lane'), lx = S(D.lanes['lane:chain']).x;
+  const spine = discs(html).filter((c) => c.x < lx + 30), ys = spine.map((c) => c.y);
+  const keep = [...chain.slice(0, 5), ...chain.slice(-5)], mid = chain.slice(5, -5), want = keep.map((s) => chain.indexOf(s) + 1);
+  const lf = D.folds['lane:chain'], row = /<g data-unfold="lane:chain" data-holds="f:lane:chain" data-count="(\d+)" data-lane-fold="(\d+)"[^>]*>(?:<title>[^<]*<\/title>)<rect ([^>]*)\/><text[^>]*>([^<]*)</.exec(html);
+  const rr = row && attrs(row[3]), ry = rr && +rr.y + +rr.height / 2;
+  const between = !!rr && ry > spine[4].y && ry < spine[5].y;
+  check(`long-lane: the chain section still folds its util files (${D.folds['sec:chain'] ? D.folds['sec:chain'].members.length : 0}), and no step with them`, !!D.folds['sec:chain'] && D.folds['sec:chain'].members.every((m) => !chain.includes(m)));
+  check(`long-lane: the 16-step inline lane keeps steps ${want.join(',')} drawn and numbered in order down the spine, no two discs overlapping`,
+    spine.map((c) => c.n).join() === want.join() && ys.every((y, i) => !i || y - ys[i - 1] >= 2 * spine[i].r) && keep.every((s) => map.nodes[s].state === 'drawn'), `spine ${spine.map((c) => c.n).join(',')}`);
+  const held = heldEdges(d, map, 'f:lane:chain'), touching = d.edges.filter((e) => mid.includes(e.src) || mid.includes(e.dst));
+  check(`long-lane: its middle 6 steps fold into one "+6 steps" row between steps 5 and 12, proxied by it, which opens to exactly the ${touching.length} edges touching them; the meter balances`,
+    !!lf && lf.members.join() === mid.join() && !!row && row[2] === '6' && /^\+6 steps/.test(row[4]) && between && mid.every((s) => map.nodes[s].proxy === 'fold:lane:chain')
+      && +row[1] === touching.length && held.length === touching.length && conserve(d, {}, map).status === 'balanced', row ? `row "${row[4]}" at ${ry}` : 'no "+N steps" row');
+  const open = frame('long-lane', { unfolded: ['lane:chain'] }), ospine = discs(open.html).filter((c) => c.x < open.S(open.D.lanes['lane:chain']).x + 30);
+  check('long-lane: unfolded, the lane numbers all 16 steps 1 to 16 and the "+N steps" row is gone', ospine.map((c) => c.n).join() === chain.map((_, i) => i + 1).join() && !open.D.folds['lane:chain']);
+  const routed = across.map((s, i) => { const r = S(D.nodes[s]); return discs(html).some((c) => c.n === i + 1 && Math.abs(c.x - (r.x + 10)) < 0.2 && Math.abs(c.y - (r.y + r.h / 2)) < 0.2); });
+  check('long-lane: the routed 16-step lane never folds: each step marked with its number, on its own node', routed.every(Boolean) && !D.folds['lane:across'], `${routed.filter(Boolean).length} of 16`);
 }
-{ // Big family: twins scaling, mixed ✓ ~ ✕.
+{ // Big family: twins scaling, mixed ✓ ~ ✕. Past 4 ports (6 here) each twin's strip is one "k/6" chip, k its static
+  // matches, coloured by its worst mark; hovering a chip draws the twins × ports grid (twins spec; Julian, 2026-10-28).
   const { html, S, D } = frame('big-family'), d = data['big-family'], t = d.elements['twins:engines'];
-  const conf = conformity(d, 'twins:engines'), want = { ok: '✓', warn: '~', bad: '✕' }, bad = [];
+  const conf = conformity(d, 'twins:engines'), glyph = { ok: '✓', warn: '~', bad: '✕' }, col = { ok: 'state-ok', warn: 'state-warn', bad: 'state-bad' }, bad = [];
   const plate = D.plates['twins:engines'];
   const caption = new RegExp(`>Engine interface · 8 twins · 6 ports</text>`).test(html);
   const chips = t.interface.filter((p) => new RegExp(`height="15" rx="3"[^>]*/><text[^>]*>${p.name}</text>`).test(html));
+  const marks = [...html.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="12" height="12" rx="2"/g)].length;
   for (const sec of t.members) {
-    const r = S(D.sections[sec]), got = [...html.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="12" height="12" rx="2"[^>]*\/><text[^>]*>([✓~✕])<\/text>/g)]
-      .filter((x) => +x[1] >= r.x && +x[1] <= r.x + r.w && +x[2] >= r.y && +x[2] <= r.y + 24).sort((a, b) => +a[1] - +b[1]);
-    // Six marks in port order, or (Q-033, the twins spec: past 4 ports) one "k/6" chip, k the ports matched statically.
-    const head = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0], chip = (new RegExp(`>(\\d+)/${t.interface.length}<`).exec(head) || [])[1];
-    const shown = chip != null ? chip + '/' + t.interface.length : got.map((x) => x[3]).join(''), expect = chip != null ? conf[sec].filter((c) => c === 'ok').length + '/' + t.interface.length : conf[sec].map((c) => want[c]).join('');
-    if (shown !== expect) bad.push(`${sec}: ${shown} ≠ ${expect}`);
+    const r = S(D.sections[sec]), cs = conf[sec], k = cs.filter((c) => c === 'ok').length, worst = ['bad', 'warn', 'ok'].find((w) => cs.includes(w));
+    const m = new RegExp(`<g data-el="twins:engines" data-twin="${sec}" data-conf="([^"]*)"[^>]*>(?:<title>[^<]*</title>)<rect ([^>]*)/><text[^>]*>([^<]*)</text>`).exec(html);
+    if (!m) { bad.push(`${sec}: no chip`); continue; }
+    const a = attrs(m[2]), cr = { x: +a.x, y: +a.y, w: +a.width, h: +a.height };
+    if (m[1] !== `${k}/6` || m[3] !== `${k}/6`) bad.push(`${sec}: chip ${m[3]} ≠ ${k}/6`);
+    if (!a.style.includes(`stroke:var(--loupe-${col[worst]})`)) bad.push(`${sec}: chip not ${col[worst]}`);
     const hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0], lt = (/<text [^>]*>([^<]*)<\/text>/.exec(hg) || [])[1] || '';
     const big = r.w >= 100, labelEnd = r.x + (big ? 10 : 7) + lt.length * (big ? 8.2 : 6.9);
-    if (got.length && labelEnd > +got[0][1]) bad.push(`${sec}: label runs into the marks (${labelEnd.toFixed(0)} > ${got[0][1]})`);
+    if (labelEnd > cr.x || !inside(cr, r)) bad.push(`${sec}: chip off its header or over its label (${labelEnd.toFixed(0)} > ${cr.x})`);
   }
   const kinds = new Set(Object.values(conf).flat());
   check('big-family: one plate with its caption, all 6 port chips drawn', !!plate && caption && chips.length === 6, `plate ${!!plate}, caption ${caption}, chips ${chips.map((p) => p.name).join(', ')}`);
-  check('big-family: each of the 8 twins shows its conformity (6 marks in port order, or one k/6 chip) matching conformity(), all three kinds present, clear of its label', bad.length === 0 && kinds.size === 3, bad.slice(0, 3).join('; '));
+  check('big-family: past 4 ports each of the 8 twins shows one k/6 chip (k its ✓ ports, coloured by its worst mark) in its header clear of its label, and no per-port marks; all three kinds present',
+    bad.length === 0 && marks === 0 && kinds.size === 3, bad.slice(0, 3).join('; ') || `${marks} marks`);
+  // Hover: the grid, every cell equal to conformity(), the hovered twin's row marked, all of it on screen.
+  // The rightmost twin, so a grid that ignored the pane's right edge would run off it.
+  const f0 = frame('big-family', { zoom: { auto: true } }), hov = t.members.reduce((a, m) => (f0.S(f0.D.sections[m]).x > f0.S(f0.D.sections[a]).x ? m : a));
+  const h = frame('big-family', { zoom: { auto: true }, hover: { type: 'element', id: 'twins:engines', twin: hov } });
+  const g = (h.html.split('<g data-twins-matrix="twins:engines">')[1] || '').split('</g>')[0], gbad = [];
+  const box = attrs((/<rect ([^>]*)\/>/.exec(g) || [])[1] || ''), cells = [...g.matchAll(/data-cell="(\d+),(\d+)"[^>]*>([✓~✕])</g)];
+  t.members.forEach((m, i) => conf[m].forEach((c, j) => { const x = cells.find((q) => +q[1] === i && +q[2] === j); if (!x || x[3] !== glyph[c]) gbad.push(`${m} ${t.interface[j].name}`); }));
+  const hl = /fill:var\(--loupe-accent-soft\)/.test(g) && (/<rect x="[\d.]+" y="([\d.]+)"[^>]*accent-soft/.exec(g) || [])[1];
+  const rowOk = hl && Math.abs(+hl - (+box.y + 22 + t.members.indexOf(hov) * 16)) < 0.2;
+  check(`big-family: hovering a chip draws the 8 × 6 grid matching conformity(), the hovered twin's row marked, inside the map pane`,
+    cells.length === 48 && gbad.length === 0 && rowOk && +box.x >= 0 && +box.x + +box.width <= 1080 && +box.y + +box.height <= 770, gbad.slice(0, 3).join('; ') || `cells ${cells.length}, row ${rowOk}, box ${box.x},${box.y} ${box.width}×${box.height}`);
+  // Column headings (port names, centred) and row names must not run into each other (screenshot, 2026-10-28:
+  // "audio out" ran into "param read"). Widths at a full 7.2 px a character: the browser measured the count font at
+  // 7.0, and the 0.92 the renderer estimates with (6.6 here) let the bug pass.
+  const heads = [...g.matchAll(/<text data-head="(\d+)" x="([\d.]+)"[^>]*>([^<]*)</g)].map((x) => ({ c: +x[2], w: x[3].length * CW }));
+  const clash = heads.slice(1).filter((hd, i) => hd.c - hd.w / 2 < heads[i].c + heads[i].w / 2 + 2).length;
+  const names = [...g.matchAll(/<text x="([\d.]+)" y="[\d.]+" style="font:var\(--loupe-type-count\);fill:var\(--loupe-ink\)">([^<]*)</g)].map((x) => +x[1] + x[2].length * CW);
+  check('big-family: the grid\'s port headings and twin names never run into each other', heads.length === 6 && clash === 0 && names.length === 8 && names.every((e) => e < heads[0].c - heads[0].w / 2), `${clash} clashes, ${names.length} names, ${heads.length} headings`);
+  check('big-family: no grid is drawn without a hover', !html.includes('data-twins-matrix'));
 }
 { // Edge matrix: every slot × provenance on one screen, each its own line with its own stroke and dash.
   const { html, map } = frame('edge-matrix', { zoom: { auto: true } }), d = data['edge-matrix'], bad = [], combos = new Set(), paths = new Set();

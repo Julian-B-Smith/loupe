@@ -91,10 +91,12 @@ export const CASES = {
     return { files, edges, elements: [sec('dsp', 'Spectral resynthesis and partial tracking engine', [...longs, ...shared, ...shorts]), sec('host', 'Host', host)] };
   },
   // Rail length, tap spacing, count label: 50 voices render into one mixer through one audio contract.
+  // The voices sit in five banks of ten so the bus spec's merge (past 20 taps on one side, one tap per section) shows;
+  // two of bank E's edges are runtime, so its taps split by provenance (each tap keeps its own pattern).
   'big-bus'() {
-    const voices = range(50).map((i) => `src/voices/voice_${pad(i)}.cpp`), mix = 'src/mix/mixer.cpp', out = 'src/mix/output.cpp';
-    const edges = [...voices.map((v) => ({ src: F(v), dst: F(mix), kind: 'call', role: 'audio' })), { src: F(mix), dst: F(out), kind: 'call' }];
-    return { files: [...voices, mix, out], edges, elements: [sec('voices', 'Voices', voices), sec('mix', 'Mix', [mix, out]),
+    const banks = ['a', 'b', 'c', 'd', 'e'], voices = banks.flatMap((b) => range(10).map((i) => `src/voices/${b}/voice_${b}${pad(i)}.cpp`)), mix = 'src/mix/mixer.cpp', out = 'src/mix/output.cpp';
+    const edges = [...voices.map((v, i) => ({ src: F(v), dst: F(mix), kind: 'call', role: 'audio', ...(i >= 48 ? { provenance: 'runtime' } : {}) })), { src: F(mix), dst: F(out), kind: 'call' }];
+    return { files: [...voices, mix, out], edges, elements: [...banks.map((b, i) => sec('voices-' + b, 'Voices ' + b.toUpperCase(), voices.slice(i * 10, i * 10 + 10))), sec('mix', 'Mix', [mix, out]),
       { id: 'bus:audio', primitive: 'bus', label: 'Audio bus', claim: 'Every voice renders into the mixer through one contract.', edges: edges.slice(0, 50).map((e) => edgeId(e.src, e.dst, e.kind)), contract: { dst: F(mix), role: 'audio', signature: SIG.audio } }] };
   },
   // Spoke crowding, badge placement: 40 files in four sections include one registry header.
@@ -126,14 +128,15 @@ export const CASES = {
       { id: 'set:realtime', primitive: 'set', label: 'Realtime', claim: 'These run on the audio thread.', members: [F(dsp[0]), F(dsp[1])] },
       { id: 'overlap:morph', primitive: 'overlap', claim: 'morph is DSP, preset handling and realtime at once.', members: [F(dsp[0])], sets: ['sec:dsp', 'set:presets', 'set:realtime'] }] };
   },
-  // Folding: a 12-step lane inside a section big enough to fold (16 other files; steps are laid out on the lane, not
-  // as rows, so only the others count toward the fold), and a 12-step lane routed across four sections.
+  // Folding: a 16-step lane inside a section big enough to fold (16 other files; steps are laid out on the lane, not
+  // as rows, so only the others count toward the fold), and a 16-step lane routed across four sections. Past 12 steps
+  // the inline lane folds its middle (lane spec, Q-033); the route never does (Julian, poll 2026-10-28).
   'long-lane'() {
-    const chain = range(12).map((i) => `src/chain/stage_${pad(i)}.cpp`), extra = range(16).map((i) => `src/chain/util_${pad(i)}.h`);
-    const parts = ['input', 'analysis', 'synthesis', 'output'], across = parts.flatMap((p) => range(3).map((i) => `src/${p}/${p}_${pad(i)}.cpp`));
+    const chain = range(16).map((i) => `src/chain/stage_${pad(i)}.cpp`), extra = range(16).map((i) => `src/chain/util_${pad(i)}.h`);
+    const parts = ['input', 'analysis', 'synthesis', 'output'], across = parts.flatMap((p) => range(4).map((i) => `src/${p}/${p}_${pad(i)}.cpp`));
     const link = (xs) => xs.slice(1).map((x, i) => ({ src: F(xs[i]), dst: F(x), kind: 'call' }));
-    return { files: [...chain, ...extra, ...across], edges: [...link(chain), ...link(across), ...extra.map((x, i) => ({ src: F(chain[i % 12]), dst: F(x), kind: 'include' }))], elements: [sec('chain', 'Chain', [...chain, ...extra]), ...parts.map((p, i) => sec(p, p[0].toUpperCase() + p.slice(1), across.slice(i * 3, i * 3 + 3))),
-      { id: 'lane:chain', primitive: 'lane', label: 'Signal chain', claim: 'Audio runs through the twelve stages in order.', steps: chain.map(F), source: { provenance: 'static' } },
+    return { files: [...chain, ...extra, ...across], edges: [...link(chain), ...link(across), ...extra.map((x, i) => ({ src: F(chain[i % 16]), dst: F(x), kind: 'include' }))], elements: [sec('chain', 'Chain', [...chain, ...extra]), ...parts.map((p, i) => sec(p, p[0].toUpperCase() + p.slice(1), across.slice(i * 4, i * 4 + 4))),
+      { id: 'lane:chain', primitive: 'lane', label: 'Signal chain', claim: 'Audio runs through the sixteen stages in order.', steps: chain.map(F), source: { provenance: 'static' } },
       { id: 'lane:across', primitive: 'lane', label: 'Analysis to output', claim: 'A frame travels input → analysis → synthesis → output.', steps: across.map(F), source: { provenance: 'static' } }] };
   },
   // Twins scaling, mixed ✓ ~ ✕: 8 engines (children of one Engines section, as twins are laid out today) implement a

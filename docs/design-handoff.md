@@ -218,12 +218,12 @@ Draw against these before calling a primitive done. `tools/stress-gen.mjs` gener
 | Case | Tests | Size |
 | --- | --- | --- |
 | Long file names | Truncation and tooltip | 48-character stem |
-| Big bus | Rail length, tap spacing, count label | 50 members |
+| Big bus | Rail length, tap spacing, count label, taps merged past 20 | 50 members in 5 sections |
 | Wide hub | Spoke crowding, badge placement | 40 incoming |
 | Deep nesting | Container depth | 3 levels |
 | Triple overlap | A file in three sets | 3 sets |
-| Long lane | Folding | 12 steps |
-| Big family | Twins scaling, mixed ✓ ~ ✕ | 8 twins × 6 ports |
+| Long lane | Folding (an inline lane folds its middle past 12; a route never does) | 16 steps |
+| Big family | Twins scaling, mixed ✓ ~ ✕, one chip past 4 ports | 8 twins × 6 ports |
 | Whole repo | Level of detail at all three levels | 4,000 files |
 | Edge matrix | Every slot × provenance legible on one screen | 8 × 5 |
 | Big diff | Diff marks at volume | 30 added, 12 removed, 5 stale |

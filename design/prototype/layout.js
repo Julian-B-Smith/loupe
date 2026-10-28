@@ -9,9 +9,10 @@ export const L = {
   levelGap: 110, hubGap: 140, bandHead: 34, bandPadX: 20, flowGap: 44,
   laneHead: 54, laneGutter: 34, laneNotch: 10, lanePoint: 16,
   plateH: 56, twinGap: 18, stackSlack: 1.15,
-  foldAt: 12, foldSlack: 2,
+  foldAt: 12, foldSlack: 2,                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
+  laneFoldAbove: 12, laneKeep: 5,           // the lane spec's foldAbove; an inline lane past it keeps this many steps at each end
   wrapAspect: 1.6,                          // with no band, top-level columns wrap into rows near this width:height
-  looseKeep: 60,                            // the loose block shows this many files (most connected first) before folding the rest                 // fold a section past foldAt rows, but only when that hides more than foldSlack files
+  looseKeep: 60,                            // the loose block shows this many files (most connected first) before folding the rest
   railGap: 170, portW: 250, portGap: 10,    // isolate: side rails of ports
   flow: { colGap: 56, rowGap: 8 }
 };
@@ -121,7 +122,17 @@ function designLayout(data, state) {
       }
       if (lane) {
         const top = cy; cy += L.laneHead;
-        steps.forEach(m => { T.nodes[m] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap; });
+        // Past laneFoldAbove steps the middle folds into one '+N steps' row (lane spec; Julian, poll 2026-10-28): the
+        // first and last laneKeep stay, the folded files are proxied by the row like a section's fold row, keyed by
+        // the lane id so state.unfolded opens it. Only inline lanes fold: a route's files stay in their own sections.
+        const mid = !unfolded.has(lane.id) && steps.length > L.laneFoldAbove ? steps.slice(L.laneKeep, steps.length - L.laneKeep) : [];
+        steps.forEach((m, i) => {
+          if (mid.includes(m)) {
+            if (m === mid[0]) { T.folds[lane.id] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h, members: mid, lane: true }; cy += N.h + L.rowGap; }
+            T.foldOf[m] = lane.id; return;
+          }
+          T.nodes[m] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap;
+        });
         cy += L.lanePoint - L.rowGap + 4;
         const lw = N.w + L.laneGutter + 6;
         T.lanes[lane.id] = { mode: 'inline', x: x + L.pad, y: top, w: lw, h: cy - top, section: sec };
@@ -290,7 +301,7 @@ function designLayout(data, state) {
       const o = offs[t]; if (!o || (!o.dx && !o.dy)) return;
       const subtree = data.descendants(t), sh = r => { if (r) { r.x += o.dx; r.y += o.dy; } };
       subtree.forEach(s => { sh(P.sections[s]); sh(P.folds[s]); memIn(s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
-      Object.values(P.lanes).forEach(ln => { if (ln.section && subtree.includes(ln.section)) sh(ln); });
+      Object.entries(P.lanes).forEach(([id, ln]) => { if (ln.section && subtree.includes(ln.section)) { sh(ln); sh(P.folds[id]); } });
       twinsEls.forEach(tw => { if (tw.members.every(m => subtree.includes(m))) { const p = P.plates[tw.id]; if (p) { sh(p); p.rowTops = p.rowTops.map(y => y + o.dy); } } });
     });
     // levels and the gutter stretch to hold their sections, so a moved section never leaves its level

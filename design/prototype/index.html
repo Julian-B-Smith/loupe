@@ -422,7 +422,7 @@ const hit = t => {
   if (c.dataset.storyout) return { type: 'storyout', id: 'story' };
   if (c.dataset.step) return { type: 'step', id: c.dataset.step };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
-  if (c.dataset.el) return { type: 'element', id: c.dataset.el };
+  if (c.dataset.el) return c.dataset.twin ? { type: 'element', id: c.dataset.el, twin: c.dataset.twin } : { type: 'element', id: c.dataset.el };
   // Last: only an element with no other click lists on a left click (the overview's loose block); a file port stays a
   // file (critic H1), and lists from its menu.
   if (c.dataset.holds) return { type: 'holds', id: c.dataset.holds };
@@ -786,8 +786,8 @@ const boxName = k => k.startsWith('s:') || k.startsWith('n:') ? label(k.slice(2)
 function holdsPanel(key) {
   const es = heldEdges(data, map, key);
   const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
-    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
-    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : esc(key);
+    : key.startsWith('f:') ? `Folded ${data.elements[key.slice(2)] && data.elements[key.slice(2)].primitive === 'lane' ? 'steps' : 'files'} of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
+    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : key.startsWith('m:') ? `Merged tap from ${esc(boxName('s:' + key.split('|')[1]))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
   return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
     <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>
