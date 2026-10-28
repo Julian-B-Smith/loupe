@@ -141,6 +141,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
       <div class="seg" id="lensSeg" title="Focus lens (ADR 0019): show only what the product depends on; the rest is one counted box"><span class="lbl">Lens</span><button data-lens="">All</button><button data-lens="operational">Operational</button></div>
       <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button><button data-view="works" title="How the code works, told as stories (ADR 0025). Inferred by the agent; yours to edit.">How it works</button></div>
       <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
+      <div class="seg" title="Hide the lines; every edge stays counted in the ↑out ↓in tab of each box it touches"><button id="lines" aria-pressed="false">Lines off</button></div>
       <div class="seg"><button id="theme">Dark</button></div>
     </div>
   </header>
@@ -315,6 +316,7 @@ $('viewSeg').onclick = e => { const b = e.target.closest('[data-view]'); if (b) 
 $('diffSeg').onclick = e => { const b = e.target.closest('[data-diff]'); if (b) A.setDiff(b.dataset.diff === 'off' ? null : { side: b.dataset.diff }); };
 $('hubSeg').onclick = e => { const b = e.target.closest('[data-hub]'); if (b) A.setHubPlacement(b.dataset.hub); };
 $('theme').onclick = () => A.setTheme(store.get().theme === 'dark' ? 'light' : 'dark');
+$('lines').onclick = () => A.setLinesOff(!store.get().linesOff);
 $('handle').onclick = () => $('panel').classList.toggle('open');
 // Say what made the graph: the P1a crawler, the regex probe, or nothing (a hand-made sample). Was always "not crawled".
 const crawledBy = (() => { const c = data.graph.crawler || {}, src = data.graph.source || {};
@@ -341,6 +343,9 @@ function chrome(s) {
   $('hubSeg').style.display = s.view === 'design' && !s.isolate ? '' : 'none'; // hub placement needs the band, which isolate drops
   $('resetSeg').hidden = !(s.view === 'design' && !s.isolate && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
   $('theme').textContent = s.theme === 'dark' ? 'Light' : 'Dark';
+  $('lines').setAttribute('aria-pressed', String(!!s.linesOff));
+  // Lines off applies to the Design view only (render.js); elsewhere the button would claim a state the map is not in.
+  $('lines').parentElement.hidden = s.view !== 'design';
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
   $('hBack').disabled = !H.canBack; $('hFwd').disabled = !H.canForward;
   $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
@@ -363,8 +368,10 @@ function meter(c) {
   const sub = c.status === 'stale' ? 'view made for an older graph' : lz
     ? (lz.name === 'story' ? `Story · on cards ${lz.insideFiles} files, ${lz.insideEdges} edges · not in story ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`
       : `${lz.label} lens · in focus ${lz.insideFiles} nodes, ${lz.insideEdges} edges · outside ${lz.outsideFiles} nodes, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`)
+    : map && map.linesOff ? `lines hidden · all counted in box tabs · ${c.nodes.placed}/${c.nodes.total} nodes`
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
-  $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
+  // Lines off is said even under a lens or story line (critic S3: the lens line hid it).
+  $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${lz && map.linesOff ? 'lines hidden · ' : ''}${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
 }
@@ -533,7 +540,7 @@ function showMenu(target, cx, cy) {
     items.push(null);
     // Only a box that replaces its contents stands for edges (critic H4): collapsed, or drawn whole in the overview.
     // An expanded box draws its files and edges, and its ×N lines open on their own (Q-011).
-    if (s.collapsed.includes(id) || (map && map.lod === 'overview')) listItem('s:' + id, `this box stands for`);
+    if (s.collapsed.includes(id) || (map && (map.lod === 'overview' || map.linesOff))) listItem('s:' + id, `this box stands for`);
     if (s.isolate !== id) items.push({ label: `Isolate ${label(id)}`, run: () => A.isolate(id) });
     items.push({ label: `${s.collapsed.includes(id) ? 'Expand' : 'Collapse'} ${label(id)}`, run: () => A.toggleCollapsed(id) });
     const fold = map && map.layout.folds[id];
@@ -774,10 +781,13 @@ function stagePanel(s, c) {
 // A ×N bundle opens to its edges (ADR 0029, Q-011): the rows come from the meter's own record (inspect.js), so the list
 // is exactly what the meter counts in this line. Each row opens its edge.
 // Any element that stands for several edges (Q-028): the edges whose recorded ends name it, from the meter's record.
+// A box key from render(): 's:<section>', 'n:<file>', 'o:loose', 'o:lens', 'p:<port>', in words.
+const boxName = k => k.startsWith('s:') || k.startsWith('n:') ? label(k.slice(2)) : k === 'o:loose' ? 'files in no section' : k === 'o:lens' ? 'outside the lens' : k.startsWith('p:') ? portName(k.slice(2)) : k;
 function holdsPanel(key) {
   const es = heldEdges(data, map, key);
   const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
-    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}` : esc(key);
+    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
+    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
   return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
     <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>
@@ -906,7 +916,7 @@ function panel(s, c) {
   const sel = s.selection;
   const noPos = Object.fromEntries(Object.entries(s.storyEdits || {}).map(([k, e]) => [k, { ...e, pos: undefined }]));
   // The level of detail and the open ports change what a box or port stands for (critic M1).
-  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.isoOpen, s.lens, s.view, s.story, noPos, map && map.lod]);
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.isoOpen, s.lens, s.view, s.story, noPos, map && map.lod, s.linesOff]);
   // An unchanged edge list is not rebuilt on every paint (critic L3: the elsewhere chip holds 629 rows on HORDE, and
   // a hover repaints): the key says everything the list depends on.
   if (pb.dataset.key === key && sel && (sel.type === 'holds' || sel.type === 'bundle')) return;

@@ -21,6 +21,7 @@ const CW = 7.2;
 const { indexSnapshot } = await import('../design/prototype/snapshot.js');
 const { render, SPEC, slotOf } = await import('../design/prototype/render.js');
 const { conserve, conformity } = await import('../design/prototype/standins.js');
+const { heldEdges } = await import('../design/prototype/inspect.js');
 const { CASES, COMMITTED, generate } = await import('./stress-gen.mjs');
 
 let failed = 0;
@@ -258,16 +259,154 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   const staleShown = marksOf(before.html, D0.stale).filter((ms) => ms.length).length, removedPlain = marksOf(before.html, D0.removed.map((r) => r.id)).filter((ms) => ms.length).length;
   check('big-diff (before): added files are ghosts marked "not in the previous run", stale and removed carry no mark', ghosts === D0.added.length && staleShown === 0 && removedPlain === 0, `ghosts ${ghosts}, stale ${staleShown}, removed ${removedPlain}`);
 }
-{ // Whole repo: level of detail at all three levels (balance is section 2); zoomed out, every top box's label fits it.
-  const { html, S, D, map } = frame('whole-repo', { zoom: { auto: true } }), d = data['whole-repo'], bad = [];
+{ // Whole repo: level of detail at all three levels (balance is section 2); zoomed out, every top box is labelled
+  // inside its bounds, across or (Q-034: a tall narrow box) down its length, and no two labels read the same.
+  const { html, S, D, map } = frame('whole-repo', { zoom: { auto: true } }), d = data['whole-repo'], bad = [], seen = new Map();
   for (const sec of d.sections.filter((s) => !d.parentOf[s])) {
-    const r = S(D.sections[sec]), hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g></g>')[0];
-    const texts = [...hg.matchAll(/<text x="([\d.]+)" y="([\d.]+)" style="font:var\(--loupe-type-group-label(-compact)?\)[^>]*>([^<]*)<\/text>/g)];
-    const [, x, y, , t] = texts[0] || [];
+    const r = S(D.sections[sec]), hg = (html.split(`<g data-el="${sec}" style="cursor:pointer">`)[1] || '').split('</g>')[0];
+    const m = /<text (?:transform="rotate\(90 [\d.-]+ [\d.-]+\)" )?x="([\d.-]+)" y="([\d.-]+)" style="font:var\(--loupe-type-group-label(?:-compact)?\)[^>]*>([^<]*)<\/text>/.exec(hg);
+    const [, x, y, t] = m || [], down = /rotate\(90/.test(hg);
     if (!t) { bad.push(`${sec}: no label (box ${r.w.toFixed(0)} px wide)`); continue; }
-    if (+x + t.length * 6.9 > r.x + r.w || +y > r.y + r.h) bad.push(`${sec}: "${t}" overflows its box`);
+    const len = t.length * 6.9;
+    if (down ? +y + len > r.y + r.h || +x < r.x || +x > r.x + r.w : +x + len > r.x + r.w || +y > r.y + r.h) bad.push(`${sec}: "${t}" overflows its box`);
+    if (seen.has(t)) bad.push(`${sec} and ${seen.get(t)} both read "${t}"`); seen.set(t, sec);
   }
-  check(`whole-repo (${map.lod}, auto zoom): every one of the 40 top-level boxes is labelled inside its bounds`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
+  check(`whole-repo (${map.lod}, fit zoom): each of the 40 top-level boxes is labelled inside its bounds, no two alike`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
+}
+
+// ---- 4. Q-034, overview legibility at scale (Julian, 2026-10-28: "heavy", vertical labels, the collector bar, lines off).
+// Pills, box-total tabs: their rects as drawn, from the svg.
+const pillAll = (html) => [...html.matchAll(/<g data-(?:bundle|totals)="[^"]*"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
+const ALL = Object.keys(CASES), ZOOM5 = [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }, { k: 0.4, x: 0, y: 0 }, { k: 0.2, x: 0, y: 0 }];
+{
+  const bad = [];
+  for (const n of ALL) for (const zoom of ZOOM5) for (const linesOff of [false, true]) {
+    const f = frame(n, { zoom, linesOff }), ps = pillAll(f.html), clash = pairs(ps, overlap);
+    if (clash.length) bad.push(`${n} ${f.map.lod}${linesOff ? ' lines off' : ''}: ${clash.length} of ${ps.length} pills overlap`);
+  }
+  check('no two count pills or box totals overlap, in any case, at any level of detail, lines on or off', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // At fit zoom every box's tab touches its own box: a leader is the last resort, not the layout (a plant that drew
+  // whole-repo's narrow tabs across passed the overlap check by spiralling all 40 out on leaders).
+  const bad = [];
+  for (const n of ALL) for (const linesOff of [false, true]) {
+    const f = frame(n, { zoom: { auto: true }, linesOff }), led = [...f.html.matchAll(/data-tab-leader="([^"]*)"/g)].map((m) => m[1]);
+    if (led.length) bad.push(`${n} ${f.map.lod}${linesOff ? ' lines off' : ''}: ${led.length} tabs on leaders (${led.slice(0, 2).join(', ')})`);
+  }
+  check('at fit zoom every box total sits on its own box, lines on or off', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // Arrowheads into one element sit at least ARROW px apart (8: the arrowhead's size), not merely at distinct
+  // coordinates (critic F3: a spread 0.5 px apart passed a string-equality check; HORDE had pairs 1.8 px apart). And
+  // every element eight or more lines arrive at has exactly one collector bar, with its one arrow, opening to exactly
+  // the edges whose lines end on it.
+  const jj = (p) => JSON.parse(readFileSync(p, 'utf8')), real = (dir) => indexSnapshot({ graph: jj(dir + 'graph.json'), overlay: jj(dir + 'overlay.json'), view: jj(dir + 'view.json'), stages: null, diff: null, hashes: {} });
+  const ARROW = 8, bad = [], snaps = [...ALL.map((n) => [n, data[n]]), ['horde-crawl', real('design/prototype/snapshots/horde-crawl/')], ['horde-sample', real('schema/examples/horde-sample/')], ['horde-probe', real('schema/examples/horde-probe/')]];
+  for (const [n, dn] of snaps) for (const zoom of ZOOM5) {
+    const state = { view: 'design', stage: 2, settings: {}, zoom }, map = render(container, dn, state), html = svg.innerHTML, byEnd = new Map();
+    const endOf = (attr, id) => attr === 'data-edge' ? map.edges[id] && map.edges[id].ends[1] : id.slice(id.indexOf('>', 2) + 1);
+    for (const m of html.matchAll(/<path (data-edge|data-bundle)="([^"]*)"[^>]* d="([^"]*)"[^>]*marker-end=/g)) {
+      const xs = m[3].match(/-?[\d.]+/g).map(Number), k = endOf(m[1], m[2].replace(/&gt;/g, '>'));
+      (byEnd.get(k) || byEnd.set(k, []).get(k)).push([xs[xs.length - 2], xs[xs.length - 1]]);
+    }
+    for (const [k, pts] of byEnd) for (let a = 0; a < pts.length; a++) for (let b = a + 1; b < pts.length; b++) {
+      const dd = Math.hypot(pts[a][0] - pts[b][0], pts[a][1] - pts[b][1]);
+      if (dd < ARROW) { bad.push(`${n} ${map.lod}: two arrowheads into ${k} ${dd.toFixed(1)} px apart`); a = pts.length; break; }
+    }
+    // Collectors: every end with 8+ arriving lines, from the frame's own record of lines (bundles and singles).
+    const arriving = new Map();
+    // Lines that end on the element: with an arrowhead, or on a collector bar (a bus tap ends on its rail, not here).
+    for (const m of html.matchAll(/<path (data-edge|data-bundle)="([^"]*)"([^>]*)>/g)) { if (!/marker-end=|data-collected=/.test(m[3])) continue; const k = endOf(m[1], m[2].replace(/&gt;/g, '>')); arriving.set(k, (arriving.get(k) || 0) + 1); }
+    const bars = [...html.matchAll(/<g data-holds="c:([^"]*)" data-count="(\d+)"[^>]*>([^]*?)<\/g>/g)].map((m) => [m[1].replace(/&gt;/g, '>'), +m[2], m[3]]);
+    for (const [k, cnt] of arriving) if (cnt >= 8 && bars.filter(([b]) => b === k).length !== 1) bad.push(`${n} ${map.lod}: ${cnt} lines arrive at ${k}, ${bars.filter(([b]) => b === k).length} collector bars`);
+    for (const [k, cnt, body] of bars) {
+      if (heldEdges(dn, map, 'c:' + k).length !== cnt) bad.push(`${n} ${map.lod}: collector ${k} says ${cnt}, opens to ${heldEdges(dn, map, 'c:' + k).length}`);
+      if ((body.match(/marker-end=/g) || []).length !== 1) bad.push(`${n} ${map.lod}: collector ${k} has ${(body.match(/marker-end=/g) || []).length} arrows`);
+    }
+  }
+  check('arrowheads into one element are at least 8 px apart; 8+ arrivals get one collector bar with one arrow, opening to exactly its edges', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // Zoomed in, every ×N pill sits on its own line (Julian, 2026-10-28: over a file name if it must), unless it hangs on a
+  // leader because its line had no room at all. Pills over files and on leaders are printed: measured, not gated.
+  const bad = [], seen = [];
+  const near = (d, x, y) => { const n = d.match(/-?[\d.]+/g).map(Number); let best = Infinity; for (let i = 0; i <= 50; i++) { const t = i / 50, c = 1 - t, px = c * c * c * n[0] + 3 * c * c * t * n[2] + 3 * c * t * t * n[4] + t * t * t * n[6], py = c * c * c * n[1] + 3 * c * c * t * n[3] + 3 * c * t * t * n[5] + t * t * t * n[7]; best = Math.min(best, Math.hypot(px - x, py - y)); } return best; };
+  for (const n of ALL) for (const zoom of [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }]) {
+    const f = frame(n, { zoom }); if (f.map.lod === 'overview') continue;
+    const files = Object.values(f.D.nodes).map(f.S), lineOf = new Map([...f.html.matchAll(/<path data-bundle="([^"]*)" data-count="\d+" d="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+    let onFile = 0, leader = 0, off = 0;
+    for (const m of f.html.matchAll(/(stroke-dasharray:2 2"\/>)?<g data-bundle="([^"]*)" data-count="\d+"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)) {
+      const r = { x: +m[3], y: +m[4], w: +m[5], h: +m[6] }, cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+      if (files.some((q) => overlap(r, q))) onFile++;
+      if (m[1]) { leader++; continue; }
+      if (near(lineOf.get(m[2]), cx, cy) > 2) off++;
+    }
+    if (off) bad.push(`${n} ${f.map.lod}: ${off} pills off their line with no leader`);
+    if (onFile || leader) seen.push(`${n} ${f.map.lod} ${onFile} over files, ${leader} on leaders`);
+  }
+  check('zoomed in, every ×N pill sits on its own line, or hangs on a leader when its line has no room', bad.length === 0, bad.slice(0, 4).join('; '));
+  console.log(`note  pills over files or on leaders (measured, not gated): ${seen.join(' · ') || 'none'}`);
+}
+{ // Zoomed out with lines on: each box's tab equals the edges the meter folds with that box at an end, and opens to
+  // exactly them; a heavier line is never drawn thinner (critic F2: a doubled ↑ and 1 px lines passed every check).
+  const bad = [];
+  for (const n of ALL) for (const zoom of [{ auto: true }, { k: 0.2, x: 0, y: 0 }, { k: 0.1, x: 0, y: 0 }]) {
+    const state = { view: 'design', stage: 2, settings: {}, zoom }, map = render(container, data[n], state), html = svg.innerHTML;
+    if (map.lod !== 'overview') continue;
+    const folded = Object.values(map.edges).filter((x) => x.via === 'folded' && x.bundle.includes('>'));
+    for (const m of html.matchAll(/<g data-totals="([^"]*)" data-holds="([^"]*)" data-count="(\d+)"[^>]*>([^]*?)<\/g>(?:<\/g>)?/g)) {
+      const k = m[1].replace(/&quot;/g, '"').replace(/&gt;/g, '>'), up = +((/↑(\d+)/.exec(m[4]) || [])[1]), dn = +((/↓(\d+)/.exec(m[4]) || [])[1]);
+      const out = folded.filter((x) => x.ends[0] === k).length, inn = folded.filter((x) => x.ends[1] === k).length;
+      if (up !== out || dn !== inn) bad.push(`${n} ${k}: tab ↑${up} ↓${dn}, meter ↑${out} ↓${inn}`);
+      if (heldEdges(data[n], map, m[2]).length !== +m[3] || +m[3] !== out + inn) bad.push(`${n} ${k}: tab count ${m[3]}, opens to ${heldEdges(data[n], map, m[2]).length}, meter ${out + inn}`);
+    }
+    const lines = [...html.matchAll(/<path data-bundle="[^"]*" data-count="(\d+)" d="[^"]*" style="[^"]*stroke-width:([\d.]+)px/g)].map((m) => [+m[1], +m[2]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    if (lines.some((l, i) => i && l[1] < lines[i - 1][1])) bad.push(`${n}: a heavier overview line is drawn thinner`);
+    if (lines.length > 1 && lines[0][0] < lines[lines.length - 1][0] && lines[0][1] === lines[lines.length - 1][1]) bad.push(`${n}: overview line weight does not grow with the count`);
+  }
+  // Every tab can be opened, and none covers a label (critic F1: tabs had no click; S1: a tab covered "impl").
+  for (const n of ALL) for (const linesOff of [false, true]) {
+    const f = frame(n, { zoom: { auto: true }, linesOff }), tabs = f.html.match(/<g data-totals=/g) || [], open = f.html.match(/<g data-totals="[^"]*" data-holds="t:/g) || [];
+    if (tabs.length !== open.length) bad.push(`${n}${linesOff ? ' lines off' : ''}: ${tabs.length - open.length} tabs cannot be opened`);
+    const labels = [...f.html.matchAll(/<g data-el="[^"]*" style="cursor:pointer"><title>[^<]*<\/title><text (transform="rotate\(90 [^"]*\)" )?x="([\d.-]+)" y="([\d.-]+)" style="font:var\(--loupe-type-group-label(?:-compact)?\)[^>]*>([^<]*)</g)]
+      .map((m) => m[1] ? { x: +m[2], y: +m[3], w: 11, h: m[4].length * 6.9 } : { x: +m[2], y: +m[3] - 10, w: m[4].length * 6.9, h: 12 });
+    const hits = pillAll(f.html).filter((t) => labels.some((l) => overlap(t, l)));
+    if (hits.length) bad.push(`${n} ${f.map.lod}${linesOff ? ' lines off' : ''}: ${hits.length} tabs or pills cover a box label`);
+  }
+  check('zoomed out, each box tab equals the meter, can be opened, opens to exactly its edges and covers no label; line weight grows with the count', bad.length === 0, bad.slice(0, 4).join('; '));
+}
+{ // Lines off: nothing drawn as a line, every edge folded into the totals of the boxes at its ends, the meter balanced.
+  const bad = [];
+  // Also on views the stress cases lack: every file loose (the crawler's snapshot) and the lens box (critic of the plants:
+  // a tab dropped for the loose block or the lens box passed every stress case).
+  const j = (p) => JSON.parse(readFileSync(p, 'utf8')), other = (dir) => indexSnapshot({ graph: j(dir + 'graph.json'), overlay: j(dir + 'overlay.json'), view: j(dir + 'view.json'), stages: null, diff: null, hashes: {} });
+  const runs = [...ALL.map((n) => [n, data[n], {}]), ['cmake-basic-crawl (all loose)', other('design/prototype/snapshots/cmake-basic-crawl/'), {}],
+    ['horde-sample (lens)', other('schema/examples/horde-sample/'), { lens: 'operational' }], ['horde-crawl (lens)', other('design/prototype/snapshots/horde-crawl/'), { lens: 'operational' }]];
+  for (const [n, dn, extraState] of runs) for (const zoom of [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.2, x: 0, y: 0 }]) {
+    const state = { view: 'design', stage: 2, settings: {}, zoom, linesOff: true, ...extraState }, map = render(container, dn, state), html = svg.innerHTML;
+    const c = conserve(dn, state, map);
+    if (c.status !== 'balanced') bad.push(`${n}: meter ${c.status} ${c.unaccounted.slice(0, 2).join(', ')}`);
+    if (/<path data-(?:edge|bundle)=/.test(html) || /data-bus-count=/.test(html)) bad.push(`${n} ${map.lod}: a line or rail is still drawn`);
+    if (!map.linesOff) bad.push(`${n}: the frame does not say lines are off`);
+    // Each tab's numbers equal the edges the meter folded with that box at an end.
+    for (const m of html.matchAll(/<g data-totals="([^"]*)">[^]*?<text[^>]*>↑(\d+) ↓(\d+)(?: · (\d+) inside)?<\/text>/g)) {
+      const k = m[1].replace(/&quot;/g, '"'), es = Object.values(map.edges).filter((x) => x.bundle === 'lines-off');
+      const out = es.filter((x) => x.ends.length === 2 && x.ends[0] === k).length, inn = es.filter((x) => x.ends.length === 2 && x.ends[1] === k).length, ins = es.filter((x) => x.ends.length === 1 && x.ends[0] === k).length;
+      if (out !== +m[2] || inn !== +m[3] || ins !== +(m[4] || 0)) bad.push(`${n} ${k}: tab says ↑${m[2]} ↓${m[3]} ${m[4] || 0} inside, meter ${out}/${inn}/${ins}`);
+    }
+    // Each tab's text fits its tab, across or down (the screenshot pass: "↑328 ↓2 · 48 inside" ran past a vertical tab).
+    for (const m of html.matchAll(/<g data-totals="[^"]*">(?:<title>[^<]*<\/title>)?(?:<g ><title>[^<]*<\/title>)?<rect x="[\d.-]+" y="[\d.-]+" width="([\d.]+)" height="([\d.]+)"[^>]*\/><text[^>]*>([^<]*)<\/text>/g)) {
+      const room = Math.max(+m[1], +m[2]), need = m[3].length * CW * 0.92 + 8;
+      if (need > room + 0.5) bad.push(`${n} ${map.lod}: tab "${m[3]}" needs ${need.toFixed(0)} px, has ${room}`);
+    }
+    // No tab sits on a file's box (the screenshot pass: a vertical tab ran over the file names of a box at structure).
+    const nodeRects = Object.values(map.layout.nodes).map((r) => ({ x: r.x * map.zoom.k + map.zoom.x, y: r.y * map.zoom.k + map.zoom.y, w: r.w * map.zoom.k, h: r.h * map.zoom.k }));
+    const onFiles = pillAll(html.replace(/<g data-bundle=/g, '<g data-x=')).filter((t) => nodeRects.some((r) => overlap(t, r)));
+    if (map.lod !== 'overview' && onFiles.length) bad.push(`${n} ${map.lod}: ${onFiles.length} tabs sit on a file's box`);
+    for (const m of html.matchAll(/<g data-totals="[^"]*" data-holds="([^"]*)" data-count="(\d+)"/g)) if (heldEdges(dn, map, m[1].replace(/&quot;/g, '"')).length !== +m[2]) bad.push(`${n} ${m[1]}: tab says ${m[2]}, opens to ${heldEdges(dn, map, m[1]).length}`);
+    const tabbed = new Set([...html.matchAll(/<g data-totals="([^"]*)"/g)].map((m) => m[1].replace(/&quot;/g, '"')));
+    const untabbed = Object.values(map.edges).filter((x) => x.bundle === 'lines-off' && x.ends.some((k) => !tabbed.has(k)));
+    if (untabbed.length) bad.push(`${n} ${map.lod}: ${untabbed.length} edges counted in no visible tab`);
+  }
+  check('lines off: no line or rail drawn, every edge counted in a visible box tab that matches the meter, the meter balanced', bad.length === 0, bad.slice(0, 4).join('; '));
 }
 
 if (process.env.STRESS_PROBE) {

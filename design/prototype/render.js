@@ -152,6 +152,8 @@ function edgePath(a, b) {
   const dx = Math.max(24, Math.abs(x2 - x1) * 0.45) * (fwd ? 1 : -1);
   return `M${f1(x1)} ${f1(am.y)}C${f1(x1 + dx)} ${f1(am.y)} ${f1(x2 - dx)} ${f1(bm.y)} ${f1(x2)} ${f1(bm.y)}`;
 }
+// A point at t along a cubic path "M x0 y0 C x1 y1 x2 y2 x3 y3" (Q-034: pills slide along their line).
+const bezAt = (d, t) => { const n = d.match(/-?[\d.]+/g).map(Number), c = 1 - t; return { x: c * c * c * n[0] + 3 * c * c * t * n[2] + 3 * c * t * t * n[4] + t * t * t * n[6], y: c * c * c * n[1] + 3 * c * c * t * n[3] + 3 * c * t * t * n[5] + t * t * t * n[7] }; };
 const bezMid = d => { const n = d.match(/-?[\d.]+/g).map(Number); const t = 0.5, c = 1 - t; return { x: c * c * c * n[0] + 3 * c * c * t * n[2] + 3 * c * t * t * n[4] + t * t * t * n[6], y: c * c * c * n[1] + 3 * c * c * t * n[3] + 3 * c * t * t * n[5] + t * t * t * n[7] }; };
 
 export function markerDefs(uid) {
@@ -202,6 +204,9 @@ export function render(container, data, state) {
     z = { k: lerp(zf.k, zd.k, em), x: lerp(zf.x, zd.x, em), y: lerp(zf.y, zd.y, em) };
   } else z = { k: zs.k, x: zs.x, y: zs.y };
   const lod = lodFor(z.k);
+  // Lines off (Q-034; Julian, 2026-10-28): no line, pill or rail is drawn, and every edge is folded into the visible
+  // ↑out ↓in count of the box at each of its ends, so the one rule holds (nothing hidden, everything counted).
+  const linesOff = !!state.linesOff && designish;
   const ovw = designish && lod === 'overview', detail = lod === 'detail';
   // At overview a node is stood in for by its top section, or, when isolated, by its nearest ancestor that is laid out.
   const drawnTop = id => { let s = data.home[id], best = null; while (s) { if (D.sections[s]) best = s; s = data.parentOf[s]; } return best; };
@@ -258,6 +263,7 @@ export function render(container, data, state) {
   // proxies against it, so a proxy pointing at something not on screen reads as broken instead of balanced.
   const map = { zoom: z, lod, nodes: {}, edges: {}, elements: {}, layout: D, drawn: new Set(), settled: morph <= 0 || morph >= 1 };
   const bg = [], eg = [], ng = [], lg = [];
+  const textBoxes = []; // zoomed-out box labels, so the box tabs placed later keep off them (Q-034 critic S1)
   const routeStep = {};
   const setMarks = [];
   const busOf = {};
@@ -289,7 +295,7 @@ export function render(container, data, state) {
     if (D.loose) {
       const r = S(D.loose);
       map.drawn.add('loose');
-      bg.push(`<g data-loose="1"${ovw ? ' data-holds="o:loose" style="cursor:pointer"' : ''}><title>Files homed in no section: the view has not placed them yet${ovw ? '. Click to list the edges folded into this block.' : ''}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="rx:${v('radius-group')};fill:transparent;stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
+      bg.push(`<g data-loose="1"${ovw || linesOff ? ' data-holds="o:loose" style="cursor:pointer"' : ''}><title>Files homed in no section: the view has not placed them yet${ovw || linesOff ? '. Right-click to list the edges counted in this block.' : ''}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" style="rx:${v('radius-group')};fill:transparent;stroke:${v('rule')};stroke-width:${v('stroke-group')};stroke-dasharray:3 3"/></g>`);
       if (L.header * z.k >= 15) lg.push(`<text x="${f1(r.x + 12)}" y="${f1(r.y + 16)}" style="font:${v('type-eyebrow')};letter-spacing:${v('tracking-eyebrow')};text-transform:uppercase;fill:${v('ink-faint')}">${esc(D.loose.label)}</text>`);
     }
     if (D.gutter) {
@@ -362,7 +368,17 @@ export function render(container, data, state) {
         // Zoomed out a box can be narrower than any text: draw only what fits inside it (stress case whole-repo: a
         // fallback "M…" ran past 40 narrow boxes into their neighbours); the tooltip always has the full label and count.
         const room = r.w - 14, short = room >= countText.length * ccw ? countText : room >= (files + ' files').length * ccw ? files + ' files' : room >= String(files).length * ccw ? String(files) : '';
-        const ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
+        let ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
+        // A tall narrow box that cannot hold its label across carries it down its length (Q-034; Julian chose it on
+        // stress case whole-repo, where 40 boxes read "M…").
+        if (ol !== el.label && r.h > r.w * 1.5 && el.label.length * gcw <= r.h - 24 && r.w >= 13) {
+          // Turned 90°, the glyphs sit to the right of the baseline x (critic S1's "impl" was covered on that side).
+          textBoxes.push({ x: r.x + r.w / 2 - 5, y: r.y + 8, w: 13, h: el.label.length * gcw });
+          lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text transform="rotate(90 ${f1(r.x + r.w / 2 - 4)} ${f1(r.y + 8)})" x="${f1(r.x + r.w / 2 - 4)}" y="${f1(r.y + 8)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(el.label)}</text></g>`);
+          const a1 = auditOf(el); if (a1) lg.push(badge(r.x + r.w, r.y, a1));
+          return;
+        }
+        textBoxes.push({ x: r.x + 7, y: r.y + 4, w: ol.length * gcw, h: 12 }, { x: r.x + 7, y: r.y + 18, w: short.length * ccw, h: 11 });
         lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text x="${f1(r.x + 7)}" y="${f1(r.y + 14)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(ol)}</text><text x="${f1(r.x + 7)}" y="${f1(r.y + 26)}" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${esc(short)}</text></g>`);
         const a0 = auditOf(el); if (a0) lg.push(badge(r.x + r.w, r.y, a0));
         return;
@@ -462,6 +478,17 @@ export function render(container, data, state) {
     const r = nodeRect(id); return r ? { key: 'n:' + id, rect: r, node: id } : null;
   };
   const singles = [], bundles = {}, onRail = [];
+  const inT = {}, outT = {}, inBox = {};
+  // The box an edge end is counted in with lines off: a drawn file's nearest laid-out section (or the loose block); a
+  // fold row counts in its section; a section, port or lens box stands for itself.
+  const boxKey = (id, end) => {
+    if (end.key[0] === 'f') return end.key === 'f:loose' ? 'o:loose' : 's:' + end.key.slice(2);
+    if (end.key[0] !== 'n') return end.key;
+    let s = data.home[id]; while (s && !D.sections[s]) s = data.parentOf[s];
+    return s ? 's:' + s : 'o:loose';
+  };
+  const boxRect = k => k.startsWith('s:') && D.sections[k.slice(2)] ? S(D.sections[k.slice(2)]) : k === 'o:loose' && D.loose ? S(D.loose)
+    : k === 'o:lens' && D.lensOut ? S(D.lensOut) : k.startsWith('p:') && iso && iso.ports[k.slice(2)] ? S(iso.ports[k.slice(2)]) : null;
   const iso = designish ? D.iso : null, elsewhere = { edges: 0, files: 0 };
   const lensSeen = designish && D.lens ? { in: 0, cross: 0, out: 0 } : null;
   const portEnd = (side, id) => { const k = iso.portOf[side][id], P = k && iso.ports[k]; return P ? { key: 'p:' + k, rect: S(P) } : null; };
@@ -476,6 +503,14 @@ export function render(container, data, state) {
     // Record how this frame routed the edge relative to the lens box; conserve() checks it against the lens's own counts.
     if (lensSeen && a && b) { const oa = a.key === 'o:lens', ob = b.key === 'o:lens'; lensSeen[oa && ob ? 'out' : oa || ob ? 'cross' : 'in']++; }
     if (!a || !b) return;
+    if (linesOff) {
+      const ka = boxKey(e.src, a), kb = boxKey(e.dst, b);
+      // Zoomed out, an edge inside one box is inside that collapsed stand-in, exactly as with lines on.
+      if (ka === kb && ovw) { map.edges[e.id] = { via: 'collapsed', group: ka.slice(2), ends: [ka] }; return; }
+      map.edges[e.id] = { via: 'folded', bundle: 'lines-off', ends: ka === kb ? [ka] : [ka, kb] };
+      if (ka === kb) inBox[ka] = (inBox[ka] || 0) + 1; else { outT[ka] = (outT[ka] || 0) + 1; inT[kb] = (inT[kb] || 0) + 1; }
+      return;
+    }
     // `ends`: the element keys this edge is drawn between (Q-028). Every element that stands for several edges opens
     // to the edges whose ends name it (inspect.js heldEdges). It sits on the same map.edges entry whose `via`
     // conserve() counts; conserve() itself reads only `via`.
@@ -492,34 +527,144 @@ export function render(container, data, state) {
     if (key) { (bundles[key] = bundles[key] || { ra, rb, edges: [] }).edges.push(e); }
     else singles.push({ e, ra, rb, ends: [a.key, b.key] });
   });
+  const placedPills = [], heavyOf = {};
+  const pillBox = (p, n) => { const pw = ('×' + n).length * cw * 0.92 + 14; return { x: p.x - pw / 2 - 2, y: p.y - 10.5, w: pw + 4, h: 21 }; };
+  // A pill keeps off other pills and box labels and, zoomed in, off every drawn file when its line allows (critic S2).
+  const freeAt = (p, n, files = true) => { const a = pillBox(p, n), on = q => a.x < q.x + q.w && q.x < a.x + a.w && a.y < q.y + q.h && q.y < a.y + a.h; return !placedPills.some(on) && !textBoxes.some(on) && (ovw || !files || !fileBoxes().some(on)); };
+  // A pill takes the first spot along its own line, from the middle out, clear of every pill placed so far; failing
+  // that, a spot spiralling out from the middle, tied back to the line by a leader (Q-034: slide, Julian's choice
+  // zoomed in; the leader is the fallback that keeps "no two pills overlap" true when a line has no room).
+  const placePill = (d, n, setLeader) => {
+    const m0 = bezMid(d);
+    const along = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82].map(t => bezAt(d, t));
+    // On its line clear of files first; else on its line over a file (HORDE's crawl: its lines cross a grid of files,
+    // and keeping off them sent 71 of 73 pills out on leaders); a leader only when its line has no room at all.
+    let at = along.find(p => freeAt(p, n)) || along.find(p => freeAt(p, n, false));
+    for (let i = 1; i <= 120 && !at; i++) { const a = i * 0.9, rr = 10 + i * 2.4, p = { x: m0.x + rr * Math.cos(a), y: m0.y + rr * Math.sin(a) }; if (freeAt(p, n)) { at = p; setLeader({ x1: m0.x, y1: m0.y, x2: p.x, y2: p.y }); } }
+    placedPills.push(pillBox(at || m0, n));
+    return at || m0;
+  };
+  // Box totals: a tab on the box's bottom border, ↑ folded edges leaving, ↓ entering (and, lines off, those inside).
+  // Placed before the pills so the pills avoid them.
+  let fileBoxCache = null;
+  const fileBoxes = () => fileBoxCache || (fileBoxCache = Object.keys(D.nodes).map(id => nodeRect(id)).filter(Boolean));
+  const totalsTab = k => {
+    const r = boxRect(k); if (!r) return;
+    // Sized with the count font's own character width (cw × 0.92, as pill() uses): narrower, and the text ran past the tab.
+    const t = `↑${outT[k] || 0} ↓${inT[k] || 0}${inBox[k] ? ' · ' + inBox[k] + ' inside' : ''}`, tw = t.length * cw * 0.92 + 14;
+    const title = `${outT[k] || 0} edges leave this box and ${inT[k] || 0} enter it${inBox[k] ? `; ${inBox[k]} run inside it` : ''}${linesOff ? ' (lines are off)' : ', folded into the lines'}. Click to list them.`;
+    // The tab opens to exactly the edges it counts (ADR 0029; inspect.js heldEdges 't:'): critic F1, it opened to nothing.
+    const holds = `data-totals="${esc(k)}" data-holds="t:${esc(k)}" data-count="${(outT[k] || 0) + (inT[k] || 0) + (inBox[k] || 0)}" style="cursor:pointer"`;
+    const onText = (x, y, w, h) => textBoxes.some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h);
+    // Zoomed in a tab also keeps off every drawn file (a box's bottom padding is ~6 px at structure zoom: big-bus).
+    const hit = (x, y, w, h) => placedPills.some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h) || onText(x, y, w, h) || (!ovw && fileBoxes().some(q => x < q.x + q.w && q.x < x + w && y < q.y + q.h && q.y < y + h));
+    if (ovw && tw > r.w - 4) {
+      // Zoomed out, a box narrower than its tab stacks it, ↑ over ↓ (over "n in"), inside its own bounds: the first
+      // place from its lower end upwards clear of every label and tab. Whole-repo's 30 px columns leave only 38 px gaps
+      // between their turned labels, too short for a 60 px tab run down the box (critic S1: it covered "impl").
+      const rows = [`↑${outT[k] || 0}`, `↓${inT[k] || 0}`, ...(inBox[k] ? [`${inBox[k]} in`] : [])];
+      const sw = Math.max(...rows.map(x => x.length)) * cw * 0.82 + 8, sh = rows.length * 11 + 4, x = r.x + r.w / 2 - sw / 2;
+      if (sw <= r.w - 2) {
+        let y = null; for (let yy = r.y + r.h - sh - 3; yy >= r.y + 3; yy -= 3) if (!hit(x, yy, sw, sh)) { y = yy; break; }
+        if (y != null) {
+          placedPills.push({ x, y, w: sw, h: sh });
+          lg.push(`<g ${holds}><title>${esc(title)}</title><rect x="${f1(x)}" y="${f1(y)}" width="${f1(sw)}" height="${f1(sh)}" rx="4" style="fill:${v('surface-panel')};stroke:${v('rule')};stroke-width:1px"/>${rows.map((row, i) => `<text x="${f1(x + sw / 2)}" y="${f1(y + 11 + i * 11)}" text-anchor="middle" style="font:${v('type-count-compact')};fill:${v('ink')}">${esc(row)}</text>`).join('')}</g>`);
+          return;
+        }
+      }
+    }
+    // Along the bottom border from the middle out, then the top border: a nested box's bottom sits just above its
+    // parent's, so their tabs would otherwise stack (stress case deep-nesting, lines off).
+    // Then its side borders and just inside its lower edge (twins sit 18 px apart: big-family, lines off, structure).
+    const xs = [0, -0.3, 0.3, -0.45, 0.45], spots = [...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y + r.h]), ...xs.map(f => [r.x + r.w / 2 + f * r.w, r.y]),
+      [r.x + r.w, r.y + r.h / 2], [r.x, r.y + r.h / 2], [r.x + r.w / 2, r.y + r.h - 13], [r.x + r.w / 2, r.y + r.h / 2]];
+    let at = spots.find(([x, y]) => !hit(x - tw / 2 - 2, y - 10.5, tw + 4, 21)), lead = null;
+    // Last resort, as for pills: spiral out from the bottom border's middle, tied back to it by a leader.
+    for (let i = 1; i <= 160 && !at; i++) { const a = i * 0.9, rr = 12 + i * 2.4, p = [r.x + r.w / 2 + rr * Math.cos(a), r.y + r.h + rr * Math.sin(a)]; if (!hit(p[0] - tw / 2 - 2, p[1] - 10.5, tw + 4, 21)) { at = p; lead = p; } }
+    const [tx, ty] = at || spots[0];
+    if (lead) lg.push(`<line data-tab-leader="${esc(k)}" x1="${f1(r.x + r.w / 2)}" y1="${f1(r.y + r.h)}" x2="${f1(tx)}" y2="${f1(ty)}" style="stroke:${v('rule')};stroke-width:1px;stroke-dasharray:2 2"/>`);
+    placedPills.push({ x: tx - tw / 2 - 2, y: ty - 10.5, w: tw + 4, h: 21 });
+    lg.push(`<g ${holds}>${pill(tx, ty, t, { anchor: 'middle', stroke: v('rule'), ink: v('ink'), title })}</g>`);
+  };
+  // A one-edge bundle is drawn as that edge.
+  Object.entries(bundles).forEach(([key, b]) => { if (b.edges.length === 1) { const cut = key.indexOf('>', 2); singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb, ends: [key.slice(0, cut), key.slice(cut + 1)] }); delete bundles[key]; } });
+  // Arrivals (Q-034): lines ending on one element never land closer than an arrowhead (ARROW px) apart. Spread down its
+  // side when its height leaves that room (stress case long-names: five on one point); otherwise, and always from
+  // eight up (Julian, 2026-10-28; wide-hub: 40 on one point), they end on a collector bar beside it with one arrow in.
+  // The critic found the first spread 1.8 px apart on HORDE: distinct coordinates, one point to the eye. Bundle lines
+  // and single edges alike, zoomed out too. Every edge is still its own line; the bar opens to the edges it gathers.
+  const ARROW = 9, arrive = {}, collectors = [];
+  {
+    const byEnd = {}, lines = [...Object.entries(bundles).map(([key, b]) => { const cut = key.indexOf('>', 2); return { id: 'b:' + key, ra: b.ra, rb: b.rb, end: key.slice(cut + 1), e: b.edges[0], edges: b.edges }; }),
+      ...singles.map(sg => ({ id: sg.e.id, ra: sg.ra, rb: sg.rb, end: sg.ends[1], e: sg.e, edges: [sg.e] }))];
+    lines.forEach(l => { (byEnd[l.end] = byEnd[l.end] || []).push(l); });
+    const order = (p, q) => mid(p.ra).y - mid(q.ra).y || mid(p.ra).x - mid(q.ra).x || (p.id < q.id ? -1 : 1);
+    Object.entries(byEnd).filter(([, g]) => g.length >= 2).sort(([a], [b]) => (a < b ? -1 : 1)).forEach(([end, g]) => {
+      g.sort(order);
+      const b = g[0].rb;
+      if (g.length < 8 && b.h / (g.length + 1) >= ARROW) { g.forEach((l, i) => { arrive[l.id] = { x: b.x, y: b.y + b.h * (i + 1) / (g.length + 1), w: b.w, h: 0, spread: true }; }); return; }
+      const fromLeft = g.filter(l => mid(l.ra).x < b.x).length >= g.length / 2, bx = fromLeft ? b.x - 16 : b.x + b.w + 16;
+      const span = Math.max(b.h, Math.min(g.length * 5, 220)), y0 = mid(b).y - span / 2;
+      g.forEach((l, i) => { arrive[l.id] = { x: bx, y: y0 + span * (i + 0.5) / g.length, w: 0, h: 0, bar: end }; });
+      collectors.push({ key: end, x: bx, y1: y0, y2: y0 + span, to: fromLeft ? b.x : b.x + b.w, y: mid(b).y, e: g[0].e, n: g.reduce((a, l) => a + l.edges.length, 0) });
+    });
+  }
+  // Zoomed out (Q-034, "heavy", Julian 2026-10-28): a bundle is a line whose weight grows with its count; only each
+  // box's heaviest outgoing line keeps a pill; every box carries its totals. Every line and pill still opens its edges.
   Object.entries(bundles).forEach(([key, b]) => {
     const cut = key.indexOf('>', 2), ends = [key.slice(0, cut), key.slice(cut + 1)];
-    if (b.edges.length === 1) { singles.push({ e: b.edges[0], ra: b.ra, rb: b.rb, ends }); return; }
-    b.edges.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends }; });
+    const bar = arrive['b:' + key] && arrive['b:' + key].bar;
+    b.edges.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends, ...(bar ? { collector: bar } : {}) }; });
     const slots = new Set(b.edges.map(slotOf)), provs = new Set(b.edges.map(e => e.provenance));
     const slot = slots.size === 1 ? [...slots][0] : 0, prov = provs.size === 1 ? [...provs][0] : 'static';
     const anyFocus = rel && b.edges.some(e => rel.has(e.src) && rel.has(e.dst));
     const dim = rel && !anyFocus;
-    const d = edgePath(b.ra, b.rb), m = bezMid(d);
-    const c = slot ? v('edge-' + slot) : v('ink-muted');
-    // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
+    const at = arrive['b:' + key], d = edgePath(b.ra, at || b.rb), c = slot ? v('edge-' + slot) : v('ink-muted');
     const sel = !!(state.selection && state.selection.type === 'bundle' && state.selection.id === key);
-    eg.push(`<path data-bundle="${esc(key)}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" marker-end="url(#${uid}-${slot}-arrow-filled)"><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
-    lg.push(`<g data-bundle="${esc(key)}" data-count="${b.edges.length}" style="cursor:pointer;opacity:${dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + b.edges.length, { anchor: 'middle', stroke: sel ? v('accent') : c, sw: sel ? v('stroke-hub') : '1px', ink: v('ink'), title: b.edges.length + ' edges folded into one line' + (provs.size > 1 ? ' · mixed provenance: ' + [...provs].join(', ') : '') + '. Click to list them.' })}</g>`);
+    if (ovw) {
+      const [ka, kb] = ends;
+      outT[ka] = (outT[ka] || 0) + b.edges.length; inT[kb] = (inT[kb] || 0) + b.edges.length;
+      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
+      if (!heavyOf[ka] || heavyOf[ka].n < b.edges.length || (heavyOf[ka].n === b.edges.length && key < heavyOf[ka].key)) heavyOf[ka] = { key, n: b.edges.length, d, c, sel, dim, provs };
+      return;
+    }
+    let leader = null;
+    const m = placePill(d, b.edges.length, lp => { leader = lp; });
+    // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
+    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
+    bundlePill(key, b.edges.length, m, { c, sel, dim, provs }, leader);
   });
+  function bundlePill(key, n, m, o, leader) {
+    if (leader) lg.push(`<line x1="${f1(leader.x1)}" y1="${f1(leader.y1)}" x2="${f1(leader.x2)}" y2="${f1(leader.y2)}" style="stroke:${o.c};stroke-width:1px;stroke-dasharray:2 2"/>`);
+    lg.push(`<g data-bundle="${esc(key)}" data-count="${n}" style="cursor:pointer;opacity:${o.dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + n, { anchor: 'middle', stroke: o.sel ? v('accent') : o.c, sw: o.sel ? v('stroke-hub') : '1px', ink: v('ink'), title: n + ' edges folded into one line' + (o.provs.size > 1 ? ' · mixed provenance: ' + [...o.provs].join(', ') : '') + '. Click to list them.' })}</g>`);
+  }
+  // Deepest boxes first: a nested box's tab takes its own border, and its parent's moves around it.
+  const depthOf = k => (k.startsWith('s:') && D.sections[k.slice(2)] ? D.sections[k.slice(2)].depth : -1);
+  // Lines off, every drawn box carries a tab, ↑0 ↓0 included (criterion 7: "every box"); zoomed out, every box with folded lines.
+  // Zoomed out a file stands in by its top box (drawnTop), so only top boxes count edges and only they carry tabs.
+  const allBoxes = linesOff ? [...Object.keys(D.sections).filter(sx => !ovw || !data.parentOf[sx] || !D.sections[data.parentOf[sx]]).map(sx => 's:' + sx), ...(D.loose ? ['o:loose'] : [])] : [];
+  if (ovw || linesOff) [...new Set([...allBoxes, ...Object.keys(outT), ...Object.keys(inT), ...Object.keys(inBox)])].sort((a, b) => depthOf(b) - depthOf(a) || (a < b ? -1 : 1)).forEach(totalsTab);
+  Object.keys(heavyOf).sort().forEach(k => { const h = heavyOf[k]; let leader = null; const m = placePill(h.d, h.n, lp => { leader = lp; }); bundlePill(h.key, h.n, m, h, leader); });
+  if (linesOff) map.linesOff = true;
   const edgeTitle = e => `${(nodeInfo(e.src) || {}).label} → ${(nodeInfo(e.dst) || {}).label} · ${e.kind}${e.role ? ' / ' + e.role : ''} · ${e.provenance}${e.condition ? ' · ' + e.condition.condition : ''}`;
   const edgeFocus = e => {
     if (!rel) return { emph: false, dim: false };
     const nodeF = focus.type === 'node' ? (e.src === focus.id || e.dst === focus.id) : focus.type === 'edge' ? e.id === focus.id : rel.has(e.src) && rel.has(e.dst);
     return { emph: nodeF, dim: !nodeF };
   };
+  // Collector (Q-034; Julian, 2026-10-28): eight or more single edges into one element end on a short bar beside it, spread by where
+  // they come from, and one arrow runs from the bar into the element (stress case wide-hub: 40 arrowheads on one point).
+  // Every edge is still its own drawn line.
   singles.forEach(({ e, ra, rb, ends }) => {
+    if (arrive[e.id]) rb = arrive[e.id];
     const { emph, dim } = edgeFocus(e), off = dimK.has(e.role || e.kind);
     // No bus fade here: a single always draws. (A fade to 0 once counted an edge as drawn that was invisible; review v4 B2.)
     const op = dim || off ? 0.22 : 1;
-    map.edges[e.id] = { via: 'drawn', ends };
-    eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}" marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"><title>${esc(edgeTitle(e))}</title></path>`);
+    map.edges[e.id] = { via: 'drawn', ends, ...(arrive[e.id] && arrive[e.id].bar ? { collector: arrive[e.id].bar } : {}) };
+    eg.push(`<path data-edge="${e.id}" d="${edgePath(ra, rb)}" style="${edgeStyle(e, emph, hoverTier(e, emph))};opacity:${f1(op * 100) / 100}"${arrive[e.id] && arrive[e.id].bar ? ' data-collected="1"' : ` marker-end="url(#${uid}-${hoverTier(e, emph) ? 't' + hoverTier(e, emph) : slotOf(e)}-${glyphOf(e)})"`}><title>${esc(edgeTitle(e))}</title></path>`);
   });
+  // A collector bar stands for the edges it gathers, so it opens to them (ADR 0029; critic F3: it opened to nothing).
+  collectors.forEach(cl => { const c = v('edge-' + slotOf(cl.e)); eg.push(`<g data-holds="c:${esc(cl.key)}" data-count="${cl.n}" style="cursor:pointer"><title>${cl.n} edges arrive here. Click to list them.</title><line x1="${f1(cl.x)}" x2="${f1(cl.x)}" y1="${f1(cl.y1)}" y2="${f1(cl.y2)}" style="stroke:${c};stroke-width:${v('stroke-rail')};stroke-linecap:round"/><path d="M${f1(cl.x)} ${f1(cl.y)}H${f1(cl.to)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slotOf(cl.e)}-${glyphOf(cl.e)})"/></g>`); });
   // rails
   if (decor > 0 && !ovw) {
     eg.push(`<g style="opacity:${decor}">`);
