@@ -128,7 +128,7 @@ Callee signatures are captured on every site, so bus contracts are checked again
 | bus | `edges`, `contract` | An edge is in at most one bus; members end at the contract target |
 | band | `levels` (top to bottom) | Upward edges are findings, never errors; exemptions handle known patterns |
 | lane | `steps`, `source` | A static lane needs an edge between every pair of steps. Any other source must name where the order comes from. Never inferred |
-| twins | `members` (sections), `interface` | |
+| twins | `members` (sections), `interface` | Members share one parent section, where their plate hangs (V10) |
 | hub | `node`, optional `placement` | |
 | loop | `cycle`, `classification`, `evidence` | Circular must be a real cycle; intentional needs evidence; unclassified waits for dialogue |
 

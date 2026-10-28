@@ -213,7 +213,7 @@ Start from `schema/examples/horde-sample/`. `docs/graph-schema.md` explains ever
 
 ## Stress cases every design must survive
 
-Draw against these before calling a primitive done. Generated data for each will land in `schema/examples/` as the crawler comes up.
+Draw against these before calling a primitive done. `tools/stress-gen.mjs` generates each one: nine are committed in `design/prototype/snapshots/stress/` (open one with `?snapshot=snapshots/stress/<case>/`), and the 4,000-file case is generated on demand (`node tools/stress-gen.mjs <dir> --case whole-repo`). `tools/stress.test.mjs` checks each in `./verify fast` (ROADMAP Q-029).
 
 | Case | Tests | Size |
 | --- | --- | --- |

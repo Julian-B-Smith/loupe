@@ -47,6 +47,10 @@ fast() {
   # 'How it works' stories (ADR 0025): files exist in the graph, unsupported links state a reason, edits never
   # invent links, accounting partitions.
   node tools/story.test.mjs || ok=1
+  # The ten stress cases (Q-029; Julian, 2026-10-27: in fast): the nine committed snapshots equal a fresh
+  # tools/stress-gen.mjs run, the 4,000-file case is generated in memory, every case balances at every level of
+  # detail, and what each case tests has a geometry check on the rendered frame.
+  node tools/stress.test.mjs || ok=1
   # Crawler build layer (Q-012): runs `cmake` configure on fixtures/cmake-basic (never a build), compares the
   # facts with the golden, and proves the scratch directory is deleted, also when configure fails. Needs cmake.
   node crawler/build.test.ts || ok=1
@@ -59,11 +63,11 @@ fast() {
   # The committed HORDE gate report (Q-025): it describes the committed graph, partitions every probe edge, loses
   # none, and every hand-written parity explanation is still used. The gate itself needs HORDE: see full.
   node tools/gate.test.mjs || ok=1
-  # loupe-check on every example snapshot, with schema validation REQUIRED.
+  # loupe-check on every example snapshot and every committed stress case, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.
   local d out
-  for d in schema/examples/*/; do
+  for d in schema/examples/*/ design/prototype/snapshots/stress/*/; do
     out="$(node tools/loupe-check.mjs "$d" 2>&1)"; local rc=$?
     printf '%s\n' "$out" | tail -1 | sed "s|^|loupe-check ${d}: |"
     [ $rc -eq 0 ] || { printf '%s\n' "$out" >&2; ok=1; }
@@ -97,7 +101,6 @@ full() {
   # from tools/horde-gate-waiting.json when it waits on something outside Loupe; it stays red either way, but exits 4
   # when every failure is such a gate with exactly its listed ids and every byte-compare held, 1 for anything else,
   # so "only waiting" is decided by code, never by reading this text.
-  # Planned (P2): stress-case renders with the meter balanced.
   local ok=0 waiting=0 horde="${LOUPE_HORDE:-$HOME/Documents/Claude/synthetic-worlds/horde}" snap=design/prototype/snapshots/horde-crawl
   if [ -e "$horde/.git" ]; then  # -e: a worktree's .git is a file
     local commit out; commit="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('$snap/graph.json','utf8')).source.commit)")"

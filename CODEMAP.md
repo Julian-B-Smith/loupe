@@ -31,6 +31,9 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
   `horde-parity-explained.json` (the hand-written reasons, pinned to a commit, reviewed like code),
   `horde-gate-waiting.json` (gates that fail for a reason outside Loupe, printed by `full`), `gate.test.mjs` (the
   committed report, in `fast`). The report lives beside the snapshot: `design/prototype/snapshots/horde-crawl/{gate,parity}.json`.
+  The stress cases (Q-029): `stress-gen.mjs` (the ten cases of docs/design-handoff.md, deterministic; nine committed in
+  `design/prototype/snapshots/stress/`, the 4,000-file one never) and `stress.test.mjs` (byte-compare, render at every
+  level of detail with the meter balanced, a geometry check per case; in `fast`).
 - `schema/examples/horde-probe/`: a real crawl of HORDE (commit c64cfdbc), produced by the probe.
 - `schema/examples/cmake-basic-0.3/`: the only 0.3 example: targets, builds/depends/generates edges, configs.
 - `docs/spinup-brief.md`: what the `/spinup` agent needs to wire Loupe into the autonomous system.

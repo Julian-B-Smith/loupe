@@ -1,0 +1,83 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "DSP (stress case).",
+      "id": "sec:dsp",
+      "label": "DSP",
+      "members": [
+        "file:src/dsp/morph.cpp",
+        "file:src/dsp/filter.cpp",
+        "file:src/dsp/delay.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "State (stress case).",
+      "id": "sec:state",
+      "label": "State",
+      "members": [
+        "file:src/state/preset_io.cpp",
+        "file:src/state/undo.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "These read and write presets.",
+      "id": "set:presets",
+      "label": "Presets",
+      "members": [
+        "file:src/dsp/morph.cpp",
+        "file:src/state/preset_io.cpp"
+      ],
+      "primitive": "set",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "These run on the audio thread.",
+      "id": "set:realtime",
+      "label": "Realtime",
+      "members": [
+        "file:src/dsp/morph.cpp",
+        "file:src/dsp/filter.cpp"
+      ],
+      "primitive": "set",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "morph is DSP, preset handling and realtime at once.",
+      "id": "overlap:morph",
+      "members": [
+        "file:src/dsp/morph.cpp"
+      ],
+      "primitive": "overlap",
+      "sets": [
+        "sec:dsp",
+        "set:presets",
+        "set:realtime"
+      ],
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:e3c98c1ab6c8362f6f70dc3ddb2ba2aab01b33552c5f91990e15957f96454c16"
+  },
+  "overlay": {
+    "hash": "sha256:3fceb447eda29fab277f429ea66d3d91c74b5eb50d23eb3ca197073c116a56ac"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

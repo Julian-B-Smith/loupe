@@ -1,0 +1,147 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "Calls (stress case).",
+      "id": "sec:slot1",
+      "label": "Calls",
+      "members": [
+        "file:src/slot1/calls_static.cpp",
+        "file:src/slot1/calls_config.cpp",
+        "file:src/slot1/calls_runtime.cpp",
+        "file:src/slot1/calls_annotated.cpp",
+        "file:src/slot1/calls_inferred.cpp",
+        "file:src/slot1/calls_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Includes (stress case).",
+      "id": "sec:slot2",
+      "label": "Includes",
+      "members": [
+        "file:src/slot2/includes_static.cpp",
+        "file:src/slot2/includes_config.cpp",
+        "file:src/slot2/includes_runtime.cpp",
+        "file:src/slot2/includes_annotated.cpp",
+        "file:src/slot2/includes_inferred.cpp",
+        "file:src/slot2/includes_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Audio (stress case).",
+      "id": "sec:slot3",
+      "label": "Audio",
+      "members": [
+        "file:src/slot3/audio_static.cpp",
+        "file:src/slot3/audio_config.cpp",
+        "file:src/slot3/audio_runtime.cpp",
+        "file:src/slot3/audio_annotated.cpp",
+        "file:src/slot3/audio_inferred.cpp",
+        "file:src/slot3/audio_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Params (stress case).",
+      "id": "sec:slot4",
+      "label": "Params",
+      "members": [
+        "file:src/slot4/params_static.cpp",
+        "file:src/slot4/params_config.cpp",
+        "file:src/slot4/params_runtime.cpp",
+        "file:src/slot4/params_annotated.cpp",
+        "file:src/slot4/params_inferred.cpp",
+        "file:src/slot4/params_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Modulation (stress case).",
+      "id": "sec:slot5",
+      "label": "Modulation",
+      "members": [
+        "file:src/slot5/modulation_static.cpp",
+        "file:src/slot5/modulation_config.cpp",
+        "file:src/slot5/modulation_runtime.cpp",
+        "file:src/slot5/modulation_annotated.cpp",
+        "file:src/slot5/modulation_inferred.cpp",
+        "file:src/slot5/modulation_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Tests (stress case).",
+      "id": "sec:slot6",
+      "label": "Tests",
+      "members": [
+        "file:src/slot6/tests_static.cpp",
+        "file:src/slot6/tests_config.cpp",
+        "file:src/slot6/tests_runtime.cpp",
+        "file:src/slot6/tests_annotated.cpp",
+        "file:src/slot6/tests_inferred.cpp",
+        "file:src/slot6/tests_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Data (stress case).",
+      "id": "sec:slot7",
+      "label": "Data",
+      "members": [
+        "file:src/slot7/data_static.cpp",
+        "file:src/slot7/data_config.cpp",
+        "file:src/slot7/data_runtime.cpp",
+        "file:src/slot7/data_annotated.cpp",
+        "file:src/slot7/data_inferred.cpp",
+        "file:src/slot7/data_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "References (stress case).",
+      "id": "sec:slot8",
+      "label": "References",
+      "members": [
+        "file:src/slot8/references_static.cpp",
+        "file:src/slot8/references_config.cpp",
+        "file:src/slot8/references_runtime.cpp",
+        "file:src/slot8/references_annotated.cpp",
+        "file:src/slot8/references_inferred.cpp",
+        "file:src/slot8/references_target.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:f1de0ff29881d89cbfa0e8740dd1eb45840cb58294c7d0213c9cc564f1524003"
+  },
+  "overlay": {
+    "hash": "sha256:99fb49117cf5aeda4af5a2816cf5807c75be2bd6f6ff7fdce17d3075668c7977"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

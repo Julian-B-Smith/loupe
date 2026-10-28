@@ -1,0 +1,652 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 48,
+      "excluded": [],
+      "files": 48
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/slot5/modulation_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.call",
+          "path": "src/slot5/modulation_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:03c54df79f3b0049",
+      "kind": "call",
+      "provenance": "config",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-config",
+      "src": "file:src/slot5/modulation_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot2/includes_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot2/includes_static.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:172e672d893c0b7e",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/slot2/includes_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot1/calls_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.call",
+          "path": "src/slot1/calls_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:180874cc3fab449f",
+      "kind": "call",
+      "provenance": "config",
+      "src": "file:src/slot1/calls_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot4/params_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.call",
+          "path": "src/slot4/params_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:1ea1d97bca4511a8",
+      "kind": "call",
+      "provenance": "config",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-config",
+      "src": "file:src/slot4/params_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot8/references_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.reference",
+          "path": "src/slot8/references_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:39dc7d7d7ed236c4",
+      "kind": "reference",
+      "provenance": "config",
+      "src": "file:src/slot8/references_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot7/data_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.data",
+          "path": "src/slot7/data_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:4a5ce925e28cd617",
+      "kind": "data",
+      "provenance": "config",
+      "src": "file:src/slot7/data_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot4/params_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot4/params_static.cpp",
+          "resolution": "exact",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:584745ccc4c14c80",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/slot4/params_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot2/includes_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.include",
+          "path": "src/slot2/includes_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:5be09de6fc362cc8",
+      "kind": "include",
+      "provenance": "config",
+      "src": "file:src/slot2/includes_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot6/tests_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot6/tests_static.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:63168b13df7e4dff",
+      "kind": "test",
+      "provenance": "static",
+      "src": "file:src/slot6/tests_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot7/data_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot7/data_static.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6ad365ce38b25bf3",
+      "kind": "data",
+      "provenance": "static",
+      "src": "file:src/slot7/data_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot8/references_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot8/references_static.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6d9e205335121c8d",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:src/slot8/references_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot3/audio_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot3/audio_static.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:76deb3ed2233f976",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/slot3/audio_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot3/audio_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.call",
+          "path": "src/slot3/audio_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:c47845d46017733a",
+      "kind": "call",
+      "provenance": "config",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-config",
+      "src": "file:src/slot3/audio_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot6/tests_target.cpp",
+      "evidence": [
+        {
+          "key": "stress.test",
+          "path": "src/slot6/tests_config.cpp",
+          "resolution": "exact",
+          "type": "config"
+        }
+      ],
+      "id": "e:c9a033e3fa3e79a1",
+      "kind": "test",
+      "provenance": "config",
+      "src": "file:src/slot6/tests_config.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot5/modulation_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot5/modulation_static.cpp",
+          "resolution": "exact",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:d3def19a8d89127e",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/slot5/modulation_static.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/slot1/calls_target.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/slot1/calls_static.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:dfe7be95f99ae2ab",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/slot1/calls_static.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot1/calls_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot1/calls_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot2/includes_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot2/includes_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot3/audio_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot3/audio_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot4/params_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot4/params_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot5/modulation_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot5/modulation_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot6/tests_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot6/tests_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot7/data_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot7/data_target.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_annotated.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_annotated.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_config.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_config.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_inferred.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_inferred.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_runtime.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_runtime.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_static.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_static.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/slot8/references_target.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/slot8/references_target.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/edge-matrix"
+  }
+}

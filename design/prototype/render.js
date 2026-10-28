@@ -57,7 +57,8 @@ export function distinctCuts(labels, n) {
   }
   return out;
 }
-export const fitMid = (s, px, cw) => { const n = Math.floor(px / cw); if (n < 3) return ''; if (s.length <= n) return s; const head = Math.ceil((n - 1) / 2), tail = n - 1 - head; return s.slice(0, head) + '…' + (tail ? s.slice(-tail) : ''); };
+// A label that fits whole is never cut, however short the room (stress case wide-hub: "UI" read "U…").
+export const fitMid = (s, px, cw) => { const n = Math.floor(px / cw); if (s.length <= n) return s; if (n < 3) return ''; const head = Math.ceil((n - 1) / 2), tail = n - 1 - head; return s.slice(0, head) + '…' + (tail ? s.slice(-tail) : ''); };
 export const glyphOf = e => SPEC.glyph.role[e.role] || SPEC.glyph.kind[e.kind] || 'arrow-filled';
 export const lodFor = k => (SPEC.lod.find(l => l.maxScale != null && k < l.maxScale) || SPEC.lod[SPEC.lod.length - 1]).name;
 
@@ -79,7 +80,7 @@ function charW() {
   if (document.fonts && document.fonts.check('500 11px "Martian Mono"')) CW = w;
   return w || 7.2;
 }
-const fit = (s, px, cw) => { const n = Math.floor(px / cw); return n < 3 ? '' : s.length <= n ? s : s.slice(0, n - 1) + '…'; };
+const fit = (s, px, cw) => { const n = Math.floor(px / cw); return s.length <= n ? s : n < 3 ? '' : s.slice(0, n - 1) + '…'; };
 
 const caches = new WeakMap();
 function memo(data, key, fn) {
@@ -299,6 +300,9 @@ export function render(container, data, state) {
     // sets
     let slot = 0;
     const setSlot = {};
+    // Boxes a set's label must not cover: files, section header bands, and the set labels already placed (critic: a hull
+    // label moved off a file landed on the Presets label, under the DSP header).
+    const setLabelBoxes = [], keepOut = () => [...Object.values(D.nodes).map(S), ...Object.values(D.sections).map(s => { const r = S(s); return { ...r, h: Math.min(r.h, L.header * z.k) }; }), ...setLabelBoxes];
     (data.byPrimitive.set || []).forEach(id => {
       const el = data.elements[id]; setSlot[id] = Math.min(4, ++slot);
       const rs = el.members.map(m => D.nodes[m] && S(D.nodes[m])).filter(Boolean);
@@ -310,14 +314,26 @@ export function render(container, data, state) {
         // Members in different sections: a hull would sweep across unrelated boxes. Mark each member instead.
         rs.forEach(r => {
           setMarks.push(`<rect data-el="${id}" x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${c};stroke:${on ? v('accent') : c};stroke-width:${on ? 1.5 : 3}px"><title>${esc(el.label + ': ' + el.claim)}</title></rect>`);
+          if (detail) setLabelBoxes.push({ x: r.x - 4, y: r.y - 12.5, w: el.label.length * cw * 0.85 + 14, h: 17 });
           if (detail) lg.push(pill(r.x - 4, r.y - 4, el.label, { stroke: c, fill: v('surface-node'), ink: v('ink-muted'), cw: cw * 0.85, attr: `data-el="${id}" style="cursor:pointer"`, title: el.label + ' · ' + el.members.length + ' files: ' + el.claim }));
         });
         return;
       }
       const pts = hull(rs.flatMap(r => rectPts(r, 7)));
       bg.push(`<polygon data-el="${id}" points="${pts.map(p => p.map(f1).join(',')).join(' ')}" style="fill:${c};stroke:${on ? v('accent') : c};stroke-width:${on ? 1.5 : 10}px;stroke-linejoin:round"><title>${esc(el.label + ': ' + el.claim)}</title></polygon>`);
-      const top = pts.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a));
-      lg.push(`<text data-el="${id}" x="${f1(top[0] + 4)}" y="${f1(top[1] + 13)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo('surface-canvas')}">${esc(el.label)} · ${el.members.length}</text>`);
+      // The label goes where it covers nothing (stress case triple-overlap: "Realtime · 2" was drawn across the next
+      // row's box, then, moved up, onto the Presets label under the DSP header).
+      const text = `${el.label} · ${el.members.length}`, tw = text.length * cw * 0.92;
+      const bot = pts.reduce((a, b) => (b[1] > a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a)), topP = pts.reduce((a, b) => (b[1] < a[1] || (b[1] === a[1] && b[0] < a[0]) ? b : a));
+      const boxes = keepOut(), hb = { x: Math.min(...pts.map(p => p[0])), y: Math.min(...pts.map(p => p[1])), x2: Math.max(...pts.map(p => p[0])), y2: Math.max(...pts.map(p => p[1])) };
+      const clear = ([x, y]) => !boxes.some(r => x < r.x + r.w && r.x < x + tw && y - 10 < r.y + r.h && r.y < y + 3);
+      // Below, above, then right of the hull; the first spot clear of every keep-out box, else below as before.
+      const spots = [[bot[0] + 4, bot[1] + 13], [topP[0] + 4, topP[1] - 5], [hb.x2 + 6, (hb.y + hb.y2) / 2 + 4]];
+      const [lx, ly] = spots.find(clear) || spots[0];
+      setLabelBoxes.push({ x: lx, y: ly - 10, w: tw, h: 13 });
+      // Its halo matches what it sits on: a section's fill (deepest box under it), else the canvas.
+      const under = Object.values(D.sections).filter(sr => { const r = S(sr); return lx >= r.x && lx <= r.x + r.w && ly >= r.y && ly <= r.y + r.h; }).sort((a, b) => b.depth - a.depth)[0];
+      lg.push(`<text data-el="${id}" x="${f1(lx)}" y="${f1(ly)}" style="font:${v('type-count')};fill:${v('ink-muted')};${halo(under ? (under.depth % 2 ? 'surface-group-nested' : 'surface-group') : 'surface-canvas')}">${esc(text)}</text>`);
     });
     // sections
     const secs = Object.entries(D.sections).sort((a, b) => a[1].depth - b[1].depth);
@@ -343,13 +359,16 @@ export function render(container, data, state) {
       const ty = r.y + (big ? Math.min(19, hs * 0.66) : Math.min(13.5, Math.max(10, hs * 0.7)));
       const headerFits = ovw || hs >= 15;
       if (ovw && !isTwin) {
-        const short = r.w - 14 >= countText.length * ccw ? countText : r.w - 14 >= (files + ' files').length * ccw ? files + ' files' : String(files);
-        const ol = fit(el.label, r.w - 14, gcw) || el.label.slice(0, 1) + '…';
+        // Zoomed out a box can be narrower than any text: draw only what fits inside it (stress case whole-repo: a
+        // fallback "M…" ran past 40 narrow boxes into their neighbours); the tooltip always has the full label and count.
+        const room = r.w - 14, short = room >= countText.length * ccw ? countText : room >= (files + ' files').length * ccw ? files + ' files' : room >= String(files).length * ccw ? String(files) : '';
+        const ol = fit(el.label, room, gcw) || (room >= 2 * gcw ? el.label.slice(0, 1) + '…' : '');
         lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label + ' · ' + countText)}</title><text x="${f1(r.x + 7)}" y="${f1(r.y + 14)}" style="font:${gFont};fill:${v('ink')};${halo(fillC)}">${esc(ol)}</text><text x="${f1(r.x + 7)}" y="${f1(r.y + 26)}" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${esc(short)}</text></g>`);
         const a0 = auditOf(el); if (a0) lg.push(badge(r.x + r.w, r.y, a0));
         return;
       }
-      if (headerFits) lg.push(`<g data-el="${id}" style="cursor:pointer"><text x="${f1(r.x + (big ? 10 : 7))}" y="${f1(ty)}" style="font:${gFont};letter-spacing:${v('tracking-group-label')};fill:${v('ink')};${halo(fillC)}">${esc(label)}</text>${showCount ? `<text x="${f1(r.x + r.w - 24)}" y="${f1(ty)}" text-anchor="end" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${countText}</text>` : ''}</g>`);
+      // A header cut to fit names its section in full in a tooltip (stress case long-names).
+      if (headerFits) lg.push(`<g data-el="${id}" style="cursor:pointer">${label !== el.label ? `<title>${esc(el.label + ' · ' + countText)}</title>` : ''}<text x="${f1(r.x + (big ? 10 : 7))}" y="${f1(ty)}" style="font:${gFont};letter-spacing:${v('tracking-group-label')};fill:${v('ink')};${halo(fillC)}">${esc(label)}</text>${showCount ? `<text x="${f1(r.x + r.w - 24)}" y="${f1(ty)}" text-anchor="end" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${countText}</text>` : ''}</g>`);
       if (big && !ovw && !isTwin) lg.push(`<g data-collapse="${id}" style="cursor:pointer"><title>${s.collapsed ? 'Expand' : 'Collapse'}</title><rect x="${f1(r.x + r.w - 20)}" y="${f1(ty - 10)}" width="14" height="14" rx="3" style="fill:transparent"/><text x="${f1(r.x + r.w - 13)}" y="${f1(ty + 0.5)}" text-anchor="middle" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${s.collapsed ? '+' : '−'}</text></g>`);
       const a = auditOf(el); if (a) lg.push(badge(r.x + r.w, r.y, a));
     });

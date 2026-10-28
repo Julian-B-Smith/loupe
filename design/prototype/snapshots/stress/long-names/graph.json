@@ -1,0 +1,431 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 14,
+      "excluded": [],
+      "files": 14
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_alpha_partial_tracker_imple.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0c6c3085eabe56f7",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_alpha_partial_tracker_imple.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_delta_partial_tracker_imple.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:12c99d6e3dfe3195",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/window.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:15a326a6727e0e67",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_bravo_partial_tracker_imple.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2405fee23af700fe",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_bravo_partial_tracker_imple.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:30b5e49968e5dc89",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_kilo_partial_tracker_implem.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:32c536ffc68d7a0e",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_kilo_partial_tracker_implem.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag3.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_delta_partial_tracker_imple.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3aa658fee18ff1c5",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_delta_partial_tracker_imple.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_bravo_partial_tracker_imple.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4e36791134e19913",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/window.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag2.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:55d27b745bf91981",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag2.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:59646a03e3379600",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/main.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:618a14617dc05405",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/main.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_alpha_partial_tracker_imple.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:655285da99351f4c",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_kilo_partial_tracker_implem.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6d7f001ef77562df",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9079f93f3c922a05",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag2.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:92cce930d7f697eb",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/window.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/fft.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9da588b144021968",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/fft.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/window.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:be247e66c96de94f",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/window.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag3.h",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:dbd12d0388738bc0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag3.h"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/dsp/fft.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/fft.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag0.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag1.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag2.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag2.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/oversampled_polyphase_halfband_filter_bank_stag3.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/oversampled_polyphase_halfband_filter_bank_stag3.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_alpha_partial_tracker_imple.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_alpha_partial_tracker_imple.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_bravo_partial_tracker_imple.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_bravo_partial_tracker_imple.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_charlie_partial_tracker_imp.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_delta_partial_tracker_imple.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_delta_partial_tracker_imple.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_foxtrot_partial_tracker_imp.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/spectral_resynthesis_kilo_partial_tracker_implem.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/spectral_resynthesis_kilo_partial_tracker_implem.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/window.h",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/window.h"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/host/main.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/host/main.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/host/plugin_entry_point_for_every_supported_host_format.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/host/plugin_entry_point_for_every_supported_host_format.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/long-names"
+  }
+}

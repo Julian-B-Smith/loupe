@@ -109,11 +109,11 @@ repo; its own session runs the skill (0021). `.loupe/config.json` there is human
 `DECISIONS.md` points at their index (docs/decisions/README.md) and holds harness decisions.
 
 **Verify targets.** `fast`: kit integrity, leak gate, the loupe-check mutation tests, the viewer's history, lens,
-render and story tests, the crawler's build, syntax and graph tests on its fixture (goldens; needs `cmake`), loupe-check
-with schema validation required on every `schema/examples/*`, `horde-sample` regenerated and byte-compared. Counts live
+render, story and stress tests (the ten stress cases, generated and byte-compared, rendered with geometry checks), the crawler's build, syntax and graph tests on its fixture (goldens; needs `cmake`), loupe-check
+with schema validation required on every `schema/examples/*` and committed stress case, `horde-sample` regenerated and byte-compared. Counts live
 in the test output, not in prose (they drifted in three files: autonomous audit, 2026-10-17); and the committed HORDE gate
 report. `full`: fast, then the HORDE gates (`tools/horde-gate.mjs` on a local HORDE checkout, `LOUPE_HORDE`; SKIPPED and
-said so without one) with the fresh crawl byte-compared to the committed snapshot. P2 adds stress-case renders.
+said so without one) with the fresh crawl byte-compared to the committed snapshot.
 
 ## Mailbox
 

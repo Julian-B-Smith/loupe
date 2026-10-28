@@ -1,0 +1,355 @@
+{
+  "conditions": [],
+  "edges": [
+    {
+      "dst": "file:src/slot4/params_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:02f49513a70dd792",
+      "kind": "call",
+      "provenance": "annotated",
+      "role": "param",
+      "src": "file:src/slot4/params_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot5/modulation_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:0aabe02b2b1a407f",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "mod",
+      "src": "file:src/slot5/modulation_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot1/calls_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:1847058db1f7f795",
+      "kind": "call",
+      "provenance": "inferred",
+      "src": "file:src/slot1/calls_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot8/references_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:240496c99693067b",
+      "kind": "reference",
+      "provenance": "inferred",
+      "src": "file:src/slot8/references_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot4/params_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:24a4bdcea75df100",
+      "kind": "call",
+      "provenance": "runtime",
+      "role": "param",
+      "src": "file:src/slot4/params_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot8/references_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:3ba621f36ec1a7b5",
+      "kind": "reference",
+      "provenance": "annotated",
+      "src": "file:src/slot8/references_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot8/references_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:45869ad0b890246a",
+      "kind": "reference",
+      "provenance": "runtime",
+      "src": "file:src/slot8/references_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot7/data_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:4b40a8d9dd50bbe6",
+      "kind": "data",
+      "provenance": "annotated",
+      "src": "file:src/slot7/data_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot2/includes_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:54d37b09cee71d60",
+      "kind": "include",
+      "provenance": "inferred",
+      "src": "file:src/slot2/includes_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot2/includes_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:6163d8dfdbe655b6",
+      "kind": "include",
+      "provenance": "annotated",
+      "src": "file:src/slot2/includes_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot3/audio_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:61ad20b10b781390",
+      "kind": "call",
+      "provenance": "annotated",
+      "role": "audio",
+      "src": "file:src/slot3/audio_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot3/audio_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7910294099adcff9",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "audio",
+      "src": "file:src/slot3/audio_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot6/tests_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:7a8ce5b608ed0ccf",
+      "kind": "test",
+      "provenance": "runtime",
+      "src": "file:src/slot6/tests_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot7/data_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:7c953d0c3faee4c4",
+      "kind": "data",
+      "provenance": "runtime",
+      "src": "file:src/slot7/data_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot7/data_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:7d0a6ee7d31910ec",
+      "kind": "data",
+      "provenance": "inferred",
+      "src": "file:src/slot7/data_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot2/includes_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:7d2f5432f07be02c",
+      "kind": "include",
+      "provenance": "runtime",
+      "src": "file:src/slot2/includes_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot6/tests_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:825dec478b5c2ae9",
+      "kind": "test",
+      "provenance": "inferred",
+      "src": "file:src/slot6/tests_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot5/modulation_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:8d56a1ca49b54759",
+      "kind": "call",
+      "provenance": "annotated",
+      "role": "mod",
+      "src": "file:src/slot5/modulation_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot4/params_target.cpp",
+      "evidence": [
+        {
+          "agent": "structure",
+          "rationale": "Invented for the stress case.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:c98f49adf2612aad",
+      "kind": "call",
+      "provenance": "inferred",
+      "role": "param",
+      "src": "file:src/slot4/params_inferred.cpp"
+    },
+    {
+      "dst": "file:src/slot1/calls_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:d44480520a609f5d",
+      "kind": "call",
+      "provenance": "annotated",
+      "src": "file:src/slot1/calls_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot1/calls_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:d538155d78a0de63",
+      "kind": "call",
+      "provenance": "runtime",
+      "src": "file:src/slot1/calls_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot5/modulation_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:dec40e05b2c1f7fe",
+      "kind": "call",
+      "provenance": "runtime",
+      "role": "mod",
+      "src": "file:src/slot5/modulation_runtime.cpp"
+    },
+    {
+      "dst": "file:src/slot6/tests_target.cpp",
+      "evidence": [
+        {
+          "author": "stress",
+          "note": "Invented for the stress case.",
+          "type": "annotation"
+        }
+      ],
+      "id": "e:e32408c86fb42ca4",
+      "kind": "test",
+      "provenance": "annotated",
+      "src": "file:src/slot6/tests_annotated.cpp"
+    },
+    {
+      "dst": "file:src/slot3/audio_target.cpp",
+      "evidence": [
+        {
+          "observed": 1,
+          "trace": "trace:stress-001",
+          "type": "trace"
+        }
+      ],
+      "id": "e:f020936be8885008",
+      "kind": "call",
+      "provenance": "runtime",
+      "role": "audio",
+      "src": "file:src/slot3/audio_runtime.cpp"
+    }
+  ],
+  "graph": {
+    "hash": "sha256:f1de0ff29881d89cbfa0e8740dd1eb45840cb58294c7d0213c9cc564f1524003"
+  },
+  "roles": [],
+  "schema": "loupe.overlay/0.2"
+}

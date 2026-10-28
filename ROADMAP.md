@@ -461,12 +461,49 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   render test holds the list to the box's ends, and a critic pass with a screenshot.
 
 ### Q-029 — The ten stress cases render (P2 gate)
-- **Status:** open. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030 and Q-031.
-- **Draft criteria (to agree before it starts):** 1. a deterministic generator emits one snapshot per stress case
-  in docs/design-handoff.md ("Stress cases every design must survive": long names, a 50-member bus, a 40-spoke hub,
-  3-level nesting, a file in three sets, a 12-step lane, 8 twins × 6 ports, 4,000 files, an 8 × 5 edge matrix, a big
-  diff); 2. each renders headless at every level of detail with the meter balanced, in `./verify full`; 3. what each
-  case tests (truncation, rail length, spoke crowding...) has a check, or a screenshot critic pass where it is visual.
+- **Status:** in progress (branch p2/q029-stress); stays open until Q-033 to Q-035 close. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
+  and Q-031; criteria agreed by poll the same day.
+- **Scope:** a generator in `tools/`, `design/prototype/snapshots/stress/`, `tools/render.test.mjs` (or a stress test
+  beside it), `verify` (fast), viewer fixes the cases expose.
+- **Acceptance criteria:** 1. a deterministic generator emits one snapshot per stress case in docs/design-handoff.md
+  ("Stress cases every design must survive": long names, a 50-member bus, a 40-spoke hub, 3-level nesting, a file in
+  three sets, a 12-step lane, 8 twins × 6 ports, 4,000 files, an 8 × 5 edge matrix, a big diff); 2. nine are committed
+  in `design/prototype/snapshots/stress/<case>/` and regenerated and byte-compared in `./verify fast`; the 4,000-file
+  case is generated into a temp dir each run and never committed; 3. each renders headless at every level of detail
+  with the meter balanced, in `./verify fast` (moved to `full`, and said so, if it pushes fast past about 30 s); 4.
+  what each case tests has a deterministic geometry check on the rendered frame, planted to fail; 5. one Opus critic
+  pass over screenshots of all ten, for what geometry cannot judge.
+- **Gaps (Julian, poll):** small fixes land in Q-029; a gap needing a new primitive gets its own queue item and Q-029
+  stays open until it closes. No check is marked waiting.
+- **Out of scope:** the matrix lens (Q-030), side by side (Q-031).
+
+- **Blocked on (gaps rule):** Q-033, Q-034, Q-035. The critic (Opus, 2026-10-27) found three cases passing by asserting
+  the opposite of the design system's own overflow rules, and two cases whose point is invisible at overview.
+- **Julian, 2026-10-27 (poll):** a twins element whose members are top-level sections draws nothing; loupe-check now
+  refuses it (members must share a parent section), so the omission cannot be silent.
+
+### Q-033 — Overflow rules of bus, twins and lane (specified, not built; blocks Q-029)
+- **Status:** open, filed 2026-10-27 from the Q-029 critic.
+- **Scope:** `design/prototype/render.js`, `layout.js`, `tools/stress.test.mjs`, the big-bus, big-family and long-lane
+  stress cases.
+- **Acceptance criteria:** as `design/system/components/*/README.md` specify them: 1. bus: past 20 taps on one side,
+  taps from the same section merge into one with a count; 2. twins: past 4 ports the conformity strip collapses to one
+  "n/m" chip with the matrix on hover; 3. lane: past 12 steps the middle folds into a "+N steps" marker (long-lane
+  grows past 12). Each a geometry check in the stress test, planted to fail; conservation still balances (a merged tap
+  or folded step is accounted, never hidden); a critic pass with screenshots.
+
+### Q-034 — Overview legibility at scale: count pills and section labels (blocks Q-029)
+- **Status:** open, filed 2026-10-27. Evidence: whole-repo at overview draws 397 `×N` pills with 878 overlapping pairs;
+  wide-hub 3 pairs at k 0.2. A count under another count cannot be read. And all 40 top-level boxes of whole-repo read
+  "M…" at fit zoom (critic): labelled, but indistinguishable. Also seen: the 40 spokes into wide-hub's hub end on one
+  point (arrowheads stack).
+- **Next:** Julian (poll, 2026-10-27): "see a few versions" before criteria. Prototype several treatments on
+  whole-repo and wide-hub, side by side, for Julian to choose; then criteria (expected: no two pills overlap on any
+  snapshot at any level of detail; top-level labels distinct at fit zoom).
+
+### Q-035 — The re-run diff at overview (blocks Q-029)
+- **Status:** open, filed 2026-10-27. Evidence: big-diff at k 0.25 shows no mark and no summary; a section's tooltip
+  says nothing of its changes. Needs a design: an aggregate mark on a stand-in box. Criteria to agree.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.

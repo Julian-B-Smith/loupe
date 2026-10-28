@@ -130,6 +130,8 @@ const cases = [
   ['as on an edge that is not generates', 'G10', v03(({ G }) => { G.schema = 'loupe.graph/0.3.2'; G.edges.find((e) => e.kind === 'builds').evidence[0].as = 'input'; })],
   ['code writing a file marked as an input', 'G10', v03(({ G }) => gen(G, 'input', 'input', true))],
   ['offset on a top-level section and a level passes', null, ({ V }) => { const top = V.elements.find((e) => e.primitive === 'section' && !e.parent); V.settings.offsets = { [top.id]: { dx: 10, dy: 0 }, 'level:0': { dx: 0, dy: 5 } }; }],
+  ['twins of top-level sections (no shared parent)', 'V10', ({ V }) => { for (const id of sec(V, 'twins:engines').members) delete sec(V, id).parent; }],
+  ['twins split across two parents', 'V10', ({ V }) => { sec(V, sec(V, 'twins:engines').members[0]).parent = 'sec:fx'; }],
   ['offset on a nested section', 'V8', ({ V }) => { const nested = V.elements.find((e) => e.primitive === 'section' && e.parent); V.settings.offsets = { [nested.id]: { dx: 1, dy: 1 } }; }],
   ['offset on a level that does not exist', 'V8', ({ V }) => { V.settings.offsets = { 'level:99': { dx: 1, dy: 1 } }; }],
   ['offset on level:00 (an alias the layout does not read)', 'V8', ({ V }) => { V.settings.offsets = { 'level:00': { dx: 1, dy: 1 } }; }],

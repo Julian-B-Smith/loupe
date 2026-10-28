@@ -225,6 +225,9 @@ export function check(dir, { schemaDir } = {}) {
         break;
       case 'twins':
         el.members.forEach((m) => needEl(el, m, 'section'));
+        // V10 (Julian, 2026-10-27): twins hang from a plate inside the section they share as parent; the layout draws
+        // nothing for twins without one (stress case big-family), so the view is refused rather than drawn silently.
+        if (new Set(el.members.map((m) => els.get(m)?.parent)).size !== 1 || !els.get(el.members[0])?.parent) err('V10', `${el.id}: its members must share one parent section (got ${el.members.map((m) => els.get(m)?.parent || 'none').join(', ')})`);
         el.interface.forEach((p) => p.peer && needNode(el, p.peer));
         break;
       case 'hub': needNode(el, el.node); break;

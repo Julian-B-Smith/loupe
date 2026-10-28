@@ -1,0 +1,119 @@
+{
+  "dialect": {
+    "name": "dsp-plugin",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "agent:structure",
+      "claim": "UI (stress case).",
+      "id": "sec:ui",
+      "label": "UI",
+      "members": [
+        "file:src/ui/ui_01.cpp",
+        "file:src/ui/ui_02.cpp",
+        "file:src/ui/ui_03.cpp",
+        "file:src/ui/ui_04.cpp",
+        "file:src/ui/ui_05.cpp",
+        "file:src/ui/ui_06.cpp",
+        "file:src/ui/ui_07.cpp",
+        "file:src/ui/ui_08.cpp",
+        "file:src/ui/ui_09.cpp",
+        "file:src/ui/ui_10.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "DSP (stress case).",
+      "id": "sec:dsp",
+      "label": "DSP",
+      "members": [
+        "file:src/dsp/dsp_01.cpp",
+        "file:src/dsp/dsp_02.cpp",
+        "file:src/dsp/dsp_03.cpp",
+        "file:src/dsp/dsp_04.cpp",
+        "file:src/dsp/dsp_05.cpp",
+        "file:src/dsp/dsp_06.cpp",
+        "file:src/dsp/dsp_07.cpp",
+        "file:src/dsp/dsp_08.cpp",
+        "file:src/dsp/dsp_09.cpp",
+        "file:src/dsp/dsp_10.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "IO (stress case).",
+      "id": "sec:io",
+      "label": "IO",
+      "members": [
+        "file:src/io/io_01.cpp",
+        "file:src/io/io_02.cpp",
+        "file:src/io/io_03.cpp",
+        "file:src/io/io_04.cpp",
+        "file:src/io/io_05.cpp",
+        "file:src/io/io_06.cpp",
+        "file:src/io/io_07.cpp",
+        "file:src/io/io_08.cpp",
+        "file:src/io/io_09.cpp",
+        "file:src/io/io_10.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "STATE (stress case).",
+      "id": "sec:state",
+      "label": "STATE",
+      "members": [
+        "file:src/state/state_01.cpp",
+        "file:src/state/state_02.cpp",
+        "file:src/state/state_03.cpp",
+        "file:src/state/state_04.cpp",
+        "file:src/state/state_05.cpp",
+        "file:src/state/state_06.cpp",
+        "file:src/state/state_07.cpp",
+        "file:src/state/state_08.cpp",
+        "file:src/state/state_09.cpp",
+        "file:src/state/state_10.cpp"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Core (stress case).",
+      "id": "sec:core",
+      "label": "Core",
+      "members": [
+        "file:src/core/registry.cpp",
+        "file:src/core/registry.h"
+      ],
+      "primitive": "section",
+      "status": "proposed"
+    },
+    {
+      "by": "agent:structure",
+      "claim": "Every subsystem registers through registry.h.",
+      "id": "hub:registry",
+      "node": "file:src/core/registry.h",
+      "primitive": "hub",
+      "status": "proposed"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:efb97c1465f389c0780194ca54167dd170594ee3a7a7137bb654f7e42862acc1"
+  },
+  "overlay": {
+    "hash": "sha256:79b31aff594a1b9332d7b41e77ce2a791e62a28443ab38aafbc6c3e89639a60c"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

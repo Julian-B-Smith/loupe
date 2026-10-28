@@ -49,5 +49,5 @@ Unpack this folder over the Loupe repo root. Everything sits under `design/`, th
 - Folding a lane past 12 steps
 - The membership strip for a file in more than 3 sets
 - Merging the twins conformity row into one chip past 4 ports
-- Stress cases beyond HORDE
+- Merging bus taps past 20 on one side (ROADMAP Q-033; the stress cases are built: Q-029)
 - Dragging a single twin on its own

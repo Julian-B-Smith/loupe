@@ -1,0 +1,1869 @@
+{
+  "crawler": {
+    "configurations": [
+      {
+        "args": [],
+        "buildType": "Release",
+        "name": "default"
+      }
+    ],
+    "dialect": {
+      "name": "dsp-plugin",
+      "version": "0.1"
+    },
+    "granularity": "file",
+    "inventory": {
+      "crawled": 80,
+      "excluded": [],
+      "files": 80
+    },
+    "languages": [
+      "cpp"
+    ],
+    "name": "loupe-stress",
+    "notEvaluated": [],
+    "scope": {
+      "exclude": [],
+      "include": [
+        "**/*"
+      ],
+      "resolution": "heuristic"
+    },
+    "version": "0.0.0-stress"
+  },
+  "edges": [
+    {
+      "count": 1,
+      "dst": "file:src/state/state_10.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:03515ebdfcc4b2da",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_20.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_19.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0a1ac25564320b25",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_19.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_10.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0a35c2e74c9678b1",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:10d77cd2d3bfaeb2",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_16.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_15.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:1109ef49c5b38df3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_15.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_08.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:127d4692abb9db05",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:127ea8fec2b031f4",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_04.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:165b1f6cc12c6541",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_13.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_12.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:16ab491c04052d80",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_12.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_08.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:1b7bfabfae2f31b8",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_13.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_12.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:1dc676315d7302c9",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_12.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:1e84000f1ff71ec7",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_19.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_18.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:1fcc2bf9495ffc78",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_18.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_15.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_14.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:27f59b4cb7a0f2b0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_14.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_10.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:297e20bd8f770b50",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_19.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_18.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2ab25954cedcedd4",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_18.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_04.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2f1a7f1a5819108e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_14.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_13.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:31b860c131cfc104",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_13.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_11.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:32d2e20ed68b78ff",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_15.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_14.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3902d36900cac0bd",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_14.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_07.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3a1d437115ba6880",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_11.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3d2fec83b9076913",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_12.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:3d30d2d634594402",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_08.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:45d31c79b2dfe563",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_05.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4b26e57e0377e262",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_07.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:4f69571bf448bbea",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_06.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:51b4ac038a539675",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:53f0d7a9706aacac",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_07.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:5ec567befaaef565",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:664d31302de7adbe",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_09.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6ba68e3ed8ea3ec9",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_17.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_16.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6c3a166d678a4703",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_16.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_19.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_18.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6de1284ee9951b76",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_18.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_16.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_15.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:6e1c253fe8a5a75d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_15.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_14.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_13.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:73c51f3b7c8e11ef",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_13.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_18.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_17.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:742ddc2493ebcf73",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_17.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_12.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:788144db3cc5f25f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_18.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_17.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7a9e0b5b8b8eb2e1",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_17.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_17.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_16.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:7ab6aa378591d27c",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_16.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_09.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:887059a728f3b23e",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_20.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_19.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:889a5da884a80d69",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_19.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_19.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_18.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:8cadce9d575c3577",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_18.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_20.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:92b1ec8950b33c09",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_20.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_09.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:92bae46c8956f7d1",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_05.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:94f237f1afac19d9",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:969b83e5c7a54a50",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_18.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_17.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:96d369fe4d13249f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_17.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_17.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_16.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:98be8cd588d5c9d0",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_16.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_16.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_15.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:98d5e7ac7a3217eb",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_15.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_20.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:99ec62a6d350ea06",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_20.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_02.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_01.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9db5c5a2a5798e23",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_01.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_15.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_14.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a08e960124574f82",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_14.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_20.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_19.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a28348aa35248823",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_19.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_18.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_17.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:a61505b94d5ed78a",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_17.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_06.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:aabada5102bb728f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_11.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b07be587e11b9ef4",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_14.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_13.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b11ae2f7b5a75453",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_13.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_13.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_12.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b6f997599500d2c9",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_12.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_12.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b93e0f9cb4990461",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_17.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_16.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:b9ef65b48e14ce47",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_16.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_06.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:be1c21a146e58834",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_04.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c03815dfd3a67ae4",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_11.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_10.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c20f12a302de739a",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_10.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_12.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_11.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c49b4474482e3abf",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_11.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_15.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_14.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:c641d45a9112f493",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_14.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_09.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_08.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:cace21762f14855f",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_08.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_20.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_19.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ccf877e9d4199cfb",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_19.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/dsp/dsp_10.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_09.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d0b1bdc30bfc17b3",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_09.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_16.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_15.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d353b5c1b50d4247",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_15.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_14.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_13.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d75636b2db10eff6",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_13.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_06.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_05.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:d94374bfd8d80778",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_05.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_04.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_03.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:daf3fc91b50cc8df",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_03.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_03.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_02.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:dda8306bf4fb21f4",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/ui/ui_02.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_13.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_12.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:df27357b0d73d643",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/io/io_12.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/ui_05.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/ui/ui_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ec41b7d9ecd179ce",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/ui/ui_04.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_08.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_07.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:f05c989e3dcd7610",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/state/state_07.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_01.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/dsp/dsp_20.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:f121e5920a44c7d8",
+      "kind": "include",
+      "provenance": "static",
+      "src": "file:src/dsp/dsp_20.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/state/state_07.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/state/state_06.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:f992434a9dea99dd",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/state/state_06.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/io/io_05.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/io/io_04.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:fcafcefca57d1d2c",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/io/io_04.cpp"
+    }
+  ],
+  "nodes": [
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_13.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_13.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_14.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_14.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_15.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_15.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_16.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_16.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_17.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_17.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_18.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_18.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_19.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_19.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/dsp/dsp_20.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/dsp/dsp_20.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_13.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_13.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_14.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_14.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_15.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_15.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_16.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_16.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_17.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_17.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_18.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_18.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_19.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_19.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/io/io_20.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/io/io_20.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_13.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_13.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_14.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_14.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_15.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_15.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_16.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_16.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_17.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_17.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_18.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_18.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_19.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_19.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/state/state_20.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/state/state_20.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_01.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_01.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_02.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_02.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_03.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_03.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_04.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_04.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_05.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_05.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_06.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_06.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_07.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_07.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_08.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_08.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_09.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_09.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_10.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_10.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_11.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_11.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_12.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_12.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_13.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_13.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_14.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_14.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_15.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_15.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_16.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_16.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_17.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_17.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_18.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_18.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_19.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_19.cpp"
+    },
+    {
+      "hash": "none",
+      "id": "file:src/ui/ui_20.cpp",
+      "kind": "file",
+      "lang": "cpp",
+      "path": "src/ui/ui_20.cpp"
+    }
+  ],
+  "schema": "loupe.graph/0.3.2",
+  "source": {
+    "commit": "sample",
+    "commitTime": "2026-10-27T00:00:00Z",
+    "dirty": false,
+    "repo": "stress/big-diff"
+  }
+}
