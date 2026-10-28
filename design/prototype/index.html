@@ -344,6 +344,8 @@ function chrome(s) {
   $('resetSeg').hidden = !(s.view === 'design' && !s.isolate && Object.values(s.offsets || {}).some(o => o && (o.dx || o.dy)));
   $('theme').textContent = s.theme === 'dark' ? 'Light' : 'Dark';
   $('lines').setAttribute('aria-pressed', String(!!s.linesOff));
+  // Lines off applies to the Design view only (render.js); elsewhere the button would claim a state the map is not in.
+  $('lines').parentElement.hidden = s.view !== 'design';
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
   $('hBack').disabled = !H.canBack; $('hFwd').disabled = !H.canForward;
   $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
@@ -366,9 +368,10 @@ function meter(c) {
   const sub = c.status === 'stale' ? 'view made for an older graph' : lz
     ? (lz.name === 'story' ? `Story · on cards ${lz.insideFiles} files, ${lz.insideEdges} edges · not in story ${lz.outsideFiles} files, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`
       : `${lz.label} lens · in focus ${lz.insideFiles} nodes, ${lz.insideEdges} edges · outside ${lz.outsideFiles} nodes, ${lz.outsideEdges} edges · crossing ${lz.crossing} · ${c.nodes.placed}/${c.nodes.total} nodes`)
-    : map && map.linesOff ? `lines off · all counted in box tabs · ${c.nodes.placed}/${c.nodes.total} nodes`
+    : map && map.linesOff ? `lines hidden · all counted in box tabs · ${c.nodes.placed}/${c.nodes.total} nodes`
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
-  $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${sub}</small>`;
+  // Lines off is said even under a lens or story line (critic S3: the lens line hid it).
+  $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${lz && map.linesOff ? 'lines hidden · ' : ''}${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
 }
@@ -778,10 +781,13 @@ function stagePanel(s, c) {
 // A ×N bundle opens to its edges (ADR 0029, Q-011): the rows come from the meter's own record (inspect.js), so the list
 // is exactly what the meter counts in this line. Each row opens its edge.
 // Any element that stands for several edges (Q-028): the edges whose recorded ends name it, from the meter's record.
+// A box key from render(): 's:<section>', 'n:<file>', 'o:loose', 'o:lens', 'p:<port>', in words.
+const boxName = k => k.startsWith('s:') || k.startsWith('n:') ? label(k.slice(2)) : k === 'o:loose' ? 'files in no section' : k === 'o:lens' ? 'outside the lens' : k.startsWith('p:') ? portName(k.slice(2)) : k;
 function holdsPanel(key) {
   const es = heldEdges(data, map, key);
   const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
-    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}` : esc(key);
+    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
+    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
   return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
     <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>

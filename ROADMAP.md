@@ -493,7 +493,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   or folded step is accounted, never hidden); a critic pass with screenshots.
 
 ### Q-034 — Overview legibility at scale: count pills and section labels (blocks Q-029)
-- **Status:** open, filed 2026-10-27. Evidence: whole-repo at overview draws 397 `×N` pills with 878 overlapping pairs;
+- **Status:** built 2026-10-28 (branch p2/q034-overview; trace: traces/2026-10-28-q034-overview.md), awaiting merge.
+  Filed 2026-10-27. Evidence: whole-repo at overview draws 397 `×N` pills with 878 overlapping pairs;
   wide-hub 3 pairs at k 0.2. A count under another count cannot be read. And all 40 top-level boxes of whole-repo read
   "M…" at fit zoom (critic): labelled, but indistinguishable. Also seen: the 40 spokes into wide-hub's hub end on one
   point (arrowheads stack).
@@ -502,6 +503,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   couple more, creative options before choosing.
 - **Julian (poll, 2026-10-28), round two (heavy, arcs, ports added):** **heavy**. Overlapping pill pairs on whole-repo
   at overview: today 2,569 · slide 2,157 · arcs 1,543 · heavy 4 · totals 0 · ports 0.
+- **Julian (poll, 2026-10-28), after the critic:** zoomed in, a pill with no clear spot on its line stays on its line
+  over a file name rather than go out on a leader (HORDE crawl at fit: 20 of 73 on leaders this way, 71 the other).
+  A box's tab opens to exactly the edges it counts (lead, from ADR 0029; the critic's question).
 - **Acceptance criteria** (from the choice): 1. zoomed out, a bundle line carries no pill except each box's heaviest
   outgoing bundle; line weight grows with the count; each box shows ↑out ↓in of its folded edges; every line, pill and
   total still opens to its exact edges (ADR 0029); 2. zoomed in, pills slide along their line to a free spot; 3. a
