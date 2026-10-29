@@ -54,4 +54,4 @@
   tallies left of their counts; the bar says "4 of them differ"); big-diff with DSP and STATE collapsed (full tallies
   below the boxes); the before side in light theme ("re-run, before: +30 ~4"); the waffle zoomed out. Not re-reviewed by
   a second critic round.
-- **Verify:** `./verify fast` exit 0.
+- **Verify:** `./verify fast` exit 0 at ae19101 (538 checks pass).
