@@ -4,6 +4,7 @@
 import { layout, L, hubPlacement } from './layout.js';
 import { counterflow, conformity } from './standins.js';
 import { diffKindOf, diffBoxText } from './inspect.js';
+import { matrixPartition, MX } from './matrix.js';
 import { stem, uniqueLabels } from './snapshot.js';
 
 export const SPEC = {
@@ -189,6 +190,8 @@ export function render(container, data, state) {
   }
   const uid = svg.getAttribute('data-loupe');
   const W = container.clientWidth || 800, H = container.clientHeight || 600;
+  // The matrix lens (Q-030) replaces the map in the Design view while it is open; node-link stays the default.
+  if (state.matrix && state.view === 'design' && data.elements[state.matrix.a]) return renderMatrix(svg, uid, W, H, data, state);
   const D = getLayout(data, state, 'design'), F = getLayout(data, state, 'flow');
   const morph = state.morph != null ? state.morph : state.view === 'design' ? 1 : 0;
   const em = ease(morph), designish = morph >= 0.5, decor = clamp((morph - 0.6) / 0.4);
@@ -1104,4 +1107,93 @@ export function render(container, data, state) {
 function internalCount(data, sec) {
   const files = new Set(data.descendants(sec).flatMap(s => data.elements[s].members));
   return data.edges.filter(e => files.has(e.src) && files.has(e.dst)).length;
+}
+
+// ---------- the matrix lens (Q-030; matrix.js holds the partition, this draws it)
+// Rows are sources, columns targets. A cell's marks: one short vertical stroke per edge in its kind's colour and its
+// provenance's dash, side by side; past MX.MARKS edges, the count instead (folded, as any count is). Margins count the
+// edges to and from files outside; one chip counts the files outside and the edges between them. Every mark, count and
+// chip carries data-holds with the key its edges' `ends` name, so each opens to exactly them (ADR 0029).
+function renderMatrix(svg, uid, W, H, data, state) {
+  const P = matrixPartition(data, state.matrix), n = P.files.length, { cell, rowHead, colHead, margin, gap, MARKS } = MX;
+  const gx = rowHead, gy = colHead, gw = n * cell;
+  const bounds = { x: 0, y: 0, w: rowHead + gw + gap + margin + 8, h: colHead + gw + gap + margin + 36 };
+  const zs = state.zoom || { auto: true };
+  let z;
+  // Fit below the floating matrix bar (padTop) and above the legend (padBottom, as the map's own fit leaves it).
+  // The legend stands about 150 px tall over the bottom-left corner (more than the map's 96 px), where the in-margin
+  // and the outside chip sit, so the matrix keeps clear of all of it.
+  // padT also holds the title and subtitle, drawn at a fixed size in screen space (scaled with the grid they overlapped).
+  const padT = 52 + 36, padB = zs.padBottom ? Math.max(zs.padBottom, 150) : 0;
+  if (zs.auto) { const k = Math.min((W - 48) / bounds.w, (H - 48 - padT - padB) / bounds.h, 1.25); z = { k, x: (W - bounds.w * k) / 2 - bounds.x * k, y: padT + (H - padT - padB - bounds.h * k) / 2 - bounds.y * k }; }
+  else z = { k: zs.k, x: zs.x, y: zs.y };
+  const X = x => x * z.k + z.x, Y = y => y * z.k + z.y, K = d => d * z.k;
+  const map = { zoom: z, lod: 'matrix', nodes: {}, edges: {}, elements: {}, drawn: new Set(), settled: true,
+    layout: { view: 'design', nodes: {}, proxy: {}, folds: {}, foldOf: {}, sections: {}, lanes: {}, plates: {}, rails: {}, iso: null, matrix: P, bounds } };
+  const sel = state.selection && state.selection.type === 'node' ? state.selection.id : null;
+  const hk = state.selection && state.selection.type === 'holds' ? state.selection.id : null;
+  const label = id => (data.nodes[id] && data.nodes[id].label) || id;
+  const cw = charW(), bg = [], g = [], lab = [];
+  const title = P.secs.map(sid => `${data.elements[sid].label} (${P.bands.find(b => b.sec === sid).to - P.bands.find(b => b.sec === sid).from} files)`).join(' × ');
+  const ty = Math.max(66, Y(0) - 22);
+  lab.push(`<text x="${f1(X(0))}" y="${f1(ty)}" style="font:${v('type-group-label')};fill:${v('ink')}">${esc('Matrix · ' + title)}</text><text x="${f1(X(0))}" y="${f1(ty + 15)}" style="font:${v('type-count')};fill:${v('ink-muted')}">rows send, columns receive · one mark per edge · click a cell to list its edges</text>`);
+  // Grid: the bands (a pair's two sections) tinted apart, a rule every 5 rows, the diagonal shaded.
+  P.bands.forEach((b, i) => {
+    const fill = i % 2 ? 'surface-group-nested' : 'surface-group';
+    bg.push(`<rect x="${f1(X(gx))}" y="${f1(Y(gy + b.from * cell))}" width="${f1(K(gw))}" height="${f1(K((b.to - b.from) * cell))}" style="fill:${v(fill)}"/>`);
+    bg.push(`<rect x="${f1(X(gx + b.from * cell))}" y="${f1(Y(gy))}" width="${f1(K((b.to - b.from) * cell))}" height="${f1(K(gw))}" style="fill:${v(fill)};opacity:.6"/>`);
+    // A pair names each band in a strip at the far left, turned to read up along its rows (row names keep clear of it).
+    if (P.bands.length > 1) { const lx = X(10), ly = Y(gy + b.to * cell) - 2; lab.push(`<text transform="rotate(-90 ${f1(lx)} ${f1(ly)})" x="${f1(lx)}" y="${f1(ly)}" style="font:${v('type-group-label-compact')};fill:${v('ink-muted')}">${esc(fit(data.elements[b.sec].label, K((b.to - b.from) * cell) - 4, 6.9))}</text>`);
+      bg.push(`<line x1="${f1(X(14))}" x2="${f1(X(14))}" y1="${f1(Y(gy + b.from * cell) + 2)}" y2="${f1(Y(gy + b.to * cell) - 2)}" style="stroke:${v('ink-faint')};stroke-width:1px"/>`); }
+  });
+  for (let i = 0; i <= n; i++) {
+    const strong = i % 5 === 0 || P.bands.some(b => b.from === i || b.to === i), st = `stroke:${v(strong ? 'ink-faint' : 'rule')};stroke-width:${strong ? 1 : 0.5}px`;
+    bg.push(`<line x1="${f1(X(gx))}" x2="${f1(X(gx + gw))}" y1="${f1(Y(gy + i * cell))}" y2="${f1(Y(gy + i * cell))}" style="${st}"/><line x1="${f1(X(gx + i * cell))}" x2="${f1(X(gx + i * cell))}" y1="${f1(Y(gy))}" y2="${f1(Y(gy + gw))}" style="${st}"/>`);
+  }
+  for (let i = 0; i < n; i++) bg.push(`<rect x="${f1(X(gx + i * cell))}" y="${f1(Y(gy + i * cell))}" width="${f1(K(cell))}" height="${f1(K(cell))}" style="fill:${v('rule')};opacity:.5"/>`);
+  // Heads: each file names its row (right-aligned) and its column (turned, reading up); a selected file's row and column
+  // are marked across the grid.
+  P.files.forEach((f, i) => {
+    map.nodes[f] = { state: 'drawn' }; map.drawn.add(f);
+    const on = f === sel, fs = Math.max(6, Math.min(11, K(cell) * 0.55));
+    if (on) bg.push(`<rect x="${f1(X(gx))}" y="${f1(Y(gy + i * cell))}" width="${f1(K(gw))}" height="${f1(K(cell))}" style="fill:${v('accent-soft')}"/><rect x="${f1(X(gx + i * cell))}" y="${f1(Y(gy))}" width="${f1(K(cell))}" height="${f1(K(gw))}" style="fill:${v('accent-soft')}"/>`);
+    const t = fit(label(f), K(rowHead - (P.bands.length > 1 ? 26 : 10)), cw * fs / 11), tc = fit(label(f), K(colHead - 10), cw * fs / 11);
+    lab.push(`<g data-node="${esc(f)}" style="cursor:pointer"><title>${esc((data.nodes[f] && data.nodes[f].path) || f)}</title><text x="${f1(X(gx - 6))}" y="${f1(Y(gy + i * cell + cell / 2) + fs * 0.35)}" text-anchor="end" style="font:500 ${f1(fs)}px/1 ${v('font-mono')};fill:${v(on ? 'accent' : 'ink')}">${esc(t)}</text><text transform="rotate(-90 ${f1(X(gx + i * cell + cell / 2) + fs * 0.35)} ${f1(Y(gy - 6))})" x="${f1(X(gx + i * cell + cell / 2) + fs * 0.35)}" y="${f1(Y(gy - 6))}" style="font:500 ${f1(fs)}px/1 ${v('font-mono')};fill:${v(on ? 'accent' : 'ink')}">${esc(tc)}</text></g>`);
+  });
+  const holds = (key, n2, inner, tip) => `<g data-holds="${esc(key)}" data-count="${n2}" style="cursor:pointer"><title>${esc(tip)}</title>${inner}</g>`;
+  const ring = key => key === hk ? `stroke:${v('accent')};stroke-width:2px;` : 'stroke:none;';
+  // Cells.
+  P.cells.forEach((es, key) => {
+    const [src, dst] = key.slice(2).split('|'), r = P.idx.get(src), c = P.idx.get(dst), x = gx + c * cell, y = gy + r * cell;
+    const many = es.length > MARKS, box = `<rect x="${f1(X(x + 1))}" y="${f1(Y(y + 1))}" width="${f1(K(cell - 2))}" height="${f1(K(cell - 2))}" style="fill:${many ? v('surface-node') : 'transparent'};${ring(key)}"/>`;
+    es.forEach(e => { map.edges[e.id] = many ? { via: 'folded', bundle: key, ends: [key] } : { via: 'drawn', ends: [key] }; });
+    const tip = `${label(src)} → ${label(dst)}: ${es.length} edge${es.length === 1 ? '' : 's'} (${es.map(e => `${e.kind}${e.role ? '/' + e.role : ''}, ${e.provenance}`).join('; ')}). Click to list them.`;
+    const marks = many ? `<text x="${f1(X(x + cell / 2))}" y="${f1(Y(y + cell / 2) + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink')}">${es.length}</text>`
+      : es.map((e, i) => { const mx = x + cell / 2 + (i - (es.length - 1) / 2) * 5; return `<line data-edge="${esc(e.id)}" x1="${f1(X(mx))}" x2="${f1(X(mx))}" y1="${f1(Y(y + 4))}" y2="${f1(Y(y + cell - 4))}" style="stroke:${v('edge-' + slotOf(e))};stroke-width:2.2px;stroke-dasharray:${SPEC.dash[e.provenance] || 'none'};stroke-linecap:${SPEC.cap[e.provenance] || 'butt'}"/>`; }).join('');
+    g.push(holds(key, es.length, box + marks, tip));
+  });
+  // Margins: edges to a file outside (right of each row), from one (below each column).
+  const mx0 = gx + gw + gap, my0 = gy + gw + gap;
+  lab.push(`<text x="${f1(X(mx0))}" y="${f1(Y(gy - 6))}" style="font:${v('type-count')};fill:${v('ink-faint')}">out</text><text x="${f1(X(gx - 6))}" y="${f1(Y(my0 + cell / 2) + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">in from outside</text>`);
+  const marginCell = (key, es, x, y, what) => {
+    es.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends: [key] }; });
+    g.push(holds(key, es.length, `<rect x="${f1(X(x + 1))}" y="${f1(Y(y + 1))}" width="${f1(K(margin - 2))}" height="${f1(K(cell - 2))}" rx="3" style="fill:${v('surface-panel')};${ring(key) === 'stroke:none;' ? `stroke:${v('rule')};stroke-width:1px;` : ring(key)}"/><text x="${f1(X(x + margin / 2))}" y="${f1(Y(y + cell / 2) + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${es.length}</text>`, what));
+  };
+  P.out.forEach((es, key) => { const f = key.slice(6), r = P.idx.get(f); marginCell(key, es, mx0, gy + r * cell, `${label(f)} sends ${es.length} edge${es.length === 1 ? '' : 's'} to files outside this matrix. Click to list them.`); });
+  P.inn.forEach((es, key) => { const f = key.slice(5), c = P.idx.get(f), x = gx + c * cell; es.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends: [key] }; });
+    g.push(holds(key, es.length, `<rect x="${f1(X(x + 1))}" y="${f1(Y(my0 + 1))}" width="${f1(K(cell - 2))}" height="${f1(K(margin - 2))}" rx="3" style="fill:${v('surface-panel')};${ring(key) === 'stroke:none;' ? `stroke:${v('rule')};stroke-width:1px;` : ring(key)}"/><text x="${f1(X(x + cell / 2))}" y="${f1(Y(my0 + margin / 2) + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${es.length}</text>`, `${label(f)} receives ${es.length} edge${es.length === 1 ? '' : 's'} from files outside this matrix. Click to list them.`)); });
+  // Everything else: the files outside stand in by one chip, which also counts the edges between them.
+  const outside = data.nodeIds.filter(id => !P.idx.has(id));
+  outside.forEach(id => { map.nodes[id] = { state: 'elsewhere', proxy: 'elsewhere' }; });
+  P.elsewhere.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere', ends: ['elsewhere'] }; });
+  if (outside.length || P.elsewhere.length) {
+    map.drawn.add('elsewhere');
+    // Below the in-margin, right-aligned to the grid: clear of the title, the heads and the margins.
+    const t = `Outside: ${outside.length} files · ${P.elsewhere.length} edges between them`, w = t.length * cw * 0.92 + 14, x = X(gx + gw + gap + margin) - w, cy = Y(my0 + margin + 10);
+    lab.push(`<g data-holds="elsewhere" data-count="${P.elsewhere.length}" style="cursor:pointer"><title>Files outside this matrix, and the edges with both ends among them. Right-click to list the edges.</title><rect x="${f1(x)}" y="${f1(cy)}" width="${f1(w)}" height="17" rx="8.5" style="fill:${v('surface-panel')};stroke:${v('rule')};stroke-dasharray:3 3"/><text x="${f1(x + w / 2)}" y="${f1(cy + 12)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(t)}</text></g>`);
+  }
+  map.elsewhere = { files: outside.length, edges: P.elsewhere.length };
+  map.matrix = { files: n, cells: P.cells.size, out: P.out.size, in: P.inn.size };
+  svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="edges">${g.join('')}</g><g data-layer="labels">${lab.join('')}</g>`;
+  return map;
 }

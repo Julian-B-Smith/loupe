@@ -151,6 +151,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
     <section class="canvas" id="canvas" aria-label="Map">
       <div class="float settings" style="gap:6px;background:none;box-shadow:none"><div class="seg" id="hubSeg" title="Hub placement" style="box-shadow:0 0 0 1px var(--loupe-rule)"><span class="lbl">Hubs</span><button data-hub="group">With group</button><button data-hub="center">Centered</button></div><div class="seg" id="resetSeg" style="box-shadow:0 0 0 1px var(--loupe-rule)" hidden><button id="resetLayout" title="Put moved sections and levels back">Reset layout</button></div></div>
       <div class="float iso" id="storyBar" hidden><span class="eyebrow">Story</span><div class="seg" id="storySeg"></div></div>
+      <div class="float iso" id="mxBar" hidden><span class="eyebrow">Matrix</span><b id="mxName"></b><label class="eyebrow" style="text-transform:none;letter-spacing:0">Pair with <select id="mxPair"></select></label><button class="btn" id="mxExit">Back to the map</button></div>
       <div class="float iso" id="isoBar" hidden><span class="eyebrow">Isolated</span><b id="isoName"></b><span class="eyebrow" id="isoElse" style="text-transform:none;letter-spacing:0"></span><button class="btn" id="isoExit">Back to full map</button></div>
       <div class="float legend" id="legend"></div>
       <div class="float zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="lod"></div></div>
@@ -215,6 +216,7 @@ const portName = k => { const id = k.split(/:(?:s|all|f):/)[1] || k; return labe
 function describe(a, b) {
   const added = (x, y) => (y || []).filter(i => !(x || []).includes(i)), removed = (x, y) => (x || []).filter(i => !(y || []).includes(i));
   if (a.isolate !== b.isolate) return b.isolate ? `isolate ${label(b.isolate)}` : `back to full map from ${label(a.isolate)}`;
+  if (JSON.stringify(a.matrix) !== JSON.stringify(b.matrix)) return b.matrix ? `matrix of ${label(b.matrix.a)}${b.matrix.b ? ' × ' + label(b.matrix.b) : ''}` : 'back to the map from the matrix';
   if (a.lens !== b.lens) return b.lens ? `${LENSES[b.lens].label.toLowerCase()} lens` : 'show everything';
   if (a.story !== b.story) return `story: ${(STORIES.find(x => x.id === b.story) || {}).title || 'first'}`;
   if (JSON.stringify(a.storyEdits) !== JSON.stringify(b.storyEdits)) {
@@ -332,6 +334,8 @@ if (!(data.byPrimitive.hub || []).length) $('hubSeg').hidden = true;
 store.on(s => { const prev = JSON.parse(localStorage.getItem('loupe-proto') || '{}'); const { offsets: _old, ...keep } = prev; localStorage.setItem('loupe-proto', JSON.stringify({ ...keep, stage: s.stage, theme: s.theme })); });
 $('resetLayout').onclick = () => A.resetLayout();
 $('isoExit').onclick = () => A.isolate(null);
+$('mxExit').onclick = () => A.setMatrix(null);
+$('mxPair').onchange = e => { const m = store.get().matrix; if (m) A.setMatrix(e.target.value ? { a: m.a, b: e.target.value } : { a: m.a }); };
 $('storySeg').onclick = e => { const b = e.target.closest('[data-story]'); if (b) A.setStory(b.dataset.story); };
 $('lensSeg').onclick = e => { const b = e.target.closest('[data-lens]'); if (b) A.setLens(b.dataset.lens || null); };
 $('hBack').onclick = () => H.back(); $('hFwd').onclick = () => H.forward();
@@ -363,7 +367,13 @@ function chrome(s) {
   const cs = curStory(s);
   $('storySeg').innerHTML = STORIES.map(x => `<button data-story="${esc(x.id)}" aria-pressed="${cs && cs.id === x.id}">${esc(x.title)}</button>`).join('');
   document.querySelectorAll('[data-lens]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.lens || null) === (s.lens || null)));
-  $('isoBar').hidden = !s.isolate || s.view !== 'design';
+  $('isoBar').hidden = !s.isolate || s.view !== 'design' || !!s.matrix;
+  // The matrix lens (Q-030): its bar names the section(s) and offers a second section to pair with.
+  $('mxBar').hidden = !s.matrix || s.view !== 'design';
+  if (s.matrix) {
+    $('mxName').textContent = label(s.matrix.a) + (s.matrix.b ? ' × ' + label(s.matrix.b) : '');
+    $('mxPair').innerHTML = `<option value="">none</option>` + data.sections.filter(x => x !== s.matrix.a).map(x => `<option value="${esc(x)}"${x === s.matrix.b ? ' selected' : ''}>${esc(label(x))}</option>`).join('');
+  }
   // Q-035: the elsewhere count is a stand-in off the map, so it says how many of its files the re-run diff marks.
   if (s.isolate) { const ew = map && map.elsewhere, dh = s.diff && map ? diffHeld(data, map, s, 'elsewhere') : null, dn = dh ? DIFF_KINDS.reduce((a, k) => a + dh[k].length, 0) : 0; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere${dn ? ` · ${dn} of them differ from the last run` : ''}` : ''; }
   legend(s);
@@ -555,6 +565,7 @@ function showMenu(target, cx, cy) {
     // An expanded box draws its files and edges, and its ×N lines open on their own (Q-011).
     if (s.collapsed.includes(id) || (map && (map.lod === 'overview' || map.linesOff))) listItem('s:' + id, `this box stands for`);
     if (s.isolate !== id) items.push({ label: `Isolate ${label(id)}`, run: () => A.isolate(id) });
+    items.push({ label: `Matrix of ${label(id)}`, sub: 'files as rows and columns, one mark per edge', run: () => A.setMatrix({ a: id }) });
     items.push({ label: `${s.collapsed.includes(id) ? 'Expand' : 'Collapse'} ${label(id)}`, run: () => A.toggleCollapsed(id) });
     const fold = map && map.layout.folds[id];
     if (!skipFold && (fold || s.unfolded.includes(id))) items.push({ label: s.unfolded.includes(id) ? `Fold ${label(id)} again` : `Show ${fold.members.length} folded files`, run: () => A.toggleUnfold(id) });
@@ -635,6 +646,7 @@ pb.onclick = e => {
   const [type, id] = [b.dataset.type, b.dataset.go];
   if (type === 'collapse') return A.toggleCollapsed(id);
   if (type === 'unfold') return A.toggleUnfold(id);
+  if (type === 'matrix') return A.setMatrix({ a: id });
   if (type === 'isolate') return A.isolate(id === '-' ? null : id);
   if (type.startsWith('st-')) return storyAction(type, id);
   if (type === 'tour') return A.setTour({ step: +id });
@@ -704,7 +716,7 @@ function elementPanel(id) {
     const collapsed = store.get().collapsed.includes(id);
     const iso = store.get().isolate === id, fold = map && map.layout.folds[id], unf = store.get().unfolded.includes(id);
     body = `<div class="row"><span class="path">${data.filesIn(id)} files${data.children[id].length ? ' · ' + data.children[id].length + ' subsections' : ''}</span>${go('collapse', id, collapsed ? 'Expand' : 'Collapse', 'btn')}</div>
-      <div class="row" style="justify-content:flex-start;gap:8px">${go('isolate', iso ? '-' : id, iso ? 'Back to full map' : 'Isolate', 'btn primary')}${fold || unf ? go('unfold', id, unf ? 'Fold again' : `Show ${fold.members.length} folded files`, 'btn') : ''}</div>
+      <div class="row" style="justify-content:flex-start;gap:8px">${go('isolate', iso ? '-' : id, iso ? 'Back to full map' : 'Isolate', 'btn primary')}${go('matrix', id, 'Matrix', 'btn')}${fold || unf ? go('unfold', id, unf ? 'Fold again' : `Show ${fold.members.length} folded files`, 'btn') : ''}</div>
       ${data.children[id].length ? `<div class="list">${data.children[id].map(elCard).join('')}</div>` : ''}
       ${files.length ? `<div><span class="eyebrow">Files</span>${files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m">${data.edges.filter(e => e.src === f || e.dst === f).length} edges</span>`, 'erow')).join('')}</div>` : ''}`;
   } else if (p === 'bus') {
@@ -810,7 +822,10 @@ function diffBoxPanel(proxy) {
 }
 function holdsPanel(key) {
   const es = heldEdges(data, map, key);
-  const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
+  // Matrix keys (Q-030): a cell 'x:<src>|<dst>', a margin 'x:out|<f>' or 'x:in|<f>'; 'elsewhere' is the matrix's chip there.
+  const mx = key.startsWith('x:') ? key.slice(2).split('|') : null;
+  const what = mx ? (mx[0] === 'out' ? `From ${esc(label(mx[1]))} to files outside the matrix` : mx[0] === 'in' ? `Into ${esc(label(mx[1]))} from files outside the matrix` : `From ${esc(label(mx[0]))} to ${esc(label(mx[1]))}`)
+    : key === 'elsewhere' && store.get().matrix ? 'Between files outside the matrix' : key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
     : key.startsWith('f:') ? `Folded ${data.elements[key.slice(2)] && data.elements[key.slice(2)].primitive === 'lane' ? 'steps' : 'files'} of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
     : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : key.startsWith('m:') ? `Merged tap from ${esc(key.split('|')[1] === '-' ? 'files in no section' : boxName('s:' + key.split('|')[1]))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
@@ -941,7 +956,7 @@ function panel(s, c) {
   const sel = s.selection;
   const noPos = Object.fromEntries(Object.entries(s.storyEdits || {}).map(([k, e]) => [k, { ...e, pos: undefined }]));
   // The level of detail and the open ports change what a box or port stands for (critic M1).
-  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.isoOpen, s.lens, s.view, s.story, noPos, map && map.lod, s.linesOff]);
+  const key = JSON.stringify([sel, s.stage, s.tour, s.diff, s.collapsed, s.settings, s.unfolded, s.isolate, s.isoOpen, s.lens, s.view, s.story, noPos, map && map.lod, s.linesOff, s.matrix]);
   // An unchanged edge list is not rebuilt on every paint (critic L3: the elsewhere chip holds 629 rows on HORDE, and
   // a hover repaints): the key says everything the list depends on.
   if (pb.dataset.key === key && sel && (sel.type === 'holds' || sel.type === 'bundle')) return;

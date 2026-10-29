@@ -547,11 +547,23 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Lead, on criterion 1 (critic L3 agrees):** under a diff, layout pins every marked file out of fold rows and the loose
   block, so those two never hold one and never need a tally; the stress test asserts the pin on both sides.
 
+### Q-036 — A loupe-spec block for the diff tally (human gate: schema)
+- **Status:** open, waiting on Julian (from REFLECTIONS, 2026-10-29). The tally (Q-035) has a prose spec only,
+  `design/system/components/diff-tally/README.md`; its loupe-spec block needs `diff-tally` added to the primitive list in
+  `schema/loupe-spec.schema.json`, a schema change (human gate). Until then its values live in render.js §4b.
+- **Acceptance criteria (draft):** 1. Julian approves the schema change; 2. the block validates (render.test.mjs);
+  3. render.js reads the tally's values from it, not hard-coded.
+
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
-- **Status:** open. Julian, 2026-10-27: required before v1.
-- **Draft criteria:** 1. for one section or a pair, rows and columns are files and cells are edges with their
-  provenance, lossless by construction (every edge between them in exactly one cell, counted by the meter); 2.
-  node-link stays the default and the path view; 3. a render test of the partition, and a screenshot critic pass.
+- **Status:** in progress (branch p2/q030-matrix), 2026-10-29. Julian, 2026-10-27: required before v1.
+- **Julian (poll, 2026-10-29):** opened from a section (its menu or panel: "Matrix"; a second section makes a pair); the
+  map swaps to the matrix with Back, like isolate. A cell holding several edges shows one mark per edge, side by side,
+  each in its kind colour and provenance dash; past 3, a count. A click lists them.
+- **Acceptance criteria (agreed by poll, 2026-10-29):** 1. for one section or a pair, rows and columns are files and
+  cells are edges with their provenance, lossless by construction (every edge between them in exactly one cell, counted
+  by the meter); 2. node-link stays the default and the path view; 3. a render test of the partition, and a screenshot
+  critic pass; 4. stress-test checks planted to fail, on HORDE's dense section and a stress case; 5. a cell opens to
+  exactly its edges (ADR 0029).
 
 ### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.
