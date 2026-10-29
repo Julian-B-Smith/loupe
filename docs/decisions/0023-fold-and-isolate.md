@@ -19,6 +19,12 @@ laid out. Every edge with exactly one end inside becomes a port: inputs on a lef
 one port per peer section with its edge count. Opening a port lists its files as ports, folded past 12 like a
 section. Edges with no end inside are not drawn; they are counted in an "Elsewhere: N files · M edges" chip.
 
+**Amendment, 2026-10-28 (Julian, poll; ROADMAP Q-033).** One fold now takes lane steps: an inline lane past 12 steps
+keeps its first and last 5, and its other middle steps fold into a `+N steps` row, the lane spec's overflow rule. A
+middle step that another element claims, or a re-run diff marks, stays drawn, so the middle may fold into several
+rows. A routed lane never folds. The rule above still holds for a section's own fold row. "Show every step" (the
+lane's inspector, or a click on the row) unfolds; "Fold the middle again" refolds.
+
 ## The one rule
 
 Both are lossless views. A folded file is stood in for by its fold row; an outside file by its port or by the

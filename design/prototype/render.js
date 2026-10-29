@@ -416,7 +416,7 @@ export function render(container, data, state) {
           lg.push(`<g data-el="${id}" data-twin="${esc(sec)}" data-conf="${text}" style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="13" rx="3" style="fill:${v('surface-node')};stroke:${v(COL[worst])};stroke-width:1.25px"/><text x="${f1(x + w / 2)}" y="${f1(y + 9.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v(COL[worst])}">${text}</text></g>`);
           if (state.hover && state.hover.id === id && state.hover.twin === sec) {
             const nameW = Math.max(...el.members.map(m => (data.elements[m].label || m).length)) * cw * 0.92 + 16, colW = Math.max(...el.interface.map(pt => pt.name.length)) * cw * 0.92 + 12;
-            const gw = nameW + colW * el.interface.length + 8, gh = 22 + el.members.length * 16 + 6, gx = Math.max(4, x + w - gw), gy = y + 18;
+            const gw = nameW + colW * el.interface.length + 8, gh = 22 + el.members.length * 16 + 6, gx = Math.max(4, x + w - gw), gy = Math.max(4, Math.min(y + 18, H - gh - 4));
             const cells = [`<rect x="${f1(gx)}" y="${f1(gy)}" width="${f1(gw)}" height="${f1(gh)}" rx="6" style="fill:${v('surface-panel')};stroke:${v('ink-faint')};stroke-width:1px"/>`];
             el.interface.forEach((pt, j) => cells.push(`<text data-head="${j}" x="${f1(gx + nameW + j * colW + colW / 2)}" y="${f1(gy + 15)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(pt.name)}</text>`));
             el.members.forEach((m, r) => {
@@ -506,7 +506,7 @@ export function render(container, data, state) {
   // fold row counts in its section; a section, port or lens box stands for itself.
   const boxKey = (id, end) => {
     // A lane's folded middle (keyed by the lane) sits in the lane's own section.
-    if (end.key[0] === 'f') return end.key === 'f:loose' ? 'o:loose' : D.folds[end.key.slice(2)] && D.folds[end.key.slice(2)].lane ? 's:' + D.lanes[end.key.slice(2)].section : 's:' + end.key.slice(2);
+    if (end.key[0] === 'f') { const f = D.folds[end.key.slice(2)]; return end.key === 'f:loose' ? 'o:loose' : f && f.lane ? 's:' + D.lanes[f.lane].section : 's:' + end.key.slice(2); }
     if (end.key[0] !== 'n') return end.key;
     let s = data.home[id]; while (s && !D.sections[s]) s = data.parentOf[s];
     return s ? 's:' + s : 'o:loose';
@@ -704,25 +704,33 @@ export function render(container, data, state) {
       Object.keys(by).sort().forEach(k => {
         if (by[k].length === 1) { out.push({ edges: by[k] }); return; }
         by[k].forEach(e => { map.edges[e.id].tap = 'm:' + k; });
-        out.push({ key: 'm:' + k, side, edges: by[k] });
+        // j: this group's place among its section's merged groups, so two provenances from one section never share a
+        // comb (critic H2: interleaved runtime taps vanished under the static comb).
+        const pre = k.split('|').slice(0, 2).join('|'), j = out.filter(o => o.key && o.key.slice(2).split('|').slice(0, 2).join('|') === pre && o.side === side).length;
+        out.push({ key: 'm:' + k, side, edges: by[k], j });
       });
     });
     return out;
   };
-  // A merged tap leaves its comb through a gap between two of its files, so it runs between file rows, never through a
-  // file; sections side by side (big-bus: banks A to D at one height) each take a different gap, the free one nearest
-  // the comb's middle, 9 px (the spec's memberGap) from any other tap. A single-file run has no gap: its own middle.
-  const freeAlong = (used, ps) => {
-    const s = ps.slice().sort((a, b) => a - b), c = (s[0] + s[s.length - 1]) / 2;
-    const gaps = s.length > 1 ? s.slice(1).map((p, i) => (p + s[i]) / 2) : [c];
-    const p = gaps.sort((a, b) => Math.abs(a - c) - Math.abs(b - c) || a - b).find(q => used.every(u => Math.abs(u - q) >= 9));
-    const at = p != null ? p : c; used.push(at); return at;
+  // Where a merged tap's line meets the rail: first a gap between two of its own files (so the line runs between file
+  // rows), then any spot along its comb; the nearest to the comb's middle that is 9 px (the spec's memberGap) from every
+  // other tap and crosses no drawn file on its way (`clear`), so banks side by side, or one moved off the row grid
+  // (critic M3), each take their own clear line. With no clear spot it takes the nearest free one: the stress test says
+  // whether any tap still crosses a file.
+  const freeAlong = (used, cands, lo, hi, clear) => {
+    const c = (lo + hi) / 2, scan = []; for (let p = Math.ceil(lo); p <= hi; p++) scan.push(p);
+    const by = xs => xs.slice().sort((a, b) => Math.abs(a - c) - Math.abs(b - c) || a - b), free = q => used.every(u => Math.abs(u - q) >= 9);
+    const at = by(cands).find(q => free(q) && clear(q)) ?? by(scan).find(q => free(q) && clear(q)) ?? by(cands).find(free) ?? c;
+    used.push(at); return at;
   };
-  // comb: the short ticks from each source file and the bar joining them; tap: the one line from the bar to the rail.
-  const mergedTap = (g, comb, tap, jx, jy, px, py, side) => {
+  // ticks: one short path per source file; bar: the comb joining them; tap: the one line from the bar to the rail. An
+  // edge in focus gets its own emphasised tick, so an edge opened from the list stands out from its siblings (critic M6).
+  const mergedTap = (g, ticks, bar, tap, jx, jy, px, py, side) => {
     const e = g.edges[0], emph = g.edges.some(x => edgeFocus(x).emph), st = edgeStyle(e, emph, hoverTier(e, emph)), n = g.edges.length;
     const sec = data.home[e.src], from = sec && data.elements[sec] ? data.elements[sec].label : 'files in no section';
-    return `<g data-holds="${esc(g.key)}" data-count="${n}" style="cursor:pointer"><title>${esc(`${n} taps from ${from} merged into one (${e.provenance}). Click to list the edges.`)}</title><path d="${comb}" style="${st}"/><path d="${tap}" style="${st}"/><circle cx="${f1(jx)}" cy="${f1(jy)}" r="3" data-taps="${n}" style="fill:${v('edge-' + slotOf(e))}"/>${pill(px + (side === 'start' ? 4 : side === 'end' ? -4 : 0), py, String(n), { anchor: side, stroke: v('edge-' + slotOf(e)), ink: v('ink') })}</g>`;
+    const tk = g.edges.map((x, i) => { const f = edgeFocus(x).emph; return `<path${f ? ` data-edge="${x.id}"` : ''} d="${ticks[i]}" style="${edgeStyle(x, f, hoverTier(x, f))}"/>`; }).join('');
+    map.drawn.add(g.key);
+    return `<g data-holds="${esc(g.key)}" data-count="${n}" style="cursor:pointer"><title>${esc(`${n} taps from ${from} merged into one (${e.provenance}). Click to list the edges.`)}</title><path d="${bar}" style="${st}"/><path d="${tap}" style="${st}"/>${tk}<circle cx="${f1(jx)}" cy="${f1(jy)}" r="3" data-taps="${n}" style="fill:${v('edge-' + slotOf(e))}"/>${pill(px + (side === 'start' ? 4 : side === 'end' ? -4 : 0), py, String(n), { anchor: side, stroke: v('edge-' + slotOf(e)), ink: v('ink') })}</g>`;
   };
   // rails
   if (decor > 0 && !ovw) {
@@ -739,15 +747,21 @@ export function render(container, data, state) {
       const gOp = rel && !anyRel && !on ? 0.22 : 1;
       eg.push(`<g data-el="${id}" style="opacity:${gOp}">`);
       const exits = new Set(), used = []; // used: where taps already meet the rail
+      let fr = null; const files = () => fr || (fr = Object.keys(D.nodes).map(nodeRect).filter(Boolean)); // drawn files, once a rail merges
+      // A comb sits beyond every drawn file of its section, not just its own sources: a second comb 5 px further out
+      // would otherwise land in the next row of files (horizontal rail, wrapping flow section).
+      const homeRects = src => Object.keys(D.nodes).filter(n => data.home[n] === data.home[src]).map(nodeRect).filter(Boolean);
       if (R.o === 'v') {
         const rx = R.x * z.k + z.x, y1 = R.y1 * z.k + z.y, y2 = R.y2 * z.k + z.y;
         eg.push(`<line x1="${f1(rx)}" x2="${f1(rx)}" y1="${f1(y1 - 6)}" y2="${f1(y2 + 6)}" style="stroke:${c};stroke-width:${on ? 4.5 : v('stroke-rail')};stroke-linecap:round"/>`);
         tapGroups(id, mine, e => (nodeRect(e.src).x + nodeRect(e.src).w <= rx ? 'l' : 'r')).forEach(g => {
           if (g.key) { // merged: a comb along the files' near edges, one tap from its middle to the rail
             const rs = g.edges.map(e => nodeRect(e.src)), left = g.side === 'l';
-            const ex = left ? Math.max(...rs.map(r => r.x + r.w)) : Math.min(...rs.map(r => r.x)), cx = ex + (left ? 6 : -6);
-            const ys = rs.map(r => mid(r).y), y0 = Math.min(...ys), y1 = Math.max(...ys), ty = freeAlong(used, ys);
-            eg.push(mergedTap(g, `${rs.map(r => `M${f1(left ? r.x + r.w : r.x)} ${f1(mid(r).y)}H${f1(cx)}`).join('')}M${f1(cx)} ${f1(y0)}V${f1(y1)}`, `M${f1(cx)} ${f1(ty)}H${f1(rx)}`, rx, ty, cx, ty, left ? 'start' : 'end'));
+            const all = homeRects(g.edges[0].src), ex = left ? Math.max(...all.map(r => r.x + r.w)) : Math.min(...all.map(r => r.x)), cx = ex + (left ? 6 + 5 * g.j : -6 - 5 * g.j);
+            const ys = rs.map(r => mid(r).y), y0 = Math.min(...ys), y1 = Math.max(...ys), so = ys.slice().sort((a, b) => a - b);
+            const xa = Math.min(cx, rx), xb = Math.max(cx, rx), clear = y => !files().some(r => y > r.y && y < r.y + r.h && r.x < xb && r.x + r.w > xa);
+            const ty = freeAlong(used, so.length > 1 ? so.slice(1).map((p, i) => (p + so[i]) / 2) : so, y0, y1, clear);
+            eg.push(mergedTap(g, rs.map(r => `M${f1(left ? r.x + r.w : r.x)} ${f1(mid(r).y)}H${f1(cx)}`), `M${f1(cx)} ${f1(y0)}V${f1(y1)}`, `M${f1(cx)} ${f1(ty)}H${f1(rx)}`, rx, ty, cx, ty, left ? 'start' : 'end'));
             return;
           }
           const e = g.edges[0], a = nodeRect(e.src), ay = mid(a).y, { emph } = edgeFocus(e);
@@ -764,10 +778,14 @@ export function render(container, data, state) {
         eg.push(`<line x1="${f1(x1 - 6)}" x2="${f1(x2 + 6)}" y1="${f1(ry)}" y2="${f1(ry)}" style="stroke:${c};stroke-width:${on ? 4.5 : v('stroke-rail')};stroke-linecap:round"/>`);
         tapGroups(id, mine, e => (nodeRect(e.src).y + nodeRect(e.src).h < ry ? 'a' : 'b')).forEach(g => {
           if (g.key) {
-            const rs = g.edges.map(e => nodeRect(e.src)), above = g.side === 'a';
-            const ey = above ? Math.max(...rs.map(r => r.y + r.h)) : Math.min(...rs.map(r => r.y)), cy = ey + (above ? 6 : -6);
-            const xs = rs.map(r => mid(r).x), x0 = Math.min(...xs), x1 = Math.max(...xs), tx = freeAlong(used, xs);
-            eg.push(mergedTap(g, `${rs.map(r => `M${f1(mid(r).x)} ${f1(above ? r.y + r.h : r.y)}V${f1(cy)}`).join('')}M${f1(x0)} ${f1(cy)}H${f1(x1)}`, `M${f1(tx)} ${f1(cy)}V${f1(ry)}`, tx, ry, tx, cy + (above ? 12 : -12), 'middle'));
+            // Sources in a wrapping flow section sit in rows: a tick runs out of its file's side into the column gap and
+            // down (or up) the gap to the comb, never through the file below it (critic M4).
+            const rs = g.edges.map(e => nodeRect(e.src)), above = g.side === 'a', gap = L.flowGap * z.k / 2;
+            const all = homeRects(g.edges[0].src), ey = above ? Math.max(...all.map(r => r.y + r.h)) : Math.min(...all.map(r => r.y)), cy = ey + (above ? 6 + 5 * g.j : -6 - 5 * g.j);
+            const gx = rs.map(r => r.x + r.w + Math.min(gap, 10)), x0 = Math.min(...gx), x1 = Math.max(...gx);
+            const ya = Math.min(cy, ry), yb = Math.max(cy, ry), clear = x => !files().some(r => x > r.x && x < r.x + r.w && r.y < yb && r.y + r.h > ya);
+            const tx = freeAlong(used, [...new Set(gx)], x0, x1, clear);
+            eg.push(mergedTap(g, rs.map((r, i) => `M${f1(r.x + r.w)} ${f1(mid(r).y)}H${f1(gx[i])}V${f1(cy)}`), `M${f1(x0)} ${f1(cy)}H${f1(x1)}`, `M${f1(tx)} ${f1(cy)}V${f1(ry)}`, tx, ry, tx, cy + (above ? 12 : -12), 'middle'));
             return;
           }
           const e = g.edges[0], a = nodeRect(e.src), ax = mid(a).x, { emph } = edgeFocus(e);
@@ -937,11 +955,12 @@ export function render(container, data, state) {
     const r = S(f), n = f.members.length, ins = new Set(f.members);
     const ec = data.edges.filter(e => ins.has(e.src) || ins.has(e.dst)).length;
     // A lane's folded middle reads as steps, numbered, on the lane's spine (lane spec: "+N steps").
-    const lane = f.lane && data.elements[sec], from = lane && lane.steps.indexOf(f.members[0]) + 1;
+    // A lane's row is keyed '<lane>' or '<lane>#k' (layout: a claimed step splits the middle); a click unfolds the lane.
+    const lane = f.lane && data.elements[f.lane], from = lane && lane.steps.indexOf(f.members[0]) + 1;
     const text = fit(lane ? `+${n} steps · ${ec} edges` : `+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
     const tip = lane ? `Steps ${from} to ${from + n - 1} of ${lane.label} folded here, with ${ec} edges. Click to show them; right-click to list the edges.` : `${n} less-connected files folded here, with ${ec} edges. Click to show all; right-click to list the edges.`;
     map.drawn.add('fold:' + sec);
-    ng.push(`<g data-unfold="${esc(sec)}" data-holds="f:${esc(sec)}" data-count="${ec}"${lane ? ` data-lane-fold="${n}"` : ''} style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
+    ng.push(`<g data-unfold="${esc(f.lane || sec)}" data-holds="f:${esc(sec)}" data-count="${ec}"${lane ? ` data-lane-fold="${n}"` : ''} style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
   });
   if (designish && D.lens) {
     const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;

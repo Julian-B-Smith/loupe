@@ -39,18 +39,21 @@ function membersOf(data, state, sec) {
     .concat(removedNodes(data, state).filter(r => r.home === sec).map(r => r.id));
 }
 
-// Files some element makes a claim about (lane step, hub, set, overlap, loop) are never folded away:
-// hiding them would hide the claim. Degree ranks the rest so a fold keeps the busiest files visible.
+// Files some element makes a claim about (lane step, hub, set, overlap, loop) are never folded into a section's fold row:
+// hiding them would hide the claim. Degree ranks the rest so a fold keeps the busiest files visible. A lane's own
+// middle fold (Q-033) is the one fold that takes lane steps; `claims` says which elements claim each file, so it keeps
+// a step some other element claims (Julian, poll 2026-10-28).
 const foldInfo = new WeakMap();
 function foldMeta(data) {
   let m = foldInfo.get(data); if (m) return m;
-  const pinned = new Set(), deg = {};
+  const pinned = new Set(), deg = {}, claims = {};
+  const pin = (n, id) => { pinned.add(n); (claims[n] = claims[n] || new Set()).add(id); };
   data.order.forEach(id => { const el = data.elements[id];
-    (el.steps || []).concat(el.node ? [el.node] : [], el.primitive === 'section' ? [] : el.members || [], el.cycle || []).forEach(n => pinned.add(n));
+    (el.steps || []).concat(el.node ? [el.node] : [], el.primitive === 'section' ? [] : el.members || [], el.cycle || []).forEach(n => pin(n, id));
     // Bus endpoints too: a bus edge landing on a fold row would leave its rail without an end.
-    (el.primitive === 'bus' ? el.edges : []).forEach(x => { const e = data.edgeById[x]; if (e) { pinned.add(e.src); pinned.add(e.dst); } }); });
+    (el.primitive === 'bus' ? el.edges : []).forEach(x => { const e = data.edgeById[x]; if (e) { pin(e.src, id); pin(e.dst, id); } }); });
   data.edges.forEach(e => { deg[e.src] = (deg[e.src] || 0) + 1; deg[e.dst] = (deg[e.dst] || 0) + 1; });
-  foldInfo.set(data, (m = { pinned, deg }));
+  foldInfo.set(data, (m = { pinned, deg, claims }));
   return m;
 }
 
@@ -62,7 +65,8 @@ function designLayout(data, state) {
   const N = L.node, collapsed = new Set(state.collapsed || []);
   const els = id => data.elements[id];
   // Isolate (state.isolate = section id): lay out only that section's subtree; everything else becomes ports.
-  const iso = state.isolate && data.elements[state.isolate] ? state.isolate : null;
+  // Sections only: a lane id reached isolate from the '+N steps' row's menu and threw (Q-033 critic H1).
+  const iso = state.isolate && data.elements[state.isolate] && data.elements[state.isolate].primitive === 'section' ? state.isolate : null;
   // A lens (0019) shows only its files; isolate takes precedence and always shows the section against the whole graph.
   const LZ = iso ? null : lensFor(data, state.lens);
   // Diff ghosts (removed files) are not graph nodes, so the lens cannot place them; they stay with their section.
@@ -77,7 +81,8 @@ function designLayout(data, state) {
   const unfolded = new Set(state.unfolded || []), FM = foldMeta(data);
   // While a re-run diff is shown, changed, added, stale and removed files keep their own rows (their marks are the point).
   const D0 = state.diff && data.diff ? data.diff : null;
-  const pinned = D0 ? new Set([...FM.pinned, ...(D0.added || []), ...(D0.changed || []), ...(D0.stale || []), ...(D0.removed || []).map(r => r.id)]) : FM.pinned;
+  const marked = new Set(D0 ? [...(D0.added || []), ...(D0.changed || []), ...(D0.stale || []), ...(D0.removed || []).map(r => r.id)] : []);
+  const pinned = D0 ? new Set([...FM.pinned, ...marked]) : FM.pinned;
   const P = { view: 'design', nodes: {}, proxy: {}, folds: {}, foldOf: {}, sections: {}, lanes: {}, plates: {}, levels: [], gutter: null, rails: {}, tethers: [], colOf: {}, levelOf: {}, bounds: null, iso: null };
 
   // ---- one section, returns {w,h}; target is P or a scratch object for measuring
@@ -122,15 +127,20 @@ function designLayout(data, state) {
       }
       if (lane) {
         const top = cy; cy += L.laneHead;
-        // Past laneFoldAbove steps the middle folds into one '+N steps' row (lane spec; Julian, poll 2026-10-28): the
-        // first and last laneKeep stay, the folded files are proxied by the row like a section's fold row, keyed by
-        // the lane id so state.unfolded opens it. Only inline lanes fold: a route's files stay in their own sections.
-        const mid = !unfolded.has(lane.id) && steps.length > L.laneFoldAbove ? steps.slice(L.laneKeep, steps.length - L.laneKeep) : [];
-        steps.forEach((m, i) => {
-          if (mid.includes(m)) {
-            if (m === mid[0]) { T.folds[lane.id] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h, members: mid, lane: true }; cy += N.h + L.rowGap; }
-            T.foldOf[m] = lane.id; return;
+        // Past laneFoldAbove steps the middle folds into a '+N steps' row (lane spec; Julian, poll 2026-10-28): the
+        // first and last laneKeep stay, the folded files are proxied by the row like a section's fold row. A middle step
+        // another element claims, or a diff marks, stays drawn in place, so the middle may fold into several rows: the
+        // first keyed by the lane id, the next '<lane>#2' and on; state.unfolded holds the lane id for all of them. Only
+        // inline lanes fold: a route's files stay in their own sections.
+        const claimed = m => [...(FM.claims[m] || [])].some(c => c !== lane.id) || marked.has(m);
+        const mid = new Set(!unfolded.has(lane.id) && steps.length > L.laneFoldAbove ? steps.slice(L.laneKeep, steps.length - L.laneKeep).filter(m => !claimed(m)) : []);
+        let run = null, runs = 0;
+        steps.forEach(m => {
+          if (mid.has(m)) {
+            if (!run) { const key = runs++ ? `${lane.id}#${runs}` : lane.id; run = T.folds[key] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h, members: [], lane: lane.id }; cy += N.h + L.rowGap; }
+            run.members.push(m); T.foldOf[m] = runs > 1 ? `${lane.id}#${runs}` : lane.id; return;
           }
+          run = null;
           T.nodes[m] = { x: x + L.pad + L.laneGutter, y: cy, w: N.w, h: N.h }; cy += N.h + L.rowGap;
         });
         cy += L.lanePoint - L.rowGap + 4;
@@ -301,7 +311,7 @@ function designLayout(data, state) {
       const o = offs[t]; if (!o || (!o.dx && !o.dy)) return;
       const subtree = data.descendants(t), sh = r => { if (r) { r.x += o.dx; r.y += o.dy; } };
       subtree.forEach(s => { sh(P.sections[s]); sh(P.folds[s]); memIn(s).forEach(m => { if (!centered.has(m)) sh(P.nodes[m]); }); });
-      Object.entries(P.lanes).forEach(([id, ln]) => { if (ln.section && subtree.includes(ln.section)) { sh(ln); sh(P.folds[id]); } });
+      Object.entries(P.lanes).forEach(([id, ln]) => { if (ln.section && subtree.includes(ln.section)) { sh(ln); Object.values(P.folds).forEach(f => { if (f.lane === id) sh(f); }); } });
       twinsEls.forEach(tw => { if (tw.members.every(m => subtree.includes(m))) { const p = P.plates[tw.id]; if (p) { sh(p); p.rowTops = p.rowTops.map(y => y + o.dy); } } });
     });
     // levels and the gutter stretch to hold their sections, so a moved section never leaves its level

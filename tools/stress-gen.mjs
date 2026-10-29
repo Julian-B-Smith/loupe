@@ -16,7 +16,7 @@ const OVERLAY = new Set(['runtime', 'annotated', 'inferred']);
 
 // A case is files (repo paths), edges and view elements; build() turns it into the three documents. Edge kinds
 // follow the renderer's slots (render.js SPEC.slot): a role wins over the kind.
-function build({ files, edges, elements, settings = { hubPlacement: 'group' }, diff = null, name }) {
+export function build({ files, edges, elements, settings = { hubPlacement: 'group' }, diff = null, name }) {
   const nodes = files.map((p) => {
     const ext = p.split('.').pop(), o = { id: 'file:' + p, kind: 'file', path: p, hash: 'none' };
     if (LANG[ext]) o.lang = LANG[ext];
@@ -152,7 +152,10 @@ export const CASES = {
       const fs = [`src/engines/${n}/${n}_voice.cpp`, `src/engines/${n}/${n}_core.cpp`]; files.push(...fs); els.push(sec(n, n.toUpperCase(), fs, { parent: 'sec:engines' }));
       edges.push({ src: F(fs[0]), dst: F(fs[1]), kind: 'call' });
       ports.forEach((p, i) => {
-        const mode = (t + i) % 3; // 0 static ✓, 1 overlay only ~, 2 none ✕
+        // 0 static ✓, 1 overlay only ~, 2 none ✕. Twins differ in k and in their worst mark (critic H3: a plain
+        // rotation gave every twin 2 ✓ and a ✕, so a chip counting the wrong mark passed): saw all ✓, choir ✓ and ~
+        // only, the rest a rotation with more ✓ the later the twin.
+        const mode = t === 0 ? 0 : t === 1 ? i % 2 : i < t - 3 ? 0 : (t + i) % 3;
         if (mode === 2) return;
         const mine = F(fs[i % 2]), prov = mode === 0 ? 'static' : 'inferred';
         edges.push(p.direction === 'in' ? { src: p.peer, dst: mine, kind: p.kind || 'call', role: p.role, provenance: prov } : { src: mine, dst: p.peer, kind: p.kind || 'call', role: p.role, provenance: prov });

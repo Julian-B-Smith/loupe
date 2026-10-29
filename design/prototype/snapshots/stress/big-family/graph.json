@@ -34,6 +34,60 @@
   "edges": [
     {
       "count": 1,
+      "dst": "file:src/engines/choir/choir_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/voice_alloc.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:029ef1d437442ef1",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/core/params.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_voice.cpp",
+          "resolution": "exact",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:06a348be09449651",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/saw/saw_voice.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/wave/wave_core.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/mod_matrix.cpp",
+          "resolution": "exact",
+          "signature": "ModTarget::apply(IntentId, depth)",
+          "type": "site"
+        }
+      ],
+      "id": "e:06b6561354e29e5f",
+      "kind": "call",
+      "provenance": "static",
+      "role": "mod",
+      "roleRule": "dsp-plugin/mod-by-signature",
+      "src": "file:src/core/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engines/fm/fm_voice.cpp",
       "evidence": [
         {
@@ -44,6 +98,22 @@
         }
       ],
       "id": "e:0a4d49ba4fac896d",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/grain/grain_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/voice_alloc.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:0bc164a84e4de9f9",
       "kind": "call",
       "provenance": "static",
       "src": "file:src/core/voice_alloc.cpp"
@@ -63,22 +133,6 @@
       "kind": "call",
       "provenance": "static",
       "src": "file:src/engines/station/station_voice.cpp"
-    },
-    {
-      "count": 1,
-      "dst": "file:src/ui/meters.cpp",
-      "evidence": [
-        {
-          "line": 1,
-          "path": "src/engines/choir/choir_core.cpp",
-          "resolution": "exact",
-          "type": "site"
-        }
-      ],
-      "id": "e:15090fb68979f73a",
-      "kind": "data",
-      "provenance": "static",
-      "src": "file:src/engines/choir/choir_core.cpp"
     },
     {
       "count": 1,
@@ -114,6 +168,25 @@
     },
     {
       "count": 1,
+      "dst": "file:src/core/params.h",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/fm/fm_voice.cpp",
+          "resolution": "exact",
+          "signature": "ParamStore::read(ParamId)",
+          "type": "site"
+        }
+      ],
+      "id": "e:18db2fbd68de0434",
+      "kind": "call",
+      "provenance": "static",
+      "role": "param",
+      "roleRule": "dsp-plugin/param-by-signature",
+      "src": "file:src/engines/fm/fm_voice.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engines/station/station_voice.cpp",
       "evidence": [
         {
@@ -146,6 +219,22 @@
     },
     {
       "count": 1,
+      "dst": "file:src/engines/choir/choir_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/midi_in.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:2da14076f9e12258",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:src/core/midi_in.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engines/fm/fm_core.cpp",
       "evidence": [
         {
@@ -162,6 +251,44 @@
     },
     {
       "count": 1,
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/wave/wave_core.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:3d07257d6dfd30c8",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/wave/wave_core.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/fm/fm_core.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:40b88d6b08c24206",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/fm/fm_core.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engines/modal/modal_voice.cpp",
       "evidence": [
         {
@@ -172,6 +299,22 @@
         }
       ],
       "id": "e:5030e87519013b99",
+      "kind": "reference",
+      "provenance": "static",
+      "src": "file:src/core/midi_in.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/saw/saw_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/midi_in.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:57f76d4e4db29156",
       "kind": "reference",
       "provenance": "static",
       "src": "file:src/core/midi_in.cpp"
@@ -210,6 +353,22 @@
       "kind": "call",
       "provenance": "static",
       "src": "file:src/engines/grain/grain_voice.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/ui/meters.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_core.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:9292edf6b1a9eeee",
+      "kind": "data",
+      "provenance": "static",
+      "src": "file:src/engines/saw/saw_core.cpp"
     },
     {
       "count": 1,
@@ -321,6 +480,22 @@
     },
     {
       "count": 1,
+      "dst": "file:src/engines/wave/wave_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/voice_alloc.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:deb293b1201c407c",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/core/voice_alloc.cpp"
+    },
+    {
+      "count": 1,
       "dst": "file:src/engines/modal/modal_core.cpp",
       "evidence": [
         {
@@ -369,6 +544,22 @@
       "kind": "data",
       "provenance": "static",
       "src": "file:src/engines/wave/wave_core.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/engines/modal/modal_voice.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/core/voice_alloc.cpp",
+          "resolution": "exact",
+          "type": "site"
+        }
+      ],
+      "id": "e:ee53fc7204498804",
+      "kind": "call",
+      "provenance": "static",
+      "src": "file:src/core/voice_alloc.cpp"
     },
     {
       "count": 1,
@@ -423,6 +614,25 @@
       "role": "mod",
       "roleRule": "dsp-plugin/mod-by-signature",
       "src": "file:src/core/mod_matrix.cpp"
+    },
+    {
+      "count": 1,
+      "dst": "file:src/fx/router.cpp",
+      "evidence": [
+        {
+          "line": 1,
+          "path": "src/engines/saw/saw_core.cpp",
+          "resolution": "exact",
+          "signature": "render(AudioBlock&)",
+          "type": "site"
+        }
+      ],
+      "id": "e:f6203c7412735417",
+      "kind": "call",
+      "provenance": "static",
+      "role": "audio",
+      "roleRule": "dsp-plugin/audio-by-signature",
+      "src": "file:src/engines/saw/saw_core.cpp"
     },
     {
       "count": 1,

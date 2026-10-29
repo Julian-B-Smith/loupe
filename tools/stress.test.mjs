@@ -22,7 +22,7 @@ const { indexSnapshot } = await import('../design/prototype/snapshot.js');
 const { render, SPEC, slotOf } = await import('../design/prototype/render.js');
 const { conserve, conformity } = await import('../design/prototype/standins.js');
 const { heldEdges } = await import('../design/prototype/inspect.js');
-const { CASES, COMMITTED, generate } = await import('./stress-gen.mjs');
+const { CASES, COMMITTED, generate, build } = await import('./stress-gen.mjs');
 
 let failed = 0;
 const check = (name, cond, why = '') => { console.log(`${cond ? 'pass' : 'FAIL'}  ${name}${!cond && why ? ' — ' + why : ''}`); if (!cond) failed++; };
@@ -76,7 +76,7 @@ console.log(`note  mean ms per frame (measured, not gated): ${Object.entries(tim
 // and the renderer's own per-font character widths.
 const frame = (n, extraState = {}) => {
   const state = { view: 'design', stage: 2, settings: {}, zoom: { k: 1, x: 0, y: 0 }, ...extraState };
-  const map = render(container, data[n], state), z = map.zoom;
+  const map = render(container, typeof n === 'string' ? data[n] : n, state), z = map.zoom;
   const S = (r) => ({ x: r.x * z.k + z.x, y: r.y * z.k + z.y, w: r.w * z.k, h: r.h * z.k });
   return { map, html: svg.innerHTML, S, D: map.layout };
 };
@@ -89,6 +89,39 @@ const unesc = (s) => s.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&g
 const inside = (a, b, e = 0.5) => a.x >= b.x - e && a.y >= b.y - e && a.x + a.w <= b.x + b.w + e && a.y + a.h <= b.y + b.h + e;
 const overlap = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const pillRects = (html) => [...html.matchAll(/<g data-bundle="[^"]*" data-count="\d+"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect ([^>]*)\/>/g)].map((m) => { const a = attrs(m[1]); return { x: +a.x, y: +a.y, w: +a.width, h: +a.height }; });
+// Q-033: each merged bus tap's group: its key and count, every path (its segments parsed from M/H/V), its junction's
+// data-taps and the number on its pill. Split on the group's opening tag: groups nest a pill group, so no closing tag
+// bounds one.
+const mergedGroups = (html) => html.split('<g data-holds="m:').slice(1).map((seg) => {
+  seg = seg.split('<g data-holds=')[0].split('data-layer="nodes"')[0].split('<g data-el=')[0];
+  const paths = [...seg.matchAll(/<path(?: data-edge="([^"]*)")? d="([^"]*)" style="([^"]*)"\/>/g)].map((m) => {
+    const segs = []; let x = 0, y = 0;
+    for (const [, c, n1, n2] of m[2].matchAll(/([MHV])([\d.-]+)(?: ([\d.-]+))?/g)) {
+      if (c === 'M') { x = +n1; y = +n2; } else if (c === 'H') { segs.push([x, y, +n1, y]); x = +n1; } else { segs.push([x, y, x, +n1]); y = +n1; }
+    }
+    return { edge: m[1], d: m[2], style: m[3], segs };
+  });
+  return { key: 'm:' + unesc(seg.split('"')[0]), count: +(/data-count="(\d+)"/.exec(seg) || [])[1], taps: +(/data-taps="(\d+)"/.exec(seg) || [])[1], pill: +(/>(\d+)<\/text>/.exec(seg) || [])[1], paths };
+});
+// A segment runs through a rect if it passes strictly inside it (a tick starts on its own file's edge: not inside).
+const through = ([x0, y0, x1, y1], r) => (y0 === y1 ? y0 > r.y && y0 < r.y + r.h && Math.max(x0, x1) > r.x + 0.5 && Math.min(x0, x1) < r.x + r.w - 0.5
+  : x0 > r.x && x0 < r.x + r.w && Math.max(y0, y1) > r.y + 0.5 && Math.min(y0, y1) < r.y + r.h - 0.5);
+function* mergedBad(d, map, html, busEdges) {
+  const files = Object.keys(map.layout.nodes).map((id) => Sz(map, map.layout.nodes[id]));
+  for (const g of mergedGroups(html)) {
+    const [, sec, prov, side] = g.key.slice(2).split('|'), held = heldEdges(d, map, g.key);
+    const exact = busEdges.filter((e) => (d.home[e.src] || '-') === sec && e.provenance === prov && map.edges[e.id].tap === g.key);
+    const model = busEdges.filter((e) => (d.home[e.src] || '-') === sec && e.provenance === prov);
+    if (held.length !== model.length || held.some((e) => !model.includes(e)) || exact.length !== model.length) yield `${g.key}: opens to ${held.length}, the data has ${model.length}`;
+    if (g.count !== model.length || g.taps !== model.length || g.pill !== model.length) yield `${g.key}: count ${g.count}/${g.taps}/${g.pill} ≠ ${model.length}`;
+    if (g.paths.length !== model.length + 2) yield `${g.key}: ${g.paths.length - 2} ticks for ${model.length} edges`;
+    for (const p of g.paths) {
+      if (!p.style.includes(`stroke-dasharray:${SPEC.dash[prov]}`)) yield `${g.key}: a path not in the ${prov} dash`;
+      for (const sgm of p.segs) if (files.some((r) => through(sgm, r))) { yield `${g.key}: ${p === g.paths[1] ? 'its tap' : 'a tick or comb'} runs through a file`; break; }
+    }
+    void side;
+  }
+}
 const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).forEach((b) => { if (f(a, b)) out.push([a, b]); })); return out; };
 
 { // Long names: truncation and tooltip.
@@ -121,7 +154,8 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   const d = data['big-bus'], busEdges = d.elements['bus:audio'].edges.map((id) => d.edgeById[id]);
   const want = {}; busEdges.forEach((e) => { const k = `${d.home[e.src]}|${e.provenance}`; want[k] = (want[k] || 0) + 1; });
   const wantCounts = Object.values(want).sort((a, b) => a - b).join();
-  for (const zoom of [{ k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }]) {
+  // Fit zoom (detail here: the five banks fit) is where a user lands; 1 and 0.5 bracket it (critic L1).
+  for (const zoom of [{ k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }, { auto: true }]) {
     const { map, html } = frame('big-bus', { zoom });
     // The rail's group runs to the end of the edge layer (merged taps nest groups, so no closing tag bounds it).
     const rail = (html.split('<g data-el="bus:audio"')[1] || '').split('data-layer="nodes"')[0];
@@ -136,27 +170,13 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
       `taps ${taps.length} for ${tapped} edges, rail ${lo}..${hi}, taps ${along[0]}..${last}, label ${label && label[2]}`);
     const got = taps.map((t) => t[2]).sort((a, b) => a - b).join();
     check(`big-bus (${map.lod}): past 20 taps on one side, one tap per section and provenance (${got}), as the data groups them (${wantCounts})`, got === wantCounts);
-    // Each merged tap: opens to exactly its edges (ADR 0029), says its count, and is drawn in its provenance's dash.
-    const bad = [];
-    for (const m of rail.matchAll(/<g data-holds="(m:[^"]*)" data-count="(\d+)"[^>]*>(?:<title>[^<]*<\/title>)<path d="[^"]*" style="([^"]*)"\/><path d="[^"]*" style="([^"]*)"\/><circle [^>]*data-taps="(\d+)"[^>]*\/>.*?<text[^>]*>(\d+)<\/text>/g)) {
-      const key = unesc(m[1]), [, sec, prov] = key.slice(2).split('|'), held = heldEdges(d, map, key);
-      const exact = busEdges.filter((e) => d.home[e.src] === sec && e.provenance === prov);
-      if (held.length !== exact.length || held.some((e) => !exact.includes(e))) bad.push(`${key}: opens to ${held.length}, the data has ${exact.length}`);
-      if (+m[2] !== exact.length || +m[5] !== exact.length || +m[6] !== exact.length) bad.push(`${key}: count ${m[2]}/${m[5]}/${m[6]} ≠ ${exact.length}`);
-      for (const st of [m[3], m[4]]) if (!st.includes(`stroke-dasharray:${SPEC.dash[prov]}`)) bad.push(`${key}: not drawn in the ${prov} dash`);
-    }
-    // A merged tap runs between file rows: its line to the rail crosses no drawn file (screenshot, 2026-10-28: banks
-    // side by side put every tap through the next bank's files).
-    const files = Object.keys(D0(map).nodes).map((id) => Sz(map, D0(map).nodes[id]));
-    for (const m of rail.matchAll(/<g data-holds="(m:[^"]*)"[^>]*>(?:<title>[^<]*<\/title>)<path d="[^"]*" style="[^"]*"\/><path d="M([\d.-]+) ([\d.-]+)H([\d.-]+)"/g)) {
-      const [x0, y, x1] = [+m[2], +m[3], +m[4]], hit = files.find((r) => y > r.y && y < r.y + r.h && Math.max(x0, x1) > r.x && Math.min(x0, x1) < r.x + r.w);
-      if (hit) bad.push(`${unesc(m[1])}: its tap at y ${y} runs through a file`);
-    }
-    const merged = (rail.match(/data-holds="m:/g) || []).length, c = conserve(d, {}, map);
-    check(`big-bus (${map.lod}): each of the ${merged} merged taps opens to exactly its edges, its count and pill say so, keeps its provenance's dash and runs between file rows; all 50 stay in the bus on the meter`,
-      merged === Object.keys(want).length && bad.length === 0 && c.edges.bus === 50 && c.status === 'balanced', bad.slice(0, 3).join('; ') || `merged ${merged}, bus ${c.edges.bus}, meter ${c.status}`);
+    // Each merged tap: opens to exactly its edges (ADR 0029), says its count, is drawn in its provenance's dash, and
+    // neither its tap nor any tick runs through a drawn file (screenshot, 2026-10-28: banks side by side).
+    const bad = [...mergedBad(d, map, html, busEdges)], groups = mergedGroups(html), c = conserve(d, {}, map);
+    check(`big-bus (${map.lod}): each of the ${groups.length} merged taps opens to exactly its edges, its count and pill say so, keeps its provenance's dash and crosses no file; all 50 stay in the bus on the meter`,
+      groups.length === Object.keys(want).length && bad.length === 0 && c.edges.bus === 50 && c.status === 'balanced', bad.slice(0, 3).join('; ') || `merged ${groups.length}, bus ${c.edges.bus}, meter ${c.status}`);
   }
-  // At fit zoom (overview: 50 rows make the Voices box tall) the rail is not drawn; its 50 edges must still read as 50.
+  // At fit zoom the 50 edges read as 50, on the rail's label or, were the rail not drawn, on a bundle.
   const fit = frame('big-bus', { zoom: { auto: true } });
   const fifty = fit.map.elements['bus:audio'] === 'drawn' && /data-bus-count="50"/.test(fit.html) || /data-bundle="[^"]*" data-count="50"/.test(fit.html);
   check(`big-bus (${fit.map.lod}, fit zoom): the 50 bus edges read as one count of 50, on the rail or on its bundle`, fifty);
@@ -288,6 +308,85 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   const names = [...g.matchAll(/<text x="([\d.]+)" y="[\d.]+" style="font:var\(--loupe-type-count\);fill:var\(--loupe-ink\)">([^<]*)</g)].map((x) => +x[1] + x[2].length * CW);
   check('big-family: the grid\'s port headings and twin names never run into each other', heads.length === 6 && clash === 0 && names.length === 8 && names.every((e) => e < heads[0].c - heads[0].w / 2), `${clash} clashes, ${names.length} names, ${heads.length} headings`);
   check('big-family: no grid is drawn without a hover', !html.includes('data-twins-matrix'));
+}
+{ // Q-033 variants, built in memory from a stress case's spec (never committed): each threshold on both sides of its
+  // edge, and the arrangements the committed cases do not reach (critic, 2026-10-28: H2, H4, M2, M3, M4).
+  const variant = (name, edit) => { const spec = CASES[name](); edit(spec); return load(build({ name: 'variant', ...spec })); };
+  const busOf = (d) => d.elements['bus:audio'].edges.map((id) => d.edgeById[id]);
+  // Bus at its edge: 20 taps on one side stay single, 21 merge (the voices beyond stay plain single edges).
+  for (const n of [20, 21]) {
+    const d = variant('big-bus', (sp) => { const b = sp.elements.find((e) => e.id === 'bus:audio'); b.edges = b.edges.slice(0, n); });
+    const { map, html } = frame(d), groups = mergedGroups(html), c = conserve(d, {}, map);
+    check(`bus threshold: ${n} taps on one side ${n === 20 ? 'stay single' : 'merge'} (${groups.length} merged), the meter balanced`, (n === 20 ? groups.length === 0 : groups.length === 2) && c.status === 'balanced' && c.edges.bus === n);
+  }
+  // Two provenances interleaved in one section: each comb its own line, never one under the other (H2).
+  {
+    const d = variant('big-bus', (sp) => { sp.edges.forEach((e, i) => { if (i === 1 || i === 6) e.provenance = 'runtime'; }); });
+    const { map, html } = frame(d), groups = mergedGroups(html), bad = [...mergedBad(d, map, html, busOf(d))];
+    const bars = groups.map((g) => ({ k: g.key, s: g.paths[0].segs[0] }));
+    const shared = pairs(bars, (a, b) => Math.abs(a.s[0] - b.s[0]) < 2 && Math.max(Math.min(a.s[1], a.s[3]), Math.min(b.s[1], b.s[3])) < Math.min(Math.max(a.s[1], a.s[3]), Math.max(b.s[1], b.s[3])));
+    check('bus: interleaved runtime taps in one section get their own comb, clear of the static one (no two combs on one line)', groups.some((g) => g.key.includes('voices-a|runtime')) && shared.length === 0 && bad.length === 0, shared.map(([a, b]) => `${a.k} / ${b.k}`).join('; ') || bad.join('; '));
+  }
+  // A bank moved off the row grid: every tap still finds a line through no file (M3).
+  for (const [sec, dy] of [['sec:voices-b', 13], ['sec:voices-c', -11]]) {
+    const { map, html } = frame('big-bus', { offsets: { [sec]: { dx: 0, dy } } }), bad = [...mergedBad(data['big-bus'], map, html, busOf(data['big-bus']))];
+    check(`bus: with ${sec} moved ${dy} px, no merged tap or tick runs through a file`, bad.length === 0 && mergedGroups(html).length === 6, bad.slice(0, 2).join('; '));
+  }
+  // A horizontal rail (a band puts the 50 voices one level above the mixer, in a wrapping flow section): the merged tap
+  // and every tick keep out of the files, the ticks running down the column gaps (M4).
+  {
+    const d = variant('big-bus', (sp) => {
+      const voices = sp.elements.filter((e) => e.id.startsWith('sec:voices-')).flatMap((e) => e.members);
+      sp.elements = [{ id: 'sec:voices', primitive: 'section', label: 'Voices', claim: 'Voices (variant).', members: voices }, ...sp.elements.filter((e) => !e.id.startsWith('sec:voices-')),
+        { id: 'band:levels', primitive: 'band', claim: 'Voices sit above the mix.', levels: [{ label: 'Voices', members: ['sec:voices'] }, { label: 'Mix', members: ['sec:mix'] }] }];
+    });
+    const { map, html } = frame(d, { zoom: { auto: true } }), groups = mergedGroups(html), bad = [...mergedBad(d, map, html, busOf(d))], c = conserve(d, {}, map);
+    check(`bus (horizontal rail, ${map.lod}): the voices merge into one static and one runtime tap, opening to their edges, no tick or tap through a file, the meter balanced`,
+      map.layout.rails['bus:audio'] && map.layout.rails['bus:audio'].o === 'h' && groups.length === 2 && bad.length === 0 && c.status === 'balanced', bad.slice(0, 2).join('; ') || `rail ${JSON.stringify(map.layout.rails['bus:audio'] && map.layout.rails['bus:audio'].o)}, merged ${groups.length}`);
+  }
+  // Focus: selecting one merged edge draws its own tick emphasised, its siblings not (M6).
+  {
+    const e = busOf(data['big-bus'])[2], { html } = frame('big-bus', { selection: { type: 'edge', id: e.id } });
+    const g = mergedGroups(html).find((x) => x.key.includes('voices-a|static')), own = g && g.paths.filter((p) => p.edge === e.id);
+    const emph = (p) => p.style.includes('stroke-width:var(--loupe-stroke-edge-emph)');
+    check('bus: a selected edge in a merged tap has its own emphasised tick; its nine siblings do not', !!g && own.length === 1 && emph(own[0]) && g.paths.slice(2).filter(emph).length === 1);
+  }
+  // Lane at its edge: 12 steps never fold, 13 fold their middle 3.
+  for (const n of [12, 13]) {
+    const d = variant('long-lane', (sp) => { const l = sp.elements.find((e) => e.id === 'lane:chain'); l.steps = l.steps.slice(0, n); });
+    const { map } = frame(d), f = map.layout.folds['lane:chain'];
+    check(`lane threshold: ${n} steps ${n === 12 ? 'never fold' : 'fold their middle 3'}, the meter balanced`, (n === 12 ? !f : !!f && f.members.length === 3) && conserve(d, {}, map).status === 'balanced');
+  }
+  // A middle step another element claims (a set), or a diff marks (changed), stays drawn and numbered; the middle splits
+  // into rows around them, each opening to its own edges (H4; Julian, poll 2026-10-28).
+  {
+    const F = (p) => 'file:' + p, st = (i) => F(`src/chain/stage_${String(i).padStart(2, '0')}.cpp`);
+    const d = variant('long-lane', (sp) => {
+      sp.elements.push({ id: 'set:watched', primitive: 'set', label: 'Watched', claim: 'These are watched.', members: [st(9), F('src/chain/util_01.h')] });
+      sp.diff = { added: [], changed: [st(7)], stale: [], removed: [] };
+    });
+    const { map, html, S, D } = frame(d, { diff: { side: 'after' } }), rows = Object.entries(D.folds).filter(([, f]) => f.lane === 'lane:chain');
+    const spine = [...html.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"[^>]*\/><text[^>]*>(\d+)<\/text>/g)].map((x) => ({ x: +x[1], n: +x[4] })).filter((c) => c.x < S(D.lanes['lane:chain']).x + 30).map((c) => c.n);
+    const opens = rows.every(([k, f]) => { const t = d.edges.filter((e) => f.members.includes(e.src) || f.members.includes(e.dst)); const h = heldEdges(d, map, 'f:' + k); return h.length === t.length && h.every((e) => t.includes(e)); });
+    check('lane: claimed middle steps 7 (changed) and 9 (in a set) stay drawn and numbered; the rest fold into rows [6], [8], [10, 11], each opening to its edges; the meter balanced',
+      map.nodes[st(7)].state === 'drawn' && map.nodes[st(9)].state === 'drawn' && rows.map(([, f]) => f.members.length).join() === '1,1,2' && spine.join() === '1,2,3,4,5,7,9,12,13,14,15,16' && opens && conserve(d, {}, map).status === 'balanced',
+      `rows ${rows.map(([k, f]) => k + ':' + f.members.length).join(' ')}, spine ${spine.join(',')}`);
+  }
+  // The '+N steps' row's menu once offered "Isolate <lane>", which threw: isolate takes sections only (H1).
+  {
+    let ok = false, why = '';
+    try { const { map } = frame('long-lane', { isolate: 'lane:chain' }); ok = !map.layout.iso && conserve(data['long-lane'], {}, map).status === 'balanced'; } catch (err) { why = err.message; }
+    check('lane: isolating a lane id is ignored (sections only), never a crash', ok, why);
+  }
+  // Twins at their edge: 4 ports keep the per-port marks (each matching conformity()), 5 collapse to chips.
+  for (const n of [4, 5]) {
+    const d = variant('big-family', (sp) => { const t = sp.elements.find((e) => e.id === 'twins:engines'); t.interface = t.interface.slice(0, n); });
+    const { html } = frame(d), conf = conformity(d, 'twins:engines'), want = { ok: '✓', warn: '~', bad: '✕' };
+    const marks = [...html.matchAll(/<rect x="[\d.]+" y="[\d.]+" width="12" height="12" rx="2"[^>]*\/><text[^>]*>([✓~✕])<\/text>/g)].map((m) => m[1]).join('');
+    const chips = (html.match(/data-conf="/g) || []).length;
+    const expect = d.elements['twins:engines'].members.map((m) => conf[m].map((c) => want[c]).join('')).join('');
+    check(`twins threshold: ${n} ports ${n === 4 ? 'keep one mark per port, matching conformity()' : 'collapse to one chip per twin'}`, n === 4 ? marks === expect && chips === 0 : chips === 8 && marks === '', `marks ${marks.length}, chips ${chips}`);
+  }
 }
 { // Edge matrix: every slot × provenance on one screen, each its own line with its own stroke and dash.
   const { html, map } = frame('edge-matrix', { zoom: { auto: true } }), d = data['edge-matrix'], bad = [], combos = new Set(), paths = new Set();

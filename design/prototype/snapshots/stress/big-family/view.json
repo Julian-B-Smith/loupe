@@ -202,10 +202,10 @@
   ],
   "exemptions": [],
   "graph": {
-    "hash": "sha256:87c4dec25d3309c062f2bcc69334a3648b9e164f4e0951888f63a8605d95461b"
+    "hash": "sha256:86914e7bf12128cb69da1292d0a07e7bcce5a2e770a12fe6be4f773bf40e2d70"
   },
   "overlay": {
-    "hash": "sha256:5196737ec6cbbea4992c01a96ea8fc7e21e1272c66e37db5e58ac367f4a9c0ad"
+    "hash": "sha256:d631bdcad5d97e2d7b270df3d6b773995f5396cfbeb47158fb0077180dd531d1"
   },
   "schema": "loupe.view/0.2",
   "settings": {
