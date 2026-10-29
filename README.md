@@ -8,7 +8,7 @@ conservation check proves it after every agent edit.
 First client: [HORDE](https://github.com/Julian-B-Smith/horde). Ships first as a Claude Code skill
 run inside a target repo.
 
-*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-17.*
+*Part of the autonomous-paradigm ecosystem (kit 2.9.1). Last verified current: 2026-10-29.*
 
 ## How it works
 
@@ -30,13 +30,14 @@ Agents write the overlay and view, never the graph. Every edge carries provenanc
 | --- | --- | --- |
 | `docs/vision.md` | Pipeline, two-view split, target experience | Current |
 | `docs/visual-grammar.md` | Nine visual primitives, the claim each makes, its audit test | Settled for now |
-| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec | 0.3.1 accepted |
+| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec | 0.3.2 accepted |
 | `tools/loupe-check.mjs` | Snapshot checker (conservation, ids, provenance) + mutation cases | Built |
 | `tools/probe-crawl.mjs` | Regex probe crawler that shaped schema 0.2 | Reference only; not the P1 crawler |
 | `prototype/` | Viewer v1 and primitives gallery (open `index.html` in a browser) | Built, on sample data |
 | `design/` | Design system and the viewer prototype (flow and design views, meter, fold, isolate, lenses, loose nodes), in-house since ADR 0022 | Built; a headless render test in `./verify` |
 | `design/prototype/stories/` | "How it works" stories, agent-written from HORDE's source with file:line evidence | Prototype (ADR 0025) |
-| `crawler/` | P1a crawler: CMake build layer, C/C++/Objective-C syntax layer, graph.json at 0.3.1, build-target conformance | Built on a fixture; first HORDE crawl done (`design/prototype/snapshots/horde-crawl/`) |
+| `crawler/` | P1a crawler: CMake build layer, C/C++/Objective-C syntax layer, graph.json at 0.3.2, build-target conformance | Built on a fixture; first HORDE crawl done (`design/prototype/snapshots/horde-crawl/`) |
+| `tools/stress-gen.mjs`, `design/prototype/snapshots/stress/` | The ten stress cases every design must survive (nine committed, the 4,000-file one generated), checked by `tools/stress.test.mjs` | Built (Q-029) |
 | `docs/plan-map.html` | The plan as a picture: every part, its status, the path to v1 | Current |
 | Structure agent, audit, explainers, the skill in a target repo | P3–P6 | **Not built** (see the plan map) |
 
@@ -45,7 +46,7 @@ Decisions: [DECISIONS.md](DECISIONS.md) → `docs/decisions/`.
 
 ## Status
 
-P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Prior-art landscape done 2026-10-11 ([docs/prior-art.md](docs/prior-art.md); ADRs 0026 to 0034 accepted). Current phase: **P1a**, mostly built: the crawler's build, syntax and graph layers, conformance, and a first crawl of HORDE. Four stages to a working v1 (finish P1a, P2 renderer gates, P3 Structure agent and dialogue, P6 delivery as a skill).
+P0 done. The viewer prototype has fold, isolate, history, the Operational lens and the "How it works" stories (see ROADMAP, Viewer track). Prior-art landscape done 2026-10-11 ([docs/prior-art.md](docs/prior-art.md); ADRs 0026 to 0034 accepted). P1a done 2026-10-23: the crawler's build, syntax and graph layers, conformance, and the HORDE crawl with its gates. Current phase: **P2**, the renderer gates: every element that stands for several edges opens to them (Q-011, Q-028) and the ten stress cases render (Q-029, with the overflow rules, overview legibility and the diff at overview: Q-033 to Q-035) are done; the matrix lens (Q-030) and Flow and Design side by side (Q-031) remain. Then P3 Structure agent and dialogue, and P6 delivery as a skill.
 
 ## See it running
 

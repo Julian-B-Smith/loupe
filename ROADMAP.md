@@ -10,15 +10,17 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   C/C++/Objective-C syntax layer (Q-013), graph.json (now schema 0.3.2) with the inventory and build-target
   conformance (Q-016, Q-020, Q-021), the first crawl of HORDE (Q-018), the other languages (Q-023), the dsp-plugin
   dialect and its roles (Q-024), the Operational lens from the build (Q-009), and its gates on HORDE (Q-025), which
-  `./verify full` now runs green at horde d412a28. **Next (Julian, 2026-10-20): Q-026 TypeScript at file level, then
-  P2.** Side track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+  `./verify full` now runs green at horde d412a28. **P2 current** (Julian, 2026-10-27: every P2 gate before v1):
+  done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
+  at overview), all 2026-10-27 to 10-29; open Q-030 (matrix lens) and Q-031 (Flow and Design side by side). Side
+  track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
   gates (Q-025: clone, crawl twice, leak check, probe parity, zero unknown; the fresh crawl must equal the committed
   snapshot), skipped and said so without a local HORDE checkout. **Known gaps:** `design/tokens.css` and the prototype
   snapshots are not generated (Q-007, Q-008).
-- **Last human ratification:** 2026-10-17 (Q-020's attribution rule, by poll).
+- **Last human ratification:** 2026-10-28 (Q-035's tally, waffle and stories scope, by poll).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
 
@@ -461,7 +463,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   render test holds the list to the box's ends, and a critic pass with a screenshot.
 
 ### Q-029 — The ten stress cases render (P2 gate)
-- **Status:** built and merged (PR #40, 2026-10-28); closes when Q-035 merges (Q-033 and Q-034 are done). Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
+- **Status:** done 2026-10-29: PR #40 (2026-10-28) built the cases; its gaps closed in Q-033 (#42), Q-034 (#41) and Q-035 (#43). Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
   and Q-031; criteria agreed by poll the same day.
 - **Scope:** a generator in `tools/`, `design/prototype/snapshots/stress/`, `tools/render.test.mjs` (or a stress test
   beside it), `verify` (fast), viewer fixes the cases expose.
@@ -530,7 +532,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   prototype switch and `design/prototype/versions.html` removed; a critic pass with screenshots.
 
 ### Q-035 — The re-run diff at overview (blocks Q-029)
-- **Status:** built 2026-10-28 (branch p2/q035-diff-overview; trace: traces/2026-10-28-q035-diff-overview.md), awaiting merge. Filed 2026-10-27. Evidence: big-diff at k 0.25
+- **Status:** done 2026-10-29 (PR #43 merged; trace: traces/2026-10-28-q035-diff-overview.md). Filed 2026-10-27. Evidence: big-diff at k 0.25
   shows no mark and no summary; a section's tooltip says nothing of its changes.
 - **Julian (poll, 2026-10-28), on four prototypes (tally, bar, tint, waffle; `design/prototype/versions.html`):** the
   **tally**, with the waffle as a display setting (off by default); also a meter summary and a click that lists the files.

@@ -6,3 +6,5 @@ Read in full each session; pull only matching LIBRARY entries.
 - [L0002](LIBRARY.md#L0002) agent-orchestration — stacked PR merged right after its base lands on the base branch, not main
 - [L0003](LIBRARY.md#L0003) graph-schema-conservation — a lens seeded from the signal it is checked against is self-confirming
 - [L0004](LIBRARY.md#L0004) agent-orchestration — a citation that lands on the cited line is not a claim that is true
+- [L0005](LIBRARY.md#L0005) visual-grammar-rendering — a geometry check that finds nothing to compare passes; assert the count
+- [L0006](LIBRARY.md#L0006) visual-grammar-rendering — the stub's text estimate is narrower than the browser; measure at 7.2
