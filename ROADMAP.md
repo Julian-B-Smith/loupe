@@ -530,8 +530,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   prototype switch and `design/prototype/versions.html` removed; a critic pass with screenshots.
 
 ### Q-035 — The re-run diff at overview (blocks Q-029)
-- **Status:** open, filed 2026-10-27. Evidence: big-diff at k 0.25 shows no mark and no summary; a section's tooltip
-  says nothing of its changes. Needs a design: an aggregate mark on a stand-in box. Criteria to agree.
+- **Status:** in progress (branch p2/q035-diff-overview), 2026-10-28. Filed 2026-10-27. Evidence: big-diff at k 0.25
+  shows no mark and no summary; a section's tooltip says nothing of its changes.
+- **Julian (poll, 2026-10-28), on four prototypes (tally, bar, tint, waffle; `design/prototype/versions.html`):** the
+  **tally**, with the waffle as a display setting (off by default); also a meter summary and a click that lists the files.
+- **Acceptance criteria (agreed by poll, 2026-10-28):** 1. every box standing for files (zoomed out, collapsed, folded,
+  lens outside, loose block) shows a tally equal to the diff of its files, or a Δ total when narrow; 2. the meter line
+  shows the run's totals while the diff is on; 3. clicking a tally lists exactly those files by kind; 4. the waffle as a
+  setting, off by default; 5. stress-test geometry checks on big-diff (plus a whole-repo diff variant), planted to fail;
+  6. an Opus critic pass with screenshots.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.

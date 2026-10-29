@@ -32,3 +32,38 @@ export function heldEdges(data, map, key) {
   return data.edges.filter((e) => { const m = map && map.edges[e.id]; return m && m.ends && holds(m); })
     .sort((a, b) => by(a.src, b.src) || by(a.dst, b.dst) || by(a.id, b.id));
 }
+
+// Q-035: the re-run diff on what stands for files. diffKindOf is the one place a file's diff kind is decided for a frame
+// (render.js marks files from it): 'added' (or 'ghost-added' on the before side, an outline not yet in that run),
+// 'changed', 'stale' (after side only) and 'removed' (after side only; on the before side a removed file is ordinary).
+export const DIFF_KINDS = ['added', 'changed', 'stale', 'removed'];
+export function diffKindOf(data, state) {
+  const df = state.diff && data.diff ? data.diff : null, side = df && state.diff.side, out = {};
+  if (!df) return out;
+  (df.added || []).forEach((id) => { out[id] = side === 'before' ? 'ghost-added' : 'added'; });
+  (df.changed || []).forEach((id) => { out[id] = 'changed'; });
+  if (side !== 'before') (df.stale || []).forEach((id) => { out[id] = 'stale'; });
+  (df.removed || []).forEach((n) => { out[n.id] = side === 'before' ? null : 'removed'; });
+  return out;
+}
+// The files a stand-in holds (render() records each undrawn file's stand-in as map.nodes[id].proxy: a section id, a
+// 'fold:<key>' row, 'loose', 'lens-outside', an isolate port), grouped by diff kind, each list sorted. A tally says
+// these counts and its click lists these files, so the two cannot disagree; `files` is everything the stand-in holds.
+export function diffHeld(data, map, state, proxy) {
+  const kind = diffKindOf(data, state), out = { files: 0 };
+  DIFF_KINDS.forEach((k) => { out[k] = []; });
+  Object.entries(map.nodes).forEach(([id, m]) => {
+    if (!m || m.proxy !== proxy || m.state === 'drawn' || m.state === 'ghost') return;
+    out.files++;
+    const k = kind[id] === 'ghost-added' ? 'added' : kind[id];
+    if (k) out[k].push(id);
+  });
+  DIFF_KINDS.forEach((k) => out[k].sort());
+  return out;
+}
+// The run's totals for the meter line: every kind the diff lists, whichever side is shown.
+export function diffSummary(data) {
+  const df = data.diff; if (!df) return null;
+  const n = { added: (df.added || []).length, changed: (df.changed || []).length, stale: (df.stale || []).length, removed: (df.removed || []).length };
+  return { ...n, text: `re-run +${n.added} ~${n.changed} ⧗${n.stale} −${n.removed}` };
+}

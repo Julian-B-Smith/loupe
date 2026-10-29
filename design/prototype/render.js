@@ -3,6 +3,7 @@
 // No structural decisions here: grouping, bundling and membership come from view.json via layout().
 import { layout, L, hubPlacement } from './layout.js';
 import { counterflow, conformity } from './standins.js';
+import { diffKindOf, diffHeld } from './inspect.js';
 import { stem, uniqueLabels } from './snapshot.js';
 
 export const SPEC = {
@@ -246,13 +247,7 @@ export function render(container, data, state) {
 
   // diff
   const df = state.diff && data.diff ? data.diff : null, side = state.diff && state.diff.side;
-  const diffOf = {};
-  if (df) {
-    (df.added || []).forEach(id => { diffOf[id] = side === 'before' ? 'ghost-added' : 'added'; });
-    (df.changed || []).forEach(id => { diffOf[id] = 'changed'; });
-    if (side !== 'before') (df.stale || []).forEach(id => { diffOf[id] = 'stale'; });
-    (df.removed || []).forEach(n => { diffOf[n.id] = side === 'before' ? null : 'removed'; });
-  }
+  const diffOf = diffKindOf(data, state); // inspect.js: one rule for files, tallies and the panel
   const removedById = {}; ((df && df.removed) || []).forEach(n => { removedById[n.id] = n; });
   // Removed ghosts get labels by the same rule as live nodes (stem, then unique within a kind), never an ad-hoc regex.
   const ghostLabels = (() => { const all = Object.values(data.nodes).map(n => ({ ...n })).concat(Object.values(removedById).map(r => ({ ...r, kind: r.kind || 'file', label: stem(r.path, r.kind || 'file') })));
@@ -384,6 +379,8 @@ export function render(container, data, state) {
         return;
       }
       // A header cut to fit names its section in full in a tooltip (stress case long-names).
+      // Zoomed out, a twin's header (the overview branch above skips twins) still keeps tallies and tabs off it.
+      if (headerFits && ovw) textBoxes.push({ x: r.x + (big ? 10 : 7), y: ty - 10, w: label.length * gcw, h: 13 });
       if (headerFits) lg.push(`<g data-el="${id}" style="cursor:pointer">${label !== el.label ? `<title>${esc(el.label + ' · ' + countText)}</title>` : ''}<text x="${f1(r.x + (big ? 10 : 7))}" y="${f1(ty)}" style="font:${gFont};letter-spacing:${v('tracking-group-label')};fill:${v('ink')};${halo(fillC)}">${esc(label)}</text>${showCount ? `<text x="${f1(r.x + r.w - 24)}" y="${f1(ty)}" text-anchor="end" style="font:${cFont};fill:${v('ink-faint')};${halo(fillC)}">${countText}</text>` : ''}</g>`);
       if (big && !ovw && !isTwin) lg.push(`<g data-collapse="${id}" style="cursor:pointer"><title>${s.collapsed ? 'Expand' : 'Collapse'}</title><rect x="${f1(r.x + r.w - 20)}" y="${f1(ty - 10)}" width="14" height="14" rx="3" style="fill:transparent"/><text x="${f1(r.x + r.w - 13)}" y="${f1(ty + 0.5)}" text-anchor="middle" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${s.collapsed ? '+' : '−'}</text></g>`);
       const a = auditOf(el); if (a) lg.push(badge(r.x + r.w, r.y, a));
@@ -949,6 +946,69 @@ export function render(container, data, state) {
     if (!r) return;
     list.forEach((fn, i) => lg.push(fn(r.x + r.w - 4 - i * 18, r.y - 1)));
   });
+
+  // ---------- 4b. the re-run diff on stand-ins (Q-035; Julian, poll 2026-10-28)
+  // A box, row or port that stands for files (zoomed out, collapsed, folded, outside the lens, loose, a port) shows a
+  // tally of their diff: one chip per kind, +added ~changed ⧗stale −removed, the glyphs and colours files carry. Too
+  // narrow for that: one Δ total, inside, else straddling its right edge. Its counts and its click's list are both
+  // inspect.js diffHeld, read off the same map.nodes proxies the meter checks. With settings.diffWaffle, a box with room
+  // also shows one square per file (or per few files), changed first, unchanged grey.
+  if (df) {
+    const GL = { added: '+', changed: '~', stale: '⧗', removed: '−' }, KINDS = ['added', 'changed', 'stale', 'removed'];
+    const proxies = [...new Set(Object.entries(map.nodes).filter(([id, m]) => m && m.proxy && diffOf[id]).map(([, m]) => m.proxy))].sort();
+    const rectOfProxy = p => p.startsWith('fold:') ? (!ovw && D.folds[p.slice(5)] ? { r: S(D.folds[p.slice(5)]), row: true } : null)
+      : p === 'loose' ? (D.loose ? { r: S(D.loose) } : null) : p === 'lens-outside' ? (D.lensOut ? { r: S(D.lensOut) } : null)
+      : D.sections[p] ? { r: S(D.sections[p]) } : iso && iso.ports[p] ? { r: S(iso.ports[p]), row: true } : null;
+    const hits = b => [...placedPills, ...textBoxes].some(o => b.x < o.x + o.w && o.x < b.x + b.w && b.y < o.y + o.h && o.y < b.y + b.h);
+    map.diffTallies = {};
+    proxies.forEach(p => {
+      const at = rectOfProxy(p); if (!at) return;
+      const held = diffHeld(data, map, state, p), ks = KINDS.filter(k => held[k].length), n = ks.reduce((a, k) => a + held[k].length, 0);
+      if (!n) return;
+      const r = at.r, chips = ks.map(k => ({ k, t: GL[k] + held[k].length })), cw6 = 6.6;
+      const width = cs => cs.reduce((a, c) => a + c.t.length * cw6 + 8, 0) + 3 * (cs.length - 1);
+      // Spots: a row's right end; a box's lower left (clear of its bottom tab when tall), lower right, then upper right.
+      const spots = at.row ? [[r.x + r.w - 6, r.y + r.h / 2 - 6.5, 'end']]
+        : [[r.x + 7, r.y + r.h - (r.h > 70 ? 22 : 8) - 13, 'start'], [r.x + r.w - 7, r.y + r.h - (r.h > 70 ? 22 : 8) - 13, 'end'], [r.x + r.w - 7, r.y + 22, 'end']];
+      let use = chips, w = width(chips), spot = null;
+      // The narrow form: one kind is already a single chip; several become one Δ total in the changed colour.
+      const narrow = ks.length === 1 ? chips : [{ k: 'changed', t: 'Δ' + n }];
+      for (const cs of [chips, narrow]) {
+        const ww = width(cs);
+        spot = spots.map(([x, y, a]) => ({ x: a === 'end' ? x - ww : x, y })).find(b => b.x >= r.x + 4 && b.x + ww <= r.x + r.w - 4 && b.y >= r.y + 2 && b.y + 13 <= r.y + r.h - 2 && !hits({ x: b.x, y: b.y, w: ww, h: 13 }));
+        if (spot) { use = cs; w = ww; break; }
+      }
+      let outside = false;
+      // Last resort, straddling an edge: the right edge's middle, then up and down it, then the left edge; the first
+      // spot clear of tabs, labels and other tallies, else the right edge's middle.
+      if (!spot) {
+        use = narrow; w = width(use); outside = true;
+        const ys = [0, -16, 16, -32, 32].map(dy => r.y + r.h / 2 - 6.5 + dy).filter(y => y >= r.y - 6 && y + 13 <= r.y + r.h + 6);
+        spot = [r.x + r.w - w / 2, r.x - w / 2].flatMap(x => ys.map(y => ({ x, y }))).find(b => !hits({ x: b.x, y: b.y, w, h: 13 })) || { x: r.x + r.w - w / 2, y: r.y + r.h / 2 - 6.5 };
+      }
+      let x = spot.x, out = '';
+      use.forEach(c => { const cw = c.t.length * cw6 + 8; out += `<rect x="${f1(x)}" y="${f1(spot.y)}" width="${f1(cw)}" height="13" rx="3" style="fill:${v('surface-node')};stroke:${v('diff-' + c.k)};stroke-width:1.25px"/><text x="${f1(x + cw / 2)}" y="${f1(spot.y + 10)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('diff-' + c.k)}">${esc(c.t)}</text>`; x += cw + 3; });
+      // The waffle sits above the tally inside a box with room for at least two rows of squares.
+      let waffle = '';
+      if (state.settings && state.settings.diffWaffle && !at.row && !outside) {
+        const cells = [...KINDS.flatMap(k => held[k].map(() => k)), ...Array(Math.max(0, held.files - n)).fill(null)];
+        // Rows grow up from the tally while each row is clear of labels, tabs and tallies (a box's nested twin headers
+        // sat under the squares on the HORDE sample) and below the box's own header.
+        const sz = 5, gap = 1.5, room = r.w - 14, cols = Math.max(1, Math.floor(room / (sz + gap)));
+        let avail = 0; while (spot.y - 4 - (avail + 1) * (sz + gap) >= r.y + 34 && !hits({ x: r.x + 7, y: spot.y - 4 - (avail + 1) * (sz + gap), w: room, h: sz + gap })) avail++;
+        if (avail >= 2) {
+          const per = Math.max(1, Math.ceil(cells.length / (cols * avail))), sq = [];
+          for (let i = 0; i < cells.length; i += per) sq.push(cells.slice(i, i + per).find(Boolean) || null);
+          const rowsN = Math.ceil(sq.length / cols), top = spot.y - 4 - rowsN * (sz + gap);
+          waffle = `<g data-waffle="${sq.length}" data-per="${per}">${sq.map((k, i) => `<rect x="${f1(r.x + 7 + (i % cols) * (sz + gap))}" y="${f1(top + Math.floor(i / cols) * (sz + gap))}" width="${sz}" height="${sz}" rx="1" style="fill:${k ? v('diff-' + k) : v('rule')}"/>`).join('')}</g>`;
+        }
+      }
+      placedPills.push({ x: spot.x, y: spot.y, w, h: 13 });
+      map.diffTallies[p] = { n, chips: use.map(c => c.t), outside };
+      const tip = `${KINDS.filter(k => held[k].length).map(k => `${held[k].length} ${k}`).join(', ')} of the ${held.files} files here, since the last run. Click to list them.`;
+      lg.push(`<g data-diffbox="${esc(p)}" data-diff-n="${n}" style="cursor:pointer"><title>${esc(tip)}</title>${waffle}${out}</g>`);
+    });
+  }
 
   // ---------- 5. fold rows, isolate rails
   if (designish && !ovw) Object.entries(D.folds).forEach(([sec, f]) => {

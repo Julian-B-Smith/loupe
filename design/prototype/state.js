@@ -26,7 +26,7 @@ export function initialState(over = {}) {
     offsets: {},               // top-level section id -> {dx, dy} in world units; user drags, a view preference
     dimmedKinds: [],           // role or kind names
     zoom: { auto: true, k: 1, x: 0, y: 0, focus: null },
-    settings: { hubPlacement: null }, // null = use view.json settings
+    settings: { hubPlacement: null, diffWaffle: false }, // hubPlacement null = use view.json settings; diffWaffle (Q-035) off by default
     diff: null,                // null | { side: 'before'|'after' }
     tour: { index: 0, step: 0 },
     theme: 'light',
@@ -72,7 +72,8 @@ export function createStore(init) {
     resetLayout: () => store.set(s => ({ offsets: {}, zoom: { ...s.zoom, auto: true } })),
     setTour: t => store.set(s => ({ tour: { ...s.tour, ...t } })),
     setTheme: theme => store.set({ theme }),
-    setLinesOff: linesOff => store.set({ linesOff })
+    setLinesOff: linesOff => store.set({ linesOff }),
+    setDiffWaffle: on => store.set(s => ({ settings: { ...s.settings, diffWaffle: on } }))
   };
   return store;
 }
