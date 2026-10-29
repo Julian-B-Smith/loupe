@@ -129,8 +129,8 @@ const DATA = {
       what: 'Flow and design views, the conservation meter, fold, isolate, history, lenses, "How it works" stories, loose nodes; a headless render test in ./verify.' },
     { id: 'nodekinds', name: 'Node kinds visible', status: 'built', v1: true, rows: ['Q-019'], adrs: [], deps: [['viewer', 'Q-019']],
       what: 'Targets, files, missing nodes and packages told apart at every zoom; a missing node\'s reason as a chip at detail zoom; no two drawn labels of one kind read the same at detail zoom.' },
-    { id: 'renderer', name: 'Renderer gates (P2)', status: 'planned', v1: true, rows: ['P2', 'Q-011'], adrs: ['0029', '0030'], deps: [['viewer', 'P2'], ['nodekinds', 'inferred']],
-      what: 'Every bundle opens to exactly its edges, a matrix lens for dense sections, Flow and Design side by side, the ten stress cases render with the meter balanced.',
+    { id: 'renderer', name: 'Renderer gates (P2)', status: 'in progress', v1: true, rows: ['P2', 'Q-011', 'Q-028', 'Q-029', 'Q-030', 'Q-031'], adrs: ['0029', '0030'], deps: [['viewer', 'P2'], ['nodekinds', 'inferred']],
+      what: 'Every bundle opens to exactly its edges, a matrix lens for dense sections, Flow and Design side by side, the ten stress cases render with the meter balanced. Done by 2026-10-29: every element opens to its edges (Q-011, Q-028) and the ten stress cases (Q-029, with Q-033 to Q-035). Left: the matrix lens (Q-030) and side by side (Q-031).',
       decisions: [] }, // Julian, 2026-10-27: all of them before v1 (Q-028 to Q-031)
     { id: 'structure', name: 'Structure agent (P3)', status: 'planned', v1: true, rows: ['P3'], adrs: ['0006', '0019'], deps: [['emit', 'P3'], ['renderer', 'inferred'], ['oplens', 'P3']],
       what: 'The agent that turns a crawl into a readable design view: sections, buses, lanes, proposed lenses, each with a claim an auditor can test. Without it a crawl of HORDE is one dense block.' },
