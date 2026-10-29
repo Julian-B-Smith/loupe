@@ -461,7 +461,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   render test holds the list to the box's ends, and a critic pass with a screenshot.
 
 ### Q-029 — The ten stress cases render (P2 gate)
-- **Status:** in progress (branch p2/q029-stress); stays open until Q-033 to Q-035 close. Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
+- **Status:** built and merged (PR #40, 2026-10-28); closes when Q-035 merges (Q-033 and Q-034 are done). Julian, 2026-10-27 (poll): required before v1, with Q-028, Q-030
   and Q-031; criteria agreed by poll the same day.
 - **Scope:** a generator in `tools/`, `design/prototype/snapshots/stress/`, `tools/render.test.mjs` (or a stress test
   beside it), `verify` (fast), viewer fixes the cases expose.
@@ -501,7 +501,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   set or overlap, a bus tap, a loop, a hub) stays drawn in its place when the lane folds, as pinned files do in a section
   fold; only unclaimed middle steps fold, and the row may split around a kept step. ADR 0023 gets a dated amendment
   note recording the lane fold.
-- **Status:** built 2026-10-28 (branch p2/q033-overflow; trace: traces/2026-10-28-q033-overflow.md), awaiting merge.
+- **Status:** done 2026-10-29 (PR #42 merged; trace: traces/2026-10-28-q033-overflow.md).
 
 ### Q-034 — Overview legibility at scale: count pills and section labels (blocks Q-029)
 - **Status:** done 2026-10-28 (PR #41 merged; trace: traces/2026-10-28-q034-overview.md).
@@ -530,8 +530,20 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   prototype switch and `design/prototype/versions.html` removed; a critic pass with screenshots.
 
 ### Q-035 — The re-run diff at overview (blocks Q-029)
-- **Status:** open, filed 2026-10-27. Evidence: big-diff at k 0.25 shows no mark and no summary; a section's tooltip
-  says nothing of its changes. Needs a design: an aggregate mark on a stand-in box. Criteria to agree.
+- **Status:** built 2026-10-28 (branch p2/q035-diff-overview; trace: traces/2026-10-28-q035-diff-overview.md), awaiting merge. Filed 2026-10-27. Evidence: big-diff at k 0.25
+  shows no mark and no summary; a section's tooltip says nothing of its changes.
+- **Julian (poll, 2026-10-28), on four prototypes (tally, bar, tint, waffle; `design/prototype/versions.html`):** the
+  **tally**, with the waffle as a display setting (off by default); also a meter summary and a click that lists the files.
+- **Acceptance criteria (agreed by poll, 2026-10-28):** 1. every box standing for files (zoomed out, collapsed, folded,
+  lens outside, loose block) shows a tally equal to the diff of its files, or a Δ total when narrow; 2. the meter line
+  shows the run's totals while the diff is on; 3. clicking a tally lists exactly those files by kind; 4. the waffle as a
+  setting, off by default; 5. stress-test geometry checks on big-diff (plus a whole-repo diff variant), planted to fail;
+  6. an Opus critic pass with screenshots.
+- **Julian (poll, 2026-10-28), after the critic (REWORK):** the "How it works" view is out of scope: the Re-run control
+  and the meter's summary are hidden there (a later item may bring the diff to stories). The waffle keeps full diff
+  colours: tokens.json and the handoff record the exception. The waffle draws only when every file gets its own square.
+- **Lead, on criterion 1 (critic L3 agrees):** under a diff, layout pins every marked file out of fold rows and the loose
+  block, so those two never hold one and never need a tally; the stress test asserts the pin on both sides.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.
