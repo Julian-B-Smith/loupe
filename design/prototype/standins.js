@@ -8,6 +8,8 @@ export function conserve(data, state, map) {
   data.edges.forEach(e => {
     const m = map.edges[e.id];
     if (m && edges[m.via] != null && m.via !== 'total') edges[m.via]++; else unaccounted.push(e.id);
+    // A bus edge in a merged tap (Q-033) is accounted only if that tap was drawn (critic M5).
+    if (m && m.tap && map.drawn && map.settled && !map.drawn.has(m.tap)) unaccounted.push(`${e.id}: merged tap not drawn`);
   });
   const nodes = { total: data.nodeIds.length, placed: 0 };
   // A node counts only if it is drawn, or stands in something that is (a section, fold row, port, elsewhere chip).

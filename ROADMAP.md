@@ -483,7 +483,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   refuses it (members must share a parent section), so the omission cannot be silent.
 
 ### Q-033 — Overflow rules of bus, twins and lane (specified, not built; blocks Q-029)
-- **Status:** open, filed 2026-10-27 from the Q-029 critic.
+- Filed 2026-10-27 from the Q-029 critic.
 - **Scope:** `design/prototype/render.js`, `layout.js`, `tools/stress.test.mjs`, the big-bus, big-family and long-lane
   stress cases.
 - **Acceptance criteria:** as `design/system/components/*/README.md` specify them: 1. bus: past 20 taps on one side,
@@ -491,9 +491,20 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   "n/m" chip with the matrix on hover; 3. lane: past 12 steps the middle folds into a "+N steps" marker (long-lane
   grows past 12). Each a geometry check in the stress test, planted to fail; conservation still balances (a merged tap
   or folded step is accounted, never hidden); a critic pass with screenshots.
+- **Julian (poll, 2026-10-28):** an inline lane past 12 steps keeps its first 5 and last 5; the middle files fold into one
+  "+N steps" row, like a fold row (their edges fold into it, it opens to them, a click unfolds it). This overrides the
+  rule that lane steps never fold. A routed lane (across sections) never folds: its files stay drawn in their own
+  sections. The twins chip reads "k/m", k the static matches (✓), coloured by the twin's worst mark; hovering it draws
+  the whole twins × ports grid with that twin's row marked. Lead: big-bus spreads its 50 voices over five sections so
+  the merge shows; a merged tap opens to its edges (ADR 0029).
+- **Julian (poll, 2026-10-28), after the critic (REWORK):** a middle step that carries another claim (a diff mark, a
+  set or overlap, a bus tap, a loop, a hub) stays drawn in its place when the lane folds, as pinned files do in a section
+  fold; only unclaimed middle steps fold, and the row may split around a kept step. ADR 0023 gets a dated amendment
+  note recording the lane fold.
+- **Status:** built 2026-10-28 (branch p2/q033-overflow; trace: traces/2026-10-28-q033-overflow.md), awaiting merge.
 
 ### Q-034 — Overview legibility at scale: count pills and section labels (blocks Q-029)
-- **Status:** built 2026-10-28 (branch p2/q034-overview; trace: traces/2026-10-28-q034-overview.md), awaiting merge.
+- **Status:** done 2026-10-28 (PR #41 merged; trace: traces/2026-10-28-q034-overview.md).
   Filed 2026-10-27. Evidence: whole-repo at overview draws 397 `×N` pills with 878 overlapping pairs;
   wide-hub 3 pairs at k 0.2. A count under another count cannot be read. And all 40 top-level boxes of whole-repo read
   "M…" at fit zoom (critic): labelled, but indistinguishable. Also seen: the 40 spokes into wide-hub's hub end on one

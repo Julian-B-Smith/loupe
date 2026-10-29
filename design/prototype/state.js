@@ -47,7 +47,7 @@ export function createStore(init) {
     },
     on(fn) { subs.add(fn); return () => subs.delete(fn); }
   };
-  const same = (a, b) => (a && b ? a.type === b.type && a.id === b.id : a === b);
+  const same = (a, b) => (a && b ? a.type === b.type && a.id === b.id && a.twin === b.twin : a === b);
   store.actions = {
     select: sel => store.set(s => ({ selection: same(s.selection, sel) ? null : sel })),
     hover: h => { if (!same(store.get().hover, h)) store.set({ hover: h }); },

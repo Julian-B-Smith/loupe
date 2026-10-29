@@ -4,7 +4,7 @@ A lane claims ordered stages: the drawn order matches its named source.
 
 **Audit test.** Static: an edge between every pair of steps. Config or runtime: the drawn order matches the named source on every re-run. Never inferred.
 
-Inside one section the lane wraps its steps in a chevron with numbered discs on a spine; the outline and spine take the source’s provenance pattern and the caption names the source. Across sections it becomes a route: a 12px lane-fill ribbon through the steps with a numbered disc inside each file’s left end; the label shifts right to clear it. Past 12 steps the middle folds into a “+N steps” marker. Never reuse the section outline.
+Inside one section the lane wraps its steps in a chevron with numbered discs on a spine; the outline and spine take the source’s provenance pattern and the caption names the source. Across sections it becomes a route: a 12px lane-fill ribbon through the steps with a numbered disc inside each file’s left end; the label shifts right to clear it. Past 12 steps the middle of an inline lane folds into a “+N steps” row (the first and last 5 stay); a route never folds, its files staying in their own sections. Never reuse the section outline.
 
 ```loupe-spec
 {
@@ -156,6 +156,6 @@ Inside one section the lane wraps its steps in a chevron with numbered discs on 
   "labelPlacement": "inside-start"
  },
  "overflow": "fold-middle",
- "notes": "Inside one section the lane wraps its steps in a chevron with numbered discs on a spine; the outline and spine take the source’s provenance pattern and the caption names the source. Across sections it becomes a route: a 12px lane-fill ribbon through the steps with a numbered disc inside each file’s left end; the label shifts right to clear it. Past 12 steps the middle folds into a “+N steps” marker. Never reuse the section outline."
+ "notes": "Inside one section the lane wraps its steps in a chevron with numbered discs on a spine; the outline and spine take the source’s provenance pattern and the caption names the source. Across sections it becomes a route: a 12px lane-fill ribbon through the steps with a numbered disc inside each file’s left end; the label shifts right to clear it. Past 12 steps the middle of an inline lane folds into a “+N steps” row (the first and last 5 stay); a route never folds, its files staying in their own sections. Never reuse the section outline."
 }
 ```

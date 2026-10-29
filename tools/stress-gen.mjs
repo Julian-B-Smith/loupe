@@ -16,7 +16,7 @@ const OVERLAY = new Set(['runtime', 'annotated', 'inferred']);
 
 // A case is files (repo paths), edges and view elements; build() turns it into the three documents. Edge kinds
 // follow the renderer's slots (render.js SPEC.slot): a role wins over the kind.
-function build({ files, edges, elements, settings = { hubPlacement: 'group' }, diff = null, name }) {
+export function build({ files, edges, elements, settings = { hubPlacement: 'group' }, diff = null, name }) {
   const nodes = files.map((p) => {
     const ext = p.split('.').pop(), o = { id: 'file:' + p, kind: 'file', path: p, hash: 'none' };
     if (LANG[ext]) o.lang = LANG[ext];
@@ -91,10 +91,12 @@ export const CASES = {
     return { files, edges, elements: [sec('dsp', 'Spectral resynthesis and partial tracking engine', [...longs, ...shared, ...shorts]), sec('host', 'Host', host)] };
   },
   // Rail length, tap spacing, count label: 50 voices render into one mixer through one audio contract.
+  // The voices sit in five banks of ten so the bus spec's merge (past 20 taps on one side, one tap per section) shows;
+  // two of bank E's edges are runtime, so its taps split by provenance (each tap keeps its own pattern).
   'big-bus'() {
-    const voices = range(50).map((i) => `src/voices/voice_${pad(i)}.cpp`), mix = 'src/mix/mixer.cpp', out = 'src/mix/output.cpp';
-    const edges = [...voices.map((v) => ({ src: F(v), dst: F(mix), kind: 'call', role: 'audio' })), { src: F(mix), dst: F(out), kind: 'call' }];
-    return { files: [...voices, mix, out], edges, elements: [sec('voices', 'Voices', voices), sec('mix', 'Mix', [mix, out]),
+    const banks = ['a', 'b', 'c', 'd', 'e'], voices = banks.flatMap((b) => range(10).map((i) => `src/voices/${b}/voice_${b}${pad(i)}.cpp`)), mix = 'src/mix/mixer.cpp', out = 'src/mix/output.cpp';
+    const edges = [...voices.map((v, i) => ({ src: F(v), dst: F(mix), kind: 'call', role: 'audio', ...(i >= 48 ? { provenance: 'runtime' } : {}) })), { src: F(mix), dst: F(out), kind: 'call' }];
+    return { files: [...voices, mix, out], edges, elements: [...banks.map((b, i) => sec('voices-' + b, 'Voices ' + b.toUpperCase(), voices.slice(i * 10, i * 10 + 10))), sec('mix', 'Mix', [mix, out]),
       { id: 'bus:audio', primitive: 'bus', label: 'Audio bus', claim: 'Every voice renders into the mixer through one contract.', edges: edges.slice(0, 50).map((e) => edgeId(e.src, e.dst, e.kind)), contract: { dst: F(mix), role: 'audio', signature: SIG.audio } }] };
   },
   // Spoke crowding, badge placement: 40 files in four sections include one registry header.
@@ -126,14 +128,15 @@ export const CASES = {
       { id: 'set:realtime', primitive: 'set', label: 'Realtime', claim: 'These run on the audio thread.', members: [F(dsp[0]), F(dsp[1])] },
       { id: 'overlap:morph', primitive: 'overlap', claim: 'morph is DSP, preset handling and realtime at once.', members: [F(dsp[0])], sets: ['sec:dsp', 'set:presets', 'set:realtime'] }] };
   },
-  // Folding: a 12-step lane inside a section big enough to fold (16 other files; steps are laid out on the lane, not
-  // as rows, so only the others count toward the fold), and a 12-step lane routed across four sections.
+  // Folding: a 16-step lane inside a section big enough to fold (16 other files; steps are laid out on the lane, not
+  // as rows, so only the others count toward the fold), and a 16-step lane routed across four sections. Past 12 steps
+  // the inline lane folds its middle (lane spec, Q-033); the route never does (Julian, poll 2026-10-28).
   'long-lane'() {
-    const chain = range(12).map((i) => `src/chain/stage_${pad(i)}.cpp`), extra = range(16).map((i) => `src/chain/util_${pad(i)}.h`);
-    const parts = ['input', 'analysis', 'synthesis', 'output'], across = parts.flatMap((p) => range(3).map((i) => `src/${p}/${p}_${pad(i)}.cpp`));
+    const chain = range(16).map((i) => `src/chain/stage_${pad(i)}.cpp`), extra = range(16).map((i) => `src/chain/util_${pad(i)}.h`);
+    const parts = ['input', 'analysis', 'synthesis', 'output'], across = parts.flatMap((p) => range(4).map((i) => `src/${p}/${p}_${pad(i)}.cpp`));
     const link = (xs) => xs.slice(1).map((x, i) => ({ src: F(xs[i]), dst: F(x), kind: 'call' }));
-    return { files: [...chain, ...extra, ...across], edges: [...link(chain), ...link(across), ...extra.map((x, i) => ({ src: F(chain[i % 12]), dst: F(x), kind: 'include' }))], elements: [sec('chain', 'Chain', [...chain, ...extra]), ...parts.map((p, i) => sec(p, p[0].toUpperCase() + p.slice(1), across.slice(i * 3, i * 3 + 3))),
-      { id: 'lane:chain', primitive: 'lane', label: 'Signal chain', claim: 'Audio runs through the twelve stages in order.', steps: chain.map(F), source: { provenance: 'static' } },
+    return { files: [...chain, ...extra, ...across], edges: [...link(chain), ...link(across), ...extra.map((x, i) => ({ src: F(chain[i % 16]), dst: F(x), kind: 'include' }))], elements: [sec('chain', 'Chain', [...chain, ...extra]), ...parts.map((p, i) => sec(p, p[0].toUpperCase() + p.slice(1), across.slice(i * 4, i * 4 + 4))),
+      { id: 'lane:chain', primitive: 'lane', label: 'Signal chain', claim: 'Audio runs through the sixteen stages in order.', steps: chain.map(F), source: { provenance: 'static' } },
       { id: 'lane:across', primitive: 'lane', label: 'Analysis to output', claim: 'A frame travels input → analysis → synthesis → output.', steps: across.map(F), source: { provenance: 'static' } }] };
   },
   // Twins scaling, mixed ✓ ~ ✕: 8 engines (children of one Engines section, as twins are laid out today) implement a
@@ -149,7 +152,10 @@ export const CASES = {
       const fs = [`src/engines/${n}/${n}_voice.cpp`, `src/engines/${n}/${n}_core.cpp`]; files.push(...fs); els.push(sec(n, n.toUpperCase(), fs, { parent: 'sec:engines' }));
       edges.push({ src: F(fs[0]), dst: F(fs[1]), kind: 'call' });
       ports.forEach((p, i) => {
-        const mode = (t + i) % 3; // 0 static ✓, 1 overlay only ~, 2 none ✕
+        // 0 static ✓, 1 overlay only ~, 2 none ✕. Twins differ in k and in their worst mark (critic H3: a plain
+        // rotation gave every twin 2 ✓ and a ✕, so a chip counting the wrong mark passed): saw all ✓, choir ✓ and ~
+        // only, the rest a rotation with more ✓ the later the twin.
+        const mode = t === 0 ? 0 : t === 1 ? i % 2 : i < t - 3 ? 0 : (t + i) % 3;
         if (mode === 2) return;
         const mine = F(fs[i % 2]), prov = mode === 0 ? 'static' : 'inferred';
         edges.push(p.direction === 'in' ? { src: p.peer, dst: mine, kind: p.kind || 'call', role: p.role, provenance: prov } : { src: mine, dst: p.peer, kind: p.kind || 'call', role: p.role, provenance: prov });

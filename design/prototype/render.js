@@ -262,7 +262,7 @@ export function render(container, data, state) {
   // drawn: every stand-in this frame actually draws (section ids, fold:<sec>, port keys, 'elsewhere'). conserve() checks node
   // proxies against it, so a proxy pointing at something not on screen reads as broken instead of balanced.
   const map = { zoom: z, lod, nodes: {}, edges: {}, elements: {}, layout: D, drawn: new Set(), settled: morph <= 0 || morph >= 1 };
-  const bg = [], eg = [], ng = [], lg = [];
+  const bg = [], eg = [], ng = [], lg = [], matrix = []; // matrix: a hovered twins chip's grid, drawn over everything
   const textBoxes = []; // zoomed-out box labels, so the box tabs placed later keep off them (Q-034 critic S1)
   const routeStep = {};
   const setMarks = [];
@@ -403,9 +403,31 @@ export function render(container, data, state) {
         lg.push(`<text data-el="${id}" x="${f1(r.x + 10)}" y="${f1(r.y + 14)}" style="font:${v('type-caption')};fill:${v('ink-muted')}">${esc(el.label)} · ${el.members.length} twins · ${el.interface.length} ports</text>`);
         if (r.h >= 40) { let cx = r.x + 10; el.interface.forEach(pt => { const w = pt.name.length * cw * 0.92 + 12; if (cx + w > r.x + r.w - 6) return; lg.push(`<rect x="${f1(cx)}" y="${f1(r.y + r.h - 20)}" width="${f1(w)}" height="15" rx="3" style="fill:${v('surface-node')};stroke:${v('rule')};stroke-width:1px"/><text x="${f1(cx + 6)}" y="${f1(r.y + r.h - 9)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(pt.name)}</text>`); cx += w + 6; }); }
       }
+      // Past 4 ports the strip collapses to one "k/m" chip (twins spec; Julian, poll 2026-10-28): k the static
+      // matches, coloured by the twin's worst mark. Hovering a chip draws the whole twins × ports grid, its row marked.
+      const chipped = el.interface.length > 4, WORST = ['bad', 'warn', 'ok'], COL = { ok: 'state-ok', warn: 'state-warn', bad: 'state-bad' }, GLYPH = { ok: '✓', warn: '~', bad: '✕' };
       el.members.forEach(sec => {
         const s = D.sections[sec]; if (!s || s.collapsed) return;
-        const sr = S(s), marks = detail && sr.w >= 120 ? conf[sec] || [] : [];
+        const sr = S(s), marks = detail && sr.w >= 120 && !chipped ? conf[sec] || [] : [];
+        if (detail && sr.w >= 120 && chipped && conf[sec]) {
+          const cs = conf[sec], k = cs.filter(c => c === 'ok').length, worst = WORST.find(w => cs.includes(w)) || 'ok', text = `${k}/${cs.length}`;
+          const w = text.length * 6.4 + 10, x = sr.x + sr.w - 8 - w, y = sr.y + Math.min(17, Math.max(13, sr.h * 0.6)) - 9.5;
+          const tip = `${el.label}: ${k} of ${cs.length} ports match statically. ` + el.interface.map((pt, i) => `${GLYPH[cs[i]]} ${pt.name}`).join(', ');
+          lg.push(`<g data-el="${id}" data-twin="${esc(sec)}" data-conf="${text}" style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(x)}" y="${f1(y)}" width="${f1(w)}" height="13" rx="3" style="fill:${v('surface-node')};stroke:${v(COL[worst])};stroke-width:1.25px"/><text x="${f1(x + w / 2)}" y="${f1(y + 9.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v(COL[worst])}">${text}</text></g>`);
+          if (state.hover && state.hover.id === id && state.hover.twin === sec) {
+            const nameW = Math.max(...el.members.map(m => (data.elements[m].label || m).length)) * cw * 0.92 + 16, colW = Math.max(...el.interface.map(pt => pt.name.length)) * cw * 0.92 + 12;
+            const gw = nameW + colW * el.interface.length + 8, gh = 22 + el.members.length * 16 + 6, gx = Math.max(4, x + w - gw), gy = Math.max(4, Math.min(y + 18, H - gh - 4));
+            const cells = [`<rect x="${f1(gx)}" y="${f1(gy)}" width="${f1(gw)}" height="${f1(gh)}" rx="6" style="fill:${v('surface-panel')};stroke:${v('ink-faint')};stroke-width:1px"/>`];
+            el.interface.forEach((pt, j) => cells.push(`<text data-head="${j}" x="${f1(gx + nameW + j * colW + colW / 2)}" y="${f1(gy + 15)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(pt.name)}</text>`));
+            el.members.forEach((m, r) => {
+              const ry = gy + 22 + r * 16;
+              if (m === sec) cells.push(`<rect x="${f1(gx + 3)}" y="${f1(ry)}" width="${f1(gw - 6)}" height="15" rx="3" style="fill:${v('accent-soft')}"/>`);
+              cells.push(`<text x="${f1(gx + 8)}" y="${f1(ry + 11)}" style="font:${v('type-count')};fill:${v('ink')}">${esc(data.elements[m].label || m)}</text>`);
+              (conf[m] || []).forEach((c, j) => cells.push(`<text x="${f1(gx + nameW + j * colW + colW / 2)}" y="${f1(ry + 11)}" text-anchor="middle" data-cell="${r},${j}" style="font:700 10px/1 ${v('font-ui')};fill:${v(COL[c])}">${GLYPH[c]}</text>`));
+            });
+            matrix.push(`<g data-twins-matrix="${esc(id)}">${cells.join('')}</g>`);
+          }
+        }
         marks.forEach((c, i) => {
           const x = sr.x + sr.w - 14 - (marks.length - 1 - i) * 15, y = sr.y + Math.min(17, Math.max(13, sr.h * 0.6)) - 9.5;
           const col = { ok: 'state-ok', warn: 'state-warn', bad: 'state-bad' }[c];
@@ -427,9 +449,10 @@ export function render(container, data, state) {
         const r = S(P), n = L.laneNotch * z.k, pt = L.lanePoint * z.k;
         bg.push(`<polygon data-el="${id}" points="${f1(r.x)},${f1(r.y)} ${f1(r.x + r.w / 2)},${f1(r.y + n)} ${f1(r.x + r.w)},${f1(r.y)} ${f1(r.x + r.w)},${f1(r.y + r.h - pt)} ${f1(r.x + r.w / 2)},${f1(r.y + r.h)} ${f1(r.x)},${f1(r.y + r.h - pt)}" style="fill:${v('lane-fill')};stroke:${on ? v('accent') : v('lane-edge')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${dash};stroke-linejoin:round"/>`);
         const gw = L.laneGutter * z.k, sx = r.x + gw / 2 + 1, dr = Math.min(8, gw / 2 - 2);
-        const ys = el.steps.map(s => D.nodes[s] && mid(S(D.nodes[s])).y).filter(y => y != null);
-        if (ys.length > 1) bg.push(`<line x1="${f1(sx)}" x2="${f1(sx)}" y1="${f1(ys[0])}" y2="${f1(ys[ys.length - 1])}" style="stroke:${v('edge-' + spineSlot)};stroke-width:${v('stroke-edge-emph')};stroke-dasharray:${dash}"/>`);
-        ys.forEach((y, i) => lg.push(dr >= 6.5 ? `<g><circle cx="${f1(sx)}" cy="${f1(y)}" r="${f1(dr)}" style="fill:${v('surface-panel')};stroke:${v('lane-edge')};stroke-width:${v('stroke-group')}"/><text x="${f1(sx)}" y="${f1(y + 3)}" text-anchor="middle" style="font:${dr >= 7.5 ? v('type-count') : v('type-count-compact')};fill:${v('ink')}">${i + 1}</text></g>` : `<circle cx="${f1(sx)}" cy="${f1(y)}" r="${f1(Math.max(2, dr))}" style="fill:${v('lane-edge')}"><title>Step ${i + 1}</title></circle>`));
+        // A folded middle (layout L.laneFoldAbove) leaves gaps: each disc keeps its step's own number.
+        const ys = el.steps.map((s, i) => D.nodes[s] && [mid(S(D.nodes[s])).y, i]).filter(Boolean);
+        if (ys.length > 1) bg.push(`<line x1="${f1(sx)}" x2="${f1(sx)}" y1="${f1(ys[0][0])}" y2="${f1(ys[ys.length - 1][0])}" style="stroke:${v('edge-' + spineSlot)};stroke-width:${v('stroke-edge-emph')};stroke-dasharray:${dash}"/>`);
+        ys.forEach(([y, i]) => lg.push(dr >= 6.5 ? `<g><circle cx="${f1(sx)}" cy="${f1(y)}" r="${f1(dr)}" style="fill:${v('surface-panel')};stroke:${v('lane-edge')};stroke-width:${v('stroke-group')}"/><text x="${f1(sx)}" y="${f1(y + 3)}" text-anchor="middle" style="font:${dr >= 7.5 ? v('type-count') : v('type-count-compact')};fill:${v('ink')}">${i + 1}</text></g>` : `<circle cx="${f1(sx)}" cy="${f1(y)}" r="${f1(Math.max(2, dr))}" style="fill:${v('lane-edge')}"><title>Step ${i + 1}</title></circle>`));
         const lh = (L.laneHead - L.laneNotch) * z.k;
         if (lh >= 15 && lh < 34 && detail) lg.push(`<g data-el="${id}" style="cursor:pointer"><title>${esc(el.label)}</title><text x="${f1(r.x + 8)}" y="${f1(r.y + n + Math.min(13, lh * 0.72))}" style="font:${v('type-group-label-compact')};fill:${v('ink')}">${esc(fit(el.label + ' · ' + el.steps.length + ' steps', r.w - 16, 6.9))}</text></g>`);
         if (lh >= 34 && detail) {
@@ -482,7 +505,8 @@ export function render(container, data, state) {
   // The box an edge end is counted in with lines off: a drawn file's nearest laid-out section (or the loose block); a
   // fold row counts in its section; a section, port or lens box stands for itself.
   const boxKey = (id, end) => {
-    if (end.key[0] === 'f') return end.key === 'f:loose' ? 'o:loose' : 's:' + end.key.slice(2);
+    // A lane's folded middle (keyed by the lane) sits in the lane's own section.
+    if (end.key[0] === 'f') { const f = D.folds[end.key.slice(2)]; return end.key === 'f:loose' ? 'o:loose' : f && f.lane ? 's:' + D.lanes[f.lane].section : 's:' + end.key.slice(2); }
     if (end.key[0] !== 'n') return end.key;
     let s = data.home[id]; while (s && !D.sections[s]) s = data.parentOf[s];
     return s ? 's:' + s : 'o:loose';
@@ -665,6 +689,49 @@ export function render(container, data, state) {
   });
   // A collector bar stands for the edges it gathers, so it opens to them (ADR 0029; critic F3: it opened to nothing).
   collectors.forEach(cl => { const c = v('edge-' + slotOf(cl.e)); eg.push(`<g data-holds="c:${esc(cl.key)}" data-count="${cl.n}" style="cursor:pointer"><title>${cl.n} edges arrive here. Click to list them.</title><line x1="${f1(cl.x)}" x2="${f1(cl.x)}" y1="${f1(cl.y1)}" y2="${f1(cl.y2)}" style="stroke:${c};stroke-width:${v('stroke-rail')};stroke-linecap:round"/><path d="M${f1(cl.x)} ${f1(cl.y)}H${f1(cl.to)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slotOf(cl.e)}-${glyphOf(cl.e)})"/></g>`); });
+  // Bus spec: past BUS_MERGE taps on one side of a rail, taps from the same section merge into one with a count. A merged
+  // tap also splits by provenance, since "each tap keeps its own provenance pattern". Its edges stay `via: 'bus'` (in the
+  // bus, counted by the meter); `tap` names the merged tap, which opens to exactly them (ADR 0029, inspect.js heldEdges).
+  const BUS_MERGE = 20;
+  const tapGroups = (bus, es, sideOf) => {
+    const bySide = {}, out = [];
+    es.forEach(e => (bySide[sideOf(e)] = bySide[sideOf(e)] || []).push(e));
+    Object.keys(bySide).sort().forEach(side => {
+      const list = bySide[side];
+      if (list.length <= BUS_MERGE) { list.forEach(e => out.push({ edges: [e] })); return; }
+      const by = {};
+      list.forEach(e => { const k = `${bus}|${data.home[e.src] || '-'}|${e.provenance}|${side}`; (by[k] = by[k] || []).push(e); });
+      Object.keys(by).sort().forEach(k => {
+        if (by[k].length === 1) { out.push({ edges: by[k] }); return; }
+        by[k].forEach(e => { map.edges[e.id].tap = 'm:' + k; });
+        // j: this group's place among its section's merged groups, so two provenances from one section never share a
+        // comb (critic H2: interleaved runtime taps vanished under the static comb).
+        const pre = k.split('|').slice(0, 2).join('|'), j = out.filter(o => o.key && o.key.slice(2).split('|').slice(0, 2).join('|') === pre && o.side === side).length;
+        out.push({ key: 'm:' + k, side, edges: by[k], j });
+      });
+    });
+    return out;
+  };
+  // Where a merged tap's line meets the rail: first a gap between two of its own files (so the line runs between file
+  // rows), then any spot along its comb; the nearest to the comb's middle that is 9 px (the spec's memberGap) from every
+  // other tap and crosses no drawn file on its way (`clear`), so banks side by side, or one moved off the row grid
+  // (critic M3), each take their own clear line. With no clear spot it takes the nearest free one: the stress test says
+  // whether any tap still crosses a file.
+  const freeAlong = (used, cands, lo, hi, clear) => {
+    const c = (lo + hi) / 2, scan = []; for (let p = Math.ceil(lo); p <= hi; p++) scan.push(p);
+    const by = xs => xs.slice().sort((a, b) => Math.abs(a - c) - Math.abs(b - c) || a - b), free = q => used.every(u => Math.abs(u - q) >= 9);
+    const at = by(cands).find(q => free(q) && clear(q)) ?? by(scan).find(q => free(q) && clear(q)) ?? by(cands).find(free) ?? c;
+    used.push(at); return at;
+  };
+  // ticks: one short path per source file; bar: the comb joining them; tap: the one line from the bar to the rail. An
+  // edge in focus gets its own emphasised tick, so an edge opened from the list stands out from its siblings (critic M6).
+  const mergedTap = (g, ticks, bar, tap, jx, jy, px, py, side) => {
+    const e = g.edges[0], emph = g.edges.some(x => edgeFocus(x).emph), st = edgeStyle(e, emph, hoverTier(e, emph)), n = g.edges.length;
+    const sec = data.home[e.src], from = sec && data.elements[sec] ? data.elements[sec].label : 'files in no section';
+    const tk = g.edges.map((x, i) => { const f = edgeFocus(x).emph; return `<path${f ? ` data-edge="${x.id}"` : ''} d="${ticks[i]}" style="${edgeStyle(x, f, hoverTier(x, f))}"/>`; }).join('');
+    map.drawn.add(g.key);
+    return `<g data-holds="${esc(g.key)}" data-count="${n}" style="cursor:pointer"><title>${esc(`${n} taps from ${from} merged into one (${e.provenance}). Click to list the edges.`)}</title><path d="${bar}" style="${st}"/><path d="${tap}" style="${st}"/>${tk}<circle cx="${f1(jx)}" cy="${f1(jy)}" r="3" data-taps="${n}" style="fill:${v('edge-' + slotOf(e))}"/>${pill(px + (side === 'start' ? 4 : side === 'end' ? -4 : 0), py, String(n), { anchor: side, stroke: v('edge-' + slotOf(e)), ink: v('ink') })}</g>`;
+  };
   // rails
   if (decor > 0 && !ovw) {
     eg.push(`<g style="opacity:${decor}">`);
@@ -679,24 +746,54 @@ export function render(container, data, state) {
       const anyRel = rel && mine.some(e => rel.has(e.src) && rel.has(e.dst));
       const gOp = rel && !anyRel && !on ? 0.22 : 1;
       eg.push(`<g data-el="${id}" style="opacity:${gOp}">`);
-      const exits = new Set();
+      const exits = new Set(), used = []; // used: where taps already meet the rail
+      let fr = null; const files = () => fr || (fr = Object.keys(D.nodes).map(nodeRect).filter(Boolean)); // drawn files, once a rail merges
+      // A comb sits beyond every drawn file of its section, not just its own sources: a second comb 5 px further out
+      // would otherwise land in the next row of files (horizontal rail, wrapping flow section).
+      const homeRects = src => Object.keys(D.nodes).filter(n => data.home[n] === data.home[src]).map(nodeRect).filter(Boolean);
       if (R.o === 'v') {
         const rx = R.x * z.k + z.x, y1 = R.y1 * z.k + z.y, y2 = R.y2 * z.k + z.y;
         eg.push(`<line x1="${f1(rx)}" x2="${f1(rx)}" y1="${f1(y1 - 6)}" y2="${f1(y2 + 6)}" style="stroke:${c};stroke-width:${on ? 4.5 : v('stroke-rail')};stroke-linecap:round"/>`);
-        mine.forEach(e => {
-          const a = nodeRect(e.src), b = nodeRect(e.dst), ay = mid(a).y, by = mid(b).y, { emph } = edgeFocus(e);
-          const ax = a.x + a.w <= rx ? a.x + a.w : a.x, bx = b.x >= rx ? b.x : b.x + b.w;
+        tapGroups(id, mine, e => (nodeRect(e.src).x + nodeRect(e.src).w <= rx ? 'l' : 'r')).forEach(g => {
+          if (g.key) { // merged: a comb along the files' near edges, one tap from its middle to the rail
+            const rs = g.edges.map(e => nodeRect(e.src)), left = g.side === 'l';
+            const all = homeRects(g.edges[0].src), ex = left ? Math.max(...all.map(r => r.x + r.w)) : Math.min(...all.map(r => r.x)), cx = ex + (left ? 6 + 5 * g.j : -6 - 5 * g.j);
+            const ys = rs.map(r => mid(r).y), y0 = Math.min(...ys), y1 = Math.max(...ys), so = ys.slice().sort((a, b) => a - b);
+            const xa = Math.min(cx, rx), xb = Math.max(cx, rx), clear = y => !files().some(r => y > r.y && y < r.y + r.h && r.x < xb && r.x + r.w > xa);
+            const ty = freeAlong(used, so.length > 1 ? so.slice(1).map((p, i) => (p + so[i]) / 2) : so, y0, y1, clear);
+            eg.push(mergedTap(g, rs.map(r => `M${f1(left ? r.x + r.w : r.x)} ${f1(mid(r).y)}H${f1(cx)}`), `M${f1(cx)} ${f1(y0)}V${f1(y1)}`, `M${f1(cx)} ${f1(ty)}H${f1(rx)}`, rx, ty, cx, ty, left ? 'start' : 'end'));
+            return;
+          }
+          const e = g.edges[0], a = nodeRect(e.src), ay = mid(a).y, { emph } = edgeFocus(e);
+          const ax = a.x + a.w <= rx ? a.x + a.w : a.x; used.push(ay);
           eg.push(`<path data-edge="${e.id}" d="M${f1(ax)} ${f1(ay)}H${f1(rx)}" style="${edgeStyle(e, emph, hoverTier(e, emph))}"><title>${esc(edgeTitle(e))}</title></path><circle cx="${f1(rx)}" cy="${f1(ay)}" r="3" style="fill:${c}"/>`);
+        });
+        mine.forEach(e => {
+          const b = nodeRect(e.dst), by = mid(b).y, bx = b.x >= rx ? b.x : b.x + b.w;
           if (!exits.has(e.dst)) { exits.add(e.dst); eg.push(`<path d="M${f1(rx)} ${f1(by)}H${f1(bx)}" style="stroke:${c};stroke-width:${v('stroke-edge-emph')};fill:none" marker-end="url(#${uid}-${slot}-${glyphOf(e)})"/><circle cx="${f1(rx)}" cy="${f1(by)}" r="2.5" style="fill:${v('surface-canvas')};stroke:${c};stroke-width:1.25px"/>`); }
         });
         lg.push(`<g style="opacity:${decor * gOp}">${pill(rx, y2 + 20, `${el.label} · ${mine.length}`, { anchor: 'middle', stroke: c, ink: v('ink'), attr: `data-el="${id}" data-bus-count="${mine.length}" style="cursor:pointer"`, title: el.contract && el.contract.signature })}${on && el.contract ? pill(rx, y2 + 40, el.contract.signature, { anchor: 'middle', stroke: c, ink: v('ink'), fill: v('surface-node') }) : ''}</g>`);
       } else {
         const ry = R.y * z.k + z.y, x1 = R.x1 * z.k + z.x, x2 = R.x2 * z.k + z.x;
         eg.push(`<line x1="${f1(x1 - 6)}" x2="${f1(x2 + 6)}" y1="${f1(ry)}" y2="${f1(ry)}" style="stroke:${c};stroke-width:${on ? 4.5 : v('stroke-rail')};stroke-linecap:round"/>`);
-        mine.forEach(e => {
-          const a = nodeRect(e.src), b = nodeRect(e.dst), ax = mid(a).x, { emph } = edgeFocus(e);
-          const ay = a.y + a.h < ry ? a.y + a.h : a.y;
+        tapGroups(id, mine, e => (nodeRect(e.src).y + nodeRect(e.src).h < ry ? 'a' : 'b')).forEach(g => {
+          if (g.key) {
+            // Sources in a wrapping flow section sit in rows: a tick runs out of its file's side into the column gap and
+            // down (or up) the gap to the comb, never through the file below it (critic M4).
+            const rs = g.edges.map(e => nodeRect(e.src)), above = g.side === 'a', gap = L.flowGap * z.k / 2;
+            const all = homeRects(g.edges[0].src), ey = above ? Math.max(...all.map(r => r.y + r.h)) : Math.min(...all.map(r => r.y)), cy = ey + (above ? 6 + 5 * g.j : -6 - 5 * g.j);
+            const gx = rs.map(r => r.x + r.w + Math.min(gap, 10)), x0 = Math.min(...gx), x1 = Math.max(...gx);
+            const ya = Math.min(cy, ry), yb = Math.max(cy, ry), clear = x => !files().some(r => x > r.x && x < r.x + r.w && r.y < yb && r.y + r.h > ya);
+            const tx = freeAlong(used, [...new Set(gx)], x0, x1, clear);
+            eg.push(mergedTap(g, rs.map((r, i) => `M${f1(r.x + r.w)} ${f1(mid(r).y)}H${f1(gx[i])}V${f1(cy)}`), `M${f1(x0)} ${f1(cy)}H${f1(x1)}`, `M${f1(tx)} ${f1(cy)}V${f1(ry)}`, tx, ry, tx, cy + (above ? 12 : -12), 'middle'));
+            return;
+          }
+          const e = g.edges[0], a = nodeRect(e.src), ax = mid(a).x, { emph } = edgeFocus(e);
+          const ay = a.y + a.h < ry ? a.y + a.h : a.y; used.push(ax);
           eg.push(`<path data-edge="${e.id}" d="M${f1(ax)} ${f1(ay)}V${f1(ry)}" style="${edgeStyle(e, emph, hoverTier(e, emph))}"><title>${esc(edgeTitle(e))}</title></path><circle cx="${f1(ax)}" cy="${f1(ry)}" r="3" style="fill:${c}"/>`);
+        });
+        mine.forEach(e => {
+          const b = nodeRect(e.dst);
           if (!exits.has(e.dst)) {
             exits.add(e.dst);
             const bx = mid(b).x;
@@ -857,9 +954,13 @@ export function render(container, data, state) {
   if (designish && !ovw) Object.entries(D.folds).forEach(([sec, f]) => {
     const r = S(f), n = f.members.length, ins = new Set(f.members);
     const ec = data.edges.filter(e => ins.has(e.src) || ins.has(e.dst)).length;
-    const text = fit(`+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
+    // A lane's folded middle reads as steps, numbered, on the lane's spine (lane spec: "+N steps").
+    // A lane's row is keyed '<lane>' or '<lane>#k' (layout: a claimed step splits the middle); a click unfolds the lane.
+    const lane = f.lane && data.elements[f.lane], from = lane && lane.steps.indexOf(f.members[0]) + 1;
+    const text = fit(lane ? `+${n} steps · ${ec} edges` : `+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
+    const tip = lane ? `Steps ${from} to ${from + n - 1} of ${lane.label} folded here, with ${ec} edges. Click to show them; right-click to list the edges.` : `${n} less-connected files folded here, with ${ec} edges. Click to show all; right-click to list the edges.`;
     map.drawn.add('fold:' + sec);
-    ng.push(`<g data-unfold="${esc(sec)}" data-holds="f:${esc(sec)}" data-count="${ec}" style="cursor:pointer"><title>${esc(`${n} less-connected files folded here, with ${ec} edges. Click to show all; right-click to list the edges.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
+    ng.push(`<g data-unfold="${esc(f.lane || sec)}" data-holds="f:${esc(sec)}" data-count="${ec}"${lane ? ` data-lane-fold="${n}"` : ''} style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
   });
   if (designish && D.lens) {
     const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;
@@ -904,7 +1005,7 @@ export function render(container, data, state) {
     map.elsewhere = elsewhere;
   }
 
-  svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="set-marks" style="opacity:${decor}">${setMarks.join('')}</g><g data-layer="edges">${eg.join('')}</g><g data-layer="nodes">${ng.join('')}</g><g data-layer="labels">${lg.join('')}</g>`;
+  svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="set-marks" style="opacity:${decor}">${setMarks.join('')}</g><g data-layer="edges">${eg.join('')}</g><g data-layer="nodes">${ng.join('')}</g><g data-layer="labels">${lg.join('')}${matrix.join('')}</g>`;
   return map;
 }
 

@@ -24,10 +24,11 @@ export function bundleEnds(key) {
 // box (collapsed or proxied), 'o:loose' the overview's loose block, 'elsewhere' the isolate view's elsewhere chip.
 // Q-034: 't:<box>' a box's ↑out ↓in tab holds the folded edges with that box at an end (exactly what it counts: not the
 // box's drawn or collapsed ones); 'c:<end>' a collector bar holds the edges whose lines end on it.
+// Q-033: 'm:<bus>|<section>|<provenance>|<side>' a merged bus tap holds the bus edges render() marked with that tap.
 export function heldEdges(data, map, key) {
   const by = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-  const tab = key.startsWith('t:') ? key.slice(2) : null, bar = key.startsWith('c:') ? key.slice(2) : null;
-  const holds = (m) => (tab ? m.via === 'folded' && m.bundle !== 'elsewhere' && m.ends.includes(tab) : bar ? m.collector === bar : m.ends.includes(key));
+  const tab = key.startsWith('t:') ? key.slice(2) : null, bar = key.startsWith('c:') ? key.slice(2) : null, tap = key.startsWith('m:');
+  const holds = (m) => (tab ? m.via === 'folded' && m.bundle !== 'elsewhere' && m.ends.includes(tab) : bar ? m.collector === bar : tap ? m.tap === key : m.ends.includes(key));
   return data.edges.filter((e) => { const m = map && map.edges[e.id]; return m && m.ends && holds(m); })
     .sort((a, b) => by(a.src, b.src) || by(a.dst, b.dst) || by(a.id, b.id));
 }

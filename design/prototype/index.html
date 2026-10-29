@@ -422,7 +422,7 @@ const hit = t => {
   if (c.dataset.storyout) return { type: 'storyout', id: 'story' };
   if (c.dataset.step) return { type: 'step', id: c.dataset.step };
   if (c.dataset.node) return { type: 'node', id: c.dataset.node };
-  if (c.dataset.el) return { type: 'element', id: c.dataset.el };
+  if (c.dataset.el) return c.dataset.twin ? { type: 'element', id: c.dataset.el, twin: c.dataset.twin } : { type: 'element', id: c.dataset.el };
   // Last: only an element with no other click lists on a left click (the overview's loose block); a file port stays a
   // file (critic H1), and lists from its menu.
   if (c.dataset.holds) return { type: 'holds', id: c.dataset.holds };
@@ -536,7 +536,8 @@ function showMenu(target, cx, cy) {
   // ADR 0029 / Q-028: an element that stands for several edges lists them; its own click keeps its action.
   const listItem = (key, what) => { const n = map ? heldEdges(data, map, key).length : 0; if (n) items.push({ label: `List the ${n} edges ${what}`, sub: 'exactly what the meter counts there', run: () => A.select({ type: 'holds', id: key }) }); };
   const forSection = (id, skipFold) => {
-    if (!data.elements[id]) return;
+    // Sections only: a lane's "+N steps" row is an unfold row too, and isolating a lane throws (Q-033 critic H1).
+    if (!data.elements[id] || data.elements[id].primitive !== 'section') return;
     items.push(null);
     // Only a box that replaces its contents stands for edges (critic H4): collapsed, or drawn whole in the overview.
     // An expanded box draws its files and edges, and its ×N lines open on their own (Q-011).
@@ -551,9 +552,10 @@ function showMenu(target, cx, cy) {
     const hk = target && target.closest && target.closest('[data-holds]'); if (hk) listItem(hk.dataset.holds, 'through this port');
     forSection(data.home[h.id]);
   } else if (h && h.type === 'unfold') {
-    const f = map.layout.folds[h.id];
-    items.push(null, { label: `Show ${f ? f.members.length : ''} folded files`, run: () => A.toggleUnfold(h.id) });
-    listItem('f:' + h.id, 'of the folded files');
+    const f = map.layout.folds[h.id], ln = data.elements[h.id] && data.elements[h.id].primitive === 'lane';
+    const hk = target && target.closest && target.closest('[data-holds]');
+    items.push(null, { label: ln ? `Show every step of ${label(h.id)}` : `Show ${f ? f.members.length : ''} folded files`, run: () => A.toggleUnfold(h.id) });
+    listItem(hk ? hk.dataset.holds : 'f:' + h.id, ln ? 'of these folded steps' : 'of the folded files');
     forSection(h.id, true);
   } else if (h && h.type === 'port') {
     const all = h.id.includes(':all:'), open = s.isoOpen.includes(h.id), peer = h.id.split(/:(?:s|all):/)[1];
@@ -703,6 +705,7 @@ function elementPanel(id) {
   } else if (p === 'lane') {
     const src = el.source || {};
     body = `<dl class="kv"><dt>Order from</dt><dd>${esc(src.provenance)}${src.evidence ? ' · ' + esc(src.evidence) : ''}</dd></dl>
+      ${map && (Object.values(map.layout.folds).some(f => f.lane === id) || store.get().unfolded.includes(id)) ? `<div class="row" style="justify-content:flex-start;gap:8px">${go('unfold', id, store.get().unfolded.includes(id) ? 'Fold the middle again' : 'Show every step', 'btn')}</div>` : ''}
       <div><span class="eyebrow">Steps · ${el.steps.length}</span>${el.steps.map((s, i) => go('node', s, `<span class="m">${i + 1}</span><span></span><span class="n mono">${esc(label(s))}</span><span class="m"></span>`, 'erow')).join('')}</div>`;
   } else if (p === 'twins') {
     const conf = conformity(data, id), g = { ok: ['✓', 'state-ok'], warn: ['~', 'state-warn'], bad: ['✕', 'state-bad'] };
@@ -786,8 +789,8 @@ const boxName = k => k.startsWith('s:') || k.startsWith('n:') ? label(k.slice(2)
 function holdsPanel(key) {
   const es = heldEdges(data, map, key);
   const what = key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
-    : key.startsWith('f:') ? `Folded files of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
-    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : esc(key);
+    : key.startsWith('f:') ? `Folded ${data.elements[key.slice(2)] && data.elements[key.slice(2)].primitive === 'lane' ? 'steps' : 'files'} of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
+    : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : key.startsWith('m:') ? `Merged tap from ${esc(key.split('|')[1] === '-' ? 'files in no section' : boxName('s:' + key.split('|')[1]))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
   return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
     <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>
