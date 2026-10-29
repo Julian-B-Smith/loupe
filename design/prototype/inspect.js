@@ -48,22 +48,33 @@ export function diffKindOf(data, state) {
 }
 // The files a stand-in holds (render() records each undrawn file's stand-in as map.nodes[id].proxy: a section id, a
 // 'fold:<key>' row, 'loose', 'lens-outside', an isolate port), grouped by diff kind, each list sorted. A tally says
-// these counts and its click lists these files, so the two cannot disagree; `files` is everything the stand-in holds.
+// these counts and its click lists these files, so the two cannot disagree. `files` counts the graph files it holds (what
+// its own header counts), `ghosts` the removed ones (not graph nodes; critic M6: "4 of the 12" beside "11 files").
 export function diffHeld(data, map, state, proxy) {
-  const kind = diffKindOf(data, state), out = { files: 0 };
+  const kind = diffKindOf(data, state), out = { files: 0, ghosts: 0 };
   DIFF_KINDS.forEach((k) => { out[k] = []; });
   Object.entries(map.nodes).forEach(([id, m]) => {
     if (!m || m.proxy !== proxy || m.state === 'drawn' || m.state === 'ghost') return;
-    out.files++;
+    if (data.nodes[id]) out.files++; else out.ghosts++;
     const k = kind[id] === 'ghost-added' ? 'added' : kind[id];
     if (k) out[k].push(id);
   });
   DIFF_KINDS.forEach((k) => out[k].sort());
   return out;
 }
-// The run's totals for the meter line: every kind the diff lists, whichever side is shown.
-export function diffSummary(data) {
+// The run's totals for the meter line, for the side shown: the before side marks only added (as outlines) and changed
+// files, so it says only those (critic L5: it said ⧗5 −12, which that side never marks).
+export function diffSummary(data, side = 'after') {
   const df = data.diff; if (!df) return null;
-  const n = { added: (df.added || []).length, changed: (df.changed || []).length, stale: (df.stale || []).length, removed: (df.removed || []).length };
-  return { ...n, text: `re-run +${n.added} ~${n.changed} ⧗${n.stale} −${n.removed}` };
+  const n = { added: (df.added || []).length, changed: (df.changed || []).length, stale: side === 'before' ? 0 : (df.stale || []).length, removed: side === 'before' ? 0 : (df.removed || []).length };
+  return { ...n, text: side === 'before' ? `re-run, before: +${n.added} ~${n.changed}` : `re-run +${n.added} ~${n.changed} ⧗${n.stale} −${n.removed}` };
+}
+// What a tally's panel says (index.html diffBoxPanel), here so the oracle reads the words the user reads (critic M3).
+// `name` comes from the caller (labels live in the viewer); the counts and lists are diffHeld's.
+export function diffBoxText(data, map, state, proxy, name) {
+  const h = diffHeld(data, map, state, proxy), n = DIFF_KINDS.reduce((a, k) => a + h[k].length, 0);
+  const of = `${h.files} file${h.files === 1 ? '' : 's'}${h.ghosts ? ` (+${h.ghosts} removed)` : ''}`;
+  return { held: h, n, title: `Changes in ${name}`,
+    lead: n ? `${n} of the ${of} ${name} stands for differ from the last run. Each row opens its file.` : `Nothing ${name} stands for in this frame differs from the last run (zoom out, or collapse, to see a tally).`,
+    tip: `${name}: ${DIFF_KINDS.filter((k) => h[k].length).map((k) => `${h[k].length} ${k}`).join(', ')} of ${of}, since the last run. Click to list them.` };
 }

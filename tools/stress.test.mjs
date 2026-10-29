@@ -21,7 +21,8 @@ const CW = 7.2;
 const { indexSnapshot } = await import('../design/prototype/snapshot.js');
 const { render, SPEC, slotOf } = await import('../design/prototype/render.js');
 const { conserve, conformity } = await import('../design/prototype/standins.js');
-const { heldEdges, diffHeld, diffSummary } = await import('../design/prototype/inspect.js');
+const { heldEdges, diffHeld, diffSummary, diffBoxText } = await import('../design/prototype/inspect.js');
+const { initialState } = await import('../design/prototype/state.js');
 const { computeLens } = await import('../design/prototype/lens.js');
 const { CASES, COMMITTED, generate, build } = await import('./stress-gen.mjs');
 
@@ -426,15 +427,22 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   // The chips a tally of these counts shows: all kinds, or (narrow) one kind's chip, or one Δ total.
   const chipsOk = (t, c) => { const ks = KINDS.filter((x) => c[x]), n = ks.reduce((a, x) => a + c[x], 0), full = ks.map((x) => GL[x] + c[x]).join();
     return t.n === n && (t.chips.join() === full || (ks.length > 1 && t.chips.join() === 'Δ' + n)); };
-  const clash = (html, ts, map) => {
+  const clash = (html, ts, map, dn) => {
     const tabs = [...html.matchAll(/<g data-totals="[^"]*"[^>]*>(?:<title>[^<]*<\/title>)?(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
-    const heads = [...html.matchAll(/<g data-el="[^"]*" style="cursor:pointer"><title>[^<]*<\/title><text x="([\d.-]+)" y="([\d.-]+)"[^>]*>([^<]*)<\/text>/g)].map((m) => ({ x: +m[1], y: +m[2] - 11, w: m[3].length * CW, h: 13 }));
+    // Every header label, cut or not (the <title> is optional), turned 90° or not (critic L2: both were missed).
+    const heads = [...html.matchAll(/<g data-el="[^"]*" style="cursor:pointer">(?:<title>[^<]*<\/title>)?<text (?:transform="rotate\(90[^"]*\)" )?x="([\d.-]+)" y="([\d.-]+)"([^>]*)>([^<]*)<\/text>/g)].map((m) => (/rotate/.test(m[0].split('>')[1] + m[0])
+      && m[0].includes('transform=') ? { x: +m[1] - 1, y: +m[2], w: 13, h: m[4].length * CW } : { x: +m[1], y: +m[2] - 11, w: m[4].length * CW, h: 13 }));
     const boxes = ts.filter((t) => t.box).map((t) => t.box);
     clash.seen = { tabs: tabs.length, heads: heads.length }; // what was compared, so a check can say it compared something
-    return pairs(boxes, overlap).length + boxes.filter((b) => tabs.some((o) => overlap(b, o))).length + boxes.filter((b) => heads.some((o) => overlap(b, o))).length + (map ? 0 : 0);
+    // With the frame's map: a tally outside its box must not sit inside another box (it would read as that box's).
+    const L0 = map && dn && map.layout, Sm = (r) => Sz(map, r), inOther = !L0 ? 0 : ts.filter((t) => t.box && Object.entries(L0.sections).some(([sid, sr]) => {
+      if (sid === t.key || (L0.sections[t.key] && (dn.descendants(t.key).includes(sid) || dn.descendants(sid).includes(t.key)))) return false;
+      const o = Sm(sr); return overlap(t.box, o) && !inside(t.box, Sm(L0.sections[t.key] || sr), 0.6); })).length;
+    return pairs(boxes, overlap).length + boxes.filter((b) => tabs.some((o) => overlap(b, o))).length + boxes.filter((b) => heads.some((o) => overlap(b, o))).length + inOther;
   };
-  // Inside its stand-in (or, narrow, straddling its right or left edge).
-  const placed = (t, r) => !!t.box && (inside(t.box, r, 0.6) || ([r.x + r.w, r.x].some((ex) => Math.abs(t.box.x + t.box.w / 2 - ex) < 1) && t.box.y >= r.y - 6.5 && t.box.y + 13 <= r.y + r.h + 6.5));
+  // Inside, straddling the right edge, or (no room inside) just below or above the box, within its width or centred.
+  const placed = (t, r) => !!t.box && (inside(t.box, r, 0.6) || (Math.abs(t.box.x + t.box.w / 2 - (r.x + r.w)) < 1 && t.box.y >= r.y - 6.5 && t.box.y + 13 <= r.y + r.h + 6.5)
+    || ((t.box.x >= r.x - 0.5 && t.box.x + t.box.w <= r.x + r.w + 0.5 || Math.abs(t.box.x + t.box.w / 2 - (r.x + r.w / 2)) < 0.6) && (Math.abs(t.box.y - (r.y + r.h + 3)) < 0.6 || Math.abs(t.box.y - (r.y - 16)) < 0.6)));
   // The HORDE sample (with its stand-in diff) is not a stress case: loaded here for the lens and tab-crowded frames.
   const HSD = load({ 'graph.json': readFileSync('design/prototype/snapshots/horde-sample/graph.json', 'utf8'), 'overlay.json': readFileSync('design/prototype/snapshots/horde-sample/overlay.json', 'utf8'), 'view.json': readFileSync('design/prototype/snapshots/horde-sample/view.json', 'utf8'), 'diff.sample.json': readFileSync('design/prototype/snapshots/horde-sample/diff.sample.json', 'utf8') });
   const d = data['big-diff'];
@@ -451,7 +459,7 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
       if (!placed(t, S(D.sections[t.key]))) bad.push(`${t.key}: tally off its box`);
     }
     if (Object.keys(want).some((s) => !c.ts.find((t) => t.key === s))) bad.push(`boxes with changes but no tally: ${Object.keys(want).filter((s) => !c.ts.find((t) => t.key === s)).join(', ')}`);
-    const cl = clash(html, c.ts);
+    const cl = clash(html, c.ts, map, d);
     check(`big-diff (${map.lod}, k ${zoom.k}, ${side}): each of the ${c.ts.length} boxes shows the tally of exactly its files (list included), inside it, clear of tabs, labels and each other; every marked file is drawn or tallied`,
       map.lod === 'overview' && c.ts.length === 4 && bad.length === 0 && c.bad.length === 0 && cl === 0, [...bad, ...c.bad].slice(0, 3).join('; ') || `${map.lod}, ${c.ts.length} tallies, ${cl} clashes`);
     if (side === 'after' && zoom.k === 0.25) check('big-diff: the waffle is off by default', !html.includes('data-waffle'));
@@ -460,7 +468,10 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     const { map, html, S, D } = frame('big-diff', { diff: { side: 'after' }, collapsed: ['sec:ui', 'sec:io'] }), c = conserved(d, map, html, 'after'), k = kinds(d, 'after');
     // A collapsed box is wide: the full row of chips fits, so the Δ fallback would be a bug here (plant: "narrow Δ always").
     const ok = ['sec:ui', 'sec:io'].every((s) => { const t = c.ts.find((x) => x.key === s), cnt = { added: 0, changed: 0, stale: 0, removed: 0 }; Object.keys(k).forEach((id) => { if (homeOf(d, id) === s) cnt[k[id]]++; }); return t && t.chips.join() === KINDS.filter((x) => cnt[x]).map((x) => GL[x] + cnt[x]).join() && placed(t, S(D.sections[s])); });
-    check(`big-diff (detail, two sections collapsed): each collapsed box shows its full tally (one chip per kind), the rest are marked on their files (${c.own} drawn, ${c.counted} tallied)`, ok && c.ts.length === 2 && c.bad.length === 0, c.bad.slice(0, 2).join('; '));
+    // Clear of the box's own name (critic H1: the chips sat on "UI"), read here from the header text itself.
+    const names = ['sec:ui', 'sec:io'].map((s) => { const m = new RegExp(`<g data-el="${s}" style="cursor:pointer">(?:<title>[^<]*</title>)?<text x="([\\d.-]+)" y="([\\d.-]+)"[^>]*>([^<]*)</text>`).exec(html); return m && { x: +m[1], y: +m[2] - 11, w: m[3].length * CW, h: 13 }; });
+    const onName = c.ts.filter((t) => names.some((nb) => nb && t.box && overlap(t.box, nb))).length;
+    check(`big-diff (detail, two sections collapsed): each collapsed box shows its full tally (one chip per kind), clear of its name and of tabs and labels; the rest are marked on their files (${c.own} drawn, ${c.counted} tallied)`, ok && c.ts.length === 2 && c.bad.length === 0 && names.every(Boolean) && onName === 0 && clash(html, c.ts, map, d) === 0, c.bad.slice(0, 2).join('; ') || `${onName} on a name`);
   }
   { // Isolate: the ports that stand for outside files carry their tallies (the elsewhere chip is outside the map).
     const { map, html } = frame('big-diff', { diff: { side: 'after' }, isolate: 'sec:ui' }), c = conserved(d, map, html, 'after');
@@ -495,10 +506,58 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     // (The stub's fit zoom is structure here; the viewer's pane at 1440×900 fits it at overview, as k 0.3 and 0.22 do.)
     for (const zoom of [{ k: 0.3, x: 10, y: 10 }, { k: 0.22, x: 10, y: 10 }]) {
       const { map, html, S, D } = frame(h, { zoom, diff: { side: 'after' } }), c = conserved(h, map, html, 'after');
-      const cl = clash(html, c.ts), seen = clash.seen, off = c.ts.filter((t) => !D.sections[t.key] || !placed(t, S(D.sections[t.key])));
+      const cl = clash(html, c.ts, map, HSD), seen = clash.seen, off = c.ts.filter((t) => !D.sections[t.key] || !placed(t, S(D.sections[t.key])));
       check(`horde-sample with the diff (${map.lod}, k ${zoom.k}): ${c.ts.length} tallies, each on its box and clear of the ${seen.tabs} tabs, ${seen.heads} labels and each other; every marked file drawn or tallied`,
         map.lod === 'overview' && c.ts.length >= 3 && seen.tabs > 0 && seen.heads > 0 && cl === 0 && off.length === 0 && c.bad.length === 0, c.bad.slice(0, 2).join('; ') || `${cl} clashes, off ${off.map((t) => t.key).join(',')}`);
     }
+  }
+  { // Isolate ports carry tallies (HORDE sample, isolate Modulation): each equals its port's marked files, clear of the
+    // port's edge count, which the one rule needs on screen (critic H2).
+    const { map, html } = frame(HSD, { diff: { side: 'after' }, isolate: 'sec:mod' }), c = conserved(HSD, map, html, 'after'), bad = [];
+    const ports = c.ts.filter((t) => map.layout.iso && map.layout.iso.ports[t.key]);
+    for (const t of ports) {
+      const P = map.layout.iso.ports[t.key], held = diffHeld(HSD, map, { diff: { side: 'after' } }, t.key), n = KINDS.reduce((a, x) => a + held[x].length, 0);
+      const g = (html.split(`data-port="${t.key}"`)[1] || html.split(`data-holds="p:${t.key}"`)[1] || '').split('</g>')[0];
+      const cm = /<text x="([\d.-]+)" y="([\d.-]+)" text-anchor="end"[^>]*>(\d+)<\/text>/.exec(g), cb = cm && { x: +cm[1] - cm[3].length * CW, y: +cm[2] - 11, w: cm[3].length * CW, h: 13 };
+      if (t.n !== n) bad.push(`${t.key}: tally ${t.n}, holds ${n}`);
+      if (!cb) bad.push(`${t.key}: no edge count found`); else if (t.box && overlap(t.box, cb)) bad.push(`${t.key}: tally covers the edge count ${cm[3]}`);
+      void P;
+    }
+    check(`isolate ports (HORDE sample, isolate Modulation): ${ports.length} port tallies, each its port's marked files, clear of the port's edge count; every marked file drawn, tallied or elsewhere`, ports.length >= 1 && bad.length === 0 && c.bad.length === 0, bad.slice(0, 3).join('; ') || c.bad.slice(0, 2).join('; '));
+  }
+  { // A collapsed section inside a box, zoomed out: one tally per box, the whole subtree's (critic H3: the nested box drew
+    // a second tally over the first, and the top box came up short).
+    const sp = CASES['whole-repo'](), files = sp.files.map((p) => 'file:' + p);
+    sp.diff = { added: files.filter((_, i) => i % 13 === 0), changed: files.filter((_, i) => i % 13 && i % 9 === 0), stale: [], removed: [] };
+    const v = load(build({ name: 'variant', ...sp })), bad = [];
+    for (const zoom of [{ auto: true }, { k: 0.3, x: 10, y: 10 }]) {
+      const { map, html } = frame(v, { zoom, diff: { side: 'after' }, collapsed: ['sec:mod01-core'] }), c = conserved(v, map, html, 'after'), k = kinds(v, 'after');
+      if (map.lod !== 'overview') continue;
+      const want = Object.keys(k).filter((id) => topOf(v, homeOf(v, id)) === 'sec:mod01').length, t = c.ts.find((x) => x.key === 'sec:mod01');
+      if (c.ts.some((x) => x.key === 'sec:mod01-core')) bad.push(`k ${map.zoom.k.toFixed(2)}: the nested box has its own tally`);
+      if (!t || t.n !== want) bad.push(`k ${map.zoom.k.toFixed(2)}: mod01 says ${t && t.n}, holds ${want}`);
+      if (clash(html, c.ts, map, v)) bad.push(`k ${map.zoom.k.toFixed(2)}: tallies collide`);
+      bad.push(...c.bad);
+    }
+    check('whole-repo with a diff, a nested section collapsed, zoomed out: one tally per top box, counting its whole subtree', bad.length === 0, bad.slice(0, 3).join('; '));
+  }
+  { // Every tally drawn in these frames found a clear spot (map.diffTallies[...].clear; plant: the fallback ignored hits).
+    const bad = [];
+    const wr = (() => { const sp = CASES['whole-repo'](), fs = sp.files.map((p) => 'file:' + p); sp.diff = { added: fs.filter((_, i) => i % 13 === 0), changed: fs.filter((_, i) => i % 13 && i % 9 === 0), stale: [], removed: [] }; return load(build({ name: 'variant', ...sp })); })();
+    for (const [dn, st] of [[wr, { zoom: { auto: true } }], [wr, { zoom: { k: 0.3, x: 10, y: 10 } }], [d, { zoom: { k: 0.25, x: 20, y: 20 } }], [d, { zoom: { k: 0.15, x: 20, y: 20 } }], [d, { collapsed: ['sec:ui', 'sec:io'] }], [HSD, { zoom: { k: 0.3, x: 10, y: 10 } }], [HSD, { zoom: { k: 0.22, x: 10, y: 10 } }], [HSD, { isolate: 'sec:mod' }]]) {
+      const { map } = frame(dn, { ...st, diff: { side: 'after' } });
+      Object.entries(map.diffTallies || {}).forEach(([p, t]) => { if (!t.clear) bad.push(p); });
+    }
+    check('every tally found a spot clear of tabs, labels, other tallies and other boxes', bad.length === 0, bad.join(', '));
+  }
+  { // The words: the panel's text and the meter's, from inspect.js (index.html prints them), and the waffle's default.
+    const { map } = frame(d, { zoom: { k: 0.25, x: 20, y: 20 }, diff: { side: 'after' } }), T = diffBoxText(d, map, { diff: { side: 'after' } }, 'sec:ui', 'UI');
+    const held = T.held, sum = KINDS.reduce((a, x) => a + held[x].length, 0);
+    const ok = T.n === sum && T.lead.startsWith(`${sum} of the ${held.files} files (+${held.ghosts} removed) UI stands for`) && held.files === d.filesIn('sec:ui') && T.tip.startsWith('UI: ');
+    const z = frame(d, { zoom: { k: 1, x: 0, y: 0 }, diff: { side: 'after' } }), T0 = diffBoxText(d, z.map, { diff: { side: 'after' } }, 'sec:ui', 'UI');
+    check(`the tally's panel and tooltip name the box and count its files as its header does (${held.files} files, +${held.ghosts} removed); with nothing tallied it says so`, ok && T0.n === 0 && /^Nothing UI stands for/.test(T0.lead), T.lead);
+    check('the meter summary on the before side says only what that side marks', diffSummary(d, 'before').text === 're-run, before: +30 ~4');
+    check('the waffle is off when the viewer starts (state.js initialState)', initialState().settings.diffWaffle === false);
   }
   { // Whole repo with a diff (in memory): 40 narrow boxes at fit zoom, each with its tally or its Δ, none colliding.
     const sp = CASES['whole-repo'](), files = sp.files.map((p) => 'file:' + p);
@@ -509,7 +568,7 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
       if (!chipsOk(t, cnt)) bad.push(`${t.key}: ${t.chips.join(' ')} for ${JSON.stringify(cnt)}`);
       if (!D.sections[t.key] || !placed(t, S(D.sections[t.key]))) bad.push(`${t.key}: off its box`);
     }
-    const cl = clash(html, c.ts);
+    const cl = clash(html, c.ts, map, v);
     check(`whole-repo with a diff (${map.lod}): each of the ${c.ts.length} boxes shows its tally or Δ, on its box, clear of tabs, labels and each other; every marked file drawn or tallied`,
       map.lod === 'overview' && c.ts.length === 40 && bad.length === 0 && c.bad.length === 0 && cl === 0, [...bad, ...c.bad].slice(0, 3).join('; ') || `${c.ts.length} tallies, ${cl} clashes`);
   }
@@ -518,13 +577,26 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     const ts = tallies(html);
     for (const t of ts) {
       if (!t.waffle) { bad.push(`${t.key}: no waffle`); continue; }
-      const held = diffHeld(d, map, { diff: { side: 'after' } }, t.key), want = Math.ceil(held.files / t.waffle.per);
-      if (t.waffle.n !== want || t.waffle.fills.length !== want) bad.push(`${t.key}: ${t.waffle.n} squares for ${held.files} files at ${t.waffle.per} each`);
+      // One square per file, removed ones included (Julian, poll: the waffle draws only at one square per file).
+      const held = diffHeld(d, map, { diff: { side: 'after' } }, t.key), want = held.files + held.ghosts;
+      if (t.waffle.per !== 1 || t.waffle.n !== want || t.waffle.fills.length !== want) bad.push(`${t.key}: ${t.waffle.n} squares for ${want} files at ${t.waffle.per} each`);
       // Changed first: no grey square before a coloured one.
       const firstGrey = t.waffle.fills.indexOf('rule'); if (firstGrey >= 0 && t.waffle.fills.slice(firstGrey).some((f) => f !== 'rule')) bad.push(`${t.key}: an unchanged square before a changed one`);
       if (t.waffle.per === 1) KINDS.forEach((x) => { const got = t.waffle.fills.filter((f) => f === 'diff-' + x).length; if (got !== held[x].length) bad.push(`${t.key}: ${got} ${x} squares for ${held[x].length}`); });
     }
     check(`big-diff (waffle on): each of the ${ts.length} boxes shows one square per file (or per few), each kind as many as its files`, ts.length === 4 && bad.length === 0, bad.slice(0, 3).join('; '));
+    // 300 more files in UI: no room for one square each, so UI draws none and says why (critic M1: squares for several
+    // files dropped whole kinds); every square drawn stays inside its box.
+    {
+      const sp = CASES['big-diff'](), extra = Array.from({ length: 300 }, (_, i) => `src/ui/more_${String(i).padStart(3, '0')}.cpp`);
+      sp.files.push(...extra); sp.elements.find((e) => e.id === 'sec:ui').members.push(...extra.map((p) => 'file:' + p));
+      const v = load(build({ name: 'variant', ...sp })), f = frame(v, { zoom: { k: 0.25, x: 20, y: 20 }, diff: { side: 'after' }, settings: { diffWaffle: true } });
+      const ui = (f.html.split('<g data-diffbox="sec:ui"')[1] || '').split('</g>')[0], tsv = tallies(f.html), r = f.S(f.D.sections['sec:ui']);
+      const sq = [...f.html.matchAll(/<g data-waffle="\d+" data-per="\d+">([^]*?)<\/g>/g)].flatMap((m) => [...m[1].matchAll(/<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((q) => ({ x: +q[1], y: +q[2], w: +q[3], h: +q[4] })));
+      const outside = sq.filter((q) => !Object.values(f.D.sections).some((sr) => inside(q, f.S(sr), 0.6))).length;
+      check(`big-diff + 300 files in UI (waffle on): UI has no room for a square per file, draws none and says so; the other boxes' ${sq.length} squares stay inside their boxes`,
+        !ui.includes('data-waffle') && /needs more room/.test(ui) && tsv.some((t) => t.key === 'sec:ui') && outside === 0 && r.h > 0, `${outside} squares outside`);
+    }
     // On the HORDE sample the waffle keeps off every label, tab and tally (it once covered Engines' twin headers).
     {
       const hs = HSD;

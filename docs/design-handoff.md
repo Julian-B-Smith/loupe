@@ -36,7 +36,7 @@ v2.1 answers the design agent's build questions (numbered as in that message). W
 | 1 | Schema files missing | Published with the example snapshot and the schema doc in the Loupe data kit (link at the end). Read each file by its path. |
 | 2 | Who writes `tokens.css` | Infrastructure generates `design/tokens.css` from `tokens.json`. `design/prototype/index.html` links `../tokens.css`. While building, design may keep a hand-made copy there; it is replaced on handover. |
 | 3 | Names and folders | Set and overlap are two specs. Component folders use the exact id from `loupe-spec`: `components/section/`, `components/overlap/`, `components/tour-step/`, `components/count-badge/`. |
-| 4 | Diff fills | Add `diff-added-soft`, `diff-removed-soft`, `diff-changed-soft`, `diff-stale-soft` for fills. The full diff color goes only on the corner mark. |
+| 4 | Diff fills | Add `diff-added-soft`, `diff-removed-soft`, `diff-changed-soft`, `diff-stale-soft` for fills. The full diff color goes only on the corner mark and on a stand-in's tally chips (glyph and count), and fills only the optional re-run waffle's squares (Julian, 2026-10-28; Q-035). |
 | 5 | Interaction overlap | Interaction states stack by precedence: selected > hover > related. `dimmed` never applies to those three. |
 | 6 | Exemptions vs edge color | Exemptions own only the counterflow flag glyph and its outline, never an edge's line. Loops keep line color, because the loop arc is the primitive's own mark. |
 | 7 | Dash patterns | Patterns differ in kind, not length: solid (static), long dash (config), dots (runtime), dash-dot (annotated), short dash (inferred). Dash lengths stay a fixed size on screen. The 8 × 5 edge matrix is the test. |

@@ -164,7 +164,7 @@ import { createStore, createHistory, STAGES } from './state.js';
 import { render, SPEC, slotOf, glyphOf, kindStyle } from './render.js';
 import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
-import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, DIFF_KINDS } from './inspect.js';
+import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 
@@ -349,6 +349,8 @@ function chrome(s) {
   $('lines').setAttribute('aria-pressed', String(!!s.linesOff));
   $('waffle').setAttribute('aria-pressed', String(!!s.settings.diffWaffle));
   $('waffleSeg').hidden = !s.diff || s.view !== 'design'; // the waffle draws only on design-view stand-ins, with a diff on
+  // The stories view shows no diff (Julian, poll 2026-10-28: out of Q-035's scope), so it offers no Re-run control.
+  $('diffSeg').hidden = !data.diff || s.view === 'works';
   // Lines off applies to the Design view only (render.js); elsewhere the button would claim a state the map is not in.
   $('lines').parentElement.hidden = s.view !== 'design';
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
@@ -363,7 +365,7 @@ function chrome(s) {
   document.querySelectorAll('[data-lens]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.lens || null) === (s.lens || null)));
   $('isoBar').hidden = !s.isolate || s.view !== 'design';
   // Q-035: the elsewhere count is a stand-in off the map, so it says how many of its files the re-run diff marks.
-  if (s.isolate) { const ew = map && map.elsewhere, dh = s.diff && map ? diffHeld(data, map, s, 'elsewhere') : null, dn = dh ? DIFF_KINDS.reduce((a, k) => a + dh[k].length, 0) : 0; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere${dn ? ` · ${dn} changed since the last run` : ''}` : ''; }
+  if (s.isolate) { const ew = map && map.elsewhere, dh = s.diff && map ? diffHeld(data, map, s, 'elsewhere') : null, dn = dh ? DIFF_KINDS.reduce((a, k) => a + dh[k].length, 0) : 0; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere${dn ? ` · ${dn} of them differ from the last run` : ''}` : ''; }
   legend(s);
 }
 
@@ -378,7 +380,7 @@ function meter(c) {
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
   // Lines off is said even under a lens or story line (critic S3: the lens line hid it).
   // Q-035: with the re-run diff on, the run's totals lead the line (Julian, poll 2026-10-28).
-  const ds = store.get().diff && diffSummary(data);
+  const ds = store.get().diff && store.get().view !== 'works' && diffSummary(data, store.get().diff.side);
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${main}</b><small>${ds ? esc(ds.text) + ' · ' : ''}${lz && map.linesOff ? 'lines hidden · ' : ''}${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
@@ -738,7 +740,7 @@ function elementPanel(id) {
 }
 
 function stagePanel(s, c) {
-  if (s.view === 'works' && !s.diff) return worksStagePanel(s);
+  if (s.view === 'works') return worksStagePanel(s); // no diff in the stories view (Q-035 scope)
   const st = STAGES[s.stage - 1], S = data.stages;
   let h = `<span class="eyebrow">Stage ${st.n}</span><h2>${st.label}</h2>`;
   if (s.diff && data.diff) {
@@ -798,10 +800,12 @@ function stagePanel(s, c) {
 const boxName = k => k.startsWith('s:') || k.startsWith('n:') ? label(k.slice(2)) : k === 'o:loose' ? 'files in no section' : k === 'o:lens' ? 'outside the lens' : k.startsWith('p:') ? portName(k.slice(2)) : k;
 // Q-035: a stand-in's tally lists exactly the files it counts (inspect.js diffHeld), by kind; each row opens its file.
 function diffBoxPanel(proxy) {
-  const s = store.get(), h = map ? diffHeld(data, map, s, proxy) : null; if (!h) return '';
-  const name = proxy.startsWith('fold:') ? `the folded row of ${label(proxy.slice(5).split('#')[0])}` : proxy === 'loose' ? 'files in no section' : proxy === 'lens-outside' ? 'outside the lens' : label(proxy);
-  const n = DIFF_KINDS.reduce((a, k) => a + h[k].length, 0);
-  return `<span class="eyebrow">Re-run · ${esc(s.diff ? s.diff.side : '')}</span><h2>Changes in ${esc(name)}</h2><p>${n} of the ${h.files} files this box stands for changed since the last run. Each row opens its file.</p>
+  const s = store.get(); if (!map) return '';
+  // A port by its own name (critic L1: "Changes in in:s:sec:choir"); the words themselves come from inspect.js.
+  const name = proxy.startsWith('fold:') ? `the folded row of ${label(proxy.slice(5).split('#')[0])}` : proxy === 'loose' ? 'files in no section' : proxy === 'lens-outside' ? 'outside the lens'
+    : map.layout.iso && map.layout.iso.ports[proxy] ? `the port ${portName(proxy)}` : label(proxy);
+  const T = diffBoxText(data, map, s, proxy, name), h = T.held;
+  return `<span class="eyebrow">Re-run · ${esc(s.diff ? s.diff.side : '')}</span><h2>${esc(T.title)}</h2><p>${esc(T.lead)}</p>
     <div class="list">${DIFF_KINDS.filter(k => h[k].length).map(k => `<div class="card"><div class="row"><span class="t">${h[k].length} ${k}</span>${chip(k, 'diff-' + k)}</div>${h[k].map(id => go('node', id, `<span class="mono">${esc(data.nodes[id] ? label(id) : id.split('/').pop())}</span>`)).join('')}</div>`).join('')}</div>`;
 }
 function holdsPanel(key) {
