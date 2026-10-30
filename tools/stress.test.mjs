@@ -760,7 +760,7 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
 { // Q-031: Flow and Design side by side (ADR 0030; Julian, poll 2026-10-30). Each pane is render() of split.js paneState in
   // its own container (half the map pane), metered over its own frame. Expectations come from the data and the section
   // tree, never read back from render(). Cases: the committed examples, the horde sample with its diff, all ten stress cases.
-  const { paneState, worse, followPan, elementFiles } = await import('../design/prototype/split.js');
+  const { paneState, worse, followPan, followFor, elementFiles } = await import('../design/prototype/split.js');
   const { createStore, createHistory } = await import('../design/prototype/state.js');
   const half = { querySelector: () => svg, appendChild() {}, clientWidth: 540, clientHeight: 770 }, PADB = 96, PADT = 40; // index.html: padBottom, and PANE_TOP over each pane's meter
   const rd = (d) => Object.fromEntries(['graph.json', 'overlay.json', 'view.json', 'diff.sample.json'].filter((f) => existsSync(d + f)).map((f) => [f, readFileSync(d + f, 'utf8')]));
@@ -859,29 +859,36 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
 
   { // Criterion 2, the follow rule: a fitted pane shows everything, so it never pans; zoomed in, a pane that does not show
     // a selection pans to it, its zoom unchanged, and then shows it. Every file, every element, a third of the edges.
-    const bad = []; let fitN = 0, panned = 0, stayed = 0;
+    const bad = []; let fitN = 0, panned = 0, stayed = 0, longN = 0, endIn = 0;
     for (const n of ['horde sample + diff', 'stress big-bus', 'stress deep-nesting', 'stress long-names']) {
       const dn = cases[n]; if (!dn) { bad.push(`no case ${n}`); continue; }
       const sels = [...dn.nodeIds.map((id) => ({ type: 'node', id })), ...dn.order.map((id) => ({ type: 'element', id })), ...dn.edges.filter((_, i) => i % 3 === 0).map((e) => ({ type: 'edge', id: e.id }))];
       for (const pane of ['flow', 'design']) {
         const W = half.clientWidth, Hh = half.clientHeight - PADB;
         const fit = frame(dn, base(dn), pane).m;
-        for (const sel of sels) { const r = fit.locate(sel); if (!r) { bad.push(`${n} ${pane}: ${sel.type} ${sel.id} not located`); continue; } fitN++; if (followPan(fit.zoom, r, W, Hh, 12, PADT)) bad.push(`${n} ${pane}: fitted, ${sel.id} would pan`); }
+        for (const sel of sels) { const r = fit.locate(sel); if (!r) { bad.push(`${n} ${pane}: ${sel.type} ${sel.id} not located`); continue; } fitN++; if (followFor(fit, sel, dn, W, Hh, 12, PADT)) bad.push(`${n} ${pane}: fitted, ${sel.id} would pan`); }
         const zin = { auto: false, k: 2.5, x: 0, y: 0 };
         const st = base(dn, { zoom: zin, flowZoom: zin }), m0 = frame(dn, st, pane).m;
         for (const sel of sels) {
           const r = m0.locate(sel); if (!r) continue;
-          const z = followPan(m0.zoom, r, W, Hh, 12, PADT);
+          const z = followFor(m0, sel, dn, W, Hh, 12, PADT);
+          // A long edge with one end already in view keeps the pane still (the rule: an end in view is enough).
+          const e0 = sel.type === 'edge' && dn.edgeById[sel.id];
+          if (e0 && (r.w > W - 24 || r.h > Hh - PADT - 24) && [e0.src, e0.dst].some((id) => !followPan(m0.zoom, m0.locate({ type: 'node', id }), W, Hh, 12, PADT))) { endIn++; if (z) bad.push(`${n} ${pane} edge ${sel.id}: an end was in view, yet the pane panned`); }
           if (!z) { stayed++; continue; }
           panned++;
           if (z.k !== zin.k) bad.push(`${n} ${pane} ${sel.id}: zoom changed`);
-          const r2 = frame(dn, { ...st, zoom: z, flowZoom: z }, pane).m.locate(sel);
+          // After the pan the selection is in view; an edge too long for the pane has an end in view.
+          const m2 = frame(dn, { ...st, zoom: z, flowZoom: z }, pane).m, r2 = m2.locate(sel);
           const okAx = (p, size, L) => (size <= L - 24 ? p >= 11.9 && p + size <= L - 11.9 : p <= L / 2 + 0.1 && p + size >= L / 2 - 0.1);
-          if (!r2 || !okAx(r2.x, r2.w, W) || !okAx(r2.y - PADT, r2.h, Hh - PADT)) bad.push(`${n} ${pane} ${sel.type} ${sel.id}: after the pan at ${r2 && [r2.x, r2.y, r2.w, r2.h].map((x) => x.toFixed(0)).join(',')}`);
+          const inView = (q) => q && okAx(q.x, q.w, W) && okAx(q.y - PADT, q.h, Hh - PADT);
+          const e = sel.type === 'edge' && dn.edgeById[sel.id], long = e && r2 && (r2.w > W - 24 || r2.h > Hh - PADT - 24);
+          if (long) { longN++; if (![e.src, e.dst].some((id) => inView(m2.locate({ type: 'node', id })))) bad.push(`${n} ${pane} edge ${sel.id}: neither end in view after the pan`); }
+          else if (!inView(r2)) bad.push(`${n} ${pane} ${sel.type} ${sel.id}: after the pan at ${r2 && [r2.x, r2.y, r2.w, r2.h].map((x) => x.toFixed(0)).join(',')}`);
         }
       }
     }
-    check(`Both: a fitted pane never pans (${fitN} selections); zoomed in, ${panned} selections pan into view at the same zoom, ${stayed} were in view`, bad.length === 0 && fitN > 300 && panned > 50 && stayed > 0, bad.slice(0, 3).join('; '));
+    check(`Both: a fitted pane never pans (${fitN} selections); zoomed in, ${panned} selections pan into view at the same zoom (${longN} edges too long for the pane, an end in view), ${stayed} were in view (${endIn} long edges by an end)`, bad.length === 0 && fitN > 300 && panned > 50 && stayed > 0 && longN > 0 && endIn > 0, bad.slice(0, 3).join('; '));
     const z = { k: 1, x: 0, y: 0 };
     check('Both: followPan by the rule: inside stays, outside centres one axis, a rect larger than the pane stays while it covers the middle',
       followPan(z, { x: 20, y: 20, w: 50, h: 20 }, 400, 300) === null && JSON.stringify(followPan(z, { x: 500, y: 20, w: 50, h: 20 }, 400, 300)) === JSON.stringify({ auto: false, k: 1, x: -325, y: 0 })

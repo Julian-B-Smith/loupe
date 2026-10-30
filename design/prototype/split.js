@@ -50,3 +50,18 @@ export function followPan(zoom, rect, W, H, pad = 12, top = 0) {
   if (x === zoom.x && y === zoom.y) return null;
   return { auto: false, k: zoom.k, x, y };
 }
+
+// What a pane frames for a selection. A file or element: where it is (render.js map.locate). An edge: both ends when
+// they fit together; else an end already in view keeps the pane still, and with neither in view the pane goes to the
+// source. (Centring the union of two far ends showed neither end: seen in the browser on the horde sample, 2026-10-30.)
+export function followFor(m, sel, data, W, H, pad = 12, top = 0) {
+  if (!m || !m.locate || !sel) return null;
+  const pan = (r) => followPan(m.zoom, r, W, H, pad, top);
+  const e = sel.type === 'edge' && data.edgeById[sel.id];
+  if (!e) return pan(m.locate(sel));
+  const r = m.locate(sel);
+  if (r && r.w <= W - 2 * pad && r.h <= H - top - 2 * pad) return pan(r);
+  const ends = [e.src, e.dst].map((id) => m.locate({ type: 'node', id }));
+  if (ends.some((x) => x && !pan(x))) return null;
+  return pan(ends[0] || ends[1]);
+}

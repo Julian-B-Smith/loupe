@@ -200,7 +200,7 @@ import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
-import { paneState, worse, followPan } from './split.js';
+import { paneState, worse, followFor } from './split.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -337,7 +337,7 @@ function follow(s, padB) {
   if (key === lastFollow) return; lastFollow = key;
   if (s.view !== 'both' || !s.selection) return;
   [[fmap, paneFlow, A.setFlowZoom], [map, paneMain, A.setZoom]].forEach(([m, el, set]) => {
-    const z = m && m.locate ? followPan(m.zoom, m.locate(s.selection), el.clientWidth, el.clientHeight - padB, 12, PANE_TOP) : null;
+    const z = followFor(m, s.selection, data, el.clientWidth, el.clientHeight - padB, 12, PANE_TOP);
     if (z) set(z);
   });
 }
