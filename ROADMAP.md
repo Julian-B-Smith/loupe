@@ -12,7 +12,9 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   dialect and its roles (Q-024), the Operational lens from the build (Q-009), and its gates on HORDE (Q-025), which
   `./verify full` now runs green at horde d412a28. **P2 current** (Julian, 2026-10-27: every P2 gate before v1):
   done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
-  at overview), all 2026-10-27 to 10-29; open Q-030 (matrix lens) and Q-031 (Flow and Design side by side). Side
+  at overview), all 2026-10-27 to 10-29, Q-030 (matrix lens, PR #45) and Q-031 (Flow and Design side by side, PR #46,
+  2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
+  `./verify full`, not yet run on a local HORDE checkout. Side
   track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
@@ -572,7 +574,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   matrix bar says so). The matrix's visual values join Q-036 with the tally's.
 
 ### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
-- **Status:** built 2026-10-30 (branch p2/q031-side-by-side; trace: traces/2026-10-30-q031-side-by-side.md), awaiting merge. Julian, 2026-10-27: required before v1.
+- **Status:** done 2026-10-30 (PR #46, merged 2026-10-30; trace: traces/2026-10-30-q031-side-by-side.md). Julian, 2026-10-27: required before v1.
 - **Julian (poll, 2026-10-30):** a fourth view button, Both (Flow · Design · Both · How it works): Flow left, Design
   right, a draggable divider, stacked on a phone. Each pane keeps its own zoom and pan; a selection pans the other pane to
   it (its zoom unchanged), hover only highlights. One meter per pane. Lens, isolate, matrix, collapse and section moves
