@@ -12,7 +12,7 @@ export const STAGES = [
 export function initialState(over = {}) {
   return {
     stage: 2,
-    view: 'design',            // 'flow' | 'design'
+    view: 'design',            // 'flow' | 'design' | 'both' (Q-031: Flow and Design side by side) | 'works'
     morph: undefined,          // 0..1 while the flow-to-design transition runs; undefined = settled
     selection: null,           // { type: 'node'|'element'|'edge', id }
     hover: null,               // same shape as selection
@@ -27,6 +27,7 @@ export function initialState(over = {}) {
     offsets: {},               // top-level section id -> {dx, dy} in world units; user drags, a view preference
     dimmedKinds: [],           // role or kind names
     zoom: { auto: true, k: 1, x: 0, y: 0, focus: null },
+    flowZoom: { auto: true },  // Q-031: the Flow pane's own camera while view is 'both' (Julian, poll: independent zoom and pan)
     settings: { hubPlacement: null, diffWaffle: false }, // hubPlacement null = use view.json settings; diffWaffle (Q-035) off by default
     diff: null,                // null | { side: 'before'|'after' }
     tour: { index: 0, step: 0 },
@@ -48,17 +49,20 @@ export function createStore(init) {
     },
     on(fn) { subs.add(fn); return () => subs.delete(fn); }
   };
+  // Isolate and the matrix act on the Design pane: from Both they stay in Both (Flow is canonical, ADR 0006; Q-031).
+  const designView = s => (s.view === 'both' ? 'both' : 'design');
   const same = (a, b) => (a && b ? a.type === b.type && a.id === b.id && a.twin === b.twin : a === b);
   store.actions = {
     select: sel => store.set(s => ({ selection: same(s.selection, sel) ? null : sel })),
     hover: h => { if (!same(store.get().hover, h)) store.set({ hover: h }); },
     clear: () => store.set({ selection: null }),
-    setStage: n => store.set(s => ({ stage: n, view: STAGES[n - 1].view, selection: null, tour: { ...s.tour, step: 0 }, zoom: s.view !== STAGES[n - 1].view ? { ...s.zoom, auto: true } : s.zoom })),
-    setView: view => store.set(s => ({ view, zoom: { ...s.zoom, auto: true } })),
+    // A stage click in Both stays in Both (Julian, poll 2026-10-30): a stage's view applies to the one-pane views only.
+    setStage: n => store.set(s => { const view = s.view === 'both' ? 'both' : STAGES[n - 1].view; return { stage: n, view, selection: null, tour: { ...s.tour, step: 0 }, zoom: s.view !== view ? { ...s.zoom, auto: true } : s.zoom }; }),
+    setView: view => store.set(s => ({ view, zoom: { ...s.zoom, auto: true }, flowZoom: { auto: true } })),
     toggleCollapsed: id => store.set(s => ({ collapsed: s.collapsed.includes(id) ? s.collapsed.filter(x => x !== id) : s.collapsed.concat(id) })),
     toggleUnfold: id => store.set(s => ({ unfolded: s.unfolded.includes(id) ? s.unfolded.filter(x => x !== id) : s.unfolded.concat(id) })),
-    isolate: id => store.set(s => ({ isolate: id, isoOpen: [], selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
-    setMatrix: m => store.set(s => ({ matrix: m, selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
+    isolate: id => store.set(s => ({ isolate: id, isoOpen: [], selection: null, hover: null, view: designView(s), zoom: { ...s.zoom, auto: true, focus: null } })),
+    setMatrix: m => store.set(s => ({ matrix: m, selection: null, hover: null, view: designView(s), zoom: { ...s.zoom, auto: true, focus: null } })),
     // Closing a section port also forgets its show-all key (side:all:sec), so reopening starts folded.
     togglePort: k => store.set(s => ({ isoOpen: s.isoOpen.includes(k) ? s.isoOpen.filter(x => x !== k && x !== k.replace(':s:', ':all:')) : s.isoOpen.concat(k) })),
     setStory: id => store.set(s => ({ story: id, selection: null, zoom: { ...s.zoom, auto: true, focus: null } })),
@@ -67,7 +71,9 @@ export function createStore(init) {
     setLens: name => store.set(s => ({ lens: name || null, zoom: { ...s.zoom, auto: true, focus: null } })),
     toggleKind: k => store.set(s => ({ dimmedKinds: s.dimmedKinds.includes(k) ? s.dimmedKinds.filter(x => x !== k) : s.dimmedKinds.concat(k) })),
     setZoom: z => store.set(s => ({ zoom: { ...s.zoom, ...z } })),
+    setFlowZoom: z => store.set(s => ({ flowZoom: { ...s.flowZoom, ...z } })),
     fit: () => store.set(s => ({ zoom: { ...s.zoom, auto: true, focus: null } })),
+    fitFlow: () => store.set({ flowZoom: { auto: true } }),
     setHubPlacement: p => store.set(s => ({ settings: { ...s.settings, hubPlacement: p } })),
     setDiff: d => store.set({ diff: d }),
     moveSection: (id, dx, dy) => store.set(s => ({ offsets: { ...s.offsets, [id]: { dx, dy } } })),
@@ -105,7 +111,7 @@ export function createHistory(store, describe = () => '') {
     // The matrix too (Q-030 critic M1): its pan and zoom point at nothing on the map, and the reverse.
     const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story || JSON.stringify(snap.matrix) !== JSON.stringify(cur.matrix);
     restoring = true;
-    store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null } } : {}) });
+    store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null }, ...(snap.view !== cur.view ? { flowZoom: { auto: true } } : {}) } : {}) });
     restoring = false; last = pick(store.get()); lastKey = key(store.get()); notify();
   };
   const h = {

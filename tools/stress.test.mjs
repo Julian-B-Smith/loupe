@@ -757,6 +757,174 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   check(`whole-repo (${map.lod}, fit zoom): each of the 40 top-level boxes is labelled inside its bounds, no two alike`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
 }
 
+{ // Q-031: Flow and Design side by side (ADR 0030; Julian, poll 2026-10-30). Each pane is render() of split.js paneState in
+  // its own container (half the map pane), metered over its own frame. Expectations come from the data and the section
+  // tree, never read back from render(). Cases: the committed examples, the horde sample with its diff, all ten stress cases.
+  const { paneState, worse, followPan, elementFiles } = await import('../design/prototype/split.js');
+  const { createStore, createHistory } = await import('../design/prototype/state.js');
+  const half = { querySelector: () => svg, appendChild() {}, clientWidth: 540, clientHeight: 770 }, PADB = 96, PADT = 40; // index.html: padBottom, and PANE_TOP over each pane's meter
+  const rd = (d) => Object.fromEntries(['graph.json', 'overlay.json', 'view.json', 'diff.sample.json'].filter((f) => existsSync(d + f)).map((f) => [f, readFileSync(d + f, 'utf8')]));
+  const cases = { ...Object.fromEntries(readdirSync('schema/examples/').map((d) => ['example ' + d, load(rd('schema/examples/' + d + '/'))])),
+    'horde sample + diff': load(rd('design/prototype/snapshots/horde-sample/')), ...Object.fromEntries(Object.keys(CASES).map((n) => ['stress ' + n, data[n]])) };
+  const base = (dn, ex = {}) => initialState({ view: 'both', stage: 2, ...ex });
+  const frame = (dn, st, pane, zoom) => { const ps = paneState(st, pane); const z = zoom || ps.zoom; const s2 = { ...ps, zoom: { ...z, padBottom: PADB, padTop: PADT } };
+    const m = render(half, dn, s2); return { m, html: svg.innerHTML, s2 }; };
+  const tops = (dn) => dn.sections.filter((x) => !dn.parentOf[x]);
+
+  { // Criterion 3: each pane balances on its own, at fit and zoomed, with and without the diff, the lens and a collapse.
+    const bad = []; let frames = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      const zooms = n === 'stress whole-repo' ? [{ auto: true }] : [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.3, x: 0, y: 0 }];
+      const exs = [{}, { lens: 'operational', collapsed: tops(dn).slice(0, 1) }, ...(dn.diff ? [{ diff: { side: 'after' } }, { diff: { side: 'before' } }] : [])];
+      for (const zoom of zooms) for (const ex of exs) for (const pane of ['flow', 'design']) {
+        const st = base(dn, { ...ex, zoom, flowZoom: zoom });
+        try { const { m } = frame(dn, st, pane); frames++; const c = conserve(dn, paneState(st, pane), m);
+          if (c.status !== 'balanced') bad.push(`${n} ${pane} ${JSON.stringify(zoom)} ${JSON.stringify(ex)}: ${c.status} ${c.unaccounted.slice(0, 2).join(', ')}`); }
+        catch (e) { bad.push(`${n} ${pane}: threw ${e.message}`); }
+      }
+    }
+    check(`Both: each pane balances on its own in every case (${frames} frames, ${Object.keys(cases).length} cases)`, bad.length === 0 && frames >= 180, bad.slice(0, 3).join('; '));
+  }
+
+  { // Criterion 3, Flow canonical (ADR 0006): with every Design mode set, render() in Flow draws byte-identically to a
+    // render without them; and paneState hands Flow none of them. Also: Flow draws every edge as itself.
+    const bad = [], notAll = []; let compared = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      if (n === 'stress whole-repo') continue; // 4,000 files: covered by the balance check; byte compare on the nine is enough
+      const T = tops(dn), z = { auto: true };
+      const plain = { view: 'flow', stage: 2, settings: {}, zoom: z, selection: null };
+      render(half, dn, plain); const ref = svg.innerHTML;
+      const modes = { lens: { lens: 'operational' }, collapse: { collapsed: T }, unfold: { unfolded: dn.sections.slice() }, offsets: { offsets: Object.fromEntries(T.map((t, i) => [t, { dx: 200 + i * 40, dy: 90 }])) },
+        ...(T.length ? { isolate: { isolate: T[0], isoOpen: [] }, matrix: { matrix: { a: T[0], ...(T[1] ? { b: T[1] } : {}) } } } : {}), linesOff: { linesOff: true }, hubs: { settings: { hubPlacement: 'center' } } };
+      modes.all = Object.assign({}, ...Object.values(modes));
+      for (const [mn, ex] of Object.entries(modes)) { render(half, dn, { ...plain, ...ex }); compared++; if (svg.innerHTML !== ref) bad.push(`${n}: ${mn} changes the Flow view`); }
+      const ps = paneState(initialState({ view: 'both', ...modes.all }), 'flow');
+      if (ps.lens || ps.isolate || ps.matrix || ps.collapsed.length || ps.unfolded.length || Object.keys(ps.offsets).length || ps.view !== 'flow') bad.push(`${n}: paneState hands Flow a Design mode`);
+      const m = render(half, dn, plain), c = conserve(dn, plain, m);
+      if (c.edges.drawn !== dn.edges.length) notAll.push(`${n}: ${c.edges.drawn} of ${dn.edges.length} drawn`);
+    }
+    check(`Both: Flow is canonical, byte-identical under lens, isolate, matrix, collapse, unfold, moved sections, lines off, hubs and all at once (${compared} renders)`, bad.length === 0 && compared >= 80, bad.slice(0, 4).join('; '));
+    check('Both: Flow draws every edge as itself (nothing bundled, folded or collapsed)', notAll.length === 0, notAll.slice(0, 3).join('; '));
+  }
+
+  // Criterion 2: a selection is marked in both panes. A file drawn itself carries the selection mark; one drawn only by a
+  // stand-in marks that stand-in (its section box, fold row, port, the lens's outside box), and that stand-in is not
+  // marked without the selection, so the check cannot pass on an accent that was there anyway. A file the isolate puts
+  // elsewhere has no stand-in on the map: its mark is the isolate bar (index.html), counted here as such.
+  const ACC = 'var(--loupe-accent)';
+  const slice = (html, needle, end) => { const out = []; let i = html.indexOf(needle); while (i >= 0) { const j = html.indexOf(end, i); out.push(html.slice(i, j < 0 ? undefined : j)); i = html.indexOf(needle, i + 1); } return out; };
+  const standIn = (html, m, f, own) => {
+    const st = m.nodes[f]; if (!st) return { where: 'none', on: false };
+    if (st.state === 'drawn') return { where: 'self', on: slice(html, `<g data-node="${f.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`, '</g>').some((g) => own ? g.includes('accent-soft') : g.includes(ACC)) };
+    const p = st.proxy;
+    if (p === 'elsewhere') return { where: 'elsewhere', on: true };
+    if (p === 'lens-outside') return { where: p, on: slice(html, '<g data-lensout=', '</g>').some((g) => g.includes(ACC)) };
+    if (String(p).startsWith('fold:')) return { where: 'fold', on: slice(html, `data-holds="f:${p.slice(5)}"`, '</g>').some((g) => g.includes(ACC)) };
+    if (m.layout.iso && m.layout.iso.ports[p]) return { where: 'port', on: [`data-port="${p}"`, `data-holds="p:${p}"`].some((nd) => slice(html, nd, '</g>').some((g) => g.includes(ACC))) };
+    return { where: 'box', on: slice(html, `<rect data-el="${p}"`, '/>').some((g) => g.includes(ACC)) };
+  };
+  const markRun = (label, dn, exs, sels) => {
+    const bad = [], where = {}; let n = 0;
+    for (const ex of exs) for (const pane of ['flow', 'design']) {
+      const st0 = base(dn, { ...ex, zoom: ex.zoom || { auto: true }, flowZoom: ex.zoom || { auto: true } });
+      const { html: h0, m: m0 } = frame(dn, st0, pane);
+      for (const sel of sels) {
+        const { html, m } = frame(dn, { ...st0, selection: sel }, pane);
+        const files = sel.type === 'node' ? [sel.id] : [dn.edgeById[sel.id].src, dn.edgeById[sel.id].dst];
+        if (sel.type === 'edge' && slice(html, `data-edge="${sel.id}"`, '>').some((g) => g.includes('stroke-edge-emph'))) { n++; where.line = (where.line || 0) + 1; continue; }
+        for (const f of files) {
+          const a = standIn(html, m, f, sel.type === 'node'), b = standIn(h0, m0, f, sel.type === 'node');
+          n++; where[a.where] = (where[a.where] || 0) + 1;
+          if (!a.on || (a.where !== 'elsewhere' && a.where !== 'self' && b.on)) bad.push(`${pane} ${JSON.stringify(ex)} ${sel.type} ${sel.id} → ${f}: ${a.where} ${a.on ? 'marked without the selection too' : 'not marked'}`);
+          if (a.where === 'none') bad.push(`${pane} ${sel.id}: ${f} not on the frame at all`);
+        }
+      }
+    }
+    check(`Both: ${label}: every selection marked in both panes (${n} marks: ${Object.entries(where).map(([k, c]) => k + ' ' + c).join(', ')})`, bad.length === 0 && n > 0, bad.slice(0, 3).join('; '));
+    return where;
+  };
+  {
+    const H = cases['horde sample + diff'], T = tops(H), files = H.nodeIds;
+    const w1 = markRun('horde sample, every file, at fit, zoomed out, collapsed and with the lens', H,
+      [{}, { zoom: { k: 0.2, x: 0, y: 0 } }, { collapsed: T.slice(0, 3) }, { lens: 'operational' }, { zoom: { k: 1, x: 0, y: 0 } }], files.map((id) => ({ type: 'node', id })));
+    const w2 = markRun('horde sample, every file, isolated on each top section', H, T.map((t) => ({ isolate: t })), files.map((id) => ({ type: 'node', id })));
+    const w3 = markRun('horde sample, every edge, at fit and zoomed out', H, [{}, { zoom: { k: 0.2, x: 0, y: 0 } }], H.edges.map((e) => ({ type: 'edge', id: e.id })));
+    // The run must have met every kind of stand-in, or "marked" was never tested on it (L0005).
+    const met = { ...w1, ...w2, ...w3 };
+    check('Both: the mark runs met files drawn, in boxes, in fold rows, behind ports, outside the lens and elsewhere', ['self', 'box', 'port', 'lens-outside', 'elsewhere'].every((k) => met[k] > 0), JSON.stringify(met));
+    const LN = data['long-lane'], lf = Object.keys(LN.nodes).filter((id) => LN.home[id]);
+    const w4 = markRun('long-lane, every file (its folded middle)', LN, [{}], lf.map((id) => ({ type: 'node', id })));
+    check('Both: the long-lane run met a fold row', (w4.fold || 0) > 0, JSON.stringify(w4));
+  }
+
+  { // Criterion 2, the follow rule: a fitted pane shows everything, so it never pans; zoomed in, a pane that does not show
+    // a selection pans to it, its zoom unchanged, and then shows it. Every file, every element, a third of the edges.
+    const bad = []; let fitN = 0, panned = 0, stayed = 0;
+    for (const n of ['horde sample + diff', 'stress big-bus', 'stress deep-nesting', 'stress long-names']) {
+      const dn = cases[n]; if (!dn) { bad.push(`no case ${n}`); continue; }
+      const sels = [...dn.nodeIds.map((id) => ({ type: 'node', id })), ...dn.order.map((id) => ({ type: 'element', id })), ...dn.edges.filter((_, i) => i % 3 === 0).map((e) => ({ type: 'edge', id: e.id }))];
+      for (const pane of ['flow', 'design']) {
+        const W = half.clientWidth, Hh = half.clientHeight - PADB;
+        const fit = frame(dn, base(dn), pane).m;
+        for (const sel of sels) { const r = fit.locate(sel); if (!r) { bad.push(`${n} ${pane}: ${sel.type} ${sel.id} not located`); continue; } fitN++; if (followPan(fit.zoom, r, W, Hh, 12, PADT)) bad.push(`${n} ${pane}: fitted, ${sel.id} would pan`); }
+        const zin = { auto: false, k: 2.5, x: 0, y: 0 };
+        const st = base(dn, { zoom: zin, flowZoom: zin }), m0 = frame(dn, st, pane).m;
+        for (const sel of sels) {
+          const r = m0.locate(sel); if (!r) continue;
+          const z = followPan(m0.zoom, r, W, Hh, 12, PADT);
+          if (!z) { stayed++; continue; }
+          panned++;
+          if (z.k !== zin.k) bad.push(`${n} ${pane} ${sel.id}: zoom changed`);
+          const r2 = frame(dn, { ...st, zoom: z, flowZoom: z }, pane).m.locate(sel);
+          const okAx = (p, size, L) => (size <= L - 24 ? p >= 11.9 && p + size <= L - 11.9 : p <= L / 2 + 0.1 && p + size >= L / 2 - 0.1);
+          if (!r2 || !okAx(r2.x, r2.w, W) || !okAx(r2.y - PADT, r2.h, Hh - PADT)) bad.push(`${n} ${pane} ${sel.type} ${sel.id}: after the pan at ${r2 && [r2.x, r2.y, r2.w, r2.h].map((x) => x.toFixed(0)).join(',')}`);
+        }
+      }
+    }
+    check(`Both: a fitted pane never pans (${fitN} selections); zoomed in, ${panned} selections pan into view at the same zoom, ${stayed} were in view`, bad.length === 0 && fitN > 300 && panned > 50 && stayed > 0, bad.slice(0, 3).join('; '));
+    const z = { k: 1, x: 0, y: 0 };
+    check('Both: followPan by the rule: inside stays, outside centres one axis, a rect larger than the pane stays while it covers the middle',
+      followPan(z, { x: 20, y: 20, w: 50, h: 20 }, 400, 300) === null && JSON.stringify(followPan(z, { x: 500, y: 20, w: 50, h: 20 }, 400, 300)) === JSON.stringify({ auto: false, k: 1, x: -325, y: 0 })
+      && followPan(z, { x: 20, y: 20, w: 50, h: 20 }, 400, 300, 12, 40).y === 140 && followPan(z, { x: -100, y: 20, w: 600, h: 20 }, 400, 300) === null && followPan(z, { x: 250, y: 20, w: 600, h: 20 }, 400, 300).x === -350);
+  }
+
+  { // The header shows the worse pane; the state: Both, the Flow camera, stages and Design-only modes stay in Both.
+    const c = (status) => ({ c: { status } });
+    check('Both: the header meter shows the worse pane (broken over stale over balanced; a tie keeps Design)',
+      worse(c('balanced'), c('broken')).c.status === 'broken' && worse(c('broken'), c('balanced')).c.status === 'broken' && worse(c('balanced'), c('stale')).c.status === 'stale' && worse(c('stale'), c('broken')).c.status === 'broken' && worse({ c: { status: 'balanced' }, pane: 'D' }, { c: { status: 'balanced' }, pane: 'F' }).pane === 'D');
+    const S0 = createStore({}), A = S0.actions, sec = cases['horde sample + diff'].sections[0];
+    A.setView('both'); A.setZoom({ auto: false, k: 2, x: 5, y: 5 }); A.setFlowZoom({ auto: false, k: 3, x: 1, y: 1 });
+    const camOk = S0.get().zoom.k === 2 && S0.get().flowZoom.k === 3;
+    A.setStage(1); const st1 = S0.get().view; A.setStage(4); const st4 = S0.get().view;
+    A.isolate(sec); const iv = S0.get().view; A.isolate(null); A.setMatrix({ a: sec }); const mv = S0.get().view; A.setMatrix(null);
+    A.setView('flow'); A.setStage(2); const one = S0.get().view; A.setStage(1); const one1 = S0.get().view;
+    A.setView('both'); const refit = S0.get().flowZoom.auto === true && S0.get().zoom.auto === true;
+    const ps0 = initialState({ view: 'both', zoom: { auto: false, k: 2, x: 0, y: 0 }, flowZoom: { auto: false, k: 3, x: 0, y: 0 } });
+    check('Both: the Flow pane renders with the Flow camera, the Design pane with the main one', paneState(ps0, 'flow').zoom.k === 3 && paneState(ps0, 'design').zoom.k === 2 && paneState(ps0, 'design').view === 'design');
+    check('Both: each pane keeps its own camera; a stage click, isolate and the matrix stay in Both; one-pane views keep the stage rule; switching view refits both cameras',
+      camOk && st1 === 'both' && st4 === 'both' && iv === 'both' && mv === 'both' && one === 'design' && one1 === 'flow' && refit, JSON.stringify({ camOk, st1, st4, iv, mv, one, one1, refit }));
+    const S1 = createStore({}), H1 = createHistory(S1);
+    S1.actions.setView('both'); S1.actions.setFlowZoom({ auto: false, k: 3, x: 1, y: 1 }); H1.back();
+    check('Both: Back out of Both refits the Flow camera; Both is one history step', S1.get().view === 'design' && S1.get().flowZoom.auto === true && H1.canForward);
+    const fl = elementFiles(cases['horde sample + diff'], sec), want = new Set(cases['horde sample + diff'].descendants(sec).flatMap((d) => cases['horde sample + diff'].elements[d].members));
+    check('Both: a section frames exactly its subtree\'s files in Flow', fl.length === want.size && fl.every((f) => want.has(f)) && fl.length > 0);
+  }
+
+  { // A list opened in Flow reads Flow's frame: Flow's only stand-ins are its collector bars ('c:'), and each opens to
+    // exactly its count there (index.html passes the Flow frame for a selection tagged pane: 'flow').
+    const bad = []; let bars = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      if (n === 'stress whole-repo') continue;
+      const { m, html } = frame(dn, base(dn), 'flow');
+      for (const k of html.matchAll(/data-(holds|bundle|diffbox|unfold|port)="([^"]*)"(?: data-count="(\d+)")?/g)) {
+        if (k[1] !== 'holds' || !k[2].startsWith('c:')) { bad.push(`${n}: Flow draws data-${k[1]}="${k[2]}"`); continue; }
+        bars++; if (heldEdges(dn, m, k[2].replace(/&quot;/g, '"')).length !== +k[3]) bad.push(`${n} ${k[2]}: says ${k[3]}, opens to ${heldEdges(dn, m, k[2]).length}`);
+      }
+    }
+    check(`Both: Flow's only stand-ins are collector bars, each opening to its count in Flow's frame (${bars} bars)`, bad.length === 0 && bars > 0, bad.slice(0, 3).join('; '));
+  }
+}
+
 // ---- 4. Q-034, overview legibility at scale (Julian, 2026-10-28: "heavy", vertical labels, the collector bar, lines off).
 // Pills, box-total tabs: their rects as drawn, from the svg.
 const pillAll = (html) => [...html.matchAll(/<g data-(?:bundle|totals)="[^"]*"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
