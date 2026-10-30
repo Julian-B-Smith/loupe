@@ -75,7 +75,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
 .canvas.both.stack .divider::after{left:0;right:0;top:5px;bottom:auto;width:auto;height:1px}
 .pmeter{left:12px;top:12px;padding:5px 10px;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
 .pmeter i{width:8px;height:8px;border-radius:50%;flex:none}
-.pmeter b{font:500 12.5px/16px var(--loupe-font-ui)}
+.pmeter b{font:var(--loupe-type-group-label-compact);font-weight:500}
 .pmeter .eyebrow{font:var(--loupe-type-eyebrow);letter-spacing:var(--loupe-tracking-eyebrow);text-transform:uppercase;color:var(--loupe-ink-faint)}
 .canvas.both #paneMain .iso{top:52px}
 .canvas.both .legend{max-width:calc(var(--split,50%) - 84px)}
@@ -200,7 +200,7 @@ import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
-import { paneState, worse, followFor } from './split.js';
+import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -289,8 +289,9 @@ const mac = /Mac|iPhone|iPad/.test(navigator.platform);
 // ---------- render loop
 let map = null, fmap = null, pending = false; // map: the main pane's frame (the Design pane in Both); fmap: the Flow pane's in Both
 const cardHeights = {}; // story id -> {step id: measured px}; layout input only, never state
-let lastSize = '', lastFollow = null;
-const PANE_TOP = 40; // a pane meter's 12 px inset and 28 px height (Q-031)
+let lastSize = '', lastFollow = null, clickPane = null, paneC = null;
+// The pane meter's bottom edge, measured (critic L5: a fixed 40 broke when the meter wrapped); 40 before it is laid out.
+const paneTop = () => { const el = $('pmFlow'); return el && el.offsetHeight ? el.offsetTop + el.offsetHeight : 40; };
 function paint() {
   pending = false;
   if (!canvas.clientWidth || !canvas.clientHeight) return;
@@ -316,9 +317,9 @@ function paint() {
     // Each pane is a render() of its own state (split.js paneState) and is metered over its own frame (criterion 3).
     const fs = paneState(s, 'flow'), ds = paneState(s, 'design');
     // padTop: each pane's own meter stands over its top-left corner; the fit and the matrix's title band keep below it.
-    fmap = render(paneFlow, data, { ...fs, zoom: { ...fs.zoom, padBottom: padB, padTop: PANE_TOP } });
-    map = render(paneMain, data, { ...ds, zoom: { ...ds.zoom, padBottom: padB, padTop: PANE_TOP } });
-    const cf = conserve(data, fs, fmap), cd = conserve(data, ds, map);
+    fmap = render(paneFlow, data, { ...fs, zoom: { ...fs.zoom, padBottom: padB, padTop: paneTop() } });
+    map = render(paneMain, data, { ...ds, zoom: { ...ds.zoom, padBottom: padB, padTop: paneTop() } });
+    const cf = conserve(data, fs, fmap), cd = conserve(data, ds, map); paneC = { flow: cf, main: cd };
     paneMeter('pmFlow', cf, 'Flow', 'flow'); paneMeter('pmMain', cd, 'Design', 'design');
     const w = worse({ c: cd, m: map, pane: 'Design' }, { c: cf, m: fmap, pane: 'Flow' });
     c = w.c; meter(c, w.m, w.pane);
@@ -334,10 +335,14 @@ function paint() {
 // its zoom unchanged (split.js followPan). Hover only highlights. The pan is a camera move, not a history step.
 function follow(s, padB) {
   const key = JSON.stringify(s.selection && [s.selection.type, s.selection.id]);
+  const from = clickPane; clickPane = null;
   if (key === lastFollow) return; lastFollow = key;
   if (s.view !== 'both' || !s.selection) return;
-  [[fmap, paneFlow, A.setFlowZoom], [map, paneMain, A.setZoom]].forEach(([m, el, set]) => {
-    const z = followFor(m, s.selection, data, el.clientWidth, el.clientHeight - padB, 12, PANE_TOP);
+  // The pane clicked in shows what was clicked, at the size it was clicked: only the other pane follows. A selection
+  // from the panel or the menu moves either pane that does not show it readably (split.js followFor).
+  [['flow', fmap, paneFlow, A.setFlowZoom], ['main', map, paneMain, A.setZoom]].forEach(([p, m, el, set]) => {
+    if (p === from) return;
+    const z = followFor(m, s.selection, data, el.clientWidth, el.clientHeight - padB, 12, paneTop());
     if (z) set(z);
   });
 }
@@ -359,7 +364,8 @@ store.on(s => {
   if (s.view === lastView) return;
   const via = lastView; lastView = s.view;
   // The flow↔design morph has no meaning for the story view, nor into or out of Both, where each pane is settled.
-  if (['works', 'both'].includes(via) || ['works', 'both'].includes(s.view)) return;
+  // A morph still running is stopped there, or its timer keeps writing morph into the next one-pane view (critic L3).
+  if (['works', 'both'].includes(via) || ['works', 'both'].includes(s.view)) { if (anim) { clearTimeout(anim); anim = null; store.set({ morph: undefined }); } return; }
   const from = s.morph != null ? s.morph : s.view === 'design' ? 0 : 1, to = s.view === 'design' ? 1 : 0;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (anim) clearTimeout(anim);
@@ -428,17 +434,16 @@ function chrome(s) {
   $('storySeg').innerHTML = STORIES.map(x => `<button data-story="${esc(x.id)}" aria-pressed="${cs && cs.id === x.id}">${esc(x.title)}</button>`).join('');
   document.querySelectorAll('[data-lens]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.lens || null) === (s.lens || null)));
   $('isoBar').hidden = !s.isolate || !dv(s) || !!s.matrix;
+  // Q-031: a selected file the isolate or the matrix puts elsewhere has no stand-in on the map but the bar (split.js offMap).
+  const selOff = offMap(map, data, s.selection);
   // The matrix lens (Q-030): its bar names the section(s) and offers a second section to pair with.
   $('mxBar').hidden = !s.matrix || !dv(s);
   if (s.matrix) {
-    $('mxName').textContent = label(s.matrix.a) + (s.matrix.b ? ' × ' + label(s.matrix.b) : '') + (s.lens ? ' · the lens does not apply here' : '');
+    $('mxName').textContent = label(s.matrix.a) + (s.matrix.b ? ' × ' + label(s.matrix.b) : '') + (s.lens ? ' · the lens does not apply here' : '') + (selOff ? ' · the selection is outside it' : '');
     // A pair is two sections neither inside the other (critic M4: a nested pair's bands double-counted in the title).
     $('mxPair').innerHTML = `<option value="">none</option>` + data.sections.filter(x => x !== s.matrix.a && !data.descendants(s.matrix.a).includes(x) && !data.descendants(x).includes(s.matrix.a)).map(x => `<option value="${esc(x)}"${x === s.matrix.b ? ' selected' : ''}>${esc(label(x))}</option>`).join('');
   }
   // Q-035: the elsewhere count is a stand-in off the map, so it says how many of its files the re-run diff marks.
-  // Q-031: a selected file the isolate puts elsewhere has no stand-in on the map, so the bar's count is its mark.
-  const sf = !s.selection ? [] : s.selection.type === 'node' ? [s.selection.id] : s.selection.type === 'edge' && data.edgeById[s.selection.id] ? [data.edgeById[s.selection.id].src, data.edgeById[s.selection.id].dst] : [];
-  const selOff = !!(map && map.nodes && sf.some(f => map.nodes[f] && map.nodes[f].proxy === 'elsewhere'));
   if (s.isolate) { const ew = map && map.elsewhere, dh = s.diff && map ? diffHeld(data, map, s, 'elsewhere') : null, dn = dh ? DIFF_KINDS.reduce((a, k) => a + dh[k].length, 0) : 0; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere${dn ? ` · ${dn} of them differ from the last run` : ''}${selOff ? ' · the selection is among them' : ''}` : ''; $('isoElse').style.color = selOff ? v('accent') : ''; }
   legend(s);
 }
@@ -524,11 +529,9 @@ const hit = t => {
   return { type: 'edge', id: c.dataset.edge };
 };
 let drag = null;
-const paneOf = t => (t && t.closest && t.closest('#paneFlow') ? 'flow' : 'main');
+const paneOf = paneFor; // split.js: from the element under the pointer, never a captured target
 const frameOf = pane => (pane === 'flow' ? fmap : map);
-// A selection that opens a frame's own list (holds, bundle, diffbox) remembers the Flow pane; a file, edge or element is
-// one thing in both panes and needs no pane.
-const tagPane = (sel, t) => (sel && store.get().view === 'both' && paneOf(t) === 'flow' && ['holds', 'bundle', 'diffbox'].includes(sel.type) ? { ...sel, pane: 'flow' } : sel);
+const tagPane = (sel, t) => tagSel(sel, store.get().view, paneOf(t)); // split.js tagSel
 const setCam = pane => (pane === 'flow' ? A.setFlowZoom : A.setZoom);
 const movableSection = t => {
   const s = store.get();
@@ -580,15 +583,17 @@ canvas.addEventListener('pointerup', e => {
   canvas.classList.remove('dragging', 'moving');
   const d = endDrag();
   if (!d || d.moved || d.menu || e.target.closest('.float, .ctx')) return;
-  const h = hit(document.elementFromPoint(e.clientX, e.clientY) || e.target);
+  // Under pointer capture e.target is the canvas (critic H1): the element under the pointer decides the hit and the pane.
+  const t = document.elementFromPoint(e.clientX, e.clientY) || e.target, h = hit(t);
+  clickPane = paneOf(t);
   if (!h) return A.clear();
   if (h.type === 'collapse') return A.toggleCollapsed(h.id);
   if (h.type === 'unfold') return A.toggleUnfold(h.id);
   if (h.type === 'port') return A.togglePort(h.id);
   if (h.type === 'exit') return A.isolate(null);
-  if (h.type === 'holds') return A.select(tagPane({ type: 'holds', id: h.id }, e.target));
-  if (h.type === 'diffbox') return A.select(tagPane({ type: 'diffbox', id: h.id }, e.target));
-  A.select(tagPane(h, e.target));
+  if (h.type === 'holds') return A.select(tagPane({ type: 'holds', id: h.id }, t));
+  if (h.type === 'diffbox') return A.select(tagPane({ type: 'diffbox', id: h.id }, t));
+  A.select(tagPane(h, t));
   if (phone()) $('panel').classList.add('open');
 });
 const zoomAt = (f, cx, cy, pane = 'main') => {
@@ -704,13 +709,16 @@ function showMenu(target, cx, cy) {
   if (s.matrix && dv(s)) items.push({ label: 'Back to the map', run: () => A.setMatrix(null) });
   else if (dv(s) && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
-  items.push({ label: 'Fit to screen', run: () => A.fit() });
+  const fromFlow = s.view === 'both' && paneOf(target) === 'flow';
+  items.push({ label: 'Fit to screen', run: () => (fromFlow ? A.fitFlow() : A.fit()) });
+  // From the Flow pane, actions that change the view act on the Design pane (Flow is canonical): say so (critic L2).
+  if (fromFlow) items.forEach(it => { if (it && /^(Collapse|Expand|Isolate|Matrix|Operational lens|Show everything|Back to|Show every|Show \d|Fold |List files in|Close )/.test(it.label) && !/\(Design\)$/.test(it.label)) it.label += ' (Design)'; });
   openMenu(cx, cy, items);
 }
 
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
 $('fzin').onclick = () => zoomAt(1.25, null, null, 'flow'); $('fzout').onclick = () => zoomAt(0.8, null, null, 'flow'); $('fzfit').onclick = () => A.fitFlow();
-for (const id of ['pmFlow', 'pmMain']) $(id).onclick = () => { if ($(id).dataset.status === 'broken') store.set({ selection: { type: 'unaccounted', id: 'all' } }); };
+for (const id of ['pmFlow', 'pmMain']) $(id).onclick = () => { if ($(id).dataset.status === 'broken') store.set({ selection: tagSel({ type: 'unaccounted', id: 'all' }, 'both', id === 'pmFlow' ? 'flow' : 'main') }); };
 // The divider (Q-031): drag, or arrow keys, to share the canvas; the Flow pane keeps 20 to 80 percent. A per-viewer
 // convenience, so it lives in this browser, not in history.
 {
@@ -1070,7 +1078,7 @@ function panel(s, c) {
   if (sel && sel.type === 'node') { html = nodePanel(sel.id); title = label(sel.id); }
   else if (sel && sel.type === 'element') { html = elementPanel(sel.id); title = label(sel.id); }
   else if (sel && sel.type === 'edge') { html = edgePanel(sel.id); title = 'Edge'; }
-  else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(c); title = 'Conservation'; }
+  else if (sel && sel.type === 'unaccounted') { html = unaccountedPanel(sel.pane === 'flow' && paneC ? paneC.flow : s.view === 'both' && paneC ? paneC.main : c); title = 'Conservation'; }
   else if (sel && sel.type === 'lensout') { html = lensPanel(); title = 'Outside the lens'; }
   else if (sel && sel.type === 'bundle') { html = bundlePanel(sel.id, pm); title = 'Folded edges'; }
   else if (sel && sel.type === 'holds') { html = holdsPanel(sel.id, pm); title = 'Edges it stands for'; }

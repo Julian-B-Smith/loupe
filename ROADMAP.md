@@ -584,6 +584,11 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   panes on every committed example and stress case, each balanced, and Flow is canonical: with lens, isolate, collapse,
   matrix and moved sections set, the Flow pane draws byte-identically to a render without them; 4. plants each fail a
   check; a screenshot critic pass.
+- **Julian (poll, 2026-10-30), after the critic (REWORK):** a follow also zooms a pane in when the selection is drawn too
+  small to read there (under 12 px, to 22 px, never past the fit cap); the pane clicked in never moves. A stand-in holding
+  the selection (not being it) is marked with a dashed accent outline (token `dash-holds`); a selected element keeps its
+  solid one. Hover highlights drawn elements only; only a selection marks stand-ins. Criterion 2's "a selection" means a
+  file, an edge or an element; a list (holds, bundle, the lens's outside box) belongs to the pane it was opened in.
 
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`
