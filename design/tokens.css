@@ -33,6 +33,7 @@
   --loupe-stroke-group: 1px;
   --loupe-stroke-hub: 1.5px;
   --loupe-dash-holds: 5 3;
+  --loupe-dash-outside: 3 3;
   --loupe-opacity-dim: 0.22;
   --loupe-type-node-label-compact: 500 8.5px/10px var(--loupe-font-mono);
   --loupe-tracking-node-label-compact: 0;

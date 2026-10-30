@@ -8,6 +8,7 @@
     "check": "node tools/loupe-check.mjs schema/examples/horde-sample && node tools/loupe-check.mjs schema/examples/horde-probe",
     "test": "node tools/loupe-check.test.mjs && node tools/history.test.mjs && node tools/lens.test.mjs && node tools/render.test.mjs && node tools/story.test.mjs && node crawler/build.test.ts && node crawler/syntax.test.ts && node crawler/graph.test.ts",
     "sample": "node tools/convert-sample.mjs",
+    "specs": "node tools/specs.mjs",
     "probe": "node tools/probe-crawl.mjs",
     "view": "node tools/serve.mjs",
     "crawl": "node crawler/cli.ts"

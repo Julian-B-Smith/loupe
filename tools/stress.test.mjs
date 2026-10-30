@@ -623,11 +623,11 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     const { map, html } = frame(d, { matrix: m, zoom }), files = filesOf(d, [m.a, ...(m.b ? [m.b] : [])]), at = new Map(files.map((f, i) => [f, i])), bad = [];
     const want = new Map(), add = (k, e) => { if (!want.has(k)) want.set(k, []); want.get(k).push(e); };
     d.edges.forEach((e) => { const a = at.has(e.src), b = at.has(e.dst); add(a && b ? `x:${e.src}|${e.dst}` : a ? `x:out|${e.src}` : b ? `x:in|${e.dst}` : 'elsewhere', e); });
-    // 1. Every edge in its one place in the meter's record, drawn only as a mark in a cell of at most MARKS edges.
+    // 1. Every edge in its one place in the meter's record, drawn only as a mark in a cell of at most MX.marks edges.
     for (const [k, es] of want) for (const e of es) {
-      // Drawn as marks only in a cell of at most MARKS edges whose marks are long enough on screen to show the longest
+      // Drawn as marks only in a cell of at most MX.marks edges whose marks are long enough on screen to show the longest
       // provenance dash period (Julian, poll 2026-10-29); otherwise folded into the cell's count.
-      const r = map.edges[e.id], cellK = k.startsWith('x:') && !k.startsWith('x:out|') && !k.startsWith('x:in|'), drawn = cellK && es.length <= MX.MARKS && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD;
+      const r = map.edges[e.id], cellK = k.startsWith('x:') && !k.startsWith('x:out|') && !k.startsWith('x:in|'), drawn = cellK && es.length <= MX.marks && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD;
       if (!r || r.ends.length !== 1 || r.ends[0] !== k) bad.push(`${e.id}: in ${r && r.ends} not ${k}`);
       else if (r.via !== (drawn ? 'drawn' : 'folded')) bad.push(`${e.id}: ${r.via} in ${k}`);
     }
@@ -646,7 +646,7 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
       const gseg = (html.split(`<g data-holds="${k.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)[1] || '').split('</g>')[0], shown = (/>(\d+)<\/text>/.exec(gseg) || [])[1];
       if (shown != null && +shown !== es.length) bad.push(`${k}: shows ${shown}, holds ${es.length}`);
       const held = heldEdges(d, map, k); if (held.length !== es.length || held.some((e) => !es.includes(e))) bad.push(`${k}: opens to ${held.length}, holds ${es.length}`);
-      if (p !== 'out' && p !== 'in' && es.length <= MX.MARKS && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD) {
+      if (p !== 'out' && p !== 'in' && es.length <= MX.marks && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD) {
         const seg = (html.split(`data-holds="${k.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)[1] || '').split('</g>')[0];
         es.forEach((e) => { const mk = new RegExp(`<line data-edge="${e.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*stroke:var\\(--loupe-edge-${slotOf(e)}\\);[^"]*stroke-dasharray:${(SPEC.dash[e.provenance] || 'none').replace(/\./g, '\\.')};`).test(seg); if (!mk) bad.push(`${k}: no mark for ${e.id} in its kind and dash`); });
       }
@@ -698,7 +698,7 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     const op = [...html.matchAll(/<line data-edge="([^"]*)"[^>]*opacity:([\d.]+)"/g)];
     check('matrix: a dimmed kind dims its marks, the others stay', op.length > 0 && op.every((x) => (data['edge-matrix'].edgeById[x[1]].role || data['edge-matrix'].edgeById[x[1]].kind) === 'call' ? +x[2] < 0.5 : +x[2] === 1), `${op.length} marks`);
   }
-  // A cell past MX.MARKS edges shows its count, folded, and opens to all of them (no committed case has one): two files
+  // A cell past MX.marks edges shows its count, folded, and opens to all of them (no committed case has one): two files
   // joined by four kinds of edge.
   {
     const v = load(build({ name: 'variant', files: ['src/a/one.cpp', 'src/a/two.cpp', 'src/b/three.cpp'],
@@ -994,6 +994,88 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     }
     check(`Both: Flow's only stand-ins are collector bars, each opening to its count in Flow's frame (${bars} bars)`, bad.length === 0 && bars > 0, bad.slice(0, 3).join('; '));
   }
+}
+
+{ // Q-036: the tally and the matrix draw from their loupe-spec blocks (generated specs.js), not from numbers of their
+  // own. The drawing first matches the block; then each value is changed in the module the renderer imports, and the
+  // drawing must follow. A value copied back into render.js or matrix.js would stay put and fail here.
+  const { SPECS } = await import('../design/prototype/specs.js');
+  const T = SPECS['diff-tally'], M = SPECS.matrix, keep = JSON.stringify([T, M]);
+  const restore = () => { const [t, m] = JSON.parse(keep); Object.assign(T.sizes, t.sizes); Object.assign(T.states, t.states); Object.assign(M.sizes, m.sizes); Object.assign(M.parts, m.parts); };
+  const tallyHtml = () => frame('big-diff', { zoom: { k: 0.25, x: 20, y: 20 }, diff: { side: 'after' }, settings: { diffWaffle: true } }).html;
+  const chipRects = (html) => html.split('<g data-diffbox="').slice(1).flatMap((seg) => [...seg.replace(/<g data-waffle="[^"]*" data-per="[^"]*">[^]*?<\/g>/, '').split('</g>')[0].matchAll(/<rect [^>]*height="([\d.]+)" rx="([\d.]+)" style="([^"]*)"/g)]);
+  const squares = (html) => [...html.matchAll(/<g data-waffle="\d+" data-per="\d+">([^]*?)<\/g>/g)].flatMap((m) => [...m[1].matchAll(/width="([\d.]+)" height="[\d.]+" rx="([\d.]+)"/g)]);
+  const sec = data['edge-matrix'].sections.find((x) => !data['edge-matrix'].parentOf[x]);
+  // k 1 draws marks; at k 0.4 a mark (the cell less two insets, 34 units at cell 40) is shorter on screen than the longest
+  // dash period, so every cell shows its count.
+  const mxHtml = (k = 1) => frame('edge-matrix', { matrix: { a: sec }, zoom: { k, x: 0, y: 0 } }).html;
+  const countedFills = (html) => [...html.matchAll(/<g data-holds="x:(?!out\|in\|)[^"]*" data-count="\d+"[^>]*>(?:<title>[^<]*<\/title>)?<rect [^>]*style="fill:([^;]*);/g)].map((m) => m[1]);
+  const cellW = (html) => [...html.matchAll(/<g data-holds="x:(?!out\|in\|)[^"]*" data-count="\d+"[^>]*>(?:<title>[^<]*<\/title>)?<rect [^>]*width="([\d.]+)"/g)].map((m) => +m[1]);
+  try {
+    let h = tallyHtml(), c = chipRects(h), q = squares(h);
+    check(`Q-036: the tally's ${c.length} chips and ${q.length} waffle squares draw at the block's sizes (chip ${T.sizes.chipHeight} high, rx ${T.sizes.chipRadius}; square ${T.sizes.waffleSquare})`,
+      c.length > 0 && q.length > 0 && c.every((m) => +m[1] === T.sizes.chipHeight && +m[2] === T.sizes.chipRadius) && q.every((m) => +m[1] === T.sizes.waffleSquare && +m[2] === T.sizes.waffleRadius));
+    Object.assign(T.sizes, { chipHeight: 19, chipRadius: 5, waffleSquare: 4, waffleRadius: 2 }); T.states['diff-changed'] = { ...T.states['diff-changed'], chip: { stroke: 'accent', textColor: 'accent' } };
+    h = tallyHtml(); c = chipRects(h); q = squares(h);
+    check('Q-036: changed in the module, the tally follows: chip height and radius, waffle square and radius, the changed chip\'s colour (the only kind this frame draws: its Δ form)',
+      c.length > 0 && c.every((m) => +m[1] === 19 && +m[2] === 5) && q.length > 0 && q.every((m) => +m[1] === 4 && +m[2] === 2)
+      && c.some((m) => /stroke:var\(--loupe-accent\)/.test(m[3])) && !c.some((m) => /stroke:var\(--loupe-diff-changed\)/.test(m[3])));
+    restore();
+    let w = cellW(mxHtml());
+    check(`Q-036: the matrix's ${w.length} cells draw at the block's cell size (${M.sizes.cell} less 2)`, w.length > 0 && w.every((x) => Math.abs(x - (M.sizes.cell - 2)) < 0.11));
+    M.sizes.cell = 40; M.parts.cell = { ...M.parts.cell, fill: 'accent-soft' }; M.parts.chip = { ...M.parts.chip, fill: 'accent-soft' };
+    const h2 = mxHtml(); w = cellW(h2); const cf = countedFills(mxHtml(0.4));
+    check(`Q-036: changed in the module, the matrix follows: cell size, the ${cf.length} counted cells' fill (k 0.4), the outside chip's fill`,
+      w.length > 0 && w.every((x) => Math.abs(x - 38) < 0.11) && cf.length > 0 && cf.every((f) => f === 'var(--loupe-accent-soft)')
+      && /<g data-holds="elsewhere"[^>]*>(?:<title>[^<]*<\/title>)?<rect [^>]*fill:var\(--loupe-accent-soft\)/.test(h2));
+  } finally { restore(); }
+  // Every value in both blocks reaches the drawing (critic M2): each one, set in turn to a value it never has, must change
+  // at least one frame below. A value copied back into the code, or a block entry nothing reads, fails here. The frames
+  // between them reach every state the blocks style: the tally with its waffle; collapsed boxes with every kind's chip; the
+  // matrix marked and counted, its heads readable and not, shaded cells, both margins, a selected file, edge and cell, a
+  // file outside, a dimmed kind, a pair.
+  // Only the compact tally (a last resort no committed frame reaches) is exempt, and named here.
+  const EXEMPT = ['diff-tally sizes.charWidthCompact', 'diff-tally sizes.chipPadCompact', 'diff-tally parts.chip-compact.textStyle'];
+  const leaves = (sp) => [...Object.keys(sp.sizes).map((k) => ['sizes', k]),
+    ...Object.entries(sp.parts).flatMap(([p, st]) => Object.keys(st).map((k) => ['parts', p, k])),
+    ...Object.entries(sp.states).flatMap(([st, o]) => Object.entries(o).flatMap(([p, x]) => Object.keys(x).map((k) => ['states', st, p, k])))];
+  const other = (path, x) => typeof x === 'number' ? (Number.isInteger(x) ? (x > 2 ? x - 2 : x + 3) : x * 1.5 + 0.7)
+    : path.at(-1) === 'dash' ? (x === 'gap' ? 'solid' : 'gap') : path.at(-1) === 'textStyle' ? 'eyebrow'
+    : path.at(-1) === 'strokeWidth' ? 'stroke-rail' : x === 'accent' ? 'ink' : 'accent';
+  // A small variant reaching what no committed case has: a cell of six edges (counted; shaded when small), a cell of two
+  // (marks side by side), edges to and from a file outside (both margins), an unrelated file (the outside chip); five
+  // rows, so a rule every few rows differs from the band edges.
+  const F = (x) => `file:src/${x}.cpp`, E = (src, dst, kinds) => kinds.map((kind) => ({ src: F(src), dst: F(dst), kind }));
+  const vm = load(build({ name: 'variant', files: ['a/one', 'a/two', 'a/three', 'a/six', 'a/seven', 'b/four', 'c/five'].map((x) => `src/${x}.cpp`),
+    edges: [...E('a/one', 'a/two', ['include', 'call', 'reference', 'data', 'config', 'test']), ...E('a/one', 'a/three', ['call', 'include']), ...E('a/two', 'b/four', ['call']), ...E('b/four', 'a/three', ['call'])],
+    elements: [['a', ['a/one', 'a/two', 'a/three', 'a/six', 'a/seven']], ['b', ['b/four']], ['c', ['c/five']]].map(([id, m]) => ({ id: 'sec:' + id, primitive: 'section', label: id.toUpperCase(), claim: id + '.', members: m.map(F) })) }));
+  const two = vm.edges.find((e) => e.src === F('a/one') && e.dst === F('a/three'));
+  const MFR = [{ zoom: { k: 1, x: 0, y: 0 } }, { zoom: { k: 0.4, x: 0, y: 0 } }, { zoom: { k: 0.6, x: 0, y: 0 } }, { zoom: { k: 0.2, x: 0, y: 0 } },
+    { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'edge', id: two.id } }, { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'holds', id: `x:${F('a/one')}|${F('a/two')}` } },
+    { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'node', id: F('a/one') } }, { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'node', id: F('c/five') } },
+    { zoom: { k: 1, x: 0, y: 0 }, dimmedKinds: ['call'] }].map((st) => ({ matrix: { a: 'sec:a' }, ...st }))
+    .concat([{ matrix: { a: 'sec:a', b: 'sec:b' }, zoom: { k: 1, x: 0, y: 0 } }]);
+  // The sweep sees any change; a value read in two places (the chip gap: the tally's width and the chips' spacing) also
+  // gets a geometry check, so a copy at one of the two still fails.
+  {
+    const cz = { zoom: { k: 0.35, x: 20, y: 20 }, diff: { side: 'after' }, collapsed: data['big-diff'].sections.filter((x) => !data['big-diff'].parentOf[x]) };
+    const gaps = (html) => html.split('<g data-diffbox="').slice(1).flatMap((seg) => { const r = [...seg.split('</g>')[0].matchAll(/<rect x="([\d.-]+)" y="[\d.-]+" width="([\d.]+)"/g)].map((m) => [+m[1], +m[2]]); return r.slice(1).map((q, i) => +(q[0] - r[i][0] - r[i][1]).toFixed(1)); });
+    const g0 = gaps(frame('big-diff', cz).html); T.sizes.chipGap = 7; const g1 = gaps(frame('big-diff', cz).html); restore();
+    check(`Q-036: the tally's chips sit the block's chipGap apart (${g0.length} gaps), and 7 apart when it says 7`, g0.length > 0 && g0.every((x) => Math.abs(x - T.sizes.chipGap) < 0.11) && g1.length > 0 && g1.every((x) => Math.abs(x - 7) < 0.11));
+  }
+  const sweep = [['diff-tally', T, () => tallyHtml() + frame('big-diff', { zoom: { k: 0.35, x: 20, y: 20 }, diff: { side: 'after' }, collapsed: data['big-diff'].sections.filter((x) => !data['big-diff'].parentOf[x]) }).html], ['matrix', M, () => MFR.map((st) => frame(vm, st).html).join('\n')]];
+  for (const [name, sp, draw] of sweep) {
+    const before = draw(), dead = [];
+    let n = 0;
+    for (const path of leaves(sp)) {
+      if (EXEMPT.includes(`${name} ${path.join('.')}`)) continue;
+      const o = path.slice(0, -1).reduce((a, k) => a[k], sp), k = path.at(-1), was = o[k];
+      o[k] = other(path, was); n++;
+      try { if (draw() === before) dead.push(path.join('.')); } finally { o[k] = was; }
+    }
+    check(`Q-036: every one of the ${name} block's ${n} values changes the drawing when changed${dead.length ? ' — no effect: ' + dead.join(', ') : ''}`, dead.length === 0 && n > 0);
+  }
+  check('Q-036: the module is restored after the checks', JSON.stringify([T, M]) === keep);
 }
 
 // ---- 4. Q-034, overview legibility at scale (Julian, 2026-10-28: "heavy", vertical labels, the collector bar, lines off).

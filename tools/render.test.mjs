@@ -111,6 +111,29 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
     }
   }
   check(`every component loupe-spec block validates against its schema${bad.length ? ' — ' + bad.join('; ') : ''}`, bad.length === 0);
+  // Q-036: the renderer reads design values from design/prototype/specs.js, generated from these blocks; a block edited
+  // without regenerating would leave the drawing on the old values.
+  // Now that blocks drive the renderer, a token name with a typo would validate (the schema checks the pattern only) and
+  // draw var(--loupe-<typo>), which resolves to nothing (critic M3): every token a block names must be declared.
+  const css = readFileSync('design/tokens.css', 'utf8'), missing = new Set();
+  const visit = (st) => { for (const [k, x] of Object.entries(st)) {
+    if (['fill', 'stroke', 'textColor', 'halo', 'strokeWidth', 'opacity', 'radius'].includes(k) && typeof x === 'string' && !['edge-kind', 'none'].includes(x) && !css.includes(`--loupe-${x}:`)) missing.add(x);
+    if (k === 'textStyle' && !css.includes(`--loupe-type-${x}:`)) missing.add('type-' + x);
+  } };
+  const blocks = [];
+  for (const c of readdirSync('design/system/components')) {
+    const f = `design/system/components/${c}/README.md`;
+    if (existsSync(f)) for (const m of readFileSync(f, 'utf8').matchAll(/```loupe-spec\n([\s\S]*?)\n```/g)) { try { blocks.push(JSON.parse(m[1])); } catch { /* reported above */ } }
+  }
+  blocks.forEach((b) => { Object.values(b.parts || {}).forEach(visit); Object.values(b.states || {}).forEach((o) => Object.values(o).forEach(visit)); });
+  check(`every token a loupe-spec block names is declared in design/tokens.css (${blocks.length} blocks)${missing.size ? ' — missing: ' + [...missing].join(', ') : ''}`, missing.size === 0 && blocks.length > 0);
+  // Q-036: a block names exactly one of primitive or lens (Julian, poll 2026-10-30: the matrix is a lens, not a primitive).
+  const base = { version: 1, parts: { a: {} }, states: {}, layout: {} };
+  check('the loupe-spec schema refuses a block naming both a primitive and a lens, or neither, and a size that is not a number',
+    validate({ ...base, primitive: 'node' }) && validate({ ...base, lens: 'matrix' }) && !validate({ ...base, primitive: 'node', lens: 'matrix' }) && !validate(base)
+    && !validate({ ...base, lens: 'matrix', sizes: { cell: '26' } }) && !validate({ ...base, lens: 'matrix', sizes: { cell: -1 } }));
+  const { generate, OUT } = await import('./specs.mjs');
+  check(`${OUT} is fresh: it equals tools/specs.mjs's output from the blocks (run: npm run specs)`, existsSync(OUT) && readFileSync(OUT, 'utf8') === generate());
 }
 // ADR 0029, Q-011: every ×N bundle drawn opens to exactly the edges the meter attributes to it. For each frame: the
 // N on the pill, the inspector's list (inspect.js bundleEdges) and the meter's record agree, and no edge the meter

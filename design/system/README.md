@@ -9,7 +9,7 @@ Sources: the Loupe folder (`CLAUDE.md`, `docs/`, decisions 0001–0017, `schema/
 ## What Loupe reads
 
 - `tokens.json`: list shape per family, color themes `light` then `dark`, top-level `version`.
-- `components/<id>/README.md`: one `loupe-spec` block each, validated against `schema/loupe-spec.schema.json` (copy in `reference/`). 9 primitives: section, set, overlap, bus, band, lane, twins, hub, loop. 8 glyphs: node, group-header, edge, count-badge, question-pin, audit-pin, tour-step, conservation-meter.
+- `components/<id>/README.md`: one `loupe-spec` block each, validated against `schema/loupe-spec.schema.json`. 9 primitives: section, set, overlap, bus, band, lane, twins, hub, loop. 9 glyphs: node, group-header, edge, count-badge, question-pin, audit-pin, tour-step, conservation-meter, diff-tally. 1 lens (a view that makes no claim of its own, named by `lens` in place of `primitive`): matrix. `tools/specs.mjs` turns every block into `design/prototype/specs.js`, which the renderer imports (Q-036).
 - The three blocks below.
 
 ```loupe-dash

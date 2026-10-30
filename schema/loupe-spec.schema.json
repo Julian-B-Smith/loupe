@@ -1,15 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://loupe.dev/schema/loupe-spec-0.1.json",
+  "$id": "https://loupe.dev/schema/loupe-spec-0.2.json",
   "title": "loupe-spec block",
-  "description": "One fenced loupe-spec block per primitive or base glyph, inside its component README in the Loupe design system. Every styling value is a token name; only `notes` is free text.",
+  "description": "One fenced loupe-spec block per primitive, base glyph or lens, inside its component README in the Loupe design system. Every styling value is a token name, apart from `sizes`; only `notes` is free text. tools/specs.mjs turns the blocks into design/prototype/specs.js, which the renderer imports (ROADMAP Q-036).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["primitive", "version", "parts", "states", "layout"],
+  "required": ["version", "parts", "states", "layout"],
+  "oneOf": [{ "required": ["primitive"] }, { "required": ["lens"] }],
   "properties": {
     "primitive": {
       "enum": ["section", "set", "overlap", "bus", "band", "lane", "twins", "hub", "loop",
-               "node", "group-header", "edge", "count-badge", "question-pin", "audit-pin", "tour-step", "conservation-meter"]
+               "node", "group-header", "edge", "count-badge", "question-pin", "audit-pin", "tour-step", "conservation-meter",
+               "diff-tally"]
+    },
+    "lens": {
+      "enum": ["matrix"],
+      "description": "A view over the graph that makes no claim of its own (every primitive does), named in place of `primitive` (Julian, poll 2026-10-30)."
+    },
+    "sizes": {
+      "type": "object",
+      "description": "Values that are not tokens: lengths in px or world units, counts, ratios. The README's prose says which.",
+      "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
+      "additionalProperties": { "type": "number", "minimum": 0 }
     },
     "version": { "type": "integer", "minimum": 1 },
     "parts": {
