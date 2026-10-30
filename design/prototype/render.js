@@ -1225,7 +1225,8 @@ function renderMatrix(svg, uid, W, H, data, state) {
   // look on every stand-in).
   const ring = (key, es) => key === hk ? `stroke:${v(MSEL.cell.stroke)};stroke-width:${MX.cellRingWidth}px;` : selE && es.some(e => e.id === selE) ? `stroke:${v(MSEL.cell.stroke)};stroke-width:${v('stroke-group')};stroke-dasharray:${v('dash-holds')};` : 'stroke:none;';
   // A count, readable or (cells too small for text) a cell shaded by how many edges it holds.
-  const countOf = (x, y, w, h, n2, mutedFill) => nums ? `<text x="${f1(X(x + w / 2))}" y="${f1(Y(y + h / 2) + Math.min(MX.countMax, kc * MX.countScale) * 0.35)}" text-anchor="middle" style="font:${MX.countWeight} ${f1(Math.min(MX.countMax, kc * MX.countScale))}px/1 ${v('font-ui')};fill:${v(mutedFill ? MP.margin.textColor : MP.cell.textColor)}">${n2}</text>`
+  const cfs = Math.min(MX.countMax, kc * MX.countScale);
+  const countOf = (x, y, w, h, n2, mutedFill) => nums ? `<text x="${f1(X(x + w / 2))}" y="${f1(Y(y + h / 2) + cfs * 0.35)}" text-anchor="middle" style="font:${MX.countWeight} ${f1(cfs)}px/1 ${v('font-ui')};fill:${v(mutedFill ? MP.margin.textColor : MP.cell.textColor)}">${n2}</text>`
     : `<rect x="${f1(X(x + 0.5))}" y="${f1(Y(y + 0.5))}" width="${f1(K(w - 1))}" height="${f1(K(h - 1))}" style="fill:${v(MP.shade.fill)};opacity:${Math.min(MX.shadeMax, MX.shadeBase + MX.shadeStep * n2).toFixed(2)}"/>`;
   // Cells. The cell's ends come from its edges, not from splitting the key (a file id may hold '|': critic L3).
   P.cells.forEach((es, key) => {

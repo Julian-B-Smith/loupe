@@ -1055,6 +1055,14 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'node', id: F('a/one') } }, { zoom: { k: 1, x: 0, y: 0 }, selection: { type: 'node', id: F('c/five') } },
     { zoom: { k: 1, x: 0, y: 0 }, dimmedKinds: ['call'] }].map((st) => ({ matrix: { a: 'sec:a' }, ...st }))
     .concat([{ matrix: { a: 'sec:a', b: 'sec:b' }, zoom: { k: 1, x: 0, y: 0 } }]);
+  // The sweep sees any change; a value read in two places (the chip gap: the tally's width and the chips' spacing) also
+  // gets a geometry check, so a copy at one of the two still fails.
+  {
+    const cz = { zoom: { k: 0.35, x: 20, y: 20 }, diff: { side: 'after' }, collapsed: data['big-diff'].sections.filter((x) => !data['big-diff'].parentOf[x]) };
+    const gaps = (html) => html.split('<g data-diffbox="').slice(1).flatMap((seg) => { const r = [...seg.split('</g>')[0].matchAll(/<rect x="([\d.-]+)" y="[\d.-]+" width="([\d.]+)"/g)].map((m) => [+m[1], +m[2]]); return r.slice(1).map((q, i) => +(q[0] - r[i][0] - r[i][1]).toFixed(1)); });
+    const g0 = gaps(frame('big-diff', cz).html); T.sizes.chipGap = 7; const g1 = gaps(frame('big-diff', cz).html); restore();
+    check(`Q-036: the tally's chips sit the block's chipGap apart (${g0.length} gaps), and 7 apart when it says 7`, g0.length > 0 && g0.every((x) => Math.abs(x - T.sizes.chipGap) < 0.11) && g1.length > 0 && g1.every((x) => Math.abs(x - 7) < 0.11));
+  }
   const sweep = [['diff-tally', T, () => tallyHtml() + frame('big-diff', { zoom: { k: 0.35, x: 20, y: 20 }, diff: { side: 'after' }, collapsed: data['big-diff'].sections.filter((x) => !data['big-diff'].parentOf[x]) }).html], ['matrix', M, () => MFR.map((st) => frame(vm, st).html).join('\n')]];
   for (const [name, sp, draw] of sweep) {
     const before = draw(), dead = [];
