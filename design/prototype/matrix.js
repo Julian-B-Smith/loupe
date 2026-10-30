@@ -1,17 +1,20 @@
 // The matrix lens (ADR 0029, second half; ROADMAP Q-030; Julian, poll 2026-10-29). For one section, or a pair, rows and
 // columns are its files (a pair: the first section's files, then the second's) and the cell at row r, column c holds the
-// edges r → c, one mark per edge (kind colour, provenance dash), past MARKS a count. Lossless by construction, and the
+// edges r → c, one mark per edge (kind colour, provenance dash), past MX.marks a count. Lossless by construction, and the
 // meter checks it: every edge is in exactly one place in map.edges —
-//   a cell, drawn (≤ MARKS edges) or folded into its count; ends ['x:<src>|<dst>'];
+//   a cell, drawn (≤ MX.marks edges) or folded into its count; ends ['x:<src>|<dst>'];
 //   a row's out-margin (to a file outside the matrix) or a column's in-margin (from one), folded; 'x:out|<f>', 'x:in|<f>';
 //   'elsewhere' (both ends outside), folded into the one chip above the grid.
 // Every one of those keys opens to exactly its edges (inspect.js heldEdges reads `ends`). Files inside are drawn as row
 // and column heads; every other file stands in by the elsewhere chip. Pure layout here; render.js hands the frame over
 // when state.matrix is set in the Design view, and node-link stays the default and the path view.
 
+// The matrix's sizes come from its loupe-spec block (design/system/components/matrix, via the generated specs.js: Q-036).
 // A mark spans the cell less `inset` at each end: 20 at cell 26, so its provenance dash reads from zoom 0.83 (the longest
-// period, annotated, is 16.5 px on screen); below that the cell shows its count (Julian, poll 2026-10-29).
-export const MX = { cell: 26, inset: 3, rowHead: 168, colHead: 150, margin: 34, gap: 18, MARKS: 3 };
+// period, annotated, is 16.5 px on screen); below that the cell shows its count (Julian, poll 2026-10-29). Past `marks`
+// edges a cell shows its count. MX is the block's own object, not a copy, so a test that changes it sees the drawing move.
+import { SPECS } from './specs.js';
+export const MX = SPECS.matrix.sizes;
 
 // The selection's files in a stable order: each section's subtree in tree order, its members as the view lists them.
 export function matrixFiles(data, m) {

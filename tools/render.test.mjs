@@ -111,6 +111,10 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
     }
   }
   check(`every component loupe-spec block validates against its schema${bad.length ? ' — ' + bad.join('; ') : ''}`, bad.length === 0);
+  // Q-036: the renderer reads design values from design/prototype/specs.js, generated from these blocks; a block edited
+  // without regenerating would leave the drawing on the old values.
+  const { generate, OUT } = await import('./specs.mjs');
+  check(`${OUT} is fresh: it equals tools/specs.mjs's output from the blocks (run: npm run specs)`, existsSync(OUT) && readFileSync(OUT, 'utf8') === generate());
 }
 // ADR 0029, Q-011: every ×N bundle drawn opens to exactly the edges the meter attributes to it. For each frame: the
 // N on the pill, the inspector's list (inspect.js bundleEdges) and the meter's record agree, and no edge the meter

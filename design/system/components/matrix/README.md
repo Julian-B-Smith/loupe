@@ -20,6 +20,102 @@ where they could not be read. Clicking a mark opens its edge; clicking a cell, a
 Sizes (world units, scaled with the zoom): cell 26, mark inset 3, row heads 168, column heads 150, margins 34, gap 18.
 The title and subtitle sit at a fixed size above the grid, below the matrix bar.
 
-**No `loupe-spec` block yet.** It waits on ROADMAP Q-036 (the schema's primitive list, a human gate), with the diff
-tally's. Until then the values live in `design/prototype/matrix.js` `MX` and `render.js` `renderMatrix`, where
-`tools/stress.test.mjs` (the Q-030 block) checks them.
+The values below reach the renderer through `design/prototype/specs.js`, generated from this block by `tools/specs.mjs` (ROADMAP Q-036); `./verify fast` fails when that module is stale. Edit the block, then run `npm run specs`.
+
+```loupe-spec
+{
+ "lens": "matrix",
+ "version": 1,
+ "parts": {
+  "band": {
+   "fill": "surface-group"
+  },
+  "band-alt": {
+   "fill": "surface-group-nested"
+  },
+  "band-label": {
+   "stroke": "ink-faint",
+   "textStyle": "group-label-compact",
+   "textColor": "ink-muted"
+  },
+  "rule": {
+   "stroke": "rule"
+  },
+  "rule-strong": {
+   "stroke": "ink-faint"
+  },
+  "diagonal": {
+   "fill": "rule"
+  },
+  "mark": {
+   "stroke": "edge-kind",
+   "dash": "provenance"
+  },
+  "cell": {
+   "fill": "surface-node",
+   "textColor": "ink"
+  },
+  "margin": {
+   "fill": "surface-panel",
+   "stroke": "rule",
+   "textColor": "ink-muted"
+  },
+  "margin-label": {
+   "textStyle": "count",
+   "textColor": "ink-faint"
+  },
+  "head": {
+   "textColor": "ink"
+  },
+  "title": {
+   "textStyle": "group-label",
+   "textColor": "ink"
+  },
+  "subtitle": {
+   "textStyle": "count",
+   "textColor": "ink-muted"
+  },
+  "chip": {
+   "fill": "surface-panel",
+   "stroke": "rule",
+   "textStyle": "count",
+   "textColor": "ink-muted"
+  }
+ },
+ "states": {
+  "selected": {
+   "head": {
+    "fill": "accent-soft",
+    "textColor": "accent"
+   },
+   "cell": {
+    "stroke": "accent"
+   }
+  }
+ },
+ "layout": {},
+ "sizes": {
+  "cell": 26,
+  "inset": 3,
+  "rowHead": 168,
+  "colHead": 150,
+  "margin": 34,
+  "gap": 18,
+  "marks": 3,
+  "markWidth": 2.2,
+  "markWidthSelected": 3.4,
+  "markSpacing": 5,
+  "dimOpacity": 0.2,
+  "ruleEvery": 5,
+  "ruleWidth": 0.5,
+  "ruleStrongWidth": 1,
+  "bandColumnOpacity": 0.6,
+  "diagonalOpacity": 0.5,
+  "countMin": 12,
+  "headMin": 6,
+  "headMax": 11,
+  "chipHeight": 17
+ },
+ "notes": "World units scale with the zoom: cell, inset, rowHead, colHead, margin, gap, markSpacing. Screen px: markWidth, markWidthSelected, ruleWidth, ruleStrongWidth, chipHeight, countMin (a cell narrower shows a shade, not a number), headMin and headMax (the heads' font size). A cell past `marks` edges shows its count. A cell holding the selected edge, and the chip holding a selected file, take the holds mark (token dash-holds)."
+}
+```
