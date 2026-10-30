@@ -5,6 +5,7 @@ import { layout, L, hubPlacement } from './layout.js';
 import { counterflow, conformity } from './standins.js';
 import { diffKindOf, diffBoxText } from './inspect.js';
 import { matrixPartition, MX } from './matrix.js';
+import { elementFiles, selectionFiles } from './split.js';
 import { stem, uniqueLabels } from './snapshot.js';
 
 export const SPEC = {
@@ -200,8 +201,10 @@ export function render(container, data, state) {
   // zoom
   let z;
   if (zs.auto) {
-    const padB = zs.padBottom || 0, pad = zs.pad ?? 24;
-    const fitB = b => { const k = Math.min((W - pad * 2) / b.w, (H - pad * 2 - padB) / b.h, zs.maxK || 1.25); return { k, x: (W - b.w * k) / 2 - b.x * k, y: (H - padB - b.h * k) / 2 - b.y * k }; };
+    // padTop (Q-031): in Both each pane's own meter stands over its top-left corner, so the fit keeps below it.
+    const padB = zs.padBottom || 0, padT = zs.padTop || 0, pad = zs.pad ?? 24;
+    // The room is floored at 24 px: a pane shorter than its pads (Both, stacked, the divider far over) gave a negative k.
+    const fitB = b => { const k = Math.min(Math.max(24, W - pad * 2) / b.w, Math.max(24, H - pad * 2 - padB - padT) / b.h, zs.maxK || 1.25); return { k, x: (W - b.w * k) / 2 - b.x * k, y: padT + (H - padB - padT - b.h * k) / 2 - b.y * k }; };
     let fb = zs.focus ? elementBounds(data, D, zs.focus) : null;
     if (fb) fb = { x: fb.x - 28, y: fb.y - 34, w: fb.w + 56, h: fb.h + 62 };
     const zd = fitB(fb || D.bounds), zf = fitB(F.bounds);
@@ -246,6 +249,10 @@ export function render(container, data, state) {
   const hovNode = state.hover && state.hover.type === 'node' ? state.hover.id : null;
   const focEl = focus && focus.type === 'element' ? focus.id : null;
   const isDim = id => !!(rel && !rel.has(id));
+  // The files a selection names (a file, or an edge's two ends). A stand-in holding one (its box zoomed out or collapsed,
+  // a fold row, a port, the lens's outside box) is marked, so a selection made elsewhere (the other pane of Both, the
+  // panel) is always marked on this map too (Q-031 criterion 2; before, a file selected zoomed out marked nothing).
+  const selFiles = selectionFiles(data, state.selection);
   const dimK = new Set(state.dimmedKinds || []);
 
   // diff
@@ -278,6 +285,14 @@ export function render(container, data, state) {
   const halo = c => `paint-order:stroke;stroke:${v(c)};stroke-width:4px;stroke-linejoin:round`;
   const auditOf = el => state.stage === 4 ? { confirmed: 'pass', challenged: 'fail' }[el.status] : null;
 
+  // The section box standing in for a file this frame, in whereIs's order; null when the file is drawn itself or a port,
+  // the lens's outside box or a fold row stands in for it.
+  const boxOf = f => {
+    if (!designish || (D.iso && !D.iso.inside.has(f)) || (D.lens && !D.lens.inside.has(f))) return null;
+    if (!D.nodes[f] && !ovw && D.foldOf[f]) return null;
+    if (!D.nodes[f]) { const p = ovw ? drawnTop(f) : D.proxy[f]; return p && D.sections[p] ? p : null; }
+    return ovw ? drawnTop(f) : null;
+  };
   // ---------- 1. backgrounds
   if (decor > 0) {
     bg.push(`<g style="opacity:${decor}">`);
@@ -346,9 +361,11 @@ export function render(container, data, state) {
       const el = data.elements[id], r = S(s);
       if (!el) return;
       map.elements[id] = 'drawn'; map.drawn.add(id);
-      const on = focEl === id, fillC = s.depth % 2 ? 'surface-group-nested' : 'surface-group';
-      const tn = tierOf(id), strokeC = on ? 'accent' : s.depth ? 'none' : 'tier-' + tn;
-      bg.push(`<rect data-el="${id}" x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${s.depth ? 6 : 8}" style="fill:${v(fillC)};stroke:${strokeC === 'none' ? 'none' : v(strokeC)};stroke-width:${on ? v('stroke-hub') : v('stroke-group')}"/>`);
+      // on: this box is the selection (solid, stroke-hub); held: it stands in for a selected file or edge end (dashed
+      // accent at stroke-group, token dash-holds; Julian, poll 2026-10-30: two claims, two looks).
+      const on = focEl === id, held = !on && selFiles.some(f => boxOf(f) === id), fillC = s.depth % 2 ? 'surface-group-nested' : 'surface-group';
+      const tn = tierOf(id), strokeC = on || held ? 'accent' : s.depth ? 'none' : 'tier-' + tn;
+      bg.push(`<rect data-el="${id}" x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${s.depth ? 6 : 8}" style="fill:${v(fillC)};stroke:${strokeC === 'none' ? 'none' : v(strokeC)};stroke-width:${on ? v('stroke-hub') : v('stroke-group')}${held ? `;stroke-dasharray:${v('dash-holds')}` : ''}"/>`);
       if (r.h >= 12) { const rad = Math.min(s.depth ? 6 : 8, r.w / 2, r.h / 2), hh = Math.min(4, r.h * 0.2), cid = `${uid}-clip-${id.replace(/[^a-z0-9]/gi, '_')}`; bg.push(`<clipPath id="${cid}"><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${f1(rad)}"/></clipPath><rect clip-path="url(#${cid})" x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(hh)}" style="fill:${v(s.depth ? 'tier-' + tn + '-soft' : 'tier-' + tn)};pointer-events:none"/>`); }
       const files = data.filesIn(id);
       const isTwin = (data.byPrimitive.twins || []).some(t => data.elements[t].members.includes(id));
@@ -946,14 +963,18 @@ export function render(container, data, state) {
     const tour = ST.tours[(state.tour && state.tour.index) || 0], cur = (state.tour && state.tour.step) || 0;
     if (tour) tour.steps.forEach((s, i) => addPin(s.node, (x, y) => `<g><title>${esc(s.text)}</title><circle cx="${f1(x)}" cy="${f1(y)}" r="8.5" style="fill:${i === cur ? v('accent') : v('ink')};stroke:${v('surface-canvas')};stroke-width:1.5px"/><text x="${f1(x)}" y="${f1(y + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('surface-node')}">${i + 1}</text></g>`));
   }
+  // Where a file is on screen this frame: its own box, or whatever stands in for it (a port, the lens's outside box, a
+  // fold row, a collapsed or zoomed-out section). Pins sit on it, and map.locate (Q-031) frames a selection by it.
+  const whereIs = id => {
+    if (iso && !iso.inside.has(id)) { const k = iso.portOf.in[id] || iso.portOf.out[id]; return k ? S(iso.ports[k]) : null; }
+    if (designish && D.lens && !D.lens.inside.has(id)) return S(D.lensOut);
+    if (designish && !D.nodes[id] && !ovw && D.foldOf[id]) return S(D.folds[D.foldOf[id]]);
+    if (designish && !D.nodes[id]) { const p = ovw ? drawnTop(id) : D.proxy[id]; return p && D.sections[p] ? S(D.sections[p]) : null; }
+    if (ovw) { const t = drawnTop(id); return t ? S(D.sections[t]) : null; }
+    return nodeRect(id);
+  };
   Object.entries(pins).forEach(([id, list]) => {
-    let r = null;
-    if (iso && !iso.inside.has(id)) { const k = iso.portOf.in[id] || iso.portOf.out[id]; r = k ? S(iso.ports[k]) : null; }
-    else if (designish && D.lens && !D.lens.inside.has(id)) r = S(D.lensOut);
-    else if (designish && !D.nodes[id] && !ovw && D.foldOf[id]) r = S(D.folds[D.foldOf[id]]);
-    else if (designish && !D.nodes[id]) { const p = ovw ? drawnTop(id) : D.proxy[id]; if (p && D.sections[p]) r = S(D.sections[p]); }
-    else if (ovw) { const t = drawnTop(id); r = t && S(D.sections[t]); }
-    else r = nodeRect(id);
+    const r = whereIs(id);
     if (!r) return;
     list.forEach((fn, i) => lg.push(fn(r.x + r.w - 4 - i * 18, r.y - 1)));
   });
@@ -1052,15 +1073,15 @@ export function render(container, data, state) {
     // A lane's folded middle reads as steps, numbered, on the lane's spine (lane spec: "+N steps").
     // A lane's row is keyed '<lane>' or '<lane>#k' (layout: a claimed step splits the middle); a click unfolds the lane.
     const lane = f.lane && data.elements[f.lane], from = lane && lane.steps.indexOf(f.members[0]) + 1;
-    const text = fit(lane ? `+${n} steps · ${ec} edges` : `+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), on = !!(selNode && D.foldOf[selNode] === sec);
+    const text = fit(lane ? `+${n} steps · ${ec} edges` : `+${n} more · ${ec} edges`, r.w - 14, cw * 0.92), held = selFiles.some(f => !D.nodes[f] && D.foldOf[f] === sec);
     const tip = lane ? `Steps ${from} to ${from + n - 1} of ${lane.label} folded here, with ${ec} edges. Click to show them; right-click to list the edges.` : `${n} less-connected files folded here, with ${ec} edges. Click to show all; right-click to list the edges.`;
     map.drawn.add('fold:' + sec);
-    ng.push(`<g data-unfold="${esc(f.lane || sec)}" data-holds="f:${esc(sec)}" data-count="${ec}"${lane ? ` data-lane-fold="${n}"` : ''} style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:4 3"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
+    ng.push(`<g data-unfold="${esc(f.lane || sec)}" data-holds="f:${esc(sec)}" data-count="${ec}"${lane ? ` data-lane-fold="${n}"` : ''} style="cursor:pointer"><title>${esc(tip)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="4" style="fill:${v('surface-group-nested')};stroke:${v(held ? 'accent' : 'ink-faint')};stroke-width:${v('stroke-group')};stroke-dasharray:${held ? v('dash-holds') : '4 3'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(text)}</text>` : ''}</g>`);
   });
   if (designish && D.lens) {
     const Z = D.lens, c = Z.counts, r = S(D.lensOut), ln = (y, t, font, ink) => `<text x="${f1(r.x + 12)}" y="${f1(y)}" style="font:${v(font)};fill:${v(ink)}">${esc(fit(t, r.w - 24, cw * 0.92))}</text>`;
-    const on = !!(state.selection && state.selection.type === 'lensout');
-    let g = `<g data-lensout="${esc(Z.name)}" style="cursor:pointer"><title>${esc(`Outside the ${Z.label} lens: ${c.outsideFiles} nodes and the ${c.outsideEdges} edges among them. ${c.crossing} edges cross into the lens, drawn with counts.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="8" style="fill:${v('surface-group-nested')};stroke:${v(on ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:5 4"/>`;
+    const on = !!(state.selection && state.selection.type === 'lensout'), held = !on && selFiles.some(f => !Z.inside.has(f));
+    let g = `<g data-lensout="${esc(Z.name)}" style="cursor:pointer"><title>${esc(`Outside the ${Z.label} lens: ${c.outsideFiles} nodes and the ${c.outsideEdges} edges among them. ${c.crossing} edges cross into the lens, drawn with counts.`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="8" style="fill:${v('surface-group-nested')};stroke:${v(on || held ? 'accent' : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${held ? v('dash-holds') : '5 4'}"/>`;
     if (r.h >= 40) {
       g += ln(r.y + 18, `Outside · ${c.outsideFiles} nodes`, 'type-group-label-compact', 'ink');
       g += ln(r.y + 34, `${c.outsideEdges} edges inside · ${c.crossing} crossing`, 'type-count', 'ink-faint');
@@ -1085,9 +1106,9 @@ export function render(container, data, state) {
       const pks = kindStyle(P.kind === 'file' ? nodeInfo(P.file) : null); // a file port shows its node's kind (Q-019)
       const mark = P.kind === 'section' ? (P.open ? '−' : '+') : '';
       const dt = map.diffTallies && map.diffTallies[P.key], cnt = `${tail}`, room = r.w - 16 - cnt.length * cw * 0.92 - (mark ? 14 : 0) - (dt && !dt.outside ? dt.w + 6 : 0);
-      const on = !!(selNode && (iso.portOf.in[selNode] === P.key || iso.portOf.out[selNode] === P.key));
+      const held = selFiles.some(f => !iso.inside.has(f) && (iso.portOf.in[f] === P.key || iso.portOf.out[f] === P.key));
       map.drawn.add(P.key);
-      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`}${P.open ? '' : ` data-holds="p:${esc(P.key)}" data-count="${P.edges}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}${P.open ? '' : '. Right-click to list the edges'}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="${P.kind === 'file' && pks.pill ? `rx:${v('radius-pill')};` : ''}fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : pks.fill)};stroke:${v(on ? 'accent' : P.kind === 'file' ? pks.stroke : 'ink-faint')};stroke-width:${on ? v('stroke-hub') : v('stroke-group')};stroke-dasharray:${P.kind === 'rest' ? '4 3' : P.kind === 'file' ? pks.dash : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
+      ng.push(`<g ${P.kind === 'file' ? `data-node="${esc(P.file)}"` : `data-port="${esc(P.key)}"`}${P.open ? '' : ` data-holds="p:${esc(P.key)}" data-count="${P.edges}"`} style="cursor:pointer"><title>${esc(`${P.side === 'in' ? 'Input from' : 'Output to'} ${lab}: ${P.edges} edge${P.edges === 1 ? '' : 's'}${P.kind === 'section' ? ', ' + P.files + ' files. Click to ' + (P.open ? 'close' : 'list the files') : ''}${P.open ? '' : '. Right-click to list the edges'}`)}</title><rect x="${f1(r.x)}" y="${f1(r.y)}" width="${f1(r.w)}" height="${f1(r.h)}" rx="${P.kind === 'section' ? 9 : 4}" style="${P.kind === 'file' && pks.pill ? `rx:${v('radius-pill')};` : ''}fill:${v(P.kind === 'section' ? 'surface-panel' : P.kind === 'rest' ? 'surface-group-nested' : pks.fill)};stroke:${v(held ? 'accent' : P.kind === 'file' ? pks.stroke : 'ink-faint')};stroke-width:${v('stroke-group')};stroke-dasharray:${held ? v('dash-holds') : P.kind === 'rest' ? '4 3' : P.kind === 'file' ? pks.dash : 'none'}"/>${r.h >= 12 ? `<text x="${f1(r.x + 8 + (mark ? 12 : 0))}" y="${f1(r.y + r.h / 2 + 3.5)}" style="font:${P.kind === 'section' ? v('type-group-label-compact') : v('type-node-label')};fill:${v('ink')}">${esc(fit(lab, room, P.kind === 'section' ? 6.9 : cw))}</text><text x="${f1(r.x + r.w - 8)}" y="${f1(r.y + r.h / 2 + 3.5)}" text-anchor="end" style="font:${v('type-count')};fill:${v('ink-faint')}">${cnt}</text>${mark ? `<text x="${f1(r.x + 9)}" y="${f1(r.y + r.h / 2 + 4)}" style="font:500 13px/1 ${v('font-ui')};fill:${v('ink-muted')}">${mark}</text>` : ''}` : ''}</g>`);
     });
     ['in', 'out'].forEach(side => {
       const ps = Object.values(iso.ports).filter(p => p.side === side); if (!ps.length) return;
@@ -1100,6 +1121,16 @@ export function render(container, data, state) {
     map.elsewhere = elsewhere;
   }
 
+  // Q-031: where a selection is on screen in this frame, so a pane that does not show it can pan to it (split.js
+  // followPan). Design frames an element by its own bounds; Flow, which draws files only, by its files.
+  map.locate = sel => {
+    if (!sel) return null;
+    if (sel.type === 'node') return whereIs(sel.id);
+    if (sel.type === 'edge') { const e = data.edgeById[sel.id]; return e ? union([whereIs(e.src), whereIs(e.dst)]) : null; }
+    if (sel.type !== 'element' || !data.elements[sel.id]) return null;
+    const b = designish && !iso ? elementBounds(data, D, sel.id) : null;
+    return b ? S(b) : union(elementFiles(data, sel.id).map(whereIs));
+  };
   svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="set-marks" style="opacity:${decor}">${setMarks.join('')}</g><g data-layer="edges">${eg.join('')}</g><g data-layer="nodes">${ng.join('')}</g><g data-layer="labels">${lg.join('')}${matrix.join('')}</g>`;
   return map;
 }
@@ -1126,9 +1157,13 @@ function renderMatrix(svg, uid, W, H, data, state) {
   // padT also holds the title and subtitle, drawn at a fixed size in screen space (scaled with the grid they overlapped).
   // The legend stands about 150 px tall over the bottom-left corner (more than the map's 96 px), where the in-margin
   // and the outside chip sit, so the matrix keeps clear of all of it.
-  const padT = 52 + 36, padB = zs.padBottom ? Math.max(zs.padBottom, 150) : 0;
+  // In Both (Q-031) the pane's meter pushes the matrix bar down by zs.padTop, and a pane under 900 px wraps the subtitle
+  // onto a second line: the band grows by both, so the bar never covers the title.
+  const top = zs.padTop || 0, subLines = W < 900 ? 2 : 1;
+  const padT = 52 + 36 + top + 14 * (subLines - 1), padB = zs.padBottom ? Math.max(zs.padBottom, 150) : 0;
   let z;
-  if (zs.auto) { const k = Math.min((W - 48) / bounds.w, (H - 48 - padT - padB) / bounds.h, 1.25); z = { k, x: (W - bounds.w * k) / 2 - bounds.x * k, y: padT + (H - padT - padB - bounds.h * k) / 2 - bounds.y * k }; }
+  // The room is floored as in render(): a short pane gave a negative k.
+  if (zs.auto) { const k = Math.min(Math.max(24, W - 48) / bounds.w, Math.max(24, H - 48 - padT - padB) / bounds.h, 1.25); z = { k, x: (W - bounds.w * k) / 2 - bounds.x * k, y: padT + (H - padT - padB - bounds.h * k) / 2 - bounds.y * k }; }
   else z = { k: zs.k, x: zs.x, y: zs.y };
   const X = x => x * z.k + z.x, Y = y => y * z.k + z.y, K = d => d * z.k;
   const map = { zoom: z, lod: 'matrix', nodes: {}, edges: {}, elements: {}, drawn: new Set(), settled: true,
@@ -1145,8 +1180,12 @@ function renderMatrix(svg, uid, W, H, data, state) {
   const removed = ((state.diff && data.diff && state.diff.side !== 'before' && data.diff.removed) || []).filter(r => P.secs.some(sid => data.descendants(sid).includes(r.home))).length;
   const title = P.bands.map(b => `${data.elements[b.sec].label} (${b.to - b.from} files)`).join(' × ');
   const sub = ['rows send, columns receive', marksRead ? 'one mark per edge' : 'counts per cell (zoom in for one mark per edge)', heads ? '' : 'zoom in to read the file names', 'click a cell to list its edges', removed ? `${removed} removed since the last run (no edges now)` : ''].filter(Boolean).join(' · ');
-  const ty = Math.max(66, Y(0) - 22);
-  lab.push(`<text x="${f1(X(0))}" y="${f1(ty)}" style="font:${v('type-group-label')};fill:${v('ink')}">${esc('Matrix · ' + title)}</text><text x="${f1(X(0))}" y="${f1(ty + 15)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(sub)}</text>`);
+  // The subtitle wraps at its ' · ' joins to the pane's width, at most subLines lines; the tooltip holds all of it.
+  const room = W - Math.max(12, X(0)) - 12, lines = [];
+  sub.split(' · ').forEach(part => { const l = lines[lines.length - 1]; if (l !== undefined && (l + ' · ' + part).length * cw * 0.92 <= room) lines[lines.length - 1] = l + ' · ' + part; else lines.push(part); });
+  const shown = lines.slice(0, subLines); if (lines.length > subLines) shown[subLines - 1] = fit(lines.slice(subLines - 1).join(' · '), room, cw * 0.92);
+  const ty = Math.max(66 + top, Y(0) - 22 - 14 * (shown.length - 1)), tx = Math.max(12, X(0));
+  lab.push(`<g><title>${esc(sub)}</title><text x="${f1(tx)}" y="${f1(ty)}" style="font:${v('type-group-label')};fill:${v('ink')}">${esc(fit('Matrix · ' + title, room, 7.4))}</text>${shown.map((t, i) => `<text x="${f1(tx)}" y="${f1(ty + 15 + 14 * i)}" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(t)}</text>`).join('')}</g>`);
   // Grid: the bands (a pair's two sections) tinted apart, a rule every 5 rows, the diagonal shaded.
   P.bands.forEach((b, i) => {
     const fill = i % 2 ? 'surface-group-nested' : 'surface-group';
@@ -1174,7 +1213,9 @@ function renderMatrix(svg, uid, W, H, data, state) {
     lab.push(`<g data-node="${esc(f)}" data-diff="${dk || ''}" style="cursor:pointer">${tip}<text x="${f1(X(gx - 6))}" y="${f1(Y(gy + i * cell + cell / 2) + fs * 0.35)}" text-anchor="end" style="font:500 ${f1(fs)}px/1 ${v('font-mono')};fill:${ink}">${esc(t)}</text><text transform="rotate(-90 ${f1(X(gx + i * cell + cell / 2) + fs * 0.35)} ${f1(Y(gy - 6))})" x="${f1(X(gx + i * cell + cell / 2) + fs * 0.35)}" y="${f1(Y(gy - 6))}" style="font:500 ${f1(fs)}px/1 ${v('font-mono')};fill:${ink}">${esc(tc)}</text></g>`);
   });
   const holds = (key, n2, inner, tip) => `<g data-holds="${esc(key)}" data-count="${n2}" style="cursor:pointer"><title>${esc(tip)}</title>${inner}</g>`;
-  const ring = (key, es) => key === hk || (selE && es.some(e => e.id === selE)) ? `stroke:${v('accent')};stroke-width:2px;` : 'stroke:none;';
+  // A selected cell or margin is ringed solid; one holding the selected edge, dashed (token dash-holds: Q-031, the holds
+  // look on every stand-in).
+  const ring = (key, es) => key === hk ? `stroke:${v('accent')};stroke-width:2px;` : selE && es.some(e => e.id === selE) ? `stroke:${v('accent')};stroke-width:${v('stroke-group')};stroke-dasharray:${v('dash-holds')};` : 'stroke:none;';
   // A count, readable or (cells too small for text) a cell shaded by how many edges it holds.
   const countOf = (x, y, w, h, n2, mutedFill) => nums ? `<text x="${f1(X(x + w / 2))}" y="${f1(Y(y + h / 2) + Math.min(10, kc * 0.5) * 0.35)}" text-anchor="middle" style="font:500 ${f1(Math.min(10, kc * 0.5))}px/1 ${v('font-ui')};fill:${v(mutedFill ? 'ink-muted' : 'ink')}">${n2}</text>`
     : `<rect x="${f1(X(x + 0.5))}" y="${f1(Y(y + 0.5))}" width="${f1(K(w - 1))}" height="${f1(K(h - 1))}" style="fill:${v('ink')};opacity:${Math.min(0.9, 0.25 + 0.15 * n2).toFixed(2)}"/>`;
@@ -1199,17 +1240,41 @@ function renderMatrix(svg, uid, W, H, data, state) {
   P.inn.forEach((es, key) => { const f = es[0].dst; marginCell(key, es, gx + P.idx.get(f) * cell, my0, cell, margin, `${label(f)} receives ${es.length} edge${es.length === 1 ? '' : 's'} from files outside this matrix. Click to list them.`); });
   // Everything else: the files outside stand in by one chip, which also counts the edges between them and, with the
   // re-run diff on, how many of those files differ (as the isolate's elsewhere count does: Q-035).
+  let chipR = null;
   const outside = data.nodeIds.filter(id => !P.idx.has(id)), differ = outside.filter(id => diffOf[id]).length;
+  // The chip holds the selection when a selected file (or an edge's end) is outside (Q-031 critic H2: it never said so).
+  const chipHeld = selectionFiles(data, state.selection).some(f => data.nodes[f] && !P.idx.has(f));
   outside.forEach(id => { map.nodes[id] = { state: 'elsewhere', proxy: 'elsewhere' }; });
   P.elsewhere.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: 'elsewhere', ends: ['elsewhere'] }; });
   if (outside.length || P.elsewhere.length) {
     map.drawn.add('elsewhere');
     // Below the in-margin, right-aligned to the grid: clear of the title, the heads and the margins.
+    chipR = null;
     const t = `Outside: ${outside.length} files · ${P.elsewhere.length} edges between them${differ ? ` · ${differ} differ from the last run` : ''}`, w = t.length * cw * 0.92 + 14, x = Math.max(X(0), X(gx + gw + gap + margin) - w), cy = Y(my0 + margin + 10);
-    lab.push(`<g data-holds="elsewhere" data-count="${P.elsewhere.length}" style="cursor:pointer"><title>Files outside this matrix, and the edges with both ends among them. Click to list the edges.</title><rect x="${f1(x)}" y="${f1(cy)}" width="${f1(w)}" height="17" rx="8.5" style="fill:${v('surface-panel')};stroke:${v('rule')};stroke-dasharray:3 3"/><text x="${f1(x + w / 2)}" y="${f1(cy + 12)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(t)}</text></g>`);
+    chipR = { x, y: cy, w, h: 17 };
+    lab.push(`<g data-holds="elsewhere" data-count="${P.elsewhere.length}" style="cursor:pointer"><title>Files outside this matrix, and the edges with both ends among them. Click to list the edges.</title><rect x="${f1(x)}" y="${f1(cy)}" width="${f1(w)}" height="17" rx="8.5" style="fill:${v('surface-panel')};stroke:${v(chipHeld ? 'accent' : 'rule')};stroke-dasharray:${chipHeld ? v('dash-holds') : '3 3'}"/><text x="${f1(x + w / 2)}" y="${f1(cy + 12)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('ink-muted')}">${esc(t)}</text></g>`);
   }
   map.elsewhere = { files: outside.length, edges: P.elsewhere.length, differ };
   map.matrix = { files: n, cells: P.cells.size, out: P.out.size, in: P.inn.size, marksRead, heads, nums, removed };
+  // Q-031 (critic H2): where a selection is in the matrix, so a pane can follow it here too. A file inside: its row; a
+  // file outside: the chip. An edge: its cell, margin cell or the chip. An element: the rows of its files inside, else
+  // the chip.
+  const row = f => { const i = P.idx.get(f); return { x: X(gx - rowHead), y: Y(gy + i * cell), w: K(rowHead + gw), h: K(cell) }; };
+  const urect = rs => { rs = rs.filter(Boolean); if (!rs.length) return null; const x = Math.min(...rs.map(r => r.x)), y = Math.min(...rs.map(r => r.y)); return { x, y, w: Math.max(...rs.map(r => r.x + r.w)) - x, h: Math.max(...rs.map(r => r.y + r.h)) - y }; };
+  map.locate = sel2 => {
+    if (!sel2) return null;
+    if (sel2.type === 'node') return P.idx.has(sel2.id) ? row(sel2.id) : chipR;
+    if (sel2.type === 'edge') {
+      const e = data.edgeById[sel2.id]; if (!e) return null;
+      const a = P.idx.get(e.src), b = P.idx.get(e.dst);
+      if (a != null && b != null) return { x: X(gx + b * cell), y: Y(gy + a * cell), w: K(cell), h: K(cell) };
+      if (a != null) return { x: X(mx0), y: Y(gy + a * cell), w: K(margin), h: K(cell) };
+      if (b != null) return { x: X(gx + b * cell), y: Y(my0), w: K(cell), h: K(margin) };
+      return chipR;
+    }
+    if (sel2.type !== 'element' || !data.elements[sel2.id]) return null;
+    return urect(elementFiles(data, sel2.id).filter(f => P.idx.has(f)).map(row)) || chipR;
+  };
   svg.innerHTML = markerDefs(uid) + `<g data-layer="backgrounds">${bg.join('')}</g><g data-layer="edges">${g.join('')}</g><g data-layer="labels">${lab.join('')}</g>`;
   return map;
 }

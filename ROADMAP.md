@@ -557,7 +557,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   3. render.js reads the tally's and the matrix's values from them, not hard-coded.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
-- **Status:** built 2026-10-29 (branch p2/q030-matrix; trace: traces/2026-10-29-q030-matrix.md), awaiting merge. Julian, 2026-10-27: required before v1.
+- **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.
 - **Julian (poll, 2026-10-29):** opened from a section (its menu or panel: "Matrix"; a second section makes a pair); the
   map swaps to the matrix with Back, like isolate. A cell holding several edges shows one mark per edge, side by side,
   each in its kind colour and provenance dash; past 3, a count. A click lists them.
@@ -572,9 +572,23 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   matrix bar says so). The matrix's visual values join Q-036 with the tally's.
 
 ### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
-- **Status:** open. Julian, 2026-10-27: required before v1.
-- **Draft criteria:** 1. both views at once, as well as the transition; 2. selection and focus shared; 3. each pane's
-  meter balances on its own; 4. a screenshot critic pass.
+- **Status:** built 2026-10-30 (branch p2/q031-side-by-side; trace: traces/2026-10-30-q031-side-by-side.md), awaiting merge. Julian, 2026-10-27: required before v1.
+- **Julian (poll, 2026-10-30):** a fourth view button, Both (Flow · Design · Both · How it works): Flow left, Design
+  right, a draggable divider, stacked on a phone. Each pane keeps its own zoom and pan; a selection pans the other pane to
+  it (its zoom unchanged), hover only highlights. One meter per pane. Lens, isolate, matrix, collapse and section moves
+  touch the Design pane only: Flow stays canonical (0006). A stage click while in Both stays in Both.
+- **Acceptance criteria (agreed by poll, 2026-10-30):** 1. a Both view, Flow left and Design right with a draggable
+  divider, stacked on a phone; Flow and Design alone keep the transition; 2. selection and hover shared: a selection made
+  in either pane or the panel is marked in both, and a pane whose frame does not show it pans to it at its own zoom;
+  3. one meter per pane, each conserve() over that pane's own frame, the header showing the worse; a test renders both
+  panes on every committed example and stress case, each balanced, and Flow is canonical: with lens, isolate, collapse,
+  matrix and moved sections set, the Flow pane draws byte-identically to a render without them; 4. plants each fail a
+  check; a screenshot critic pass.
+- **Julian (poll, 2026-10-30), after the critic (REWORK):** a follow also zooms a pane in when the selection is drawn too
+  small to read there (under 12 px, to 22 px, never past the fit cap); the pane clicked in never moves. A stand-in holding
+  the selection (not being it) is marked with a dashed accent outline (token `dash-holds`); a selected element keeps its
+  solid one. Hover highlights drawn elements only; only a selection marks stand-ins. Criterion 2's "a selection" means a
+  file, an edge or an element; a list (holds, bundle, the lens's outside box) belongs to the pane it was opened in.
 
 ### Q-004 — Prototype v5: fix the v4 review findings (in-house since 0022)
 - **Status:** open; worklist `docs/design-review-v4.md`

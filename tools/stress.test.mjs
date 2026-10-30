@@ -757,6 +757,245 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   check(`whole-repo (${map.lod}, fit zoom): each of the 40 top-level boxes is labelled inside its bounds, no two alike`, map.lod === 'overview' && bad.length === 0, bad.slice(0, 3).join('; '));
 }
 
+{ // Q-031: Flow and Design side by side (ADR 0030; Julian, poll 2026-10-30). Each pane is render() of split.js paneState in
+  // its own container (half the map pane), metered over its own frame. Expectations come from the data and the section
+  // tree, never read back from render(). Cases: the committed examples, the horde sample with its diff, all ten stress cases.
+  const { paneState, worse, followPan, followFor, elementFiles, offMap, paneFor, tagSel, READ } = await import('../design/prototype/split.js');
+  const { createStore, createHistory } = await import('../design/prototype/state.js');
+  const half = { querySelector: () => svg, appendChild() {}, clientWidth: 540, clientHeight: 770 }, PADB = 96, PADT = 40; // index.html: padBottom, and PANE_TOP over each pane's meter
+  const rd = (d) => Object.fromEntries(['graph.json', 'overlay.json', 'view.json', 'diff.sample.json'].filter((f) => existsSync(d + f)).map((f) => [f, readFileSync(d + f, 'utf8')]));
+  const cases = { ...Object.fromEntries(readdirSync('schema/examples/').map((d) => ['example ' + d, load(rd('schema/examples/' + d + '/'))])),
+    'horde sample + diff': load(rd('design/prototype/snapshots/horde-sample/')), ...Object.fromEntries(Object.keys(CASES).map((n) => ['stress ' + n, data[n]])) };
+  const base = (dn, ex = {}) => initialState({ view: 'both', stage: 2, ...ex });
+  const frame = (dn, st, pane, zoom) => { const ps = paneState(st, pane); const z = zoom || ps.zoom; const s2 = { ...ps, zoom: { ...z, padBottom: PADB, padTop: PADT } };
+    const m = render(half, dn, s2); return { m, html: svg.innerHTML, s2 }; };
+  const tops = (dn) => dn.sections.filter((x) => !dn.parentOf[x]);
+
+  { // Criterion 3: each pane balances on its own, at fit and zoomed, with and without the diff, the lens and a collapse.
+    const bad = []; let frames = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      const zooms = n === 'stress whole-repo' ? [{ auto: true }] : [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.3, x: 0, y: 0 }];
+      const exs = [{}, { lens: 'operational', collapsed: tops(dn).slice(0, 1) }, ...(dn.diff ? [{ diff: { side: 'after' } }, { diff: { side: 'before' } }] : [])];
+      for (const zoom of zooms) for (const ex of exs) for (const pane of ['flow', 'design']) {
+        const st = base(dn, { ...ex, zoom, flowZoom: zoom });
+        try { const { m } = frame(dn, st, pane); frames++; const c = conserve(dn, paneState(st, pane), m);
+          if (c.status !== 'balanced') bad.push(`${n} ${pane} ${JSON.stringify(zoom)} ${JSON.stringify(ex)}: ${c.status} ${c.unaccounted.slice(0, 2).join(', ')}`); }
+        catch (e) { bad.push(`${n} ${pane}: threw ${e.message}`); }
+      }
+    }
+    check(`Both: each pane balances on its own in every case (${frames} frames, ${Object.keys(cases).length} cases)`, bad.length === 0 && frames >= 180, bad.slice(0, 3).join('; '));
+  }
+
+  { // Criterion 3, Flow canonical (ADR 0006): with every Design mode set, render() in Flow draws byte-identically to a
+    // render without them; and paneState hands Flow none of them. Also: Flow draws every edge as itself.
+    const bad = [], notAll = []; let compared = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      if (n === 'stress whole-repo') continue; // 4,000 files: covered by the balance check; byte compare on the nine is enough
+      const T = tops(dn), z = { auto: true };
+      // Twice: bare, and with the state both panes share on purpose (the diff and its waffle, a stage with pins, a live
+      // selection; critic L6), which may change Flow, but must change it the same with or without the Design modes.
+      for (const shared of [{}, { ...(dn.diff ? { diff: { side: 'after' } } : {}), settings: { diffWaffle: true }, stage: 4, selection: { type: 'node', id: dn.nodeIds[0] } }]) {
+      const plain = { view: 'flow', stage: 2, settings: {}, zoom: z, selection: null, ...shared };
+      render(half, dn, plain); const ref = svg.innerHTML;
+      const modes = { lens: { lens: 'operational' }, collapse: { collapsed: T }, unfold: { unfolded: dn.sections.slice() }, offsets: { offsets: Object.fromEntries(T.map((t, i) => [t, { dx: 200 + i * 40, dy: 90 }])) },
+        ...(T.length ? { isolate: { isolate: T[0], isoOpen: [] }, matrix: { matrix: { a: T[0], ...(T[1] ? { b: T[1] } : {}) } } } : {}), linesOff: { linesOff: true }, hubs: { settings: { hubPlacement: 'center' } } };
+      modes.all = Object.assign({}, ...Object.values(modes));
+      for (const [mn, ex] of Object.entries(modes)) { render(half, dn, { ...plain, ...ex, settings: { ...plain.settings, ...(ex.settings || {}) } }); compared++; if (svg.innerHTML !== ref) bad.push(`${n}${shared.stage ? ' (shared state)' : ''}: ${mn} changes the Flow view`); }
+      const ps = paneState(initialState({ view: 'both', ...modes.all }), 'flow');
+      if (ps.lens || ps.isolate || ps.matrix || ps.collapsed.length || ps.unfolded.length || Object.keys(ps.offsets).length || ps.view !== 'flow') bad.push(`${n}: paneState hands Flow a Design mode`);
+      const m = render(half, dn, plain), c = conserve(dn, plain, m);
+      if (c.edges.drawn !== dn.edges.length) notAll.push(`${n}: ${c.edges.drawn} of ${dn.edges.length} drawn`);
+      }
+    }
+    check(`Both: Flow is canonical, byte-identical under lens, isolate, matrix, collapse, unfold, moved sections, lines off, hubs and all at once, bare and with the shared diff, waffle, stage and selection (${compared} renders)`, bad.length === 0 && compared >= 200, bad.slice(0, 4).join('; '));
+    check('Both: Flow draws every edge as itself (nothing bundled, folded or collapsed)', notAll.length === 0, notAll.slice(0, 3).join('; '));
+  }
+
+  // Criterion 2: a selection is marked in both panes. A file drawn itself carries the selection mark; one drawn only by a
+  // stand-in marks that stand-in (its section box, fold row, port, the lens's outside box), and that stand-in is not
+  // marked without the selection, so the check cannot pass on an accent that was there anyway. A file the isolate puts
+  // elsewhere has no stand-in on the map: its mark is the isolate bar (index.html), counted here as such.
+  const ACC = 'var(--loupe-accent)';
+  const slice = (html, needle, end) => { const out = []; let i = html.indexOf(needle); while (i >= 0) { const j = html.indexOf(end, i); out.push(html.slice(i, j < 0 ? undefined : j)); i = html.indexOf(needle, i + 1); } return out; };
+  // A stand-in holding the selection is marked dashed (token dash-holds; Julian, poll 2026-10-30), never with the solid
+  // look of "this is the selection". `on` means: accent and dash-holds in the stand-in's own markup.
+  const HOLD = 'var(--loupe-dash-holds)', held = (g) => g.includes(ACC) && g.includes(HOLD);
+  const standIn = (html, m, f, own, sel, dn) => {
+    const st = m.nodes[f]; if (!st) return { where: 'none', on: false };
+    const esq = f.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    if (st.state === 'drawn') return { where: m.lod === 'matrix' ? 'matrix head' : 'self', on: slice(html, `<g data-node="${esq}"`, '</g>').some((g) => own && m.lod !== 'matrix' ? g.includes('accent-soft') : g.includes(ACC)) || (m.lod === 'matrix' && !own) };
+    const p = st.proxy;
+    // In the matrix the outside chip stands in; under isolate nothing on the map does, and the bar's predicate decides.
+    if (p === 'elsewhere') return m.lod === 'matrix' ? { where: 'matrix chip', on: slice(html, 'data-holds="elsewhere"', '</g>').some(held) } : { where: 'elsewhere', on: offMap(m, dn, sel) };
+    if (p === 'lens-outside') return { where: p, on: slice(html, '<g data-lensout=', '</g>').some(held) };
+    if (String(p).startsWith('fold:')) return { where: 'fold', on: slice(html, `data-holds="f:${p.slice(5)}"`, '</g>').some(held) };
+    if (m.layout.iso && m.layout.iso.ports[p]) return { where: 'port', on: [`data-port="${p}"`, `data-holds="p:${p}"`].some((nd) => slice(html, nd, '</g>').some(held)) };
+    return { where: 'box', on: slice(html, `<rect data-el="${p}"`, '/>').some(held) };
+  };
+  const markRun = (label, dn, exs, sels) => {
+    const bad = [], where = {}; let n = 0;
+    for (const ex of exs) for (const pane of ['flow', 'design']) {
+      const st0 = base(dn, { ...ex, zoom: ex.zoom || { auto: true }, flowZoom: ex.zoom || { auto: true } });
+      const { html: h0, m: m0 } = frame(dn, st0, pane);
+      for (const sel of sels) {
+        const { html, m } = frame(dn, { ...st0, selection: sel }, pane);
+        const files = sel.type === 'node' ? [sel.id] : [dn.edgeById[sel.id].src, dn.edgeById[sel.id].dst];
+        if (sel.type === 'edge' && slice(html, `data-edge="${sel.id}"`, '>').some((g) => g.includes('stroke-edge-emph') || g.includes('stroke-width:3.4px'))) { n++; where.line = (where.line || 0) + 1; continue; }
+        // In the matrix an edge folded into a cell's or margin's count rings that count, dashed.
+        if (sel.type === 'edge' && m.lod === 'matrix' && m.edges[sel.id] && m.edges[sel.id].ends[0] !== 'elsewhere') { n++; where['matrix count'] = (where['matrix count'] || 0) + 1;
+          if (!slice(html, `data-holds="${m.edges[sel.id].ends[0]}"`, '</g>').some(held)) bad.push(`${pane} matrix edge ${sel.id}: its count is not ringed`); continue; }
+        for (const f of files) {
+          const a = standIn(html, m, f, sel.type === 'node', sel, dn), b = standIn(h0, m0, f, sel.type === 'node', null, dn);
+          n++; where[a.where] = (where[a.where] || 0) + 1;
+          if (!a.on || (!['self', 'matrix head'].includes(a.where) && b.on)) bad.push(`${pane} ${JSON.stringify(ex)} ${sel.type} ${sel.id} → ${f}: ${a.where} ${a.on ? 'marked without the selection too' : 'not marked'}`);
+          if (a.where === 'none') bad.push(`${pane} ${sel.id}: ${f} not on the frame at all`);
+        }
+      }
+    }
+    check(`Both: ${label}: every selection marked in both panes (${n} marks: ${Object.entries(where).map(([k, c]) => k + ' ' + c).join(', ')})`, bad.length === 0 && n > 0, bad.slice(0, 3).join('; '));
+    return where;
+  };
+  {
+    const H = cases['horde sample + diff'], T = tops(H), files = H.nodeIds;
+    const w1 = markRun('horde sample, every file, at fit, zoomed out, collapsed and with the lens', H,
+      [{}, { zoom: { k: 0.2, x: 0, y: 0 } }, { collapsed: T.slice(0, 3) }, { lens: 'operational' }, { zoom: { k: 1, x: 0, y: 0 } }], files.map((id) => ({ type: 'node', id })));
+    const w2 = markRun('horde sample, every file, isolated on each top section', H, T.map((t) => ({ isolate: t })), files.map((id) => ({ type: 'node', id })));
+    const w3 = markRun('horde sample, every edge, at fit and zoomed out', H, [{}, { zoom: { k: 0.2, x: 0, y: 0 } }], H.edges.map((e) => ({ type: 'edge', id: e.id })));
+    // The run must have met every kind of stand-in, or "marked" was never tested on it (L0005).
+    const met = { ...w1, ...w2, ...w3 };
+    check('Both: the mark runs met files drawn, in boxes, in fold rows, behind ports, outside the lens and elsewhere', ['self', 'box', 'port', 'lens-outside', 'elsewhere'].every((k) => met[k] > 0), JSON.stringify(met));
+    const w5 = markRun('horde sample, the matrix of a top section and of a pair in Design, every file and every edge', H,
+      [{ matrix: { a: T[1] } }, { matrix: { a: T[1], b: T[2] } }], [...files.map((id) => ({ type: 'node', id })), ...H.edges.map((e) => ({ type: 'edge', id: e.id }))]);
+    check('Both: the matrix run met heads, the outside chip and ringed counts', ['matrix head', 'matrix chip'].every((k) => w5[k] > 0) && (w5['matrix count'] || 0) + (w5.line || 0) > 0, JSON.stringify(w5));
+    { // Two claims, two looks (critic M4): a selected section is solid at stroke-hub, never dashed; a box holding an
+      // edge's end is dashed at stroke-group, never solid stroke-hub.
+      const sec = T[1], st = base(H, { zoom: { k: 0.2, x: 0, y: 0 } });
+      const own = slice(frame(H, { ...st, selection: { type: 'element', id: sec } }, 'design').html, `<rect data-el="${sec}"`, '/>')[0] || '';
+      const e = H.edges.find((x) => H.topOf(H.home[x.src]) !== H.topOf(H.home[x.dst])), eh = frame(H, { ...st, selection: { type: 'edge', id: e.id } }, 'design').html;
+      const ends = [H.topOf(H.home[e.src]), H.topOf(H.home[e.dst])].map((t) => slice(eh, `<rect data-el="${t}"`, '/>')[0] || '');
+      check('Both: a selected box is solid stroke-hub; the boxes holding an edge\'s ends are dashed stroke-group', own.includes(ACC) && own.includes('stroke-hub') && !own.includes(HOLD)
+        && ends.every((g) => held(g) && !g.includes('stroke-hub')), `${own.slice(0, 160)} | ${ends.map((g) => g.slice(-160)).join(' | ')}`);
+    }
+    const LN = data['long-lane'], lf = Object.keys(LN.nodes).filter((id) => LN.home[id]);
+    const w4 = markRun('long-lane, every file (its folded middle)', LN, [{}], lf.map((id) => ({ type: 'node', id })));
+    check('Both: the long-lane run met a fold row', (w4.fold || 0) > 0, JSON.stringify(w4));
+  }
+
+  { // Criterion 2, the follow rule (Julian, polls 2026-10-30). At fit: a selection whose files are readable there (located
+    // READ.min px tall or more) never moves the pane; one too small zooms the pane in, never past READ.maxK, and then
+    // shows it readable (or at the cap). Zoomed in: a pane that does not show a selection pans to it at the same zoom;
+    // an edge too long for the pane by an end. Every file, every element, a third of the edges; the matrix too.
+    const bad = []; let fitN = 0, stillN = 0, readN = 0, panned = 0, stayed = 0, longN = 0, endIn = 0;
+    const W = half.clientWidth, Hh = half.clientHeight - PADB;
+    const okAx = (p, size, L) => (size <= L - 24 ? p >= 11.9 && p + size <= L - 11.9 : p <= L / 2 + 0.1 && p + size >= L / 2 - 0.1);
+    const inView = (q) => q && okAx(q.x, q.w, W) && okAx(q.y - PADT, q.h, Hh - PADT);
+    // The heights that decide readability, measured here from the frame's own locate (not from followFor).
+    const itemsOf = (m, dn, sel) => sel.type === 'edge' ? [dn.edgeById[sel.id].src, dn.edgeById[sel.id].dst].map((id) => m.locate({ type: 'node', id })).filter(Boolean)
+      : sel.type === 'element' ? elementFiles(dn, sel.id).slice(0, 400).map((id) => m.locate({ type: 'node', id })).filter(Boolean) : [m.locate(sel)].filter(Boolean);
+    const H0 = cases['horde sample + diff'];
+    const runs = [...['horde sample + diff', 'stress big-bus', 'stress deep-nesting', 'stress long-names'].map((n) => [n, cases[n], {}, ['flow', 'design']]),
+      ['horde sample, matrix of a top section', H0, { matrix: { a: tops(H0)[1] } }, ['design']]];
+    for (const [n, dn, ex, panes] of runs) {
+      if (!dn) { bad.push(`no case ${n}`); continue; }
+      const sels = [...dn.nodeIds.map((id) => ({ type: 'node', id })), ...dn.order.map((id) => ({ type: 'element', id })), ...dn.edges.filter((_, i) => i % 3 === 0).map((e) => ({ type: 'edge', id: e.id }))];
+      for (const pane of panes) {
+        const st0 = base(dn, ex), fit = frame(dn, st0, pane).m;
+        for (const sel of sels) {
+          const r = fit.locate(sel); if (!r) { bad.push(`${n} ${pane}: ${sel.type} ${sel.id} not located`); continue; }
+          fitN++;
+          const its = itemsOf(fit, dn, sel), small = its.some((q) => q.h < READ.min) && fit.zoom.k < READ.maxK, z = followFor(fit, sel, dn, W, Hh, 12, PADT);
+          if (!small) { if (z) bad.push(`${n} ${pane}: fitted and readable, ${sel.id} moved the pane`); else stillN++; continue; }
+          if (!z || !(z.k > fit.zoom.k) || z.k > READ.maxK + 1e-9) { bad.push(`${n} ${pane}: ${sel.type} ${sel.id} too small (${Math.min(...its.map((q) => q.h)).toFixed(1)} px) and ${z ? 'zoom ' + z.k.toFixed(2) : 'not zoomed'}`); continue; }
+          readN++;
+          const m2 = frame(dn, { ...st0, zoom: z, flowZoom: z }, pane).m, its2 = itemsOf(m2, dn, sel), e = sel.type === 'edge' && dn.edgeById[sel.id];
+          const shown = e ? [e.src, e.dst].some((id) => inView(m2.locate({ type: 'node', id }))) || inView(m2.locate(sel)) : sel.type === 'element' ? its2.some(inView) || inView(m2.locate(sel)) : inView(m2.locate(sel));
+          if (!shown) bad.push(`${n} ${pane}: ${sel.type} ${sel.id} zoomed to ${z.k.toFixed(2)} and not in view`);
+          if (z.k < READ.maxK - 1e-9 && its2.some((q) => q.h < READ.min - 0.5)) bad.push(`${n} ${pane}: ${sel.id} still ${Math.min(...its2.map((q) => q.h)).toFixed(1)} px after the zoom`);
+        }
+        if (ex.matrix) continue; // the matrix's zoomed-in run is the fit's: it fits 11 files readable
+        const zin = { auto: false, k: 2.5, x: 0, y: 0 };
+        const st = base(dn, { ...ex, zoom: zin, flowZoom: zin }), m0 = frame(dn, st, pane).m;
+        for (const sel of sels) {
+          const r = m0.locate(sel); if (!r) continue;
+          const z = followFor(m0, sel, dn, W, Hh, 12, PADT);
+          const e0 = sel.type === 'edge' && dn.edgeById[sel.id];
+          if (e0 && (r.w > W - 24 || r.h > Hh - PADT - 24) && [e0.src, e0.dst].some((id) => !followPan(m0.zoom, m0.locate({ type: 'node', id }), W, Hh, 12, PADT))) { endIn++; if (z) bad.push(`${n} ${pane} edge ${sel.id}: an end was in view, yet the pane panned`); }
+          if (!z) { stayed++; continue; }
+          panned++;
+          if (z.k !== zin.k) bad.push(`${n} ${pane} ${sel.id}: readable, yet the zoom changed`);
+          const m2 = frame(dn, { ...st, zoom: z, flowZoom: z }, pane).m, r2 = m2.locate(sel);
+          const long = e0 && r2 && (r2.w > W - 24 || r2.h > Hh - PADT - 24);
+          if (long) { longN++; if (![e0.src, e0.dst].some((id) => inView(m2.locate({ type: 'node', id })))) bad.push(`${n} ${pane} edge ${sel.id}: neither end in view after the pan`); }
+          else if (!inView(r2)) bad.push(`${n} ${pane} ${sel.type} ${sel.id}: after the pan at ${r2 && [r2.x, r2.y, r2.w, r2.h].map((x) => x.toFixed(0)).join(',')}`);
+        }
+      }
+    }
+    check(`Both: at fit, ${stillN} readable selections leave the pane still and ${readN} too small zoom it in to read (${fitN} in all, the matrix included)`, bad.length === 0 && stillN > 100 && readN > 100, bad.slice(0, 3).join('; '));
+    check(`Both: zoomed in, ${panned} selections pan into view at the same zoom (${longN} edges too long, by an end), ${stayed} were in view (${endIn} long edges by an end)`, panned > 50 && stayed > 0 && longN > 0 && endIn > 0);
+    const z = { k: 1, x: 0, y: 0 };
+    check('Both: followPan by the rule: inside stays, outside centres one axis, a rect larger than the pane stays while it covers the middle',
+      followPan(z, { x: 20, y: 20, w: 50, h: 20 }, 400, 300) === null && JSON.stringify(followPan(z, { x: 500, y: 20, w: 50, h: 20 }, 400, 300)) === JSON.stringify({ auto: false, k: 1, x: -325, y: 0 })
+      && followPan(z, { x: 20, y: 20, w: 50, h: 20 }, 400, 300, 12, 40).y === 140 && followPan(z, { x: -100, y: 20, w: 600, h: 20 }, 400, 300) === null && followPan(z, { x: 250, y: 20, w: 600, h: 20 }, 400, 300).x === -350);
+  }
+
+  { // A pane shorter than its pads (stacked Both, the divider far over: seen at 166 px) still fits with a positive zoom,
+    // node-link and matrix alike, and balances.
+    const H = cases['horde sample + diff'], low = { querySelector: () => svg, appendChild() {}, clientWidth: 600, clientHeight: 120 }, bad = [];
+    for (const ex of [{}, { matrix: { a: tops(H)[1] } }]) for (const pane of ['flow', 'design']) {
+      const ps = paneState(base(H, ex), pane), st = { ...ps, zoom: { ...ps.zoom, padBottom: PADB, padTop: PADT } }, m = render(low, H, st);
+      if (!(m.zoom.k > 0) || /(width|height)="-/.test(svg.innerHTML) || conserve(H, ps, m).status !== 'balanced') bad.push(`${pane} ${JSON.stringify(ex)}: k ${m.zoom.k}`);
+    }
+    check('Both: a 120 px pane fits with a positive zoom, draws no negative size and balances', bad.length === 0, bad.join('; '));
+  }
+
+  { // Pointer routing (critic H1): the pane comes from the element under the pointer; a list opened in Flow is tagged.
+    const el = (inFlow) => ({ closest: (q) => (q === '#paneFlow' && inFlow ? {} : null) });
+    const canvasEl = { closest: () => null };
+    const L = { type: 'holds', id: 'c:x' };
+    check('Both: paneFor reads the element (Flow or main; a captured canvas target reads main, so index.html passes elementFromPoint)',
+      paneFor(el(true)) === 'flow' && paneFor(el(false)) === 'main' && paneFor(canvasEl) === 'main' && paneFor(null) === 'main');
+    check('Both: tagSel tags lists opened in Flow, only in Both, and never a file, edge or element',
+      tagSel(L, 'both', 'flow').pane === 'flow' && tagSel({ type: 'bundle', id: 'b' }, 'both', 'flow').pane === 'flow' && tagSel({ type: 'unaccounted', id: 'all' }, 'both', 'flow').pane === 'flow'
+      && !tagSel(L, 'both', 'main').pane && !tagSel(L, 'design', 'flow').pane && !tagSel({ type: 'node', id: 'n' }, 'both', 'flow').pane && !tagSel({ type: 'element', id: 'e' }, 'both', 'flow').pane);
+  }
+
+  { // The header shows the worse pane; the state: Both, the Flow camera, stages and Design-only modes stay in Both.
+    const c = (status) => ({ c: { status } });
+    check('Both: the header meter shows the worse pane (broken over stale over balanced; a tie keeps Design)',
+      worse(c('balanced'), c('broken')).c.status === 'broken' && worse(c('broken'), c('balanced')).c.status === 'broken' && worse(c('balanced'), c('stale')).c.status === 'stale' && worse(c('stale'), c('broken')).c.status === 'broken' && worse({ c: { status: 'balanced' }, pane: 'D' }, { c: { status: 'balanced' }, pane: 'F' }).pane === 'D');
+    const S0 = createStore({}), A = S0.actions, sec = cases['horde sample + diff'].sections[0];
+    A.setView('both'); A.setZoom({ auto: false, k: 2, x: 5, y: 5 }); A.setFlowZoom({ auto: false, k: 3, x: 1, y: 1 });
+    const camOk = S0.get().zoom.k === 2 && S0.get().flowZoom.k === 3;
+    A.setStage(1); const st1 = S0.get().view; A.setStage(4); const st4 = S0.get().view;
+    A.isolate(sec); const iv = S0.get().view; A.isolate(null); A.setMatrix({ a: sec }); const mv = S0.get().view; A.setMatrix(null);
+    A.setView('flow'); A.setStage(2); const one = S0.get().view; A.setStage(1); const one1 = S0.get().view;
+    A.setView('both'); const refit = S0.get().flowZoom.auto === true && S0.get().zoom.auto === true;
+    const ps0 = initialState({ view: 'both', zoom: { auto: false, k: 2, x: 0, y: 0 }, flowZoom: { auto: false, k: 3, x: 0, y: 0 } });
+    check('Both: the Flow pane renders with the Flow camera, the Design pane with the main one', paneState(ps0, 'flow').zoom.k === 3 && paneState(ps0, 'design').zoom.k === 2 && paneState(ps0, 'design').view === 'design');
+    check('Both: each pane keeps its own camera; a stage click, isolate and the matrix stay in Both; one-pane views keep the stage rule; switching view refits both cameras',
+      camOk && st1 === 'both' && st4 === 'both' && iv === 'both' && mv === 'both' && one === 'design' && one1 === 'flow' && refit, JSON.stringify({ camOk, st1, st4, iv, mv, one, one1, refit }));
+    const S1 = createStore({}), H1 = createHistory(S1);
+    S1.actions.setView('both'); S1.actions.setFlowZoom({ auto: false, k: 3, x: 1, y: 1 }); H1.back();
+    check('Both: Back out of Both refits the Flow camera; Both is one history step', S1.get().view === 'design' && S1.get().flowZoom.auto === true && H1.canForward);
+    const fl = elementFiles(cases['horde sample + diff'], sec), want = new Set(cases['horde sample + diff'].descendants(sec).flatMap((d) => cases['horde sample + diff'].elements[d].members));
+    check('Both: a section frames exactly its subtree\'s files in Flow', fl.length === want.size && fl.every((f) => want.has(f)) && fl.length > 0);
+  }
+
+  { // A list opened in Flow reads Flow's frame: Flow's only stand-ins are its collector bars ('c:'), and each opens to
+    // exactly its count there (index.html passes the Flow frame for a selection tagged pane: 'flow').
+    const bad = []; let bars = 0;
+    for (const [n, dn] of Object.entries(cases)) {
+      if (n === 'stress whole-repo') continue;
+      const { m, html } = frame(dn, base(dn), 'flow');
+      for (const k of html.matchAll(/data-(holds|bundle|diffbox|unfold|port)="([^"]*)"(?: data-count="(\d+)")?/g)) {
+        if (k[1] !== 'holds' || !k[2].startsWith('c:')) { bad.push(`${n}: Flow draws data-${k[1]}="${k[2]}"`); continue; }
+        bars++; if (heldEdges(dn, m, k[2].replace(/&quot;/g, '"')).length !== +k[3]) bad.push(`${n} ${k[2]}: says ${k[3]}, opens to ${heldEdges(dn, m, k[2]).length}`);
+      }
+    }
+    check(`Both: Flow's only stand-ins are collector bars, each opening to its count in Flow's frame (${bars} bars)`, bad.length === 0 && bars > 0, bad.slice(0, 3).join('; '));
+  }
+}
+
 // ---- 4. Q-034, overview legibility at scale (Julian, 2026-10-28: "heavy", vertical labels, the collector bar, lines off).
 // Pills, box-total tabs: their rects as drawn, from the svg.
 const pillAll = (html) => [...html.matchAll(/<g data-(?:bundle|totals)="[^"]*"[^>]*>(?:<g ><title>[^<]*<\/title>)?<rect x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +m[1], y: +m[2], w: +m[3], h: +m[4] }));
