@@ -362,7 +362,7 @@ function chrome(s) {
   $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
   $('hFwd').title = H.canForward ? `Forward: ${H.forwardLabel} (${kf})` : 'Nothing to go forward to';
   // The lens applies to the design view only (the flow view stays uninterpreted, 0006), and isolate overrides it.
-  $('lensSeg').style.display = s.view === 'design' && !s.isolate ? '' : 'none';
+  $('lensSeg').style.display = s.view === 'design' && !s.isolate && !s.matrix ? '' : 'none'; // the matrix is its own lens (Julian, poll 2026-10-29)
   $('storyBar').hidden = s.view !== 'works' || !STORIES.length;
   const cs = curStory(s);
   $('storySeg').innerHTML = STORIES.map(x => `<button data-story="${esc(x.id)}" aria-pressed="${cs && cs.id === x.id}">${esc(x.title)}</button>`).join('');
@@ -371,8 +371,9 @@ function chrome(s) {
   // The matrix lens (Q-030): its bar names the section(s) and offers a second section to pair with.
   $('mxBar').hidden = !s.matrix || s.view !== 'design';
   if (s.matrix) {
-    $('mxName').textContent = label(s.matrix.a) + (s.matrix.b ? ' × ' + label(s.matrix.b) : '');
-    $('mxPair').innerHTML = `<option value="">none</option>` + data.sections.filter(x => x !== s.matrix.a).map(x => `<option value="${esc(x)}"${x === s.matrix.b ? ' selected' : ''}>${esc(label(x))}</option>`).join('');
+    $('mxName').textContent = label(s.matrix.a) + (s.matrix.b ? ' × ' + label(s.matrix.b) : '') + (s.lens ? ' · the lens does not apply here' : '');
+    // A pair is two sections neither inside the other (critic M4: a nested pair's bands double-counted in the title).
+    $('mxPair').innerHTML = `<option value="">none</option>` + data.sections.filter(x => x !== s.matrix.a && !data.descendants(s.matrix.a).includes(x) && !data.descendants(x).includes(s.matrix.a)).map(x => `<option value="${esc(x)}"${x === s.matrix.b ? ' selected' : ''}>${esc(label(x))}</option>`).join('');
   }
   // Q-035: the elsewhere count is a stand-in off the map, so it says how many of its files the re-run diff marks.
   if (s.isolate) { const ew = map && map.elsewhere, dh = s.diff && map ? diffHeld(data, map, s, 'elsewhere') : null, dn = dh ? DIFF_KINDS.reduce((a, k) => a + dh[k].length, 0) : 0; $('isoName').textContent = label(s.isolate); $('isoElse').textContent = ew && (ew.files || ew.edges) ? `${ew.files} files · ${ew.edges} edges elsewhere${dn ? ` · ${dn} of them differ from the last run` : ''}` : ''; }
@@ -452,7 +453,8 @@ const hit = t => {
 let drag = null;
 const movableSection = t => {
   const s = store.get();
-  if (s.view !== 'design' || s.morph != null || s.isolate) return null;
+  // The matrix (Q-030) hides the map: a drag there pans, never moves a section nobody can see (critic H3).
+  if (s.view !== 'design' || s.morph != null || s.isolate || s.matrix) return null;
   const lvEl = t.closest && t.closest('[data-level]');
   if (lvEl) return lvEl.dataset.level === 'gutter' ? 'gutter' : 'level:' + lvEl.dataset.level;
   const h = hit(t); if (!h) return null;
@@ -561,6 +563,8 @@ function showMenu(target, cx, cy) {
     // Sections only: a lane's "+N steps" row is an unfold row too, and isolating a lane throws (Q-033 critic H1).
     if (!data.elements[id] || data.elements[id].primitive !== 'section') return;
     items.push(null);
+    // In the matrix only what acts on the matrix: the map's isolate, collapse and fold would change a hidden map (critic H3).
+    if (s.matrix && s.view === 'design') { if (s.matrix.a !== id) items.push({ label: `Matrix of ${label(id)}`, run: () => A.setMatrix({ a: id }) }); return; }
     // Only a box that replaces its contents stands for edges (critic H4): collapsed, or drawn whole in the overview.
     // An expanded box draws its files and edges, and its ×N lines open on their own (Q-011).
     if (s.collapsed.includes(id) || (map && (map.lod === 'overview' || map.linesOff))) listItem('s:' + id, `this box stands for`);
@@ -615,7 +619,8 @@ function showMenu(target, cx, cy) {
   }
   items.push(null);
   if (s.view === 'works') STORIES.forEach(x => { const cs = curStory(s); if (!cs || cs.id !== x.id) items.push({ label: `Story: ${x.title}`, run: () => A.setStory(x.id) }); });
-  if (s.view === 'design' && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
+  if (s.matrix && s.view === 'design') items.push({ label: 'Back to the map', run: () => A.setMatrix(null) });
+  else if (s.view === 'design' && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
   items.push({ label: 'Fit to screen', run: () => A.fit() });
   openMenu(cx, cy, items);
@@ -634,7 +639,8 @@ addEventListener('keydown', e => {
   if (e.key === 'Tab' && menuOpen()) return closeMenu();
   if (e.key !== 'Escape') return;
   if (menuOpen()) return closeMenu();
-  const s = store.get(); if (s.selection) A.clear(); else if (s.isolate) A.isolate(null);
+  // Escape leaves the matrix first, like an isolate (Q-030 critic H3: it cleared a hidden isolate underneath).
+  const s = store.get(); if (s.selection) A.clear(); else if (s.matrix) A.setMatrix(null); else if (s.isolate) A.isolate(null);
 });
 // Mouse side buttons (3 = back, 4 = forward). preventDefault on both events stops the browser leaving the page.
 ['mousedown', 'mouseup'].forEach(t => addEventListener(t, e => { if (e.button !== 3 && e.button !== 4) return; e.preventDefault(); if (t === 'mouseup') (e.button === 3 ? H.back : H.forward)(); }));
@@ -825,7 +831,7 @@ function holdsPanel(key) {
   // Matrix keys (Q-030): a cell 'x:<src>|<dst>', a margin 'x:out|<f>' or 'x:in|<f>'; 'elsewhere' is the matrix's chip there.
   const mx = key.startsWith('x:') ? key.slice(2).split('|') : null;
   const what = mx ? (mx[0] === 'out' ? `From ${esc(label(mx[1]))} to files outside the matrix` : mx[0] === 'in' ? `Into ${esc(label(mx[1]))} from files outside the matrix` : `From ${esc(label(mx[0]))} to ${esc(label(mx[1]))}`)
-    : key === 'elsewhere' && store.get().matrix ? 'Between files outside the matrix' : key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
+    : key === 'elsewhere' && map && map.lod === 'matrix' ? 'Between files outside the matrix' : key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
     : key.startsWith('f:') ? `Folded ${data.elements[key.slice(2)] && data.elements[key.slice(2)].primitive === 'lane' ? 'steps' : 'files'} of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
     : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : key.startsWith('m:') ? `Merged tap from ${esc(key.split('|')[1] === '-' ? 'files in no section' : boxName('s:' + key.split('|')[1]))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';

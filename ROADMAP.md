@@ -547,15 +547,17 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Lead, on criterion 1 (critic L3 agrees):** under a diff, layout pins every marked file out of fold rows and the loose
   block, so those two never hold one and never need a tally; the stress test asserts the pin on both sides.
 
-### Q-036 — A loupe-spec block for the diff tally (human gate: schema)
+### Q-036 — loupe-spec blocks for the diff tally and the matrix lens (human gate: schema)
 - **Status:** open, waiting on Julian (from REFLECTIONS, 2026-10-29). The tally (Q-035) has a prose spec only,
   `design/system/components/diff-tally/README.md`; its loupe-spec block needs `diff-tally` added to the primitive list in
-  `schema/loupe-spec.schema.json`, a schema change (human gate). Until then its values live in render.js §4b.
-- **Acceptance criteria (draft):** 1. Julian approves the schema change; 2. the block validates (render.test.mjs);
-  3. render.js reads the tally's values from it, not hard-coded.
+  `schema/loupe-spec.schema.json`, a schema change (human gate). Until then its values live in render.js §4b. The matrix
+  lens (Q-030) joined this item (Julian, poll 2026-10-29): prose spec `design/system/components/matrix/README.md`, values
+  in matrix.js `MX` and render.js `renderMatrix`.
+- **Acceptance criteria (draft):** 1. Julian approves the schema change; 2. both blocks validate (render.test.mjs);
+  3. render.js reads the tally's and the matrix's values from them, not hard-coded.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
-- **Status:** in progress (branch p2/q030-matrix), 2026-10-29. Julian, 2026-10-27: required before v1.
+- **Status:** built 2026-10-29 (branch p2/q030-matrix; trace: traces/2026-10-29-q030-matrix.md), awaiting merge. Julian, 2026-10-27: required before v1.
 - **Julian (poll, 2026-10-29):** opened from a section (its menu or panel: "Matrix"; a second section makes a pair); the
   map swaps to the matrix with Back, like isolate. A cell holding several edges shows one mark per edge, side by side,
   each in its kind colour and provenance dash; past 3, a count. A click lists them.
@@ -564,6 +566,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   by the meter); 2. node-link stays the default and the path view; 3. a render test of the partition, and a screenshot
   critic pass; 4. stress-test checks planted to fail, on HORDE's dense section and a stress case; 5. a cell opens to
   exactly its edges (ADR 0029).
+- **Julian (poll, 2026-10-29), after the critic (REWORK):** a cell too small to show its marks' provenance dash shows its
+  count instead (folded, still opens); zoomed in, the marks return. The matrix honours the re-run diff (heads marked, the
+  outside chip says how many differ) and the legend's kind toggles; the lens does not apply (its control hides and the
+  matrix bar says so). The matrix's visual values join Q-036 with the tally's.
 
 ### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
 - **Status:** open. Julian, 2026-10-27: required before v1.

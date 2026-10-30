@@ -102,7 +102,8 @@ export function createHistory(store, describe = () => '') {
   const restore = (snap) => {
     const cur = store.get();
     // Leaving or entering an isolate, or switching flow/design, re-fits: the old zoom would point at empty space.
-    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story;
+    // The matrix too (Q-030 critic M1): its pan and zoom point at nothing on the map, and the reverse.
+    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story || JSON.stringify(snap.matrix) !== JSON.stringify(cur.matrix);
     restoring = true;
     store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null } } : {}) });
     restoring = false; last = pick(store.get()); lastKey = key(store.get()); notify();

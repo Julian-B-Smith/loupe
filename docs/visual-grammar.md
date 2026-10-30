@@ -48,6 +48,14 @@ what it hides, which an auditor can test.
 | Isolate ports | Every edge crossing the section boundary, grouped by peer section | Port counts + inside edges + elsewhere = all edges |
 | Elsewhere chip | The edges and files that never touch the isolated section | Its counts close the meter |
 
+**Matrix lens (0029, Q-030).** One section, or a pair, as files × files: rows send, columns receive, and the cell at
+row r and column c holds the edges r → c. Up to three edges show as one mark each (kind colour, provenance dash);
+past three, or when a mark would be too short on screen to show its dash, the cell shows its count. Edges to or from
+files outside are counted in a margin beside each row and below each column, and one chip counts the files outside
+and the edges between them. Lossless by construction: each edge is in exactly one cell, margin or the chip, and each
+opens to exactly its edges. It is a view, not a primitive, so it makes no claim of its own; node-link stays the
+default and the path view. Opened from a section's menu or panel; the lens does not apply inside it.
+
 ## Dialects
 
 A dialect is a subset of primitives plus layout rules. The Structure agent picks one in Stage 2 and names

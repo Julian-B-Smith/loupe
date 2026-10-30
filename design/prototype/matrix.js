@@ -9,7 +9,9 @@
 // and column heads; every other file stands in by the elsewhere chip. Pure layout here; render.js hands the frame over
 // when state.matrix is set in the Design view, and node-link stays the default and the path view.
 
-export const MX = { cell: 22, rowHead: 168, colHead: 150, margin: 34, gap: 18, MARKS: 3 };
+// A mark spans the cell less `inset` at each end: 20 at cell 26, so its provenance dash reads from zoom 0.83 (the longest
+// period, annotated, is 16.5 px on screen); below that the cell shows its count (Julian, poll 2026-10-29).
+export const MX = { cell: 26, inset: 3, rowHead: 168, colHead: 150, margin: 34, gap: 18, MARKS: 3 };
 
 // The selection's files in a stable order: each section's subtree in tree order, its members as the view lists them.
 export function matrixFiles(data, m) {

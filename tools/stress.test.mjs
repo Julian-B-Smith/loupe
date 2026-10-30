@@ -614,16 +614,20 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
   // both ends among the selection's files, a cell (marks up to 3, else a count); one end, that file's out or in margin;
   // neither, the outside chip. The frame must put it there, draw it there, and open to exactly it there.
   const { MX } = await import('../design/prototype/matrix.js');
+  const PERIOD = Math.max(...Object.values(SPEC.dash).map((x) => (x === 'none' ? 0 : x.split(/\s+/).reduce((a, y) => a + +y, 0))));
   const probe = load({ 'graph.json': readFileSync('schema/examples/horde-probe/graph.json', 'utf8'), 'overlay.json': readFileSync('schema/examples/horde-probe/overlay.json', 'utf8'), 'view.json': readFileSync('schema/examples/horde-probe/view.json', 'utf8') });
   const filesOf = (d, secs) => { const out = []; secs.forEach((sid) => d.descendants(sid).forEach((x) => (d.elements[x].members || []).forEach((f) => { if (d.nodes[f] && !out.includes(f)) out.push(f); }))); return out; };
-  for (const [name, d, m] of [['horde-probe src (29 files)', probe, { a: 'sec:src' }], ['horde-probe src × src/gui', probe, { a: 'sec:src', b: 'sec:src-gui' }], ['wide-hub UI × Core', data['wide-hub'], { a: 'sec:ui', b: 'sec:core' }], ['edge-matrix Calls', data['edge-matrix'], { a: d0first(data['edge-matrix']) }], ['deep-nesting Engine (3 levels)', data['deep-nesting'], { a: 'sec:engine' }]]) {
+  for (const zoom of [{ k: 1, x: 0, y: 0 }, { auto: true, padBottom: 96 }]) for (const [name0, d, m] of [['horde-probe src (29 files)', probe, { a: 'sec:src' }], ['horde-probe src × src/gui', probe, { a: 'sec:src', b: 'sec:src-gui' }], ['wide-hub UI × Core', data['wide-hub'], { a: 'sec:ui', b: 'sec:core' }], ['edge-matrix Calls', data['edge-matrix'], { a: d0first(data['edge-matrix']) }], ['deep-nesting Engine (3 levels)', data['deep-nesting'], { a: 'sec:engine' }]]) {
+    const name = `${name0}, ${zoom.auto ? 'fit zoom' : 'k 1'}`;
     if (!d.elements[m.a] || (m.b && !d.elements[m.b])) { check(`matrix ${name}: its sections exist`, false, JSON.stringify(m)); continue; }
-    const { map, html } = frame(d, { matrix: m }), files = filesOf(d, [m.a, ...(m.b ? [m.b] : [])]), at = new Map(files.map((f, i) => [f, i])), bad = [];
+    const { map, html } = frame(d, { matrix: m, zoom }), files = filesOf(d, [m.a, ...(m.b ? [m.b] : [])]), at = new Map(files.map((f, i) => [f, i])), bad = [];
     const want = new Map(), add = (k, e) => { if (!want.has(k)) want.set(k, []); want.get(k).push(e); };
     d.edges.forEach((e) => { const a = at.has(e.src), b = at.has(e.dst); add(a && b ? `x:${e.src}|${e.dst}` : a ? `x:out|${e.src}` : b ? `x:in|${e.dst}` : 'elsewhere', e); });
     // 1. Every edge in its one place in the meter's record, drawn only as a mark in a cell of at most MARKS edges.
     for (const [k, es] of want) for (const e of es) {
-      const r = map.edges[e.id], cellK = k.startsWith('x:') && !k.startsWith('x:out|') && !k.startsWith('x:in|'), drawn = cellK && es.length <= MX.MARKS;
+      // Drawn as marks only in a cell of at most MARKS edges whose marks are long enough on screen to show the longest
+      // provenance dash period (Julian, poll 2026-10-29); otherwise folded into the cell's count.
+      const r = map.edges[e.id], cellK = k.startsWith('x:') && !k.startsWith('x:out|') && !k.startsWith('x:in|'), drawn = cellK && es.length <= MX.MARKS && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD;
       if (!r || r.ends.length !== 1 || r.ends[0] !== k) bad.push(`${e.id}: in ${r && r.ends} not ${k}`);
       else if (r.via !== (drawn ? 'drawn' : 'folded')) bad.push(`${e.id}: ${r.via} in ${k}`);
     }
@@ -638,8 +642,11 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
       const ey = p === 'out' ? Y(MX.colHead + at.get(q) * MX.cell + 1) : p === 'in' ? Y(MX.colHead + files.length * MX.cell + MX.gap + 1) : Y(MX.colHead + at.get(p) * MX.cell + 1);
       if (Math.abs(g.x - ex) > 0.2 || Math.abs(g.y - ey) > 0.2) bad.push(`${k}: drawn at ${g.x},${g.y}, its row and column say ${ex.toFixed(1)},${ey.toFixed(1)}`);
       if (g.n !== es.length) bad.push(`${k}: says ${g.n}, holds ${es.length}`);
+      // The number drawn, where one is drawn, is the count too (not only the data attribute).
+      const gseg = (html.split(`<g data-holds="${k.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)[1] || '').split('</g>')[0], shown = (/>(\d+)<\/text>/.exec(gseg) || [])[1];
+      if (shown != null && +shown !== es.length) bad.push(`${k}: shows ${shown}, holds ${es.length}`);
       const held = heldEdges(d, map, k); if (held.length !== es.length || held.some((e) => !es.includes(e))) bad.push(`${k}: opens to ${held.length}, holds ${es.length}`);
-      if (p !== 'out' && p !== 'in' && es.length <= MX.MARKS) {
+      if (p !== 'out' && p !== 'in' && es.length <= MX.MARKS && (MX.cell - 2 * MX.inset) * map.zoom.k >= PERIOD) {
         const seg = (html.split(`data-holds="${k.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`)[1] || '').split('</g>')[0];
         es.forEach((e) => { const mk = new RegExp(`<line data-edge="${e.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*stroke:var\\(--loupe-edge-${slotOf(e)}\\);[^"]*stroke-dasharray:${(SPEC.dash[e.provenance] || 'none').replace(/\./g, '\\.')};`).test(seg); if (!mk) bad.push(`${k}: no mark for ${e.id} in its kind and dash`); });
       }
@@ -650,8 +657,46 @@ const pairs = (xs, f) => { const out = []; xs.forEach((a, i) => xs.slice(i + 1).
     // 3. Every file heads its row and its column.
     const heads = files.filter((f) => !html.includes(`<g data-node="${f.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`));
     if (heads.length) bad.push(`${heads.length} files without heads`);
+    // 4. Drawn once (critic H2: a phantom transposed copy of every cell passed): as many places drawn as the model has,
+    // each drawn edge's mark exactly once, a folded edge's never; the drawn counts and the chip add up to every edge.
+    const places = [...want.keys()].filter((k) => k !== 'elsewhere').length, drawnPlaces = (html.match(/<g data-holds="x:/g) || []).length;
+    if (drawnPlaces !== places) bad.push(`${drawnPlaces} places drawn, the model has ${places}`);
+    for (const e of d.edges) { const n2 = html.split(`data-edge="${e.id}"`).length - 1, r = map.edges[e.id]; if (n2 !== (r && r.via === 'drawn' ? 1 : 0)) bad.push(`${e.id}: ${n2} marks (${r && r.via})`); }
+    const total = [...html.matchAll(/<g data-holds="(?:x:[^"]*|elsewhere)" data-count="(\d+)"/g)].reduce((a2, x) => a2 + +x[1], 0);
+    if (total !== d.edges.length) bad.push(`drawn counts add to ${total}, ${d.edges.length} edges`);
+    // 5. Legible where drawn: a mark at least one dash period long; heads no taller than their row's spacing; a count's
+    // text no taller than its cell.
+    const k2 = map.zoom.k, kc = MX.cell * k2;
+    for (const mk of html.matchAll(/<line data-edge="[^"]*" x1="[\d.-]+" x2="[\d.-]+" y1="([\d.-]+)" y2="([\d.-]+)"/g)) if (+mk[2] - +mk[1] < PERIOD - 0.2) { bad.push(`a mark ${(+mk[2] - +mk[1]).toFixed(1)} px long`); break; }
+    const hf = [...html.matchAll(/<g data-node="[^"]*" data-diff="[^"]*"[^>]*>(?:<title>[^<]*<\/title>)?<text[^>]*font:500 ([\d.]+)px/g)].map((x) => +x[1]);
+    if (hf.some((f) => f > kc + 0.05)) bad.push(`heads ${Math.max(...hf)} px on rows ${kc.toFixed(1)} px apart`);
+    const cf = [...html.matchAll(/<g data-holds="x:[^"]*" data-count="\d+"[^>]*>(?:<title>[^<]*<\/title>)?<rect[^>]*\/><text[^>]*font:500 ([\d.]+)px/g)].map((x) => +x[1]);
+    if (cf.some((f) => f > kc * 0.5 + 0.05)) bad.push(`counts ${Math.max(...cf)} px in cells ${kc.toFixed(1)} px`);
     check(`matrix ${name}: every one of the ${d.edges.length} edges in its one place (${want.size - (want.has('elsewhere') ? 1 : 0)} cells and margins, ${ew.length} outside), drawn where its row and column say, in its kind and dash, opening to exactly its edges; the meter balanced`,
       bad.length === 0 && c.status === 'balanced' && map.lod === 'matrix', bad.slice(0, 3).join('; ') || `meter ${c.status} ${c.unaccounted.slice(0, 2).join(',')}`);
+  }
+  // The 120-file tools section at fit zoom: names unreadable, so not drawn as text (zoom in), and the subtitle says so;
+  // marks too short for their dash, so counts; still every edge in its place and the meter balanced.
+  {
+    const { map, html } = frame(probe, { matrix: { a: 'sec:tools' }, zoom: { auto: true, padBottom: 96 } }), c = conserve(probe, {}, map);
+    const texts = (html.match(/<g data-node="[^"]*" data-diff="[^"]*"[^>]*>(?:<title>[^<]*<\/title>)?<text/g) || []).length;
+    check(`matrix horde-probe tools (120 files) at fit zoom (k ${map.zoom.k.toFixed(2)}): no unreadable names or marks drawn, the subtitle says to zoom in, the meter balanced`,
+      map.matrix.files === 120 && !map.matrix.heads && !map.matrix.marksRead && texts === 0 && !/<line data-edge/.test(html) && /zoom in to read the file names/.test(html) && c.status === 'balanced', `heads ${map.matrix.heads}, marks ${map.matrix.marksRead}, ${texts} name texts`);
+  }
+  // The re-run diff: heads carry their file's kind; the chip says how many outside files differ; removed files counted.
+  {
+    const d = data['big-diff'], kinds = {}; d.diff.added.forEach((x) => { kinds[x] = 'added'; }); d.diff.changed.forEach((x) => { kinds[x] = 'changed'; }); d.diff.stale.forEach((x) => { kinds[x] = 'stale'; });
+    const { map, html } = frame(d, { matrix: { a: 'sec:ui' }, diff: { side: 'after' } }), files = filesOf(d, ['sec:ui']), bad = [];
+    files.forEach((f) => { const m2 = new RegExp(`<g data-node="${f}" data-diff="([a-z]*)"`).exec(html); if (!m2 || m2[1] !== (kinds[f] || '')) bad.push(`${f}: ${m2 && m2[1]} ≠ ${kinds[f] || 'none'}`); });
+    const out = d.nodeIds.filter((x) => !files.includes(x) && kinds[x]).length, rem = d.diff.removed.filter((r) => r.home === 'sec:ui').length;
+    check(`matrix with the diff (big-diff UI): each head carries its kind, the chip says ${out} outside differ, the subtitle ${rem} removed`,
+      bad.length === 0 && new RegExp(`${out} differ from the last run`).test(html) && new RegExp(`${rem} removed since the last run`).test(html), bad.slice(0, 3).join('; '));
+  }
+  // The legend's dimmed kinds dim their marks (and only theirs).
+  {
+    const { html } = frame(data['edge-matrix'], { matrix: { a: d0first(data['edge-matrix']) }, dimmedKinds: ['call'] });
+    const op = [...html.matchAll(/<line data-edge="([^"]*)"[^>]*opacity:([\d.]+)"/g)];
+    check('matrix: a dimmed kind dims its marks, the others stay', op.length > 0 && op.every((x) => (data['edge-matrix'].edgeById[x[1]].role || data['edge-matrix'].edgeById[x[1]].kind) === 'call' ? +x[2] < 0.5 : +x[2] === 1), `${op.length} marks`);
   }
   // A cell past MX.MARKS edges shows its count, folded, and opens to all of them (no committed case has one): two files
   // joined by four kinds of edge.
