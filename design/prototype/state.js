@@ -19,6 +19,7 @@ export function initialState(over = {}) {
     collapsed: [],             // section ids
     unfolded: [],              // section ids shown in full past the fold (layout L.foldAt)
     isolate: null,             // section id shown alone, with inputs and outputs as ports on side rails
+    matrix: null,              // { a, b? }: the matrix lens of one section or a pair (Q-030), replacing the map in Design
     isoOpen: [],               // port keys listing their files
     lens: null,                // focus lens name (lens.js LENSES), design view only; everything outside is one counted box
     story: null,               // 'How it works' view (ADR 0025): story id shown; null = the first
@@ -57,6 +58,7 @@ export function createStore(init) {
     toggleCollapsed: id => store.set(s => ({ collapsed: s.collapsed.includes(id) ? s.collapsed.filter(x => x !== id) : s.collapsed.concat(id) })),
     toggleUnfold: id => store.set(s => ({ unfolded: s.unfolded.includes(id) ? s.unfolded.filter(x => x !== id) : s.unfolded.concat(id) })),
     isolate: id => store.set(s => ({ isolate: id, isoOpen: [], selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
+    setMatrix: m => store.set(s => ({ matrix: m, selection: null, hover: null, view: 'design', zoom: { ...s.zoom, auto: true, focus: null } })),
     // Closing a section port also forgets its show-all key (side:all:sec), so reopening starts folded.
     togglePort: k => store.set(s => ({ isoOpen: s.isoOpen.includes(k) ? s.isoOpen.filter(x => x !== k && x !== k.replace(':s:', ':all:')) : s.isoOpen.concat(k) })),
     setStory: id => store.set(s => ({ story: id, selection: null, zoom: { ...s.zoom, auto: true, focus: null } })),
@@ -82,7 +84,7 @@ export function createStore(init) {
 // The viewer never edits data, only the view, so a step is a change to these keys. Hover, zoom, pan, the morph and
 // the theme are not steps. A drag is one step: pause() at pointerdown, resume() at pointerup. pause is a flag, not a
 // counter: with two pointers a counter could be raised twice and lowered once, freezing history silently (critic, 0024).
-export const HISTORY_KEYS = ['view', 'stage', 'selection', 'collapsed', 'unfolded', 'isolate', 'isoOpen', 'lens', 'story', 'storyEdits', 'settings', 'dimmedKinds', 'offsets', 'diff', 'tour'];
+export const HISTORY_KEYS = ['view', 'stage', 'selection', 'collapsed', 'unfolded', 'isolate', 'matrix', 'isoOpen', 'lens', 'story', 'storyEdits', 'settings', 'dimmedKinds', 'offsets', 'diff', 'tour'];
 const LIMIT = 200;
 
 export function createHistory(store, describe = () => '') {
@@ -100,7 +102,8 @@ export function createHistory(store, describe = () => '') {
   const restore = (snap) => {
     const cur = store.get();
     // Leaving or entering an isolate, or switching flow/design, re-fits: the old zoom would point at empty space.
-    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story;
+    // The matrix too (Q-030 critic M1): its pan and zoom point at nothing on the map, and the reverse.
+    const refit = snap.isolate !== cur.isolate || snap.view !== cur.view || snap.lens !== cur.lens || snap.story !== cur.story || JSON.stringify(snap.matrix) !== JSON.stringify(cur.matrix);
     restoring = true;
     store.set({ ...snap, hover: null, morph: undefined, ...(refit ? { zoom: { ...cur.zoom, auto: true, focus: null } } : {}) });
     restoring = false; last = pick(store.get()); lastKey = key(store.get()); notify();

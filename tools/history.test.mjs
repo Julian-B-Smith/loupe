@@ -43,5 +43,10 @@ const fresh = () => { const store = createStore({}); return { store, A: store.ac
   let n = 0; while (H.canBack) { H.back(); n++; }
   check('history keeps at most 200 steps', n === 200);
 }
+{ // Q-030 critic M1: leaving or entering the matrix through history re-fits too (its zoom points at nothing on the map).
+  const { store, A, H } = fresh();
+  A.setMatrix({ a: 'sec:src' }); A.setZoom({ auto: false, k: 2, x: 0, y: 0 }); H.back();
+  check('undoing a matrix re-fits the view', store.get().matrix === null && store.get().zoom.auto === true);
+}
 console.log(failed ? `${failed} failed` : 'all history cases behave');
 process.exit(failed ? 1 : 0);

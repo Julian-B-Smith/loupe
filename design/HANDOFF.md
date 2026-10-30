@@ -25,7 +25,7 @@ Unpack this folder over the Loupe repo root. Everything sits under `design/`, th
 
 ## For the validator
 
-- Every `components/<id>/README.md` holds one `loupe-spec` block. Folder names match the `primitive` values exactly: 9 primitives and 8 glyphs. One exception: `components/diff-tally/` (Q-035) has prose only, because its `loupe-spec` block needs `diff-tally` added to `schema/loupe-spec.schema.json`, a human gate.
+- Every `components/<id>/README.md` holds one `loupe-spec` block. Folder names match the `primitive` values exactly: 9 primitives and 8 glyphs. Two exceptions: `components/diff-tally/` (Q-035) and `components/matrix/` (Q-030) have prose only, because their `loupe-spec` blocks need new names in `schema/loupe-spec.schema.json`, a human gate (ROADMAP Q-036).
 - `design/system/README.md` holds the `loupe-dash`, `loupe-motion` and `loupe-lod` blocks.
 - Spec values that aren't token names: `edge-kind` (resolved per edge, from role then kind), `provenance` (for `dash`) and `none`.
 
