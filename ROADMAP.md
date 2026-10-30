@@ -550,7 +550,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   block, so those two never hold one and never need a tally; the stress test asserts the pin on both sides.
 
 ### Q-036 — loupe-spec blocks for the diff tally and the matrix lens (human gate: schema)
-- **Status:** open, waiting on Julian (from REFLECTIONS, 2026-10-29). The tally (Q-035) has a prose spec only,
+- **Status:** built 2026-10-30 (branch p2/q036-spec-blocks; trace: traces/2026-10-30-q036-spec-blocks.md), awaiting merge. From REFLECTIONS, 2026-10-29. The tally (Q-035) has a prose spec only,
   `design/system/components/diff-tally/README.md`; its loupe-spec block needs `diff-tally` added to the primitive list in
   `schema/loupe-spec.schema.json`, a schema change (human gate). Until then its values live in render.js §4b. The matrix
   lens (Q-030) joined this item (Julian, poll 2026-10-29): prose spec `design/system/components/matrix/README.md`, values
@@ -564,6 +564,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   (render.test.mjs); 3. render.js and matrix.js read the tally's and the matrix's values from the generated module, not
   hard-coded; a check that changes a value in the module and sees the drawing change, planted to fail; 4. `./verify
   fast` fails when the module is stale.
+- **Julian (poll, 2026-10-30), after the critic (REWORK):** "not hard-coded" means styling: every stroke, radius, dash,
+  opacity, font size and colour of the tally and the matrix comes from the blocks. Placement offsets (where a tally sits,
+  the matrix's title band and label gaps) are layout logic and stay in render.js; the READMEs say so.
 
 ### Q-037 — See the code from the map (P2; Julian, 2026-10-30)
 - **Status:** open; criteria to agree with Julian before work starts (after Q-036).
@@ -576,6 +579,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   settings, or the target's gitignored `.loupe/`). A browser page cannot open Finder: Show in Finder needs a local
   helper the skill starts, so it works only when the skill runs on the same machine, never from the hosted Testbench.
   The code pane reads files from that helper locally, from GitHub at the crawled commit when hosted.
+  A graph crawled from a dirty tree (`source.dirty: true`) or with no real commit (the sample's `"sample"`) has no exact
+  commit to link to on GitHub.
 - **Acceptance criteria:** not yet agreed.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)

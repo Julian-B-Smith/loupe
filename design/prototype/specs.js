@@ -1339,6 +1339,9 @@ export const SPECS = {
     "stroke": "rule",
     "textStyle": "count",
     "textColor": "ink-muted"
+   },
+   "shade": {
+    "fill": "ink"
    }
   },
   "states": {
@@ -1373,7 +1376,21 @@ export const SPECS = {
    "countMin": 12,
    "headMin": 6,
    "headMax": 11,
-   "chipHeight": 17
+   "chipHeight": 17,
+   "cellRingWidth": 2,
+   "marginRadius": 3,
+   "marginStrokeWidth": 1,
+   "bandRuleWidth": 1,
+   "shadeBase": 0.25,
+   "shadeStep": 0.15,
+   "shadeMax": 0.9,
+   "countMax": 10,
+   "countScale": 0.5,
+   "countWeight": 500,
+   "headScale": 0.55,
+   "headWeight": 500,
+   "chipPad": 14,
+   "chipBaseline": 12
   }
  },
  "node": {

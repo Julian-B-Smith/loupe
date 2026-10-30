@@ -15,14 +15,15 @@ inside the box (lower left, lower right, upper right); for a port row, left of i
 within its width (or centred on a narrower box); straddling its right edge; inside a narrow box, centred or at its
 left. Never the left edge. The tooltip names the box and counts its files as its header does (removed ones apart).
 
-The waffle (a display setting, off by default; Julian, 2026-10-28): above the tally, one 5 px square per file with
-1.5 px gaps, changed first in their kind's full `diff-<kind>` colour (the token exception recorded in `tokens.json`),
+The waffle (a display setting, off by default; Julian, 2026-10-28): above the tally, one square per file (`waffleSquare`, with
+`waffleGap` between), changed first in their kind's full `diff-<kind>` colour (the token exception recorded in `tokens.json`),
 unchanged in `rule`. Drawn only when every file gets its own square and every row is clear; else the tooltip says it
 needs more room.
 
 The stories view shows no diff (Julian, 2026-10-28), so it draws no tally.
 
-The values below reach the renderer through `design/prototype/specs.js`, generated from this block by `tools/specs.mjs` (ROADMAP Q-036); `./verify fast` fails when that module is stale. Edit the block, then run `npm run specs`.
+Where a tally sits (the spot search above: its offsets and steps) is layout logic and stays in `render.js` §4b; every
+size, part and colour is in the block below (Julian, poll 2026-10-30). The values below reach the renderer through `design/prototype/specs.js`, generated from this block by `tools/specs.mjs` (ROADMAP Q-036); `./verify fast` fails when that module is stale. Edit the block, then run `npm run specs`.
 
 ```loupe-spec
 {

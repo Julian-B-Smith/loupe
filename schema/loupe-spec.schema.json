@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://loupe.dev/schema/loupe-spec-0.1.json",
+  "$id": "https://loupe.dev/schema/loupe-spec-0.2.json",
   "title": "loupe-spec block",
   "description": "One fenced loupe-spec block per primitive, base glyph or lens, inside its component README in the Loupe design system. Every styling value is a token name, apart from `sizes`; only `notes` is free text. tools/specs.mjs turns the blocks into design/prototype/specs.js, which the renderer imports (ROADMAP Q-036).",
   "type": "object",
