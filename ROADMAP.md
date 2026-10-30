@@ -572,7 +572,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   matrix bar says so). The matrix's visual values join Q-036 with the tally's.
 
 ### Q-031 — Flow and Design side by side (ADR 0030; P2 gate)
-- **Status:** in progress 2026-10-30 (branch p2/q031-side-by-side). Julian, 2026-10-27: required before v1.
+- **Status:** built 2026-10-30 (branch p2/q031-side-by-side; trace: traces/2026-10-30-q031-side-by-side.md), awaiting merge. Julian, 2026-10-27: required before v1.
 - **Julian (poll, 2026-10-30):** a fourth view button, Both (Flow · Design · Both · How it works): Flow left, Design
   right, a draggable divider, stacked on a phone. Each pane keeps its own zoom and pan; a selection pans the other pane to
   it (its zoom unchanged), hover only highlights. One meter per pane. Lens, isolate, matrix, collapse and section moves
