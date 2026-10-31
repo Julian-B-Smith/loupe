@@ -23,6 +23,7 @@ check('a clean crawl of a commit links exactly', H.exact && H.repo === 'github.c
 check('the sample has no commit to link to, and says so', !codeSource(load(SNAPS + 'horde-sample/').graph).exact && /sample/.test(codeSource(load(SNAPS + 'horde-sample/').graph).why));
 check('a crawl of a dirty tree has no commit to link to, and says so', !codeSource(load(SNAPS + 'cmake-basic-crawl/').graph).exact && /uncommitted/.test(codeSource(load(SNAPS + 'cmake-basic-crawl/').graph).why));
 check('a graph with no source names no repo', codeSource({}).why === 'the crawl names no repo');
+check('a commit that is not a hash is not linked (it would steer the links elsewhere)', !codeSource({ source: { repo: 'github.com/a/b', commit: '../../x/y/blob/main', dirty: false } }).exact);
 check('a repo not on GitHub is not linked', !codeSource({ source: { repo: 'gitlab.com/a/b', commit: 'abc', dirty: false } }).exact);
 const C = H.commit;
 check('a file opens on GitHub at the crawled commit', githubUrl(H, 'src/a.cpp') === `https://github.com/Julian-B-Smith/horde/blob/${C}/src/a.cpp`);
@@ -80,7 +81,7 @@ check('marks are in line order', marks.every((m, i) => !i || marks[i - 1].line <
 // ---- 5. The helper's guards (criterion 5), against a throwaway checkout with planted escapes
 const base = realpathSync(mkdtempSync(join(tmpdir(), 'loupe-code-'))), repo = join(base, 'horde');
 mkdirSync(join(repo, 'src'), { recursive: true }); mkdirSync(join(repo, '.git')); mkdirSync(join(base, 'horde-evil'));
-writeFileSync(join(repo, 'src/a.cpp'), '#include "b.h"\nint x;\n'); writeFileSync(join(repo, '.git/config'), 'secret');
+writeFileSync(join(repo, 'src/a.cpp'), '#include "b.h"\nint x;\n'); mkdirSync(join(repo, '.claude')); writeFileSync(join(repo, '.claude/hook.sh'), 'hook'); writeFileSync(join(repo, '.git/config'), 'secret');
 writeFileSync(join(base, 'horde-evil/x.h'), 'outside'); writeFileSync(join(base, 'outside.txt'), 'outside');
 symlinkSync(join(base, 'outside.txt'), join(repo, 'src/link.h'));
 // A sibling whose name extends the checkout's (horde-evil next to horde): only a separator-aware prefix test refuses it.
@@ -102,12 +103,14 @@ const q = (p) => `/helper/file?repo=${encodeURIComponent(R)}&path=${encodeURICom
 const info = await call('/helper/info', { headers: { 'x-loupe-token': '' } });
 check('the page gets its token and its checkouts from /helper/info', info.code === 200 && JSON.parse(info.body).token === 'T0K' && JSON.parse(info.body).repos[R].ok);
 check('a checkout that is not a git repo reports no commit (the pane then warns lines may differ)', JSON.parse(info.body).repos[R].head === null);
+check('the checkout reports whether it has uncommitted changes', typeof JSON.parse(info.body).repos[R].dirty === 'boolean');
 check('a file in the checkout is read', (await call(q('src/a.cpp'))).body.startsWith('#include'));
 check('no token: refused', (await call(q('src/a.cpp'), { headers: { 'x-loupe-token': 'nope' } })).code === 403);
 check('another site\'s Origin: refused', (await call(q('src/a.cpp'), { headers: { origin: 'https://evil.example' } })).code === 403);
 check('a DNS-rebound Host: refused, even for the token', (await call(q('src/a.cpp'), { headers: { host: `evil.example:${port}` } })).code === 403 && (await call('/helper/info', { headers: { host: `evil.example:${port}` } })).code === 403);
 check('this page\'s own Origin: allowed', (await call(q('src/a.cpp'), { headers: { origin: `http://${host}` } })).code === 200);
-for (const [what, p] of [['..', '../outside.txt'], ['a sibling with the same prefix', '../horde-evil/x.h'], ['a dot-directory', '.git/config'], ['an absolute path', join(base, 'outside.txt')], ['a symlink out of the checkout', 'src/link.h'], ['a symlink into a sibling with the same prefix', 'src/sib.h']])
+check('a dot-directory the crawler draws (.claude/) is read', (await call(q('.claude/hook.sh'))).body === 'hook');
+for (const [what, p] of [['..', '../outside.txt'], ['a sibling with the same prefix', '../horde-evil/x.h'], ['git\'s own store', '.git/config'], ['git\'s store further in', 'src/.git/x'], ['a . segment', './src/a.cpp'], ['an absolute path', join(base, 'outside.txt')], ['a symlink out of the checkout', 'src/link.h'], ['a symlink into a sibling with the same prefix', 'src/sib.h']])
   check(`${what}: refused`, (await call(q(p))).code === 404);
 check('an unknown repo: refused', (await call(`/helper/file?repo=github.com%2Fx%2Fy&path=src%2Fa.cpp`)).code === 404);
 const rv = await call(`/helper/reveal?repo=${encodeURIComponent(R)}&path=src`, { method: 'POST' });
@@ -120,11 +123,11 @@ const before = ran.length;
 check('an action without the token runs nothing', (await call(`/helper/reveal?repo=${encodeURIComponent(R)}&path=src`, { method: 'POST', headers: { 'x-loupe-token': '' } })).code === 403 && ran.length === before);
 srv.close();
 // `open` failing (no editor installed, Finder busy) answers 500 with the reason, which the page shows as a toast.
-const brk = createLoupeServer({ repoRoots: { [R]: repo }, token: 'T0K', run: async () => { throw new Error('no app'); }, platform: 'darwin' });
+const brk = createLoupeServer({ repoRoots: { [R]: repo }, token: 'T0K', run: async () => { throw new Error('no app'); }, platform: 'darwin', log: () => {} });
 await new Promise((ok) => brk.listen(0, '127.0.0.1', ok));
 const bp = brk.address().port;
 const br = await new Promise((ok) => { const r = request({ host: '127.0.0.1', port: bp, path: `/helper/reveal?repo=${encodeURIComponent(R)}&path=src`, method: 'POST', headers: { host: `127.0.0.1:${bp}`, 'x-loupe-token': 'T0K' } }, (res) => { let b = ''; res.on('data', (d) => (b += d)); res.on('end', () => ok({ code: res.statusCode, body: b })); }); r.setTimeout(5000, () => { r.destroy(); ok({ code: 'timeout' }); }); r.end(); });
-check('a failing open answers 500 with its reason, never hangs', br.code === 500 && /no app/.test(br.body));
+check('a failing open answers 500 in fixed words, never with its detail or a path, and never hangs', br.code === 500 && !/no app|\//.test(JSON.parse(br.body).error));
 brk.close();
 const lin = createLoupeServer({ repoRoots: { [R]: repo }, token: 'T0K', run: async (a) => { ran.push(a); }, platform: 'linux' });
 await new Promise((ok) => lin.listen(0, '127.0.0.1', ok));
@@ -134,6 +137,9 @@ check('not macOS: Finder and editor refuse, and run nothing', lr === 501 && ran.
 lin.close();
 // Roots: the locations file is the gitignored one, HORDE falls back to the verify default; nothing is absolute in code.
 check('HORDE\'s checkout defaults to LOUPE_HORDE', roots(base, { LOUPE_HORDE: '/x/horde' })[R] === '/x/horde');
+writeFileSync(join(base, '.loupe-local.json'), JSON.stringify({ roots: { 'github.com/a/b': '~/b' } }));
+writeFileSync(join(base, '.loupe-local.json'), JSON.stringify({ roots: { 'github.com/a/c': 'rel/c' } }));
+check('a relative location is relative to the repo, not the working directory', roots(base, {})['github.com/a/c'] === join(base, 'rel/c'));
 writeFileSync(join(base, '.loupe-local.json'), JSON.stringify({ roots: { 'github.com/a/b': '~/b' } }));
 check('.loupe-local.json adds checkouts, ~/ expanded here', roots(base, {})['github.com/a/b'].endsWith('/b') && !roots(base, {})['github.com/a/b'].startsWith('~'));
 check('.loupe-local.json is gitignored', readFileSync('.gitignore', 'utf8').split('\n').includes('.loupe-local.json'));

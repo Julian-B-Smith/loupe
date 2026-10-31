@@ -569,7 +569,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   the matrix's title band and label gaps) are layout logic and stay in render.js; the READMEs say so.
 
 ### Q-037 — See the code from the map (P2; Julian, 2026-10-30)
-- **Status:** in progress 2026-10-30 (branch p2/q037-code-from-map).
+- **Status:** built 2026-10-31 (branch p2/q037-code-from-map; trace: traces/2026-10-31-q037-code-from-map.md), awaiting merge.
 - **Julian (2026-10-30, poll):** view the code from within Loupe, and from the right-click menu "Show in Finder" and
   "Open in [code editor]". All four in the first version: open on GitHub at the crawled commit (graph.json `source.repo`
   and `source.commit`, each node's repo-relative `path`); open in an editor (VS Code or Cursor, `vscode://file/…`); a
@@ -600,6 +600,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      gitignored and the leak gate stays green.
   6. Tests planted to fail: the link building (pure), each helper guard, the pane's mark-to-edge mapping; a screenshot
      critic pass.
+- **Julian (poll, 2026-10-31), after the critic (REWORK):** criterion 5's "no dot-directories" becomes "not `.git`": the
+  crawler draws files under `.claude/` and `.github/`, and the map must open what it shows. `tools/code.test.mjs` joins
+  `./verify fast` (approved, the same day).
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.

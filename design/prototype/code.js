@@ -16,6 +16,8 @@ export function codeSource(graph) {
   // The sample is hand-made data, not a crawl: its paths need not exist anywhere, so it opens nothing, even locally.
   if (!s.commit || s.commit === 'sample') return { repo: s.repo, exact: false, sample: true, why: 'sample data, not a crawl of a commit' };
   if (s.dirty) return { repo: s.repo, exact: false, why: 'crawled from uncommitted changes: no commit holds these files' };
+  // A commit is a hash; anything else would steer the GitHub links and the raw fetch elsewhere (critic, low).
+  if (!/^[0-9a-f]{7,40}$/.test(s.commit)) return { repo: s.repo, exact: false, why: `${s.commit} is not a commit hash` };
   return { repo: s.repo, commit: s.commit, exact: true };
 }
 
@@ -58,7 +60,7 @@ export function codeTarget(data, sel) {
   }
   if (sel.type === 'element' && data.elements[sel.id] && data.elements[sel.id].primitive === 'section') {
     const dir = sectionFolder(data, sel.id);
-    return dir != null ? { path: dir, folder: true, what: (dir || 'the repo root') + '/' } : { why: 'its files share no folder' };
+    return dir != null ? { path: dir, folder: true, what: dir ? dir + '/' : 'the repo root' } : { why: 'its files share no folder' };
   }
   return null;
 }

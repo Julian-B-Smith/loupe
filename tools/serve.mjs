@@ -9,7 +9,8 @@
 // checkout on this machine and asks macOS to show one in Finder or open it in an
 // editor. A browser page cannot do either, so these work only here, never from
 // the hosted Testbench. Where each repo lives is machine-local: `.loupe-local.json`
-// (gitignored; see roots()), so no disk path is ever committed or sent to the page.
+// (gitignored; see roots()), so no disk path is ever committed or sent to the page:
+// errors reach the page as fixed words; their detail, which names paths, stays in this console.
 //
 // `/` is viewer/index.html wrapped in the same minimal skeleton the artifact
 // host adds at publish time: the page is authored WITHOUT doctype/head/body so
@@ -51,18 +52,20 @@ export function roots(root = ROOT, env = process.env) {
   const out = {}, home = (p) => (p.startsWith('~/') ? join(homedir(), p.slice(2)) : p);
   out['github.com/Julian-B-Smith/horde'] = home(env.LOUPE_HORDE || '~/Documents/Claude/synthetic-worlds/horde');
   try { Object.assign(out, JSON.parse(readFileSync(join(root, '.loupe-local.json'), 'utf8')).roots || {}); } catch {}
-  for (const k of Object.keys(out)) out[k] = home(out[k]);
+  // A relative location is relative to this repo, not to wherever the server was started (critic, low).
+  for (const k of Object.keys(out)) out[k] = isAbsolute(home(out[k])) ? home(out[k]) : join(root, out[k]);
   return out;
 }
 
-// A repo-relative path, resolved inside its checkout or refused. Refused: absolute paths, `..` anywhere, any
-// dot-segment (.git, .env: a crawl never draws them, so a request for one is not from the map), and a symlink whose
-// real target leaves the checkout (realpath on both sides; a plain prefix test would let `/a/horde-evil` pass for
-// `/a/horde`, hence the trailing separator).
+// A repo-relative path, resolved inside its checkout or refused. Refused: absolute paths, `.` or `..` anywhere, `.git`
+// (git's own store, which the crawler never draws), and a symlink whose real target leaves the checkout (realpath on
+// both sides; a plain prefix test would let `/a/horde-evil` pass for `/a/horde`, hence the trailing separator). Other
+// dot-directories are served: the crawler draws .claude/ and .github/ files, and the map must open what it shows
+// (Julian, poll 2026-10-31).
 export async function resolveIn(base, rel) {
   if (typeof rel !== 'string' || isAbsolute(rel) || rel.includes('\0')) return null;
   const parts = rel.split('/');
-  if (parts.some((p) => p === '..' || p.startsWith('.'))) return null;
+  if (parts.some((p) => p === '.' || p === '..' || p === '.git')) return null;
   try {
     const rb = await realpath(base), rf = await realpath(join(rb, ...parts.filter(Boolean)));
     return rf === rb || rf.startsWith(rb + sep) ? rf : null;
@@ -87,14 +90,15 @@ export function allowed(req, port, token) {
 const macOpen = (args) => new Promise((ok, no) => execFile('open', args, (err) => (err ? no(err) : ok())));
 const EDITOR = { vscode: 'vscode', cursor: 'cursor' };
 
-// `opts` exist for tools/code.test.mjs: a fixture checkout, a fixed token, a recorded `run` in place of macOS's open.
-export function createLoupeServer({ root = ROOT, repoRoots = roots(root), token = randomBytes(24).toString('hex'), run = macOpen, platform = process.platform } = {}) {
+// `opts` exist for tools/code.test.mjs: a fixture checkout, a fixed token, a recorded `run` in place of macOS's open,
+// a quiet `log`.
+export function createLoupeServer({ root = ROOT, repoRoots = roots(root), token = randomBytes(24).toString('hex'), run = macOpen, platform = process.platform, log = console.error } = {}) {
   let port = 0;
   const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   const send = (code, type, body) => { res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' }); res.end(body); };
   // A helper error answers 500: an unanswered request would leave the page's pane at "Reading…" for good.
-  if (url.pathname.startsWith('/helper/')) return helper(req, res, url, send).catch((err) => send(500, TYPES['.json'], JSON.stringify({ error: String(err.message || err) })));
+  if (url.pathname.startsWith('/helper/')) return helper(req, res, url, send).catch((err) => { log('helper:', err); send(500, TYPES['.json'], JSON.stringify({ error: 'the helper failed (see the npm run view console)' })); });
   if (req.method !== 'GET' && req.method !== 'HEAD') return send(405, 'text/plain', 'read-only');
   if (url.pathname === '/' || url.pathname === '/index.html')
     return send(200, TYPES['.html'], SKELETON(await readFile(join(ROOT, 'viewer/index.html'), 'utf8')));
@@ -120,7 +124,7 @@ export function createLoupeServer({ root = ROOT, repoRoots = roots(root), token 
       if (bad) return json(403, { error: bad });
       const repos = {};
       // `head` is the checkout's commit: when it is not the crawled one, the pane says its lines may not match the map.
-      for (const [repo, dir] of Object.entries(repoRoots)) repos[repo] = (await resolveIn(dir, '')) ? { ok: true, head: git(dir, 'rev-parse HEAD') || null } : { ok: false, why: `no checkout of ${repo.split('/').pop()} on this machine (see .loupe-local.json)` };
+      for (const [repo, dir] of Object.entries(repoRoots)) repos[repo] = (await resolveIn(dir, '')) ? { ok: true, head: git(dir, 'rev-parse HEAD') || null, dirty: git(dir, 'status --porcelain') !== '' } : { ok: false, why: `no checkout of ${repo.split('/').pop()} on this machine (see .loupe-local.json)` };
       return json(200, { token, repos, actions: platform === 'darwin' });
     }
     const bad = allowed(req, port, token);
@@ -148,7 +152,7 @@ export function createLoupeServer({ root = ROOT, repoRoots = roots(root), token 
         await run([`${ed}://file${file.split(sep).map(encodeURIComponent).join('/')}${line > 0 ? ':' + Math.floor(line) : ''}`]);
         return json(200, { ok: true });
       }
-    } catch (err) { return json(500, { error: String(err.message || err) }); }
+    } catch (err) { log('helper:', err); return json(500, { error: 'macOS could not open it (see the npm run view console)' }); }
     return json(404, { error: 'no such action' });
   }
 
