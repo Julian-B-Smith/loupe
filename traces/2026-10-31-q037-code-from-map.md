@@ -46,4 +46,4 @@
   opening Finder or an editor (the test records the exact `open` arguments; not run, to keep windows off Julian's
   screen); the hosted Testbench's CSP for the GitHub fetch and `window.open` from the artifact frame (checked after the
   merge's republish). Open: the pane can cover the edge a mark selects on a narrow screen; nothing pans to it.
-- **Verify:** `./verify fast` exit 0 (647 passing check lines). `full` not run (no HORDE checkout at `LOUPE_HORDE`).
+- **Verify:** `./verify fast` exit 0 at 3e6cc19 (647 passing check lines). `full` not run (no HORDE checkout at `LOUPE_HORDE`).
