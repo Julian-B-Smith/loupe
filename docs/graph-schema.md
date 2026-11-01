@@ -4,7 +4,7 @@ Version 0.4 (2026-11-01). Status: 0.4 shape approved by Julian (poll, 2026-11-01
 
 Changed in 0.2: `missing` nodes, file roles, `generates` and `embeds` edges, guards, resolution on sites, and the crawl scope and inventory. Why: decision 0018.
 
-Changed in 0.4: a graph is either a **crawl** (0.2 to 0.3.2, unchanged and still valid as written) or a **declaration** (`loupe.graph/0.4`): a structure a target repo states about itself, gated in its own `./verify` and read by one deterministic adapter. A graph is one or the other, never both, and nothing links a declared block to a file. See "Declaration graphs" below. Why: Q-015 (HORDE's engine2 structure, drawn with no inference).
+Changed in 0.4: a graph is either a **crawl** (no `declaration` block; 0.2 to 0.3.2 unchanged and valid as written, a later version holds to 0.3.2's rules) or a **declaration** (a `declaration` block, and it says `loupe.graph/0.4`): a structure a target repo states about itself, gated in its own `./verify` and read by one deterministic adapter. A graph is one or the other, never both, and nothing links a declared block to a file. See "Declaration graphs" below. Why: Q-015 (HORDE's engine2 structure, drawn with no inference).
 
 Changed in 0.3.2: every piece of evidence on a `generates` edge says `as` program or input (G10). A program is what makes the output: the first script in a custom command's command line (or, when none is recognised, every script in its DEPENDS, said in `notEvaluated`), the target that owns the command (TARGET form or `add_custom_target`), an executable target the command starts with (bare, or `$<TARGET_FILE:t>`, which the trace keeps unexpanded), or code that writes the file (a site, always a program). An input is anything the command reads or waits for. Why: only the crawler sees the command line, and the Operational lens must tell build-time code (a program) from what is compiled into the product (an input, such as the factory presets and gui2.html). A program the command runs but DEPENDS does not list now gets its own `generates` edge. `as` is allowed only on `generates` evidence and only in a graph that declares 0.3.2, where it is required.
 
@@ -142,12 +142,12 @@ Checks, each with a mutation case in `tools/loupe-check.test.mjs`:
 
 | Rule | Says |
 | --- | --- |
-| D1 | A declaration graph has `declaration` and no `crawler`; a crawl has the reverse |
+| D1 | A declaration graph has `declaration`, no `crawler`, and says 0.4; a crawl has `crawler` and no `declaration` |
 | D2 | Every node is a `block` or `slot` with `declared` (its id agreeing with the node id); every edge is `declared` provenance with `declared` and declaration evidence only, whose path is `declaration.path`. A crawl carries none of these |
 | D3 | Every `declared.parent` names a node, and parents form no cycle |
 | D4 | `ids` and `refs` have the same length, and `refs[i]` is `decl:<ids[i]>` or an edge whose evidence holds the declared id `ids[i]`. Limit: a stage emptied or reordered together with its refs is consistent here; only the byte-compare catches it |
 | D5 | Every node and edge cites at least one spec id (Q-015 criterion 1) |
-| D6 | `declaration.counts` equals what the graph holds: items by kind and by scope, edges by kind (one per distinct declared id carried), and the number of stages; a declared id is on one evidence entry only. Limit: a dropped edge with an edited counts block is self-consistent, and only the byte-compare against the pinned declaration (`./verify full`) catches it |
+| D6 | `declaration.counts` equals what the graph holds: items by kind and by scope, edges by kind (one per distinct declared id carried), and the number of stages; a declared id is on one evidence entry only. Limit: this checks the graph against itself. What the edges connect (a dropped edge with an edited counts block, or with its evidence moved onto another edge; an edge re-pointed; an invented declared id) is caught only by the byte-compare against the pinned declaration (`./verify full`, with a HORDE checkout) |
 | D7 | A view over a declaration graph may group but not invent: every section is a declared parent. Its members are that parent's own node and its children that are not parents themselves, it nests under its own parent's section, and its status is `declared`; its label is the declared id and its claim the declaration's label (and multiplicity), as the adapter builds them. Every declared parent has a section (both ways, Julian 2026-11-01). Agents may add `proposed` elements (sets, lanes, bands) to the view |
 | D8 | `declared` is the adapter's word: `status: declared` needs a declaration graph, a section and `by: adapter:*`, and `by: adapter:*` needs `status: declared` |
 

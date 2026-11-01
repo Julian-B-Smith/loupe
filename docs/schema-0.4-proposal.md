@@ -8,7 +8,7 @@ Drawn first, as the domain invariant asks: the Signal path view of HORDE's engin
 
 ## What 0.4 adds
 
-A graph is either a **crawl** (0.2 to 0.3.2, unchanged) or a **declaration**: a structure a target repo states
+A graph is either a **crawl** (no `declaration` block; older versions unchanged) or a **declaration**: a structure a target repo states
 about itself, gated in its own `./verify`, read by one deterministic adapter. A 0.4 graph is one or the other,
 never both (Julian, 2026-10-31: its own snapshot; nothing links a block to a file).
 

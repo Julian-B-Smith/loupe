@@ -60,3 +60,10 @@
 - **Alternatives rejected:** testing `stagePanel` by evaluating index.html (inline module script, DOM-bound); removing `G.schema` from G10's 0.3.2 test entirely (kept, extended to 0.4).
 - **Verify:** `./verify fast` and `./verify full` exit 0 at git dd53946 (uncommitted change set).
 - **Open questions:** L2 asked that evidence id "names something declared (node/edge)": an edge's evidence id is the declaration's own edge id, held nowhere else, so what is checked is path equality, non-empty (schema) and uniqueness (D6); say if a stricter reading was meant. The Flow/Design views still draw declared edges solid (Q-038).
+
+## Close of the build (lead, 2026-11-01)
+
+- **Critic's confirming pass on the schema: ACCEPT**, notes fixed: the pane on a declaration graph is named for what it shows and reads the pinned commit (test and plant in `tools/code.test.mjs`; seen in the browser, "the declaration, from GitHub at 380ffd6"); D6's limit widened; stale crawl-version prose.
+- **Layer-E (criterion 4):** `tools/engine-structure-agreement.mjs`, citation overlap, non-blocking: 74 of 104 inferred edges, 71 of 117 declared edges, 31 ids in both, 31 only inferred, 42 only declared. A weak upper bound, on an older spec for the inferred map.
+- **Not tested:** the hosted Testbench (checked at its republish after the merge); hover on a real pointer (dispatched events only); Flow and Design draw declared edges solid (Q-038). The page wiring in `index.html` has no headless test; the pure parts are in `declared.js`, `code.js` and `spine.js`.
+

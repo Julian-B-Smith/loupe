@@ -114,8 +114,9 @@ export function check(dir, { schemaDir } = {}) {
     // D6: the declaration's own counts equal what the graph holds (the census, in the checker as well as the adapter's
     // test). An edge counts once per distinct declared id it carries (a merged duplicate keeps one evidence each), and a
     // declared id may appear on only one evidence entry in the graph. Zero entries are dropped from both sides before
-    // comparing. The limit: a dropped edge together with an edited counts block is self-consistent here; only the
-    // byte-compare against the pinned declaration (./verify full) catches that.
+    // comparing. The limit: this checks the graph against itself. What the edges connect (a dropped edge with edited
+    // counts or moved evidence, a re-pointed edge, an invented id) is caught only by the byte-compare against the pinned
+    // declaration (./verify full, with a HORDE checkout).
     {
       const seenEv = new Set();
       for (const e of G.edges) for (const x of e.evidence) { if (seenEv.has(x.id)) err('D6', `declared id ${x.id} is on more than one evidence entry`); seenEv.add(x.id); }

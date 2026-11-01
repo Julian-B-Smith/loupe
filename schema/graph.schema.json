@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://loupe.dev/schema/graph-0.4.json",
   "title": "Loupe graph",
-  "description": "Either a crawl (0.2 to 0.3.2: deterministic crawler output) or, from 0.4, a declaration (a structure a target repo states about itself, read by one deterministic adapter). A graph is one or the other, never both. Same inputs give byte-identical canonical JSON. Agents and humans never write this file.",
+  "description": "Either a crawl (no `declaration` block: deterministic crawler output) or, from 0.4, a declaration (a structure a target repo states about itself, read by one deterministic adapter). A graph is one or the other, never both. Same inputs give byte-identical canonical JSON. Agents and humans never write this file.",
   "type": "object",
   "additionalProperties": false,
   "required": [

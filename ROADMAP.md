@@ -16,7 +16,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
   `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, exit 0, every HORDE gate passing
   (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
-  track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+  track: engine2 from HORDE's declared structure (Q-015), built, awaiting merge. The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
@@ -406,7 +406,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** in progress 2026-10-31 (branch p2/q015-engine-structure), ball: loupe. HORDE's declaration landed on horde main at 0e577fc
+- **Status:** built 2026-11-01 (branch p2/q015-engine-structure; trace: traces/2026-10-31-q015-signal-path-view.md), awaiting Julian's review of the schema diff and merge. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
@@ -459,6 +459,11 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   elements to a declaration's view, never `declared`; loupe-check requires a section for every declared parent; the
   Operational lens is hidden on a declaration graph. An empty overlay on a declaration graph stands (no inferred edges,
   2026-10-16).
+- **Critic (opus), confirming pass 2026-11-01: ACCEPT.** Its notes fixed: on a declaration graph the pane says "Show the
+  declaration" and reads the pinned commit, never the checkout (a checkout at another commit can hold a different
+  declaration from the one drawn); D6's stated limit widened to what it cannot see. Open, by design: an edge's code
+  actions open the declaration file, at line 1, not its entry. The crawl-graph fuzz: 0 differences on existing versions;
+  a crawl claiming 0.4 behaves as 0.3.2, per Julian's decision.
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.

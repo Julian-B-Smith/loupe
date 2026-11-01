@@ -145,5 +145,15 @@ check('.loupe-local.json adds checkouts, ~/ expanded here', roots(base, {})['git
 check('.loupe-local.json is gitignored', readFileSync('.gitignore', 'utf8').split('\n').includes('.loupe-local.json'));
 rmSync(base, { recursive: true, force: true });
 
+// Q-015 (critic N1): on a declaration graph the pane is named for what it shows and needs no checkout: it reads the pinned commit.
+{
+  const src = { repo: 'github.com/o/n', commit: 'a'.repeat(40), exact: true }, t = { path: 'engine2/structure/engine-structure.json', line: null, what: 'x' };
+  const paneOf = (env) => codeActions(src, t, env).find((a) => a.id === 'pane');
+  const hosted = paneOf({ helper: null, editor: 'vscode', declaration: true }), local = paneOf({ helper: { ok: true }, editor: 'vscode', declaration: true });
+  check('a declaration graph: the pane says "Show the declaration", enabled with or without the helper', hosted.label === 'Show the declaration' && !hosted.disabled && local.label === 'Show the declaration' && !local.disabled);
+  check('a crawl: the pane still says "Show the code"', paneOf({ helper: null, editor: 'vscode' }).label === 'Show the code');
+  const dirty = codeActions({ repo: 'github.com/o/n', exact: false, why: 'no commit' }, t, { helper: { ok: true }, editor: 'vscode', declaration: true }).find((a) => a.id === 'pane');
+  check('a declaration with no commit to read: the pane is disabled with its reason, not read from the checkout', dirty.disabled && dirty.why === 'no commit');
+}
 console.log(failed ? `${failed} failed` : 'all code-view cases behave');
 process.exit(failed ? 1 : 0);
