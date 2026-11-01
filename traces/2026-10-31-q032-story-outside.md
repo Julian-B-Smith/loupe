@@ -25,4 +25,4 @@
   (`hit()`'s order is inline code, untested, as for every element).
 - **Also:** `./verify full` ran for the first time on a local HORDE checkout (at b37d255, before this change): exit 0,
   every HORDE gate passing.
-- **Verify:** `./verify fast` exit 0 (660 passing check lines).
+- **Verify:** `./verify fast` exit 0 at 0c32290 (660 passing check lines).
