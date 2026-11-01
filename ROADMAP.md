@@ -436,6 +436,11 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   labelled "placement not decided by the declaration", with its reason, no side picked; "nearest neighbour" is the lower
   median of its neighbours' columns; the view opens at a readable zoom at stage 1, one row, the stage strip jumps along
   it, fit still shows the whole; `declared` gets its own dash now (in the edge spec block, part of the 0.4 change).
+- **Critic (opus), second pass 2026-11-01: ACCEPT** with notes. **Julian (polls, same day):** an edge from a boundary
+  block that stands on the spine decides direction (master, fed by the FX rack at the last stage, goes to Outputs);
+  the long-edge lanes stay drawn, with the whole route highlighted on hover and a tag at each rise or drop naming the
+  far end; the declared dash becomes a long dash and two dots (a shape no other provenance uses), tested by structure;
+  a block hanging off another off-path block keeps that block's side (a chain of declared edges).
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
