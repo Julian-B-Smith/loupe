@@ -569,7 +569,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   the matrix's title band and label gaps) are layout logic and stay in render.js; the READMEs say so.
 
 ### Q-037 — See the code from the map (P2; Julian, 2026-10-30)
-- **Status:** built 2026-10-31 (branch p2/q037-code-from-map; trace: traces/2026-10-31-q037-code-from-map.md), awaiting merge.
+- **Status:** done 2026-10-31 (PR #49, merged 2026-11-01; trace: traces/2026-10-31-q037-code-from-map.md). Testbench republished (version 18); the hosted pane's GitHub fetch inside the artifact is not yet checked (the browser pane is not signed in to claude.ai).
 - **Julian (2026-10-30, poll):** view the code from within Loupe, and from the right-click menu "Show in Finder" and
   "Open in [code editor]". All four in the first version: open on GitHub at the crawled commit (graph.json `source.repo`
   and `source.commit`, each node's repo-relative `path`); open in an editor (VS Code or Cursor, `vscode://file/…`); a
