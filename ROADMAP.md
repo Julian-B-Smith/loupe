@@ -460,8 +460,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   and the layout; 3. critic review with screenshots.
 
 ### Q-032 — The story-outside box opens to its edges (0029)
-- **Status:** built 2026-10-31 (branch p2/q032-story-outside; trace: traces/2026-10-31-q032-story-outside.md), awaiting
-  merge. From Q-028's critic, M3: in "How it works", the box for files outside the story listed those files; the edges
+- **Status:** done 2026-10-31 (PR #51, merged 2026-11-01; trace: traces/2026-10-31-q032-story-outside.md). From Q-028's critic, M3: in "How it works", the box for files outside the story listed those files; the edges
   it stands for could not be listed or tested. Julian chose it next by poll, 2026-10-31.
 - **Acceptance criteria:** as Q-028's, for that box: it opens to its exact edge list (from the meter's record), the
   render test holds the list to the box's ends, and a critic pass with a screenshot.
