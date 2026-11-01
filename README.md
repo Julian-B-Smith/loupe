@@ -30,7 +30,7 @@ Agents write the overlay and view, never the graph. Every edge carries provenanc
 | --- | --- | --- |
 | `docs/vision.md` | Pipeline, two-view split, target experience | Current |
 | `docs/visual-grammar.md` | Nine visual primitives, the claim each makes, its audit test | Settled for now |
-| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec | 0.3.2 accepted |
+| `docs/graph-schema.md`, `schema/` | Data contract: graph, overlay, view, loupe-spec | 0.4 (graph is a crawl or a declaration); 0.3.2 accepted before it |
 | `tools/loupe-check.mjs` | Snapshot checker (conservation, ids, provenance) + mutation cases | Built |
 | `tools/probe-crawl.mjs` | Regex probe crawler that shaped schema 0.2 | Reference only; not the P1 crawler |
 | `prototype/` | Viewer v1 and primitives gallery (open `index.html` in a browser) | Built, on sample data |

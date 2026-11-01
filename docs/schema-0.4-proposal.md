@@ -1,10 +1,10 @@
 # Schema 0.4 proposal: the declared structure layer (ROADMAP Q-015)
 
-Status: **Approved in shape by Julian (poll, 2026-11-01)**; the schema diff itself is reviewed in the PR before merge.
+Status: **Approved in shape by Julian (poll, 2026-11-01), now in schema/ as `loupe.graph/0.4`**; every question below is answered (the Answers line). Rework, same day (Julian's polls after the critic): the `declaration` block, not the version, decides crawl against declaration; D7 runs both ways; agents may add `proposed` elements to a declaration's view and only adapter sections say `declared` (D8). The checks as built are in docs/graph-schema.md.
 Answers: A drop `path` and `hash` on declared nodes; B `declared.cites` on nodes and edges (as proposed); C keep
 HORDE's `scope` word under `declared`; D a new view status `declared`; E the declared dash moves into the edge spec block.
 Drawn first, as the domain invariant asks: the Signal path view of HORDE's engine2 declaration
-(`design/prototype/snapshots/engine2-structure/`, today `loupe.graph/0.4-draft`) is the picture this schema freezes.
+(`design/prototype/snapshots/engine2-structure/`, the snapshot is `loupe.graph/0.4`) is the picture this schema froze.
 
 ## What 0.4 adds
 
@@ -35,7 +35,7 @@ never both (Julian, 2026-10-31: its own snapshot; nothing links a block to a fil
 - **D6** `declaration.counts` equals what the graph holds (the census, now in the checker, not only the test).
 - **D7** a view over a declaration graph may group but not invent: every section is a declared parent.
 
-## Open questions (Julian's, from the critic's M7)
+## Questions (Julian's, from the critic's M7; all answered, see the Answers line)
 
 - **A. Node path and hash.** Drop `path` and `hash` on declared nodes (labels come from `declared.id`), or keep
   `path` = the declared id and `hash` = `none` as in the draft?

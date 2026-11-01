@@ -4,6 +4,7 @@
 // Provenance sets the frame's dash (same patterns as edges, Q7); what a link carries sets its colour.
 import { SPEC } from './render.js';
 import { CARD } from './story.js';
+import { nodeName } from './declared.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const v = n => `var(--loupe-${n})`;
@@ -55,8 +56,8 @@ export function renderWorks(container, data, state, story, acc, pos) {
     svg += `<rect x="${f1(p.x)}" y="${f1(p.y)}" width="${p.w}" height="${p.h}" rx="10" style="fill:${v(gap ? 'surface-group-nested' : 'surface-node')};stroke:${v(on ? 'accent' : s.pinned ? 'state-ok' : gap ? 'state-warn' : 'ink-faint')};stroke-width:${on || s.pinned ? 2 : 1.25}px;stroke-dasharray:${dash}"/>`;
     const files = s.files.map(f => {
       const known = !!data.nodes[f]; if (known) map.nodes[f] = { state: 'drawn' };
-      const lab = known ? (data.nodes[f].path || f).split('/').pop() : f;
-      return `<button class="wk-file${selNode === f ? ' on' : ''}${known ? '' : ' unknown'}" data-node="${esc(f)}" title="${esc(known ? data.nodes[f].path : f + ' (not in the graph)')}">${esc(lab)}</button>`;
+      const lab = known ? (nodeName(data.nodes[f]) || f).split('/').pop() : f;
+      return `<button class="wk-file${selNode === f ? ' on' : ''}${known ? '' : ' unknown'}" data-node="${esc(f)}" title="${esc(known ? nodeName(data.nodes[f]) : f + ' (not in the graph)')}">${esc(lab)}</button>`;
     }).join('');
     const tag = [s.pinned ? 'pinned' : s.provenance, !s.files.length ? 'gap' : '', s.orphan ? 'orphaned' : ''].filter(Boolean).join(' · ');
     cards += `<div class="wk-card${on ? ' on' : ''}" data-step="${esc(key)}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px">

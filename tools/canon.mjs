@@ -12,7 +12,7 @@ const sortKeys = (v) => {
 };
 
 const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-const evKey = (e) => `${e.type}|${e.path ?? ''}|${String(e.line ?? 0).padStart(9, '0')}|${e.col ?? 0}|${e.key ?? ''}|${e.trace ?? ''}|${e.author ?? ''}|${e.agent ?? ''}`;
+const evKey = (e) => `${e.type}|${e.path ?? ''}|${String(e.line ?? 0).padStart(9, '0')}|${e.col ?? 0}|${e.key ?? ''}|${e.trace ?? ''}|${e.author ?? ''}|${e.agent ?? ''}|${e.id ?? ''}`; // id last: only declaration evidence has one, so every crawl's order is unchanged; without it two declarations of one edge sort by input order
 
 // Canonical form of a graph: nodes and edges sorted by id, evidence sorted, keys sorted,
 // 2-space indent, trailing newline. The graph hash is sha256 over exactly these bytes.

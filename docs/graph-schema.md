@@ -121,6 +121,8 @@ Callee signatures are captured on every site, so bus contracts are checked again
 
 ## Declaration graphs (0.4)
 
+What decides is the `declaration` block, at any version: a graph with one is a declaration graph and must say 0.4 (D1); a graph without one is a crawl, under the crawl rules of the version it says (a 0.4 crawl takes the 0.3.2 shape). Versions mean only shape.
+
 A declaration graph holds what a target repo says about its own structure (for HORDE: `engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, read by `tools/engine-structure.mjs` at a pinned commit). It has `declaration` and no `crawler`; a crawl has the reverse (D1). Its snapshot is its own: block and slot nodes, declared edges, no files.
 
 | Where | Field | Meaning |
@@ -141,12 +143,13 @@ Checks, each with a mutation case in `tools/loupe-check.test.mjs`:
 | Rule | Says |
 | --- | --- |
 | D1 | A declaration graph has `declaration` and no `crawler`; a crawl has the reverse |
-| D2 | Every node is a `block` or `slot` with `declared` (its id agreeing with the node id); every edge is `declared` provenance with `declared` and declaration evidence only. A crawl carries none of these |
+| D2 | Every node is a `block` or `slot` with `declared` (its id agreeing with the node id); every edge is `declared` provenance with `declared` and declaration evidence only, whose path is `declaration.path`. A crawl carries none of these |
 | D3 | Every `declared.parent` names a node, and parents form no cycle |
-| D4 | Every `signalPath[].refs` entry names a node or edge of the graph, and `ids` and `refs` have the same length |
+| D4 | `ids` and `refs` have the same length, and `refs[i]` is `decl:<ids[i]>` or an edge whose evidence holds the declared id `ids[i]`. Limit: a stage emptied or reordered together with its refs is consistent here; only the byte-compare catches it |
 | D5 | Every node and edge cites at least one spec id (Q-015 criterion 1) |
-| D6 | `declaration.counts` equals what the graph holds: items by kind and by scope, edges by kind (one per declaration carried), and the number of stages |
-| D7 | A view over a declaration graph may group but not invent: every section is a declared parent. Its members are that parent's own node and its children that are not parents themselves, it nests under its own parent's section, and its status is `declared` |
+| D6 | `declaration.counts` equals what the graph holds: items by kind and by scope, edges by kind (one per distinct declared id carried), and the number of stages; a declared id is on one evidence entry only. Limit: a dropped edge with an edited counts block is self-consistent, and only the byte-compare against the pinned declaration (`./verify full`) catches it |
+| D7 | A view over a declaration graph may group but not invent: every section is a declared parent. Its members are that parent's own node and its children that are not parents themselves, it nests under its own parent's section, and its status is `declared`; its label is the declared id and its claim the declaration's label (and multiplicity), as the adapter builds them. Every declared parent has a section (both ways, Julian 2026-11-01). Agents may add `proposed` elements (sets, lanes, bands) to the view |
+| D8 | `declared` is the adapter's word: `status: declared` needs a declaration graph, a section and `by: adapter:*`, and `by: adapter:*` needs `status: declared` |
 
 The conservation rule holds unchanged: every declared item is a node and every declared edge is carried or reported in the adapter's census (`census.json`, against the declaration's own counts), and loupe-check closes the arithmetic as for any graph.
 
@@ -166,7 +169,7 @@ The conservation rule holds unchanged: every declared item is a node and every d
 | hub | `node`, optional `placement` | |
 | loop | `cycle`, `classification`, `evidence` | Circular must be a real cycle; intentional needs evidence; unclassified waits for dialogue |
 
-Every element also carries `claim` (one sentence), `by` (`agent:<name>` or `human:<name>`) and an audit `status` (proposed, confirmed, challenged; `declared` in a view over a declaration graph, D7).
+Every element also carries `claim` (one sentence), `by` (`agent:<name>` or `human:<name>`; `adapter:<name>` on the sections a deterministic adapter writes over a declaration graph) and an audit `status` (proposed, confirmed, challenged; `declared` only on an adapter section over a declaration graph, D7 and D8).
 
 `settings.hubPlacement` is `group` or `center`. `settings.offsets` (added with graph 0.3, decision 0020) holds the sections a person dragged: each key is a top-level section id, `level:<i>` for a band level, or `gutter` for the outside-layers column, with a required `dx` and `dy` in world units. It is a view preference and never changes structure. The checker refuses any other key (V8). Offsets must not make two top-level sections overlap, or a section cover a centered hub, since either could hide a node or an edge. The checker runs the viewer's own layout on `view.json` and refuses any overlap (V9), so an agent's edit is blocked without anyone opening the viewer. The viewer reads its starting offsets from `view.json`, and a drag in the browser is checked by the conservation meter, which shows broken until the sections are moved apart. `exemptions` record patterns exempt from the band rule. An exemption is pending until Julian has approved it 3 times, or once marked `explicit` (decision 0014). The checker refuses an exemption marked established without that.
 

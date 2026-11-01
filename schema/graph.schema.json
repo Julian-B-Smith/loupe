@@ -20,7 +20,7 @@
         "loupe.graph/0.3.2",
         "loupe.graph/0.4"
       ],
-      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2. 0.3.1 adds `via` (the compiled sources whose include path found the file) and `configs` on site evidence. 0.3.2 adds `as` on generates evidence: program (what the command runs) or input (what it reads). 0.4 adds the declaration graph: block and slot nodes, audio/control/event/modulation/observation edges, provenance declared, a citation on every node and edge, and a `declaration` block in place of `crawler`."
+      "description": "0.3 adds build targets, configurations (ADR 0026) and required resolution on crawl evidence (ADR 0028); a 0.2 graph stays valid as 0.2. 0.3.1 adds `via` (the compiled sources whose include path found the file) and `configs` on site evidence. 0.3.2 adds `as` on generates evidence: program (what the command runs) or input (what it reads). 0.4 adds the declaration graph: block and slot nodes, audio/control/event/modulation/observation edges, provenance declared, a citation on every node and edge, and a `declaration` block in place of `crawler`. The `declaration` block, not the version, decides crawl against declaration; a declaration graph must declare 0.4."
     },
     "source": {
       "type": "object",
@@ -745,7 +745,9 @@
                 "const": "declaration"
               },
               "path": {
-                "type": "string"
+                "type": "string",
+                "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$",
+                "description": "Repo-relative; loupe-check requires it to equal declaration.path"
               },
               "id": {
                 "type": "string",
@@ -771,12 +773,14 @@
       "description": "0.4: where the declaration was read from, and what it says about itself. Required in a declaration graph; forbidden in a crawl.",
       "properties": {
         "format": {
-          "type": "string",
-          "minLength": 1,
-          "description": "The format and version the adapter read, e.g. horde.engine-structure/1"
+          "enum": [
+            "horde.engine-structure/1"
+          ],
+          "description": "The format and version the adapter read. One value today; it extends with each declaration format a Loupe adapter learns (a new format is a schema change, so it is pinned here rather than free text)."
         },
         "path": {
           "type": "string",
+          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$",
           "description": "Repo-relative path of the declaration file"
         },
         "blob": {
@@ -794,7 +798,8 @@
           "description": "The spec the declaration cites",
           "properties": {
             "path": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$"
             },
             "blob": {
               "type": "string",
@@ -861,14 +866,12 @@
   "allOf": [
     {
       "if": {
-        "properties": {
-          "schema": {
-            "const": "loupe.graph/0.4"
-          }
-        }
+        "required": [
+          "declaration"
+        ]
       },
       "then": {
-        "description": "0.4: a declaration graph. `declaration` required, `crawler` forbidden.",
+        "description": "A declaration graph (the `declaration` block is what makes it one, at any version; the version says only shape): it must declare 0.4, and `crawler` is forbidden.",
         "required": [
           "declaration"
         ],
@@ -883,11 +886,14 @@
             "items": {
               "$ref": "#/definitions/declEdge"
             }
+          },
+          "schema": {
+            "const": "loupe.graph/0.4"
           }
         }
       },
       "else": {
-        "description": "A crawl (0.2 to 0.3.2): `crawler` required, `declaration` forbidden, and the crawl node and edge shapes apply.",
+        "description": "A crawl (no `declaration`): `crawler` required, and the crawl node and edge shapes apply, under the rules of its declared version (0.4 shares the 0.3.2 shape).",
         "required": [
           "crawler"
         ],
@@ -912,7 +918,8 @@
                   "enum": [
                     "loupe.graph/0.3",
                     "loupe.graph/0.3.1",
-                    "loupe.graph/0.3.2"
+                    "loupe.graph/0.3.2",
+                    "loupe.graph/0.4"
                   ]
                 }
               }

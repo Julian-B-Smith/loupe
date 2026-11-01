@@ -60,11 +60,13 @@ export function check(dir, { schemaDir } = {}) {
   }
 
   // ---- 0.4 declaration graphs (docs/schema-0.4-proposal.md): D1 to D6. A graph is a crawl or a declaration, never both.
-  const isDecl = G.schema === 'loupe.graph/0.4';
+  // The `declaration` block decides crawl against declaration at any version (Julian, 2026-11-01); the version says only
+  // shape, and a declaration graph must say 0.4. One rule, the same one the viewer uses.
+  const isDecl = !!G.declaration;
   const crawler = G.crawler || {};
   // D1: a declaration graph has `declaration` and no `crawler`; a crawl has the reverse.
-  if (isDecl && (!G.declaration || G.crawler)) err('D1', `a declaration graph has declaration and no crawler (declaration: ${G.declaration ? 'present' : 'missing'}, crawler: ${G.crawler ? 'present' : 'absent'})`);
-  if (!isDecl && (!G.crawler || G.declaration)) err('D1', `a crawl has crawler and no declaration (crawler: ${G.crawler ? 'present' : 'missing'}, declaration: ${G.declaration ? 'present' : 'absent'})`);
+  if (isDecl && (G.crawler || G.schema !== 'loupe.graph/0.4')) err('D1', `a declaration graph has declaration, no crawler, and says loupe.graph/0.4 (crawler: ${G.crawler ? 'present' : 'absent'}, schema: ${G.schema})`);
+  if (!isDecl && !G.crawler) err('D1', 'a crawl has crawler (and no declaration): this graph has neither');
   if (isDecl) {
     const declared = G.declaration || {};
     // D2: every node is a block or slot carrying `declared` (its id agreeing with the node id, so D3's parent lookup means
@@ -76,6 +78,8 @@ export function check(dir, { schemaDir } = {}) {
     for (const e of G.edges) {
       if (e.provenance !== 'declared' || !e.declared || !e.evidence.length || e.evidence.some((x) => x.type !== 'declaration'))
         err('D2', `edge ${e.id} must be declared provenance with declared and declaration evidence only`);
+      // The evidence points at the one declaration file this graph says it was read from.
+      for (const x of e.evidence) if (x.type === 'declaration' && x.path !== declared.path) err('D2', `edge ${e.id} evidence path ${x.path} is not the declaration's ${declared.path}`);
     }
     // D3: every declared.parent names a node, and parents form no cycle (a cycle would send any consumer around forever).
     for (const n of G.nodes) {
@@ -92,20 +96,32 @@ export function check(dir, { schemaDir } = {}) {
       }
     }
     // D4: every stage ref names a node or an edge of this graph, and ids and refs run in step.
+    // refs[i] must be what ids[i] resolves to: the node `decl:<id>`, or an edge whose evidence holds that declared id. The
+    // limit: a stage emptied or reordered together with its refs stays consistent here; only the byte-compare against the
+    // pinned declaration (./verify full) catches that.
+    const edgeById = new Map(G.edges.map((e) => [e.id, e]));
     (declared.signalPath || []).forEach((st, i) => {
       if (st.ids.length !== st.refs.length) err('D4', `stage ${i} has ${st.ids.length} ids but ${st.refs.length} refs`);
-      for (const r of st.refs) if (!nodes.has(r) && !G.edges.some((e) => e.id === r)) err('D4', `stage ${i} ref ${r} names no node or edge`);
+      st.refs.forEach((r, k) => {
+        const id = st.ids[k];
+        if (!nodes.has(r) && !edgeById.has(r)) err('D4', `stage ${i} ref ${r} names no node or edge`);
+        else if (id !== undefined && r !== 'decl:' + id && !(edgeById.get(r) || { evidence: [] }).evidence.some((x) => x.id === id)) err('D4', `stage ${i} ref ${r} is not what its id ${id} resolves to`);
+      });
     });
     // D5: a spec citation on every node and edge (ROADMAP Q-015 criterion 1).
     for (const n of G.nodes) if (n.declared && !(n.declared.cites || []).length) err('D5', `node ${n.id} cites no spec id`);
     for (const e of G.edges) if (e.declared && !(e.declared.cites || []).length) err('D5', `edge ${e.id} cites no spec id`);
     // D6: the declaration's own counts equal what the graph holds (the census, in the checker as well as the adapter's
-    // test). An edge counts once per declaration it carries (a merged duplicate keeps one evidence each), so a declared
-    // edge the adapter dropped or lost shows as a difference. Zero entries are dropped from both sides before comparing.
+    // test). An edge counts once per distinct declared id it carries (a merged duplicate keeps one evidence each), and a
+    // declared id may appear on only one evidence entry in the graph. Zero entries are dropped from both sides before
+    // comparing. The limit: a dropped edge together with an edited counts block is self-consistent here; only the
+    // byte-compare against the pinned declaration (./verify full) catches that.
     {
+      const seenEv = new Set();
+      for (const e of G.edges) for (const x of e.evidence) { if (seenEv.has(x.id)) err('D6', `declared id ${x.id} is on more than one evidence entry`); seenEv.add(x.id); }
       const tally = (xs) => Object.fromEntries(Object.entries(xs.reduce((a, k) => ((a[k] = (a[k] || 0) + 1), a), {})).sort());
       const nz = (o) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([, v]) => v !== 0).sort()) : o);
-      const held = { items: tally(G.nodes.map((n) => n.kind)), scope: tally(G.nodes.map((n) => n.declared && n.declared.scope)), edges: tally(G.edges.flatMap((e) => e.evidence.map(() => e.kind))), stages: (declared.signalPath || []).length };
+      const held = { items: tally(G.nodes.map((n) => n.kind)), scope: tally(G.nodes.map((n) => n.declared && n.declared.scope)), edges: tally(G.edges.flatMap((e) => [...new Set(e.evidence.map((x) => x.id))].map(() => e.kind))), stages: (declared.signalPath || []).length };
       const said = Object.fromEntries(Object.entries(declared.counts || {}).map(([k, v]) => [k, nz(v)]));
       for (const k of [...new Set([...Object.keys(held), ...Object.keys(said)])].sort())
         if (JSON.stringify(held[k] ?? null) !== JSON.stringify(said[k] ?? null)) err('D6', `declaration.counts.${k} says ${JSON.stringify(said[k] ?? null)} but the graph holds ${JSON.stringify(held[k] ?? null)}`);
@@ -190,7 +206,7 @@ export function check(dir, { schemaDir } = {}) {
   // missing one would let the lens silently treat build-time code as product); code that writes a file is its program.
   for (const e of G.edges) for (const x of e.evidence) {
     if (x.as != null && e.kind !== 'generates') err('G10', `${e.kind} edge ${e.id} evidence carries as=${x.as}; only generates edges may`);
-    if (e.kind === 'generates' && G.schema === 'loupe.graph/0.3.2' && x.as == null) err('G10', `generates edge ${e.id} evidence ${x.path} does not say whether its source is program or input`);
+    if (e.kind === 'generates' && (G.schema === 'loupe.graph/0.3.2' || G.schema === 'loupe.graph/0.4') && x.as == null) err('G10', `generates edge ${e.id} evidence ${x.path} does not say whether its source is program or input`);
     if (e.kind === 'generates' && x.type === 'site' && x.as === 'input') err('G10', `generates edge ${e.id} site ${x.path}:${x.line} is code writing a file, so its source is the program, not an input`);
   }
 
@@ -243,6 +259,8 @@ export function check(dir, { schemaDir } = {}) {
   if (isDecl) {
     const kids = new Map(); // declared id -> child nodes
     for (const n of G.nodes) { const p = n.declared && n.declared.parent; if (p != null) (kids.get(p) ?? kids.set(p, []).get(p)).push(n); }
+    // ... and every declared parent has one (Julian, 2026-11-01), so no declared nesting goes undrawn.
+    for (const p of kids.keys()) if (!V.elements.some((x) => x.primitive === 'section' && x.id === 'sec:' + p)) err('D7', `declared parent ${p} has no section`);
     for (const el of V.elements.filter((x) => x.primitive === 'section')) {
       const p = el.id.startsWith('sec:') ? el.id.slice(4) : null, own = p != null && nodes.get('decl:' + p);
       if (!own || !kids.has(p)) { err('D7', `section ${el.id} is not a declared parent`); continue; }
@@ -251,7 +269,20 @@ export function check(dir, { schemaDir } = {}) {
       const up = own.declared.parent != null ? 'sec:' + own.declared.parent : undefined;
       if (el.parent !== up) err('D7', `section ${el.id} is nested under ${el.parent ?? 'nothing'}, not under its declared parent's section ${up ?? '(none)'}`);
       if (el.status !== 'declared') err('D7', `section ${el.id} has status ${el.status}; a section over a declaration says declared`);
+      // The section's words are the declaration's, built the way the adapter builds them: label = declared id, claim =
+      // declared label (and its multiplicity). An invented label would be a claim no declaration states.
+      const claim = own.declared.label + (own.declared.multiplicity ? ` (× ${own.declared.multiplicity})` : '');
+      if (el.label !== p) err('D7', `section ${el.id} label is ${el.label}; it must be the declared id ${p}`);
+      if (el.claim !== claim) err('D7', `section ${el.id} claim is not the declaration's words for ${p}`);
     }
+  }
+  // D8: `declared` is the adapter's word and nobody else's. status declared needs a declaration graph, a section, and
+  // `by: adapter:*`; `by: adapter:*` needs status declared. Agents may add proposed elements (sets, lanes...) to a
+  // declaration's view; they cannot say declared.
+  for (const el of V.elements) {
+    const adapter = typeof el.by === 'string' && el.by.startsWith('adapter:');
+    if (el.status === 'declared' && !(isDecl && el.primitive === 'section' && adapter)) err('D8', `${el.id} says declared, which only an adapter section over a declaration graph may (primitive ${el.primitive}, by ${el.by}, ${isDecl ? 'declaration' : 'crawl'} graph)`);
+    if (adapter && el.status !== 'declared') err('D8', `${el.id} is by ${el.by} but has status ${el.status}; an adapter's elements say declared`);
   }
   const isA = (id, ...kinds) => els.has(id) && kinds.includes(els.get(id).primitive);
   const needNode = (el, id) => { if (!nodes.has(id)) err('V2', `${el.id} references missing node ${id}`); };
@@ -286,7 +317,7 @@ export function check(dir, { schemaDir } = {}) {
         break;
       case 'band':
         for (const lvl of el.levels) for (const m of lvl.members) {
-          if (m.includes(':') && /^(file|sym|ext|art|miss):/.test(m)) needNode(el, m); else needEl(el, m, 'section', 'set');
+          if (m.includes(':') && /^(file|sym|ext|art|miss|decl):/.test(m)) needNode(el, m); else needEl(el, m, 'section', 'set');
         }
         break;
       case 'lane':

@@ -63,6 +63,9 @@ Where things are. Moved verbatim from the pre-spinup CLAUDE.md (2026-10-01) and 
   `design/system/components/*/README.md` (Q-036); do not edit. The tally (render.js §4b) and the matrix (`matrix.js`
   `MX`, `renderMatrix`) read their sizes, parts and colours from it; `render.test.mjs` fails when it is stale.
 - `design/prototype/code.js`: pure. Where a crawl's code is (GitHub at the commit, or the local helper) and the four
+- `design/prototype/spine.js` — the Signal path view of a declaration graph (Q-015): columns from the declared stages, rails, routed edges, honest accounting.
+- `design/prototype/declared.js` — pure words for a declaration graph's panels (stages 1 and 2, names, fragments).
+- `tools/engine-structure.mjs` — the one adapter from HORDE's declaration to a Loupe declaration snapshot; `tools/engine-structure-agreement.mjs` is the non-blocking measure against the parked inferred map.
   actions on a file, an edge's evidence or a section's folder, each disabled with its reason when it cannot run; the
   code pane's marks. The menu, the panel and the pane in `index.html` all build from it (Q-037).
 - `design/prototype/story.js`, `works.js`, `stories/`: the "How it works" view (ADR 0025). `stories/<repo>-<commit>.json`
