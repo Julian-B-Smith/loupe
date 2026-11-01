@@ -731,6 +731,7 @@ function showMenu(target, cx, cy) {
     listItem(h.id, 'folded into this block');
   } else if (h && h.type === 'storyout') {
     items.push(null, { label: 'List files not in this story', run: () => A.select({ type: 'storyout', id: 'story' }) });
+    listItem('story-outside', 'this box stands for (among and across the files outside)'); // Q-032
   } else if (h && h.type === 'edge') {
     items.push(null, { label: 'Select this edge', run: () => A.select({ type: 'edge', id: h.id }) });
     // Isolate either end's section (Julian, 2026-10-03). Deduplicated; the section already isolated is skipped.
@@ -1070,16 +1071,19 @@ function diffBoxPanel(proxy, map) {
 }
 function holdsPanel(key, map) {
   const es = heldEdges(data, map, key);
+  // The story box states two counts; each row says which it belongs to, from the meter's own record (Q-032, critic M1).
+  const part = m => key === 'story-outside' ? (m.bundle === 'story-cross' ? 'crossing in' : 'among outside') : m.via;
   // Matrix keys (Q-030): a cell 'x:<src>|<dst>', a margin 'x:out|<f>' or 'x:in|<f>'; 'elsewhere' is the matrix's chip there.
   const mx = key.startsWith('x:') ? key.slice(2).split('|') : null;
   const what = mx ? (mx[0] === 'out' ? `From ${esc(label(mx[1]))} to files outside the matrix` : mx[0] === 'in' ? `Into ${esc(label(mx[1]))} from files outside the matrix` : `From ${esc(label(mx[0]))} to ${esc(label(mx[1]))}`)
+    : key === 'story-outside' ? 'Among the files not in this story, or crossing into it'
     : key === 'elsewhere' && map && map.lod === 'matrix' ? 'Between files outside the matrix' : key === 'elsewhere' ? 'Not shown in this isolated view' : key === 'o:loose' ? 'Folded into the block of files in no section'
     : key.startsWith('f:') ? `Folded ${data.elements[key.slice(2)] && data.elements[key.slice(2)].primitive === 'lane' ? 'steps' : 'files'} of ${esc(label(key.slice(2)))}` : key.startsWith('p:') ? `Through the port ${esc(portName(key.slice(2)))}` : key.startsWith('s:') ? `Inside or ending at ${esc(label(key.slice(2)))}`
     : key.startsWith('t:') ? `Counted on the tab of ${esc(boxName(key.slice(2)))}` : key.startsWith('c:') ? `Collected on the bar beside ${esc(boxName(key.slice(2)))}` : key.startsWith('m:') ? `Merged tap from ${esc(key.split('|')[1] === '-' ? 'files in no section' : boxName('s:' + key.split('|')[1]))}` : esc(key);
   if (!es.length) return '<p>This element does not stand for any edge in the current frame (a zoom, lens or fold changed it). Pick it again on the map.</p>';
   return `<span class="eyebrow">Stands for ${es.length} edges</span><h2>${what}</h2>
     <p>The conservation meter counts exactly these ${es.length} edges at this element. Each row opens its edge.</p>
-    <div>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${esc(e.kind)} · ${esc(map.edges[e.id].via)}</span>`, 'erow')).join('')}</div>`;
+    <div>${es.map(e => go('edge', e.id, `${swatch(e)}<span></span><span class="n mono">${esc(label(e.src))} → ${esc(label(e.dst))}</span><span class="m">${esc(e.kind)} · ${esc(part(map.edges[e.id]))}</span>`, 'erow')).join('')}</div>`;
 }
 
 function bundlePanel(key, map) {
@@ -1170,6 +1174,7 @@ function storyOutPanel(s) {
   const cross = acc.crossing.map(id => data.edgeById[id]).filter(Boolean);
   return `<span class="eyebrow">Not in “${esc(st.title)}”</span><h2>${out.length} files · ${acc.counts.crossing} crossing edges</h2>
     <p>Counted, not deleted. These files and the ${acc.counts.outsideEdges} edges among them sit behind the box; every edge crossing into the story is listed.</p>
+    ${go('holds', 'story-outside', `List all ${map ? heldEdges(data, map, 'story-outside').length : ''} edges the box stands for`, 'btn')}
     <div><span class="eyebrow">Crossing edges · ${cross.length}</span>${cross.map(e => go('edge', e.id, `${swatch(e)}<span class="m">${acc.inside.has(e.src) ? '→' : '←'}</span><span class="n mono">${esc(label(acc.inside.has(e.src) ? e.dst : e.src))}</span><span class="m">${esc(label(acc.inside.has(e.src) ? e.src : e.dst))}</span>`, 'erow')).join('')}</div>
     ${Object.keys(byRole).sort((a, b) => byRole[b].length - byRole[a].length || (a < b ? -1 : 1)).map(r => `<div><span class="eyebrow">${esc(r)} · ${byRole[r].length}</span>${byRole[r].map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(data.nodes[f].path)}</span><span class="m"></span>`, 'erow')).join('')}</div>`).join('')}`;
 }

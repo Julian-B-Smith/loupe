@@ -286,6 +286,51 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   check(`every element standing for several edges opens to exactly them (${elements} elements, ${ends} element ends, ${buses} bus frames)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && elements > 0);
 }
 
+// Q-032 (ADR 0029): in "How it works", the box of files not in the story opens to exactly the edges it stands for: every
+// edge with an end off the story's cards (among the outside files, or crossing in), by the story's files alone
+// (storyAccounting), never by what works.js recorded. Its stated count equals that list; every recorded end touches its
+// edge; the meter balances. Each story plain, with a step deleted, and cut to its first step.
+{
+  const { heldEdges } = await import('../design/prototype/inspect.js');
+  const { renderWorks } = await import('../design/prototype/works.js');
+  const { applyEdits, layoutStory, storyAccounting } = await import('../design/prototype/story.js');
+  const layer = { innerHTML: '', querySelectorAll: () => [] };
+  const wc = { querySelector: () => layer, appendChild() {}, clientWidth: 1440, clientHeight: 900 };
+  const data = snap('schema/examples/horde-probe/');
+  let frames = 0, listed = 0;
+  const bad = [];
+  for (const raw of j('design/prototype/stories/horde-c64cfdbc.json').stories) {
+    const first = raw.steps[0].id, edits = [{}, { steps: { [raw.steps[1].id]: { deleted: true } } },
+      { steps: Object.fromEntries(raw.steps.slice(1).map((x) => [x.id, { deleted: true }])) },
+      // Critic M2: a file not in the graph on a card, beside a known file that was outside; and every step deleted.
+      { added: [{ id: 'q032-x', after: first, files: ['file:no/such.cpp', data.nodeIds.find((id) => !raw.steps.some((x) => x.files.includes(id)))] }] },
+      { steps: Object.fromEntries(raw.steps.map((x) => [x.id, { deleted: true }])) }];
+    for (const ed of edits) {
+      const story = applyEdits(raw, ed), acc = storyAccounting(data, story), state = { view: 'works', stage: 2, settings: {}, zoom: { auto: true } };
+      const map = renderWorks(wc, data, state, story, acc, layoutStory(story, ed));
+      const tag = `${raw.title}${ed.steps ? ` (${Object.keys(ed.steps).length} deleted)` : ed.added ? ' (added step)' : ''}`;
+      frames++;
+      const x = layer.innerHTML.match(/data-holds="story-outside" data-count="(\d+)"/);
+      const list = heldEdges(data, map, 'story-outside'), got = new Set(list.map((e) => e.id));
+      const want = data.edges.filter((e) => !acc.inside.has(e.src) || !acc.inside.has(e.dst));
+      listed += list.length;
+      if (!x) bad.push(`${tag}: the box carries no data-holds`);
+      else if (Number(x[1]) !== list.length) bad.push(`${tag}: the box says ${x[1]} edges, holds ${list.length}`);
+      if (want.length !== list.length || want.some((e) => !got.has(e.id))) bad.push(`${tag}: ${want.length} edges have an end off the cards, the box holds ${list.length}`);
+      for (const [id, m] of Object.entries(map.edges)) {
+        const e = data.edgeById[id];
+        if (!m.ends) { bad.push(`${tag}: ${id} has no recorded ends`); continue; }
+        // Exactly its ends (critic L1: a dropped end passed): each end's card, or the box for an end off the cards.
+        const wantEnds = [...new Set([e.src, e.dst].map((x) => (acc.inside.has(x) ? 'n:' + x : 'story-outside')))].sort();
+        if (JSON.stringify([...m.ends].sort()) !== JSON.stringify(wantEnds)) bad.push(`${tag}: ${id} records ends ${m.ends.join(',')}, not ${wantEnds.join(',')}`);
+      }
+      const c = conserve(data, state, map);
+      if (c.status === 'broken') bad.push(`${tag}: the meter does not balance`);
+    }
+  }
+  check(`the story-outside box opens to exactly the edges it stands for (${frames} frames, ${listed} listed)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && frames > 0 && listed > 0);
+}
+
 // Every inline script in the viewers' HTML parses (Q-028: a template-literal slip broke the whole viewer while every
 // other test, which imports only the .js modules, stayed green). Module scripts are checked as modules.
 {
