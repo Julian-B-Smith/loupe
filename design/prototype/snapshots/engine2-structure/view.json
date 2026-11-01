@@ -1,0 +1,206 @@
+{
+  "dialect": {
+    "name": "engine-structure",
+    "version": "0.1"
+  },
+  "elements": [
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the engine",
+      "id": "sec:engine",
+      "label": "engine",
+      "members": [
+        "decl:engine",
+        "decl:allocator",
+        "decl:counters",
+        "decl:gui_snapshot",
+        "decl:history_support",
+        "decl:meters",
+        "decl:observation_view",
+        "decl:output",
+        "decl:state",
+        "decl:transport",
+        "decl:voice_sum"
+      ],
+      "parent": "sec:instrument",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the instrument",
+      "id": "sec:instrument",
+      "label": "instrument",
+      "members": [
+        "decl:instrument",
+        "decl:device_policy",
+        "decl:fx_rack",
+        "decl:gui",
+        "decl:history",
+        "decl:master",
+        "decl:modulation",
+        "decl:morph_resolver",
+        "decl:pitch_system"
+      ],
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "a member (× U, the oscillator's unison (1 to 16))",
+      "id": "sec:member",
+      "label": "member",
+      "members": [
+        "decl:member",
+        "decl:member.base_wave",
+        "decl:member.blade1",
+        "decl:member.blade2",
+        "decl:member.dc",
+        "decl:member.edges",
+        "decl:member.loop",
+        "decl:member.pan",
+        "decl:member.phase"
+      ],
+      "parent": "sec:osc",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the mixer",
+      "id": "sec:mixer",
+      "label": "mixer",
+      "members": [
+        "decl:mixer",
+        "decl:makeup"
+      ],
+      "parent": "sec:instrument",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the mono sub: the sub, once for the instrument",
+      "id": "sec:mono_sub",
+      "label": "mono_sub",
+      "members": [
+        "decl:mono_sub",
+        "decl:mono_sub.envelope",
+        "decl:mono_sub.filter_slot"
+      ],
+      "parent": "sec:engine",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the noise oscillator (× × up to four `noise/chain` settings)",
+      "id": "sec:noise",
+      "label": "noise",
+      "members": [
+        "decl:noise",
+        "decl:noise.colour",
+        "decl:noise.filter",
+        "decl:noise.pan",
+        "decl:noise.resonator",
+        "decl:noise.spread",
+        "decl:noise.whisper",
+        "decl:noise.wind"
+      ],
+      "parent": "sec:voice",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "an oscillator: a swarm of U members (× 2: osc 1 and osc 2; × up to four swarm settings while `oscN/swarm` blends (SB-4))",
+      "id": "sec:osc",
+      "label": "osc",
+      "members": [
+        "decl:osc",
+        "decl:osc.coupling",
+        "decl:osc.dc_blocker",
+        "decl:osc.detune",
+        "decl:osc.drift",
+        "decl:osc.frame",
+        "decl:osc.inertia",
+        "decl:osc.onset",
+        "decl:osc.placement",
+        "decl:osc.spreads",
+        "decl:osc.start_phase",
+        "decl:osc.sum"
+      ],
+      "parent": "sec:voice",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "parameters: the manifest's values, checked on entry and smoothed",
+      "id": "sec:parameters",
+      "label": "parameters",
+      "members": [
+        "decl:parameters",
+        "decl:parameters.later"
+      ],
+      "parent": "sec:engine",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "the sub (× × up to four `sub/chain` settings)",
+      "id": "sec:sub",
+      "label": "sub",
+      "members": [
+        "decl:sub",
+        "decl:sub.dc",
+        "decl:sub.drive",
+        "decl:sub.envelope",
+        "decl:sub.pan",
+        "decl:sub.tone",
+        "decl:sub.wave"
+      ],
+      "parent": "sec:voice",
+      "primitive": "section",
+      "status": "accepted"
+    },
+    {
+      "by": "adapter:engine-structure",
+      "claim": "a voice (× one per sounding note, up to voice.polyphony (1 to 64))",
+      "id": "sec:voice",
+      "label": "voice",
+      "members": [
+        "decl:voice",
+        "decl:voice.envelopes",
+        "decl:voice.filter_slot",
+        "decl:voice.gravity",
+        "decl:voice.later_source",
+        "decl:voice.noise_env",
+        "decl:voice.noise_gate",
+        "decl:voice.noise_level",
+        "decl:voice.osc_env",
+        "decl:voice.osc_gate",
+        "decl:voice.osc_level",
+        "decl:voice.pitch",
+        "decl:voice.structure_slots",
+        "decl:voice.sub_gate",
+        "decl:voice.sub_level"
+      ],
+      "parent": "sec:engine",
+      "primitive": "section",
+      "status": "accepted"
+    }
+  ],
+  "exemptions": [],
+  "graph": {
+    "hash": "sha256:9781677673408f41ba8facfcbfa64171f1b2ce2ac2e5460471fa52620c1ae6ac"
+  },
+  "overlay": {
+    "hash": "sha256:fcd88e2b11a226f9e9b495ef13ab26f708b89ffa4f1a5e22430306d6ff25f4d7"
+  },
+  "schema": "loupe.view/0.2",
+  "settings": {
+    "hubPlacement": "group"
+  }
+}

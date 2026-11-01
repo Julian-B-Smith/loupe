@@ -406,11 +406,20 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** ready (ball: loupe). HORDE's declaration landed on horde main at 0e577fc
+- **Status:** in progress 2026-10-31 (branch p2/q015-engine-structure), ball: loupe. HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
   spec in its own `./verify`; Loupe reads it through one adapter into a structure graph; no inferred edges.
+- **Julian (poll, 2026-10-31), starting the item:** (1) a block that contains others becomes a section holding one node
+  for the block itself plus its children; edges to the block land on that node (22 declared edges end on a container),
+  so no edge ends on a section and the renderer and meter are unchanged. (2) The structure is its own snapshot (block
+  and slot nodes, declared edges, no files), listed on the testbench by itself; nothing links a block to a file. (3) Pin
+  the declaration at HORDE's origin/main (fetched; read with `git show`, HORDE's working tree untouched); `./verify
+  full` re-runs the adapter at that commit and byte-compares. (4) The §4.2 signal path (47 stages) is carried in the
+  graph and counted by the census; drawing it is a later item. Order (domain invariant): the adapter writes a draft
+  snapshot, the viewer draws it, and the schema 0.4 diff goes to Julian with screenshots before it lands.
+- **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
 - **Acceptance criteria:**

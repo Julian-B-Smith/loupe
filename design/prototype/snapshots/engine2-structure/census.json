@@ -1,0 +1,40 @@
+{
+  "carried": {
+    "edges": {
+      "audio": 46,
+      "control": 47,
+      "event": 8,
+      "modulation": 5,
+      "observation": 11
+    },
+    "items": {
+      "block": 67,
+      "slot": 12
+    },
+    "scope": {
+      "engine": 67,
+      "external": 12
+    },
+    "stages": 47
+  },
+  "declared": {
+    "edges": {
+      "audio": 46,
+      "control": 47,
+      "event": 8,
+      "modulation": 5,
+      "observation": 11
+    },
+    "items": {
+      "block": 67,
+      "slot": 12
+    },
+    "scope": {
+      "engine": 67,
+      "external": 12
+    },
+    "stages": 47
+  },
+  "sections": 10,
+  "unplaced": []
+}
