@@ -67,3 +67,4 @@
 - **Layer-E (criterion 4):** `tools/engine-structure-agreement.mjs`, citation overlap, non-blocking: 74 of 104 inferred edges, 71 of 117 declared edges, 31 ids in both, 31 only inferred, 42 only declared. A weak upper bound, on an older spec for the inferred map.
 - **Not tested:** the hosted Testbench (checked at its republish after the merge); hover on a real pointer (dispatched events only); Flow and Design draw declared edges solid (Q-038). The page wiring in `index.html` has no headless test; the pure parts are in `declared.js`, `code.js` and `spine.js`.
 
+- **Verify:** `./verify full` exit 0 at e780966, with every HORDE gate passing and the engine2 byte-compare holding.
