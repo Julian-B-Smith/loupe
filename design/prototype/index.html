@@ -223,7 +223,7 @@ import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
-import { layoutSpine, renderSpine, DECLARED_EDGE_SLOT } from './spine.js';
+import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, UNDECIDED_LABEL } from './spine.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
 import { codeSource, codeTarget, codeActions, evidenceMarks, rawUrl, githubUrl, EDITORS } from './code.js';
@@ -528,9 +528,7 @@ function meter(c, m = map, tag = '') {
 const strip = () => `<div class="strip">${['static', 'config', 'runtime', 'annotated', 'inferred'].map(p => `<span title="${p}">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}</span>`).join('')}</div>`;
 function legend(s) {
   if (s.view === 'spine') {
-    const ln = (c) => `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5" style="stroke:${v(c)};stroke-width:2px"/></svg>`;
-    $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>
-      <div class="col">${Object.entries(DECLARED_EDGE_SLOT).map(([k, c]) => `<div class="lk">${ln(c)}${k}</div>`).join('')}<div class="lk">all edges declared (solid)</div><div class="lk">dashed box: slot, not built</div></div>`;
+    $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>${spineLegendHtml()}`;
     return;
   }
   if (s.view === 'works') {
@@ -564,7 +562,7 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-diffbox],[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge],[data-holds]');
+  const c = t.closest && t.closest('[data-diffbox],[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge],[data-holds],[data-sstage]');
   if (!c) return null;
   if (c.dataset.diffbox) return { type: 'diffbox', id: c.dataset.diffbox };
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
@@ -580,6 +578,7 @@ const hit = t => {
   // Last: only an element with no other click lists on a left click (the overview's loose block); a file port stays a
   // file (critic H1), and lists from its menu.
   if (c.dataset.holds) return { type: 'holds', id: c.dataset.holds };
+  if (c.dataset.sstage !== undefined) return { type: 'sstage', id: c.dataset.sstage };
   return { type: 'edge', id: c.dataset.edge };
 };
 let drag = null;
@@ -645,15 +644,23 @@ canvas.addEventListener('pointerup', e => {
   if (h.type === 'unfold') return A.toggleUnfold(h.id);
   if (h.type === 'port') return A.togglePort(h.id);
   if (h.type === 'exit') return A.isolate(null);
+  if (h.type === 'sstage') return spineGo(+h.id);
   if (h.type === 'holds') return A.select(tagPane({ type: 'holds', id: h.id }, t));
   if (h.type === 'diffbox') return A.select(tagPane({ type: 'diffbox', id: h.id }, t));
   A.select(tagPane(h, t));
   if (phone()) $('panel').classList.add('open');
 });
+// Signal path camera. Opening is 100% at stage 1 (zoom auto); fit is an explicit camera over the whole diagram, so the
+// shared A.fit (which only sets auto) cannot stand in for it here. A stage tick or card brings its column to the left edge.
+const spineFit = () => { if (map && map.spine) A.setZoom({ auto: false, ...map.spine.fit }); };
+const spineGo = i => { const L = spineLay, z = map.zoom; if (L && L.stages[i]) A.setZoom({ auto: false, k: z.k, x: 24 - z.k * (L.stages[i].x - L.geom.w / 2), y: z.y }); };
+const isSpine = () => store.get().view === 'spine' && HAS_SPINE;
 // The Signal path view hides paneMain (a hidden element measures 0), so it zooms about the canvas, with the same camera state.
-const mainEl = () => (store.get().view === 'spine' && HAS_SPINE ? canvas : paneMain);
+const mainEl = () => (isSpine() ? canvas : paneMain);
 const zoomAt = (f, cx, cy, pane = 'main') => {
-  const el = pane === 'flow' ? paneFlow : mainEl(), z = frameOf(pane).zoom, k = Math.max(0.12, Math.min(4, z.k * f));
+  const el = pane === 'flow' ? paneFlow : mainEl(), z = frameOf(pane).zoom;
+  // The floor is 0.12, or the fit zoom when that is lower (the Signal path's fit is ~0.14 or less); zooming out never zooms in.
+  const lo = isSpine() && map.spine ? Math.min(0.12, map.spine.fit.k) : 0.12, k = stepZoom(z.k, f, lo);
   if (cx == null) { cx = el.clientWidth / 2; cy = el.clientHeight / 2; }
   setCam(pane)({ auto: false, k, x: cx - (cx - z.x) * (k / z.k), y: cy - (cy - z.y) * (k / z.k) });
 };
@@ -771,13 +778,13 @@ function showMenu(target, cx, cy) {
   else if (dv(s) && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
   const fromFlow = s.view === 'both' && paneOf(target) === 'flow';
-  items.push({ label: 'Fit to screen', run: () => (fromFlow ? A.fitFlow() : A.fit()) });
+  items.push({ label: 'Fit to screen', run: () => (isSpine() ? spineFit() : fromFlow ? A.fitFlow() : A.fit()) });
   // From the Flow pane, actions that change the view act on the Design pane (Flow is canonical): say so (critic L2).
   if (fromFlow) items.forEach(it => { if (it && /^(Collapse|Expand|Isolate|Matrix|Operational lens|Show everything|Back to|Show every|Show \d|Fold |List files in|Close )/.test(it.label) && !/\(Design\)$/.test(it.label)) it.label += ' (Design)'; });
   openMenu(cx, cy, items);
 }
 
-$('szin').onclick = () => zoomAt(1.25); $('szout').onclick = () => zoomAt(0.8); $('szfit').onclick = () => A.fit();
+$('szin').onclick = () => zoomAt(1.25); $('szout').onclick = () => zoomAt(0.8); $('szfit').onclick = spineFit;
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
 $('fzin').onclick = () => zoomAt(1.25, null, null, 'flow'); $('fzout').onclick = () => zoomAt(0.8, null, null, 'flow'); $('fzfit').onclick = () => A.fitFlow();
 for (const id of ['pmFlow', 'pmMain']) $(id).onclick = () => { if ($(id).dataset.status === 'broken') store.set({ selection: tagSel({ type: 'unaccounted', id: 'all' }, 'both', id === 'pmFlow' ? 'flow' : 'main') }); };
@@ -921,6 +928,7 @@ pb.onclick = e => {
   if (type === 'tour') return A.setTour({ step: +id });
   if (type === 'tourpick') return A.setTour({ index: +id, step: 0 });
   if (type === 'hub') return A.setHubPlacement(id);
+  if (type === 'sstage') return spineGo(+id);
   store.set({ selection: { type, id } });
 };
 const go = (type, id, inner, cls = '') => `<button class="${cls}" data-type="${type}" data-go="${esc(id)}">${inner}</button>`;
@@ -1205,8 +1213,8 @@ function storyOutPanel(s) {
 function spineStagePanel() {
   const L = spineLay || layoutSpine(data), K = L.counts;
   return `<span class="eyebrow">Signal path</span><h2>${K.columns} declared stages</h2>
-    <p class="path">Placement is the declaration's own: stages in declared order, left to right; off-path items hang off the spine by a declared edge (above when it goes into the spine item, below when it comes out); boxes are declared parents. Nothing is inferred. ${K.above} rows above the spine, ${K.below} below. External blocks off the path stand on rails: ${K.left} inputs on the left (${K.bothWays} with edges both ways), ${K.right} outputs on the right, ${K.bottom} observers below. ${K.tray} in the tray. ${K.continued} dashed boxes continue a container whose own block stands in another place. ${K.overlaps} container boxes overlap and ${K.intrusions} nodes stand inside a box they are not members of: shown, not repaired.</p>
-    <div class="list">${L.stages.map(x => `<div class="card"><span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span></div>`).join('')}</div>`;
+    <p class="path">Placement is the declaration's own: stages in declared order, left to right (click a stage to jump to it; Fit shows all). Off-path engine blocks hang at the lower median column of their neighbours on the path, above when the edge goes into the neighbour, below when it comes out, stacked by the declared stage order of the neighbour they hang from, then by id. External blocks off the path stand on rails only when their direction is declared: ${K.left} Inputs on the left, ${K.right} Outputs on the right, ${K.bottom} Observers below. ${K.undecided} blocks are in the strip "${UNDECIDED_LABEL}", each with its reason: no side is guessed. Boxes are declared parents; marked blocks are not members of the box they stand in (${K.intrusions} marked). ${K.continued} dashed boxes continue a parent whose own block stands elsewhere. ${K.overlaps} pairs of boxes overlap. Every edge is routed through the gutters, none through a block.</p>
+    <div class="list">${L.stages.map(x => go('sstage', x.i, `<span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span>`, 'card')).join('')}</div>`;
 }
 
 function worksStagePanel(s) {
