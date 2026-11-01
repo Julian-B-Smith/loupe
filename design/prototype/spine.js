@@ -29,8 +29,10 @@ export function layoutSpine(data) {
   ids.forEach(id => { nodeOf[data.nodes[id].path] = id; });
   const edgeOf = {};
   data.edges.forEach(e => { const d = (e.evidence || []).find(x => x.type === 'declaration'); if (d) edgeOf[d.id] = e; });
+  const ext = id => (data.nodes[id].declared || {}).scope === 'external';
 
-  // ---- 1. the spine: columns are the stages, in declared order; an item sits in the first stage that names it
+  // ---- 1. the spine: columns are the stages, in declared order; a block sits in the first stage that names it,
+  // whatever its scope (an external block named by a stage stays on the spine: Julian, poll 2026-11-01)
   const pos = {}, stack = [], unresolved = [];
   const stages = sp.map((st, i) => {
     stack[i] = 0;
@@ -40,72 +42,119 @@ export function layoutSpine(data) {
       if (!ends) { unresolved.push({ stage: i, id: x }); continue; }
       for (const id of ends) {
         if (!named.includes(id)) named.push(id);
-        if (!pos[id]) { pos[id] = { col: i, side: 0, depth: 0, row: stack[i]++ }; fresh.push(id); }
+        if (!pos[id]) { pos[id] = { col: i, side: 0, depth: 0, row: stack[i]++, region: 'C' }; fresh.push(id); }
       }
     }
     return { i, text: st.stage, ids: st.ids, named, fresh, refs: fresh.length ? [] : named };
   });
   const nCols = sp.length, band = Math.max(1, ...stack);
 
-  // ---- 2. off-path items hang off the spine by a declared edge (BFS rounds; chosen from the placed set at round start)
   const nbrs = {};
   ids.forEach(id => { nbrs[id] = []; });
   data.edges.forEach(e => { if (e.src === e.dst) return; nbrs[e.src].push({ other: e.dst, e, into: true }); nbrs[e.dst].push({ other: e.src, e, into: false }); });
+  const parentOf = {}, kids = {};
+  ids.forEach(id => { const p = data.nodes[id].declared && data.nodes[id].declared.parent; if (p != null && nodeOf[p]) { parentOf[id] = nodeOf[p]; (kids[nodeOf[p]] = kids[nodeOf[p]] || []).push(id); } });
+  const members = id => [id].concat(...(kids[id] || []).map(members));
+
+  // ---- 2. rails: an off-path external block leaves the columns ("frame the spine"). Only declared scope and the direction
+  // of its declared edges to engine blocks decide: out of it into the engine is an input (LEFT), into it from the engine
+  // is an output (RIGHT), into it and every such edge an observation is an observer (BOTTOM), both ways is LEFT and listed.
+  const rail = {}, bothWays = [];
+  const offExt = ids.filter(id => !pos[id] && ext(id));
+  for (const id of offExt) {
+    const es = nbrs[id].filter(n => !ext(n.other)), outs = es.filter(n => n.into), ins = es.filter(n => !n.into);
+    if (!es.length) continue;
+    if (outs.length) { rail[id] = 'L'; if (ins.length) bothWays.push(id); }
+    else rail[id] = ins.every(n => n.e.kind === 'observation') ? 'B' : 'R';
+  }
+  // No edge to an engine block: with its parent's rail if the parent is external and railed, else LEFT.
+  const pending = new Set(offExt.filter(id => !rail[id]));
+  while (pending.size) for (const id of [...pending]) {
+    const pr = parentOf[id];
+    if (pr && pending.has(pr)) continue;
+    rail[id] = (pr && rail[pr]) || 'L'; pending.delete(id);
+  }
+
+  // ---- 3. off-path engine blocks hang off the spine (BFS rounds, chosen from the placed set at round start): the column
+  // is the LOWER MEDIAN of the columns of its placed neighbours (one per neighbour; its lowest edge id), above when the
+  // edge to the neighbour at that column goes into it, below when it comes out. Railed blocks are not columns.
   const taken = new Set(); // `${col}:${side}:${depth}`
+  const hang = (id, col, side, depth) => { while (taken.has(`${col}:${side}:${depth}`)) depth++; taken.add(`${col}:${side}:${depth}`); return { col, side, depth, region: 'C' }; };
   for (;;) {
     const round = [];
     for (const id of ids) {
-      if (pos[id]) continue;
-      const c = nbrs[id].filter(n => pos[n.other]).sort((a, b) => pos[a.other].col - pos[b.other].col || cmp(a.e.id, b.e.id));
-      if (c.length) round.push([id, c[0]]);
+      if (pos[id] || rail[id]) continue;
+      const per = new Map();
+      for (const n of nbrs[id]) if (pos[n.other] && (!per.has(n.other) || cmp(n.e.id, per.get(n.other).e.id) < 0)) per.set(n.other, n);
+      if (!per.size) continue;
+      const cs = [...per.values()].sort((a, b) => pos[a.other].col - pos[b.other].col || cmp(a.e.id, b.e.id));
+      const med = pos[cs[Math.floor((cs.length - 1) / 2)].other].col;
+      round.push([id, cs.find(n => pos[n.other].col === med)]);
     }
     if (!round.length) break;
     for (const [id, n] of round) {
       const nb = pos[n.other];
-      // Above when the edge goes into the neighbour, below when it comes out. Hanging off another off-path item, it goes
-      // one row further out on that item's own side: the edge direction then no longer says which side (ambiguity 1).
-      const side = nb.side === 0 ? (n.into ? -1 : 1) : nb.side;
-      let depth = nb.side === 0 ? 1 : nb.depth + 1;
-      while (taken.has(`${nb.col}:${side}:${depth}`)) depth++;
-      taken.add(`${nb.col}:${side}:${depth}`);
-      pos[id] = { col: nb.col, side, depth, row: side < 0 ? -depth : band - 1 + depth };
+      // Above when the edge goes into the neighbour, below when it comes out. Hanging off another off-path block, it goes
+      // one row further out on that block's own side: the edge direction then no longer says which side (ambiguity 1).
+      const h = hang(id, nb.col, nb.side === 0 ? (n.into ? -1 : 1) : nb.side, nb.side === 0 ? 1 : nb.depth + 1);
+      pos[id] = { ...h, row: h.side < 0 ? -h.depth : band - 1 + h.depth };
     }
   }
-  // Rules 2 and 3 meet here: an item with no declared edge belongs in the tray, but a container's box must hold its own
-  // node, and a tray column after the last stage would stretch the box across the whole diagram. So an edgeless item
-  // that has a placed container relative (its declared parent, or, for a container, one of its members) hangs below the
-  // earliest-column relative instead; only an edgeless item with no placed relative goes to the tray (ambiguity 2).
-  const parentOf = {}, kids = {};
-  ids.forEach(id => { const p = data.nodes[id].declared && data.nodes[id].declared.parent; if (p != null && nodeOf[p]) { parentOf[id] = nodeOf[p]; (kids[nodeOf[p]] = kids[nodeOf[p]] || []).push(id); } });
-  const members = id => [id].concat(...(kids[id] || []).map(members));
+  // Rules 2 and 3 of the first draft still meet here: an engine block with no placed neighbour belongs in the tray, but
+  // a container's box must hold its own node, and a tray column would stretch the box across the diagram. So it hangs
+  // below the earliest-column placed relative (its declared parent, or one of its members); only a block with none goes
+  // to the tray (ambiguity 2).
   for (let moved = true; moved;) {
     moved = false;
     for (const id of ids) {
-      if (pos[id] || nbrs[id].length) continue;
-      const rel = (parentOf[id] ? [parentOf[id]] : []).concat(members(id).slice(1)).filter(x => pos[x]).sort((a, b) => pos[a].col - pos[b].col || cmp(a, b));
+      if (pos[id] || rail[id]) continue;
+      // A container hangs at the earliest column of its own placed descendants (its box must not reach back to its parent's
+      // earliest column: that stretched noise and sub across the diagram); only a non-container falls back to its parent.
+      const mem = members(id).slice(1).filter(x => pos[x]), rel = (mem.length ? mem : parentOf[id] && pos[parentOf[id]] ? [parentOf[id]] : []).sort((a, b) => pos[a].col - pos[b].col || cmp(a, b));
       if (!rel.length) continue;
-      const col = pos[rel[0]].col; let depth = 1;
-      while (taken.has(`${col}:1:${depth}`)) depth++;
-      taken.add(`${col}:1:${depth}`);
-      pos[id] = { col, side: 1, depth, row: band - 1 + depth }; moved = true;
+      const h = hang(id, pos[rel[0]].col, 1, 1);
+      pos[id] = { ...h, row: band - 1 + h.depth }; moved = true;
     }
   }
-  const tray = ids.filter(id => !pos[id]);
+  const tray = ids.filter(id => !pos[id] && !rail[id]);
 
-  // ---- 3. rows are one global integer line; the tray is one more column after the last stage
-  const placed = ids.filter(id => pos[id]);
-  const rMin = Math.min(0, ...placed.map(id => pos[id].row)), rMax = Math.max(band - 1, ...placed.map(id => pos[id].row));
-  tray.forEach((id, k) => { pos[id] = { col: nCols, side: 0, depth: 0, row: rMin + k, tray: true }; });
-  const rLast = Math.max(rMax, rMin + tray.length - 1), cLast = tray.length ? nCols : nCols - 1;
+  // ---- 4. rows are one global integer line. Rails: LEFT before column 0, RIGHT after the last column, BOTTOM one row
+  // under everything with its blocks in the column of their earliest engine neighbour (the next free one to the right).
+  const colRows = Object.values(pos).map(p => p.row);
+  const rMin = Math.min(0, ...colRows);
+  const early = id => { const c = nbrs[id].filter(n => !ext(n.other) && pos[n.other]).map(n => pos[n.other].col); return c.length ? Math.min(...c) : parentOf[id] && rail[parentOf[id]] ? early(parentOf[id]) : Infinity; };
+  const onRail = r => ids.filter(id => rail[id] === r).sort((a, b) => early(a) - early(b) || cmp(data.nodes[a].path, data.nodes[b].path));
+  const L = onRail('L'), R = onRail('R'), B = onRail('B');
+  const hasL = L.length > 0, hasR = R.length > 0;
+  let rLast = Math.max(band - 1, ...colRows, rMin + L.length - 1, rMin + R.length - 1, rMin + tray.length - 1);
+  let cEnd = nCols - 1, prev = -1;
+  const bCol = {};
+  B.forEach(id => { prev = Math.max(Number.isFinite(early(id)) ? early(id) : 0, prev + 1); bCol[id] = prev; cEnd = Math.max(cEnd, prev); });
+  const rB = rLast + 1;
+  if (B.length) rLast = rB;
+  const cR = cEnd + 1, cT = cEnd + (hasR ? 2 : 1), cMin = hasL ? -1 : 0, cMax = tray.length ? cT : hasR ? cR : cEnd;
+  L.forEach((id, k) => { pos[id] = { col: -1, side: 0, depth: 0, row: rMin + k, region: 'L' }; });
+  R.forEach((id, k) => { pos[id] = { col: cR, side: 0, depth: 0, row: rMin + k, region: 'R' }; });
+  B.forEach(id => { pos[id] = { col: bCol[id], side: 0, depth: 0, row: rB, region: 'B' }; });
+  tray.forEach((id, k) => { pos[id] = { col: cT, side: 0, depth: 0, row: rMin + k, region: 'T' }; });
 
-  // ---- 4. containers: boxes over their node and all descendants; nested boxes sit inside their parent's
+  // ---- 5. containers: one box per container per region its members stand in (columns, a rail, the strip, the tray), over
+  // its members there; nested boxes sit inside their parent's. A container whose own node is in another region gets a
+  // dashed "continued" box in this one, with the same header; one box is never stretched across regions.
   const depthOf = id => (parentOf[id] ? 1 + depthOf(parentOf[id]) : 0);
-  const boxes = Object.keys(kids).sort(cmp).map(id => {
-    const m = members(id), ps = m.map(x => pos[x]);
-    return { id, members: m, parent: parentOf[id] || null, depth: depthOf(id), kids: (kids[id] || []).filter(k => kids[k]),
-      c0: Math.min(...ps.map(p => p.col)), c1: Math.max(...ps.map(p => p.col)), r0: Math.min(...ps.map(p => p.row)), r1: Math.max(...ps.map(p => p.row)) };
-  });
-  const box = {}; boxes.forEach(b => { box[b.id] = b; });
+  const boxes = [], box = {};
+  for (const id of Object.keys(kids).sort(cmp)) {
+    const m = members(id);
+    for (const region of ['C', 'L', 'R', 'B', 'T']) {
+      const mine = m.filter(x => pos[x].region === region);
+      if (!mine.length) continue;
+      const ps = mine.map(x => pos[x]);
+      const b = { key: id + '|' + region, id, region, continued: pos[id].region !== region, members: m, mine, parent: parentOf[id] || null, depth: depthOf(id),
+        c0: Math.min(...ps.map(p => p.col)), c1: Math.max(...ps.map(p => p.col)), r0: Math.min(...ps.map(p => p.row)), r1: Math.max(...ps.map(p => p.row)) };
+      boxes.push(b); box[b.key] = b;
+    }
+  }
+  boxes.forEach(b => { b.kids = (kids[b.id] || []).filter(k => box[k + '|' + b.region]).map(k => k + '|' + b.region); });
   // Margins a box needs on each side, deepest first, so a nested box that shares an edge with its parent leaves room.
   const need = b => {
     if (b.l != null) return b;
@@ -115,33 +164,37 @@ export function layoutSpine(data) {
     return b;
   };
   boxes.forEach(need);
-  const colL = [], colR = [], rowT = {}, rowB = {};
+  const colL = {}, colR = {}, rowT = {}, rowB = {};
   boxes.forEach(b => { colL[b.c0] = Math.max(colL[b.c0] || 0, b.l); colR[b.c1] = Math.max(colR[b.c1] || 0, b.r); rowT[b.r0] = Math.max(rowT[b.r0] || 0, b.t); rowB[b.r1] = Math.max(rowB[b.r1] || 0, b.b); });
-  const X = [], Y = {};
-  X[0] = G.margin + (colL[0] || 0);
-  for (let c = 1; c <= cLast; c++) X[c] = X[c - 1] + G.w + G.gapX + (colR[c - 1] || 0) + (colL[c] || 0);
+  if (B.length) rowT[rB] = Math.max(rowT[rB] || 0, 20); // room for the strip's label
+  const X = {}, Y = {}, gapAt = c => (c === 0 && hasL) || c === cR || c === cT ? G.gapX + 40 : G.gapX; // rails stand apart from the columns
+  X[cMin] = G.margin + (colL[cMin] || 0);
+  for (let c = cMin + 1; c <= cMax; c++) X[c] = X[c - 1] + G.w + gapAt(c) + (colR[c - 1] || 0) + (colL[c] || 0);
   Y[rMin] = G.head + G.margin + (rowT[rMin] || 0);
   for (let r = rMin + 1; r <= rLast; r++) Y[r] = Y[r - 1] + G.h + G.gapY + (rowB[r - 1] || 0) + (rowT[r] || 0);
   ids.forEach(id => { const p = pos[id]; p.x = X[p.col]; p.y = Y[p.row]; p.w = G.w; p.h = G.h; });
   boxes.forEach(b => { b.x = X[b.c0] - b.l; b.y = Y[b.r0] - b.t; b.w = X[b.c1] + G.w + b.r - b.x; b.h = Y[b.r1] + G.h + b.b - b.y; });
 
-  // ---- 5. a container whose box overlaps one that is not its ancestor or descendant is reported in `overlaps`, not hidden
+  // ---- 6. a container whose box overlaps one that is not its ancestor or descendant is reported in `overlaps`, not hidden
   // (map.spine.overlaps; not map.layout.overlaps, which conserve() reads as sections dragged on top of each other and
   // would break a meter that is otherwise balanced: every node and edge is drawn). A node standing inside a box it is
   // not a member of is reported the same way in `intrusions`: the box would claim it. Both are consequences of the
   // declared placement, never repaired.
   const overlaps = [], intrusions = [], rel = (a, b) => a.members.includes(b.id) || b.members.includes(a.id);
-  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) if (!rel(boxes[i], boxes[j]) && hit(boxes[i], boxes[j])) overlaps.push([boxes[i].id, boxes[j].id]);
-  for (const b of boxes) for (const id of ids) if (!b.members.includes(id) && hit(b, pos[id])) intrusions.push([b.id, id]);
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) if (!rel(boxes[i], boxes[j]) && hit(boxes[i], boxes[j])) overlaps.push([boxes[i].key, boxes[j].key]);
+  for (const b of boxes) for (const id of ids) if (!b.members.includes(id) && hit(b, pos[id])) intrusions.push([b.key, id]);
 
-  const stageX = c => X[c] + G.w / 2, ruleY = G.head - 4;
-  const bandBox = { x: 0, y: Y[0] - 6, h: Y[band - 1] + G.h + 6 - (Y[0] - 6) };
-  const W = X[cLast] + G.w + (colR[cLast] || 0) + G.margin, H = Y[rLast] + G.h + (rowB[rLast] || 0) + G.margin;
-  bandBox.w = W;
-  const tr = tray.length ? { x: X[nCols] - 8, y: Y[rMin] - 22, w: G.w + 16, h: (Y[rMin + tray.length - 1] + G.h + 8) - (Y[rMin] - 22), ids: tray } : null;
-  stages.forEach(s => { s.x = stageX(s.i); });
-  return { w: W, h: H, geom: G, ruleY, stages, pos, boxes, tray: tr, band: bandBox, overlaps, intrusions, unresolved,
-    counts: { columns: nCols, spine: ids.filter(id => pos[id].side === 0 && !pos[id].tray).length, above: rMin < 0 ? -rMin : 0, below: rLast - (band - 1) > 0 ? rLast - (band - 1) : 0, band, tray: tray.length, boxes: boxes.length, overlaps: overlaps.length, intrusions: intrusions.length } };
+  const ruleY = G.head - 4, span = { x: X[0] - G.gapX / 2, w: X[cEnd] + G.w + G.gapX / 2 - (X[0] - G.gapX / 2) };
+  const band0 = Y[0] - 6, bandBox = { x: span.x, w: span.w, y: band0, h: Y[band - 1] + G.h + 6 - band0 };
+  const W = X[cMax] + G.w + (colR[cMax] || 0) + G.margin, H = Y[rLast] + G.h + (rowB[rLast] || 0) + G.margin;
+  const tr = tray.length ? { x: X[cT] - 8, y: Y[rMin] - 22, w: G.w + 16, h: (Y[rMin + tray.length - 1] + G.h + 8) - (Y[rMin] - 22), ids: tray } : null;
+  const rails = { L: hasL ? { x: X[-1], ids: L } : null, R: hasR ? { x: X[cR], ids: R } : null, B: B.length ? { y: Y[rB] - 8, x: X[0] - G.gapX / 2, ids: B } : null };
+  stages.forEach(s => { s.x = X[s.i] + G.w / 2; });
+  const inC = ids.filter(id => pos[id].region === 'C'), below = Math.max(0, ...inC.map(id => pos[id].row)) - (band - 1);
+  return { w: W, h: H, geom: G, ruleY, stages, pos, boxes, tray: tr, rails, bothWays, band: bandBox, span, overlaps, intrusions, unresolved,
+    counts: { columns: nCols, spine: inC.filter(id => pos[id].side === 0).length, above: -Math.min(0, ...inC.map(id => pos[id].row)), below, band,
+      left: L.length, right: R.length, bottom: B.length, bothWays: bothWays.length, tray: tray.length,
+      boxes: boxes.length, continued: boxes.filter(b => b.continued).length, overlaps: overlaps.length, intrusions: intrusions.length } };
 }
 
 // Where the segment from the centre of one rect to the centre of another leaves the first and enters the second.
@@ -167,8 +220,8 @@ export function renderSpine(container, data, state, lay) {
   for (const [k, slot] of Object.entries(DECLARED_EDGE_SLOT)) defs += `<marker id="sp-${k}" viewBox="0 0 9 8" refX="8.6" refY="4" markerWidth="9" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 .4L9 4L0 7.6z" style="fill:${v(slot)}"/></marker>`;
 
   // The spine itself: a band behind the rows of the signal path, and the rule with one tick and one label per stage.
-  under += `<rect x="0" y="${f1(lay.band.y)}" width="${f1(lay.band.w)}" height="${f1(lay.band.h)}" style="fill:${v('surface-group-nested')};opacity:${v('opacity-dim')}"><title>The declared signal path: each stage, in declared order, left to right</title></rect>`;
-  under += `<line x1="0" y1="${lay.ruleY}" x2="${f1(lay.w)}" y2="${lay.ruleY}" style="stroke:${v('ink-muted')};stroke-width:${v('stroke-edge-emph')}"/>`;
+  under += `<rect x="${f1(lay.band.x)}" y="${f1(lay.band.y)}" width="${f1(lay.band.w)}" height="${f1(lay.band.h)}" style="fill:${v('surface-group-nested')};opacity:${v('opacity-dim')}"><title>The declared signal path: each stage, in declared order, left to right</title></rect>`;
+  under += `<line x1="${f1(lay.span.x)}" y1="${lay.ruleY}" x2="${f1(lay.span.x + lay.span.w)}" y2="${lay.ruleY}" style="stroke:${v('ink-muted')};stroke-width:${v('stroke-edge-emph')}"/>`;
   lay.stages.forEach((s, i) => {
     const fit = Math.max(8, Math.floor((colW[i] - 8) / 5.8));
     under += `<g data-stage="${i}"><title>${esc(`${i + 1}. ${s.text}`)}</title><line x1="${f1(s.x)}" y1="${lay.ruleY - 5}" x2="${f1(s.x)}" y2="${lay.ruleY}" style="stroke:${v('ink-muted')};stroke-width:${v('stroke-edge-emph')}"/>` +
@@ -181,9 +234,14 @@ export function renderSpine(container, data, state, lay) {
   // Containers, outermost first so a nested box draws over its parent. The header band carries id and multiplicity.
   [...lay.boxes].sort((a, b) => a.depth - b.depth || (a.id < b.id ? -1 : 1)).forEach(b => {
     const n = nm(b.id), d = n.declared || {}, mult = d.multiplicity ? ' × ' + d.multiplicity : '';
-    under += `<g data-container="${esc(b.id)}"><rect x="${f1(b.x)}" y="${f1(b.y)}" width="${f1(b.w)}" height="${f1(b.h)}" rx="6" style="fill:${v('surface-group')};fill-opacity:.55;stroke:${v('ink-faint')};stroke-width:1px"/>` +
-      `<text x="${f1(b.x + 8)}" y="${f1(b.y + 13)}" style="font:600 10.5px/1 ${v('font-mono')};fill:${v('ink-muted')}">${esc(cut(n.path + mult, Math.floor((b.w - 16) / 6.3)))}<title>${esc(n.path + mult)}</title></text></g>`;
+    // A continued box (this container's own node stands in another region) is dashed: the same container, one more place.
+    under += `<g data-container="${esc(b.key)}"><rect x="${f1(b.x)}" y="${f1(b.y)}" width="${f1(b.w)}" height="${f1(b.h)}" rx="6" style="fill:${v('surface-group')};fill-opacity:.55;stroke:${v('ink-faint')};stroke-width:1px;stroke-dasharray:${b.continued ? SPEC.dash.gap : 'none'}"/>` +
+      `<text x="${f1(b.x + 8)}" y="${f1(b.y + 13)}" style="font:600 10.5px/1 ${v('font-mono')};fill:${v('ink-muted')}">${esc(cut(n.path + mult, Math.floor((b.w - 16) / 6.3)))}<title>${esc(n.path + mult + (b.continued ? ' (continued: its own block stands elsewhere)' : ''))}</title></text></g>`;
   });
+  const railText = (x, y, t, tip) => `<text x="${f1(x)}" y="${f1(y)}" style="font:600 10px/1 ${v('font-ui')};fill:${v('ink-muted')}">${esc(t)}<title>${esc(tip)}</title></text>`;
+  if (lay.rails.L) under += railText(lay.rails.L.x, lay.ruleY - 9, 'Inputs', 'External blocks whose declared edges go out of them into the engine (both ways: here too)');
+  if (lay.rails.R) under += railText(lay.rails.R.x, lay.ruleY - 9, 'Outputs', 'External blocks the engine\'s declared edges go into');
+  if (lay.rails.B) under += railText(lay.rails.B.x, lay.rails.B.y, 'Observers: external blocks only observation edges go into', 'External blocks every declared edge into which is an observation');
   if (lay.tray) under += `<g data-tray="1"><rect x="${f1(lay.tray.x)}" y="${f1(lay.tray.y)}" width="${f1(lay.tray.w)}" height="${f1(lay.tray.h)}" rx="6" style="fill:none;stroke:${v('ink-faint')};stroke-width:1px;stroke-dasharray:${SPEC.dash.gap}"/><text x="${f1(lay.tray.x + 8)}" y="${f1(lay.tray.y + 13)}" style="font:600 10.5px/1 ${v('font-ui')};fill:${v('ink-muted')}">Tray: no declared edge to the path</text></g>`;
 
   // Edges: one line each, coloured by kind. data-edge is on a group with a wider invisible stroke so thin lines click.

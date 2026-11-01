@@ -207,6 +207,7 @@ main{position:relative}
         <div class="float iso" id="isoBar" hidden><span class="eyebrow">Isolated</span><b id="isoName"></b><span class="eyebrow" id="isoElse" style="text-transform:none;letter-spacing:0"></span><button class="btn" id="isoExit">Back to full map</button></div>
         <div class="float zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="lod"></div></div>
       </div>
+      <div class="float zoom" id="szoom" style="display:none"><button id="szin" title="Zoom in">+</button><button id="szout" title="Zoom out">−</button><button id="szfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="slod" title="Zoom"></div></div>
       <div class="float iso" id="storyBar" hidden><span class="eyebrow">Story</span><div class="seg" id="storySeg"></div></div>
       <div class="float legend" id="legend"></div>
     </section>
@@ -346,11 +347,13 @@ function paint() {
   paneFlow.hidden = !both; $('pmMain').hidden = !both;
   const wl = canvas.querySelector(':scope > .works'); if (wl) wl.style.display = works ? '' : 'none';
   const sl = canvas.querySelector(':scope > .spine'); if (sl) sl.style.display = spine ? '' : 'none';
+  $('szoom').style.display = spine ? '' : 'none';
   const story = works && effStory(s);
   paneMain.style.display = story || spine ? 'none' : '';
   let c;
   if (spine) {
     map = renderSpine(canvas, data, st, spineLay = spineLay || layoutSpine(data));
+    $('slod').textContent = Math.round(map.zoom.k * 100) + '%';
   } else if (story) {
     const acc = storyAccounting(data, story), ed = (s.storyEdits || {})[story.id], hc = cardHeights[story.id] = cardHeights[story.id] || {};
     map = renderWorks(canvas, data, st, story, acc, layoutStory(story, ed, hc));
@@ -647,12 +650,14 @@ canvas.addEventListener('pointerup', e => {
   A.select(tagPane(h, t));
   if (phone()) $('panel').classList.add('open');
 });
+// The Signal path view hides paneMain (a hidden element measures 0), so it zooms about the canvas, with the same camera state.
+const mainEl = () => (store.get().view === 'spine' && HAS_SPINE ? canvas : paneMain);
 const zoomAt = (f, cx, cy, pane = 'main') => {
-  const el = pane === 'flow' ? paneFlow : paneMain, z = frameOf(pane).zoom, k = Math.max(0.12, Math.min(4, z.k * f));
+  const el = pane === 'flow' ? paneFlow : mainEl(), z = frameOf(pane).zoom, k = Math.max(0.12, Math.min(4, z.k * f));
   if (cx == null) { cx = el.clientWidth / 2; cy = el.clientHeight / 2; }
   setCam(pane)({ auto: false, k, x: cx - (cx - z.x) * (k / z.k), y: cy - (cy - z.y) * (k / z.k) });
 };
-canvas.addEventListener('wheel', e => { e.preventDefault(); const pane = paneOf(e.target), r = (pane === 'flow' ? paneFlow : paneMain).getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top, pane); }, { passive: false });
+canvas.addEventListener('wheel', e => { e.preventDefault(); const pane = paneOf(e.target), r = (pane === 'flow' ? paneFlow : mainEl()).getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top, pane); }, { passive: false });
 // ---------- right-click menu: actions for whatever is under the pointer, plus Back/Forward and Back to full map.
 let menu = null, menuReturn = null;
 const menuOpen = () => !!menu;
@@ -772,6 +777,7 @@ function showMenu(target, cx, cy) {
   openMenu(cx, cy, items);
 }
 
+$('szin').onclick = () => zoomAt(1.25); $('szout').onclick = () => zoomAt(0.8); $('szfit').onclick = () => A.fit();
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
 $('fzin').onclick = () => zoomAt(1.25, null, null, 'flow'); $('fzout').onclick = () => zoomAt(0.8, null, null, 'flow'); $('fzfit').onclick = () => A.fitFlow();
 for (const id of ['pmFlow', 'pmMain']) $(id).onclick = () => { if ($(id).dataset.status === 'broken') store.set({ selection: tagSel({ type: 'unaccounted', id: 'all' }, 'both', id === 'pmFlow' ? 'flow' : 'main') }); };
@@ -1199,7 +1205,7 @@ function storyOutPanel(s) {
 function spineStagePanel() {
   const L = spineLay || layoutSpine(data), K = L.counts;
   return `<span class="eyebrow">Signal path</span><h2>${K.columns} declared stages</h2>
-    <p class="path">Placement is the declaration's own: stages in declared order, left to right; off-path items hang off the spine by a declared edge (above when it goes into the spine item, below when it comes out); boxes are declared parents. Nothing is inferred. ${K.above} rows above the spine, ${K.below} below, ${K.tray} in the tray. ${K.overlaps} container boxes overlap and ${K.intrusions} nodes stand inside a box they are not members of: shown, not repaired.</p>
+    <p class="path">Placement is the declaration's own: stages in declared order, left to right; off-path items hang off the spine by a declared edge (above when it goes into the spine item, below when it comes out); boxes are declared parents. Nothing is inferred. ${K.above} rows above the spine, ${K.below} below. External blocks off the path stand on rails: ${K.left} inputs on the left (${K.bothWays} with edges both ways), ${K.right} outputs on the right, ${K.bottom} observers below. ${K.tray} in the tray. ${K.continued} dashed boxes continue a container whose own block stands in another place. ${K.overlaps} container boxes overlap and ${K.intrusions} nodes stand inside a box they are not members of: shown, not repaired.</p>
     <div class="list">${L.stages.map(x => `<div class="card"><span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span></div>`).join('')}</div>`;
 }
 

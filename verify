@@ -49,6 +49,8 @@ fast() {
   # 'How it works' stories (ADR 0025): files exist in the graph, unsupported links state a reason, edits never
   # invent links, accounting partitions.
   node tools/story.test.mjs || ok=1
+  # The Signal path layout (Q-015; Julian, poll 2026-11-01: added to the gate).
+  node tools/spine.test.mjs || ok=1
   # The ten stress cases (Q-029; Julian, 2026-10-27: in fast): the nine committed snapshots equal a fresh
   # tools/stress-gen.mjs run, the 4,000-file case is generated in memory, every case balances at every level of
   # detail, and what each case tests has a geometry check on the rendered frame.

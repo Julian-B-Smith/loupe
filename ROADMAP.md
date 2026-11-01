@@ -423,6 +423,11 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   draws one long row; neither reads. The layout is a **spine from the spec**: the declared §4.2 signal path, in the
   spec's own reading order, runs left to right; each stage's block sits on it, and blocks off the path hang above or
   below their neighbours. No inference: the order is HORDE's. This pulls drawing the signal path into Q-015.
+- **Julian (polls, 2026-11-01), after the first spine:** the first draft piled boundary and engine-wide blocks into
+  the first column (13 overlapping container boxes, 145 intrusions). **Frame the spine:** blocks the declaration marks
+  `scope: external` leave the columns (inputs on a rail left of the spine, outputs on a rail right of it, observers
+  along the bottom); an engine block with no stage hangs at the column of its nearest neighbour on the path, not the
+  earliest. Only declared scope and edge direction decide. `tools/spine.test.mjs` joins `./verify fast` (approved).
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
