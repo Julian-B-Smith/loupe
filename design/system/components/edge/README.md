@@ -4,12 +4,15 @@ An edge is one directed dependency: color from its role, else its kind; line pat
 
 **Audit test.** Conservation: every edge is drawn, in a bus, folded into a count, or inside a collapsed container.
 
-Heads by family: filled arrow for flow (call, audio, mod, instantiate), hollow arrow for structure (include, import, inherit, test), dot for reads (param, data, config, reference). Patterns: static solid, config long dash 10 4, runtime round dots, annotated dash-dot, inferred short dash 4 3.5. Strokes and dashes are screen px at every zoom. States never change the pattern.
+Heads by family: filled arrow for flow (call, audio, mod, instantiate), hollow arrow for structure (include, import, inherit, test), dot for reads (param, data, config, reference). Patterns: static solid, config long dash 10 4, runtime round dots, annotated dash-dot, inferred short dash 4 3.5, declared long dash and two dots 12 3 1 2 1 3 (schema 0.4: a fact the target repo states about itself; a shape no other provenance uses, in the spec block's `dashes`). Strokes and dashes are screen px at every zoom. States never change the pattern.
 
 ```loupe-spec
 {
  "primitive": "edge",
  "version": 2,
+ "dashes": {
+  "declared": "12 3 1 2 1 3"
+ },
  "parts": {
   "line": {
    "stroke": "edge-kind",
@@ -104,6 +107,6 @@ Heads by family: filled arrow for flow (call, audio, mod, instantiate), hollow a
  },
  "layout": {},
  "overflow": "none",
- "notes": "Heads by family: filled arrow for flow (call, audio, mod, instantiate), hollow arrow for structure (include, import, inherit, test), dot for reads (param, data, config, reference). Patterns: static solid, config long dash 10 4, runtime round dots, annotated dash-dot, inferred short dash 4 3.5. Strokes and dashes are screen px at every zoom. States never change the pattern."
+ "notes": "Heads by family: filled arrow for flow (call, audio, mod, instantiate), hollow arrow for structure (include, import, inherit, test), dot for reads (param, data, config, reference). Patterns: static solid, config long dash 10 4, runtime round dots, annotated dash-dot, inferred short dash 4 3.5, declared long dash, two dots 12 3 1 2 1 3 (`dashes.declared`). Strokes and dashes are screen px at every zoom. States never change the pattern."
 }
 ```

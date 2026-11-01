@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { deepStrictEqual } from 'node:assert';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { SPEC } from '../design/prototype/render.js';
+import { SPECS } from '../design/prototype/specs.js';
 import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, undecidedNote, DECLARED_EDGE_SLOT, DECLARED_DASH, UNDECIDED_LABEL } from '../design/prototype/spine.js';
 import { conserve } from '../design/prototype/standins.js';
 
@@ -27,11 +28,11 @@ const stage = (d, lay, state = { view: 'spine', stage: 2, settings: {}, zoom: { 
 
 // ---- the declaration, read straight from the snapshot's graph
 const G = data.graph, SP = G.declaration.signalPath;
-const byPath = new Map(G.nodes.map((n) => [n.path, n.id]));
+const byPath = new Map(G.nodes.map((n) => [n.declared.id, n.id]));
 const declEdge = new Map(G.edges.map((e) => [e.evidence[0].id, e]));
 const named = (x) => (byPath.has(x) ? [byPath.get(x)] : declEdge.has(x) ? [declEdge.get(x).src, declEdge.get(x).dst] : []);
 const scope = (id) => G.nodes.find((n) => n.id === id).declared.scope;
-const pathOf = (id) => G.nodes.find((n) => n.id === id).path;
+const pathOf = (id) => G.nodes.find((n) => n.id === id).declared.id;
 const parentOf = new Map(G.nodes.filter((n) => n.declared.parent != null).map((n) => [n.id, byPath.get(n.declared.parent)]));
 const descendants = (id) => [...parentOf].filter(([, p]) => p === id).flatMap(([c]) => [c, ...descendants(c)]);
 const containers = [...new Set(parentOf.values())];
@@ -255,6 +256,7 @@ const dashes = Object.values(SPEC.dash);
 const shape = (d) => { if (d === 'none') return 'solid'; let n = d.split(/\s+/).map(Number); if (n.length % 2) n = n.concat(n); return n.filter((_, i) => i % 2 === 0).map((x) => (x >= 3 ? 'L' : 'S')).join(''); };
 const taken = Object.entries(SPEC.dash).map(([k, d]) => [k, shape(d)]);
 check(`the declared dash has a shape no other provenance uses: ${shape(DECLARED_DASH)} (${shape(DECLARED_DASH).length} dashes a period) against ${taken.map(([k, x]) => k + ' ' + x).join(', ')}`, shape(DECLARED_DASH).length >= 3 && taken.every(([, x]) => x !== shape(DECLARED_DASH)));
+check('the declared dash is the edge loupe-spec block\'s (dashes.declared), not a local constant, and no other SPEC.dash entry has it', DECLARED_DASH === SPECS.edge.dashes.declared && SPECS.edge.dashes.declared === '12 3 1 2 1 3' && Object.values(SPEC.dash).every((d) => d !== DECLARED_DASH));
 check('the declared edges draw with the declared dash', data.edges.every((e) => e.provenance === 'declared') && count(new RegExp(`stroke-dasharray:${DECLARED_DASH.replace(/ /g, ' ')};pointer-events:none`, 'g')) === data.edges.length);
 {
   const g2 = JSON.parse(JSON.stringify(G)); g2.edges[0].provenance = 'inferred'; g2.edges[1].kind = 'weird';
@@ -273,8 +275,8 @@ check('zooming out never zooms in (also below the usual floor), zooming in stops
 
 // ---- synthetic snapshots: the branches the engine2 snapshot does not reach
 const syn = () => {
-  const N = (id, scp, parent = null, kind = 'block') => ({ id: 'decl:' + id, kind, path: id, hash: 'none', declared: { label: id, scope: scp, multiplicity: null, cites: [], parent } });
-  const E = (a, b, kind = 'audio') => ({ id: `e:${a}>${b}:${kind}`, src: 'decl:' + a, dst: 'decl:' + b, kind, provenance: 'declared', evidence: [{ type: 'declaration', path: 'x', id: `${a}->${b}`, cites: [] }] });
+  const N = (id, scp, parent = null, kind = 'block') => ({ id: 'decl:' + id, kind, declared: { id, label: id, scope: scp, multiplicity: null, cites: [], parent } });
+  const E = (a, b, kind = 'audio') => ({ id: `e:${a}>${b}:${kind}`, src: 'decl:' + a, dst: 'decl:' + b, kind, provenance: 'declared', evidence: [{ type: 'declaration', path: 'x', id: `${a}->${b}` }], declared: { label: '', cites: [] } });
   const nodes = [N('relay_ext', 'external'), N('fed_ext', 'external'), N('x_ext', 'external'), N('y_ext', 'external'), N('a', 'engine'), N('b', 'engine'), N('c', 'engine'), N('src_ext', 'external'), N('sink_ext', 'external'), N('watch_ext', 'external'), N('both_ext', 'external'), N('lone_ext', 'external'),
     N('hang', 'engine'), N('h2', 'engine'), N('aa1', 'engine'), N('zz1', 'engine'), N('twoway', 'engine'), N('alone', 'engine'), N('sink2_ext', 'external')];
   const edges = [E('a', 'b'), E('b', 'c'), E('src_ext', 'a'), E('c', 'sink_ext'), E('b', 'watch_ext', 'observation'), E('a', 'both_ext'), E('both_ext', 'b'), E('hang', 'b'), E('h2', 'a'), E('aa1', 'b'), E('zz1', 'b'),

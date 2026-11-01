@@ -44,7 +44,7 @@ export function check(dir, { schemaDir } = {}) {
   for (const n of G.nodes) {
     if (nodes.has(n.id)) err('G2', `duplicate node ${n.id}`);
     nodes.set(n.id, n);
-    const prefix = { file: 'file:', symbol: 'sym:', external: 'ext:', artifact: 'art:', missing: 'miss:', target: 'target:' }[n.kind];
+    const prefix = { file: 'file:', symbol: 'sym:', external: 'ext:', artifact: 'art:', missing: 'miss:', target: 'target:', block: 'decl:', slot: 'decl:' }[n.kind];
     if (!n.id.startsWith(prefix)) err('G2', `node ${n.id} id prefix does not match kind ${n.kind}`);
     if (n.parent && !G.nodes.some((m) => m.id === n.parent)) err('G2', `node ${n.id} parent ${n.parent} missing`);
   }
@@ -59,8 +59,65 @@ export function check(dir, { schemaDir } = {}) {
     edges.set(e.id, { ...e, layer: 'graph' });
   }
 
+  // ---- 0.4 declaration graphs (docs/schema-0.4-proposal.md): D1 to D6. A graph is a crawl or a declaration, never both.
+  const isDecl = G.schema === 'loupe.graph/0.4';
+  const crawler = G.crawler || {};
+  // D1: a declaration graph has `declaration` and no `crawler`; a crawl has the reverse.
+  if (isDecl && (!G.declaration || G.crawler)) err('D1', `a declaration graph has declaration and no crawler (declaration: ${G.declaration ? 'present' : 'missing'}, crawler: ${G.crawler ? 'present' : 'absent'})`);
+  if (!isDecl && (!G.crawler || G.declaration)) err('D1', `a crawl has crawler and no declaration (crawler: ${G.crawler ? 'present' : 'missing'}, declaration: ${G.declaration ? 'present' : 'absent'})`);
+  if (isDecl) {
+    const declared = G.declaration || {};
+    // D2: every node is a block or slot carrying `declared` (its id agreeing with the node id, so D3's parent lookup means
+    // what it says); every edge is `declared` provenance with declaration evidence.
+    for (const n of G.nodes) {
+      if (!['block', 'slot'].includes(n.kind) || !n.declared) err('D2', `node ${n.id} must be a block or slot with declared (kind ${n.kind}, declared ${n.declared ? 'present' : 'missing'})`);
+      else if (n.id !== 'decl:' + n.declared.id) err('D2', `node ${n.id} does not match its declared id ${n.declared.id}`);
+    }
+    for (const e of G.edges) {
+      if (e.provenance !== 'declared' || !e.declared || !e.evidence.length || e.evidence.some((x) => x.type !== 'declaration'))
+        err('D2', `edge ${e.id} must be declared provenance with declared and declaration evidence only`);
+    }
+    // D3: every declared.parent names a node, and parents form no cycle (a cycle would send any consumer around forever).
+    for (const n of G.nodes) {
+      const p = n.declared && n.declared.parent;
+      if (p != null && !nodes.has('decl:' + p)) err('D3', `node ${n.id} has parent ${p}, which is not a node`);
+    }
+    for (const n of G.nodes) {
+      const seen = new Set([n.id]); let at = n;
+      while (at && at.declared && at.declared.parent != null) {
+        const up = nodes.get('decl:' + at.declared.parent);
+        if (!up) break;
+        if (seen.has(up.id)) { err('D3', `parent cycle through ${n.id}`); break; }
+        seen.add(up.id); at = up;
+      }
+    }
+    // D4: every stage ref names a node or an edge of this graph, and ids and refs run in step.
+    (declared.signalPath || []).forEach((st, i) => {
+      if (st.ids.length !== st.refs.length) err('D4', `stage ${i} has ${st.ids.length} ids but ${st.refs.length} refs`);
+      for (const r of st.refs) if (!nodes.has(r) && !G.edges.some((e) => e.id === r)) err('D4', `stage ${i} ref ${r} names no node or edge`);
+    });
+    // D5: a spec citation on every node and edge (ROADMAP Q-015 criterion 1).
+    for (const n of G.nodes) if (n.declared && !(n.declared.cites || []).length) err('D5', `node ${n.id} cites no spec id`);
+    for (const e of G.edges) if (e.declared && !(e.declared.cites || []).length) err('D5', `edge ${e.id} cites no spec id`);
+    // D6: the declaration's own counts equal what the graph holds (the census, in the checker as well as the adapter's
+    // test). An edge counts once per declaration it carries (a merged duplicate keeps one evidence each), so a declared
+    // edge the adapter dropped or lost shows as a difference. Zero entries are dropped from both sides before comparing.
+    {
+      const tally = (xs) => Object.fromEntries(Object.entries(xs.reduce((a, k) => ((a[k] = (a[k] || 0) + 1), a), {})).sort());
+      const nz = (o) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([, v]) => v !== 0).sort()) : o);
+      const held = { items: tally(G.nodes.map((n) => n.kind)), scope: tally(G.nodes.map((n) => n.declared && n.declared.scope)), edges: tally(G.edges.flatMap((e) => e.evidence.map(() => e.kind))), stages: (declared.signalPath || []).length };
+      const said = Object.fromEntries(Object.entries(declared.counts || {}).map(([k, v]) => [k, nz(v)]));
+      for (const k of [...new Set([...Object.keys(held), ...Object.keys(said)])].sort())
+        if (JSON.stringify(held[k] ?? null) !== JSON.stringify(said[k] ?? null)) err('D6', `declaration.counts.${k} says ${JSON.stringify(said[k] ?? null)} but the graph holds ${JSON.stringify(held[k] ?? null)}`);
+    }
+  } else {
+    // A crawl carries none of the declaration's words (D2, the other way).
+    for (const n of G.nodes) if (n.kind === 'block' || n.kind === 'slot' || n.declared) err('D2', `node ${n.id} is declared structure in a graph that is not a declaration graph`);
+    for (const e of G.edges) if (e.provenance === 'declared' || e.declared) err('D2', `edge ${e.id} is declared structure in a graph that is not a declaration graph`);
+  }
+
   // ---- inventory closes: every repo file is crawled or counted as excluded
-  const inv = G.crawler && G.crawler.inventory;
+  const inv = crawler.inventory;
   if (inv) {
     const excl = inv.excluded.reduce((a, x) => a + x.count, 0);
     if (inv.files !== inv.crawled + excl) err('G5', `inventory does not close: ${inv.files} files ≠ ${inv.crawled} crawled + ${excl} excluded`);
@@ -73,7 +130,7 @@ export function check(dir, { schemaDir } = {}) {
   // configurations, is sorted, and never lists all of them: "all" is spelled by omission, so one fact has one encoding
   // and diffs cannot flip between two (critic, 2026-10-16). An edge touching a target cannot hold where it is absent.
   const cfgNames = new Set();
-  for (const c of G.crawler.configurations || []) { if (cfgNames.has(c.name)) err('G7', `configuration ${c.name} is declared twice`); cfgNames.add(c.name); }
+  for (const c of crawler.configurations || []) { if (cfgNames.has(c.name)) err('G7', `configuration ${c.name} is declared twice`); cfgNames.add(c.name); }
   const checkConfigs = (what, cs) => {
     if (!cs) return;
     for (const c of cs) if (!cfgNames.has(c)) err('G7', `${what} holds in configuration ${c}, which the crawler does not declare`);
@@ -178,6 +235,22 @@ export function check(dir, { schemaDir } = {}) {
       const lv = /^level:(0|[1-9]\d*)$/.exec(key);
       const ok = key === 'gutter' || (lv ? +lv[1] < bandLevels : els.get(key)?.primitive === 'section' && !els.get(key).parent);
       if (!ok) err('V8', `offset key ${key} is not a top-level section, an existing level, or the gutter`);
+    }
+  }
+  // D7: a view over a declaration graph may group but not invent: every section is a declared parent, holding that
+  // parent's own node and its children that are not parents themselves, nested under its own declared parent's section,
+  // and says `declared` (it restates the declaration; no agent claimed it). Exactly what the adapter builds.
+  if (isDecl) {
+    const kids = new Map(); // declared id -> child nodes
+    for (const n of G.nodes) { const p = n.declared && n.declared.parent; if (p != null) (kids.get(p) ?? kids.set(p, []).get(p)).push(n); }
+    for (const el of V.elements.filter((x) => x.primitive === 'section')) {
+      const p = el.id.startsWith('sec:') ? el.id.slice(4) : null, own = p != null && nodes.get('decl:' + p);
+      if (!own || !kids.has(p)) { err('D7', `section ${el.id} is not a declared parent`); continue; }
+      const want = ['decl:' + p, ...kids.get(p).filter((c) => !kids.has(c.declared.id)).map((c) => c.id)].sort();
+      if (JSON.stringify([...el.members].sort()) !== JSON.stringify(want)) err('D7', `section ${el.id} members are not ${p} and its non-parent children`);
+      const up = own.declared.parent != null ? 'sec:' + own.declared.parent : undefined;
+      if (el.parent !== up) err('D7', `section ${el.id} is nested under ${el.parent ?? 'nothing'}, not under its declared parent's section ${up ?? '(none)'}`);
+      if (el.status !== 'declared') err('D7', `section ${el.id} has status ${el.status}; a section over a declaration says declared`);
     }
   }
   const isA = (id, ...kinds) => els.has(id) && kinds.includes(els.get(id).primitive);

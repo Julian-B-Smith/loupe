@@ -5,8 +5,8 @@
 // Reads the file at the commit with `git show` (HORDE's working tree and index are never touched).
 // Writes graph.json, overlay.json, view.json and census.json (default: design/prototype/snapshots/engine2-structure/).
 //
-// DRAFT: the graph is in the proposed schema 0.4 shape (`loupe.graph/0.4-draft`), which is not yet in schema/ and is
-// behind Julian's gate; the viewer draws it first so the schema is approved with the picture (domain invariant).
+// The graph is a schema 0.4 declaration graph (`loupe.graph/0.4`, docs/schema-0.4-proposal.md): block and slot nodes with
+// no path and no hash (nothing here is a file), declared edges, and `declaration` in place of `crawler`.
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
@@ -78,8 +78,8 @@ export function adapt(decl, { commit, commitTime, blob }) {
   const containers = new Set([...parent.values()].filter((p) => p != null));
 
   const nodes = items.map((i) => ({
-    id: nodeId(i.id), kind: i.kind === 'slot' ? 'slot' : 'block', path: i.id, hash: 'none',
-    declared: { label: i.label, scope: i.scope, multiplicity: i.multiplicity ?? null, cites: [...(i.cites || [])], parent: parent.get(i.id) },
+    id: nodeId(i.id), kind: i.kind === 'slot' ? 'slot' : 'block',
+    declared: { id: i.id, label: i.label, scope: i.scope, multiplicity: i.multiplicity ?? null, cites: [...(i.cites || [])], parent: parent.get(i.id) },
   }));
   for (const i of items) if (i.kind !== 'block' && i.kind !== 'slot') unplaced.push({ what: 'item', id: i.id, why: `kind ${i.kind} is neither block nor slot (drawn as a block)` });
 
@@ -90,14 +90,17 @@ export function adapt(decl, { commit, commitTime, blob }) {
     if (!byId.has(e.from) || !byId.has(e.to)) { unplaced.push({ what: 'edge', id: e.id, why: `an end is not a declared item` }); continue; }
     if (!KINDS.includes(e.kind)) { unplaced.push({ what: 'edge', id: e.id, why: `kind ${e.kind} is not in ${FORMAT}'s closed list` }); continue; }
     const src = nodeId(e.from), dst = nodeId(e.to), id = edgeId(src, dst, e.kind);
-    const evidence = { type: 'declaration', path: DECL_PATH, id: e.id, cites: [...(e.cites || [])] };
+    const evidence = { type: 'declaration', path: DECL_PATH, id: e.id }, cites = [...(e.cites || [])];
     if (seen.has(id)) {
-      // Merged, not dropped: the second declaration stays on the edge as evidence, and is reported.
-      edgeById.get(id).evidence.push(evidence);
-      unplaced.push({ what: 'edge', id: e.id, why: `same ends and kind as ${seen.get(id)} (evidence merged into that edge)` });
+      // Merged, not dropped: the second declaration stays on the edge as evidence and its cites join the edge's (evidence
+      // carries no cites in 0.4); only a differing label is not carried, and the report says so.
+      const kept = edgeById.get(id);
+      kept.evidence.push(evidence);
+      for (const c of cites) if (!kept.declared.cites.includes(c)) kept.declared.cites.push(c);
+      unplaced.push({ what: 'edge', id: e.id, why: `same ends and kind as ${seen.get(id)} (evidence and cites merged into that edge${(e.label || '') !== kept.declared.label ? '; its label is not carried' : ''})` });
     } else {
       seen.set(id, e.id);
-      const edge = { id, src, dst, kind: e.kind, provenance: 'declared', ...(e.label ? { label: e.label } : {}), evidence: [evidence] };
+      const edge = { id, src, dst, kind: e.kind, provenance: 'declared', declared: { label: e.label || '', cites }, evidence: [evidence] };
       edges.push(edge); edgeById.set(id, edge);
     }
     if (!declEdgeIds.has(e.id)) declEdgeIds.set(e.id, id);
@@ -122,7 +125,7 @@ export function adapt(decl, { commit, commitTime, blob }) {
   });
 
   const graph = {
-    schema: 'loupe.graph/0.4-draft',
+    schema: 'loupe.graph/0.4',
     source: { repo: REPO, commit, commitTime, dirty: false },
     declaration: { format: decl.format, path: DECL_PATH, blob, spec: { ...decl.spec }, counts: decl.counts, signalPath },
     nodes, edges,
@@ -131,13 +134,13 @@ export function adapt(decl, { commit, commitTime, blob }) {
   const overlay = { schema: 'loupe.overlay/0.2', graph: { hash: sha256(graphText) }, edges: [], roles: [], conditions: [] };
   const overlayText = canonicalDoc(overlay);
 
-  // The view nests as the declaration does. Written by this adapter, not an agent: `by` says so, and it is accepted
+  // The view nests as the declaration does. Written by this adapter, not an agent: `by` says so, and its status is `declared`
   // (it states the declaration, nothing composed). Ordered by declared id so the bytes are stable.
   const elements = [...containers].filter((c) => byId.has(c)).sort().map((c) => {
     const it = byId.get(c), up = parent.get(c);
     const members = [nodeId(c), ...items.filter((i) => parent.get(i.id) === c && !containers.has(i.id)).map((i) => nodeId(i.id)).sort()];
     return { id: secId(c), primitive: 'section', label: c, claim: it.label + (it.multiplicity ? ` (× ${it.multiplicity})` : ''),
-      members, by: 'adapter:engine-structure', status: 'accepted', ...(up != null ? { parent: secId(up) } : {}) };
+      members, by: 'adapter:engine-structure', status: 'declared', ...(up != null ? { parent: secId(up) } : {}) };
   });
   const view = { schema: 'loupe.view/0.2', graph: { hash: sha256(graphText) }, overlay: { hash: sha256(overlayText) },
     dialect: { name: 'engine-structure', version: '0.1' }, settings: { hubPlacement: 'group' }, exemptions: [], elements };

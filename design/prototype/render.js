@@ -907,7 +907,7 @@ export function render(container, data, state) {
     // A ghost keeps its kind's shape but takes the diff colour, so it never reads as a missing node (critic).
     const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'diff-added') : hub ? 'hub' : ks.stroke;
     const sw = sel || hov ? v('stroke-hub') : hub ? v('stroke-hub') : v('stroke-group');
-    let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(n.path)}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
+    let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(n.path ?? (n.declared ? n.declared.id : id))}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
     if (sel) g += `<rect x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${v('accent-soft')}"/>`;
     if (hub) g += `<rect x="${f1(r.x - 3.5)}" y="${f1(r.y - 3.5)}" width="${f1(r.w + 7)}" height="${f1(r.h + 7)}" rx="6.5" style="fill:${v('hub-soft')};stroke:${v('hub')};stroke-width:${v('stroke-hub')};opacity:${decor}"/>`;
     if (designish && overlapOf[id] && decor > 0) g += `<rect x="${f1(r.x - 3)}" y="${f1(r.y - 3)}" width="${f1(r.w + 6)}" height="${f1(r.h + 6)}" rx="6" style="fill:${v('set-1')};stroke:${v('set-1')};stroke-width:4px;opacity:${decor}"/>`;

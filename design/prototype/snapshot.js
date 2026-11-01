@@ -20,7 +20,7 @@ export function uniqueLabels(list) {
       group.forEach(n => { count[n.label] = (count[n.label] || 0) + 1; });
       const clash = group.filter(n => count[n.label] > 1);
       if (!clash.length) return;
-      clash.forEach(n => { const parts = n.path.split('/'); n.label = depth === 0 ? parts[parts.length - 1] : parts.slice(-1 - depth).join('/'); });
+      clash.forEach(n => { const parts = (n.path ?? n.label).split('/'); n.label = depth === 0 ? parts[parts.length - 1] : parts.slice(-1 - depth).join('/'); });
     }
   });
 }
@@ -49,7 +49,8 @@ export async function loadSnapshot(dir) {
 export function indexSnapshot(raw) {
   const { graph, overlay, view } = raw;
   const nodes = {};
-  graph.nodes.forEach(n => { nodes[n.id] = { ...n, label: stem(n.path, n.kind) }; });
+  // A declared node (schema 0.4) is not a file: it has no path, and its label is the declaration's own id.
+  graph.nodes.forEach(n => { nodes[n.id] = { ...n, label: n.declared ? n.declared.id : stem(n.path, n.kind) }; });
   uniqueLabels(Object.values(nodes));
   const roles = {};
   ((overlay && overlay.roles) || []).forEach(r => { roles[r.edge] = r.role; });

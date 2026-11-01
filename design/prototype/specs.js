@@ -678,6 +678,9 @@ export const SPECS = {
  "edge": {
   "primitive": "edge",
   "version": 2,
+  "dashes": {
+   "declared": "12 3 1 2 1 3"
+  },
   "parts": {
    "line": {
     "stroke": "edge-kind",

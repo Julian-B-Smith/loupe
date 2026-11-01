@@ -123,15 +123,17 @@
               },
               "by": {
                 "type": "string",
-                "pattern": "^(agent|human):.+$"
+                "pattern": "^(agent|human|adapter):.+$",
+                "description": "adapter: a deterministic adapter wrote it, restating a declaration (0.4)"
               },
               "status": {
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "section"
@@ -182,9 +184,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "set"
@@ -231,9 +234,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "overlap"
@@ -288,9 +292,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "bus"
@@ -354,9 +359,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "band"
@@ -420,9 +426,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "lane"
@@ -490,9 +497,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "twins"
@@ -570,9 +578,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "hub"
@@ -621,9 +630,10 @@
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): the element only restates a declaration; no agent made the claim, so there is nothing to audit."
               },
               "primitive": {
                 "const": "loop"
@@ -736,7 +746,7 @@
   "definitions": {
     "nodeId": {
       "type": "string",
-      "pattern": "^(file|sym|ext|art|miss|target):.+$"
+      "pattern": "^(file|sym|ext|art|miss|target|decl):.+$"
     },
     "edgeId": {
       "type": "string",
@@ -748,7 +758,7 @@
     },
     "ref": {
       "type": "string",
-      "pattern": "^((file|sym|ext|art|miss|target):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
+      "pattern": "^((file|sym|ext|art|miss|target|decl):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
       "description": "A node id or an element id"
     }
   }

@@ -114,6 +114,7 @@
     { name: 'Crawler output: the cmake-basic fixture', path: 'design/proto/snapshots/cmake-basic-crawl/', note: 'Made by the P1a crawler (node crawler/cli.ts crawl), not the probe: build targets, include edges with their conditions, schema 0.3.2. Its view is empty, so the design view shows every file loose until a Structure agent composes sections. conformance.json beside it lists one finding: plugin uses lut without declaring it.' },
     { name: 'HORDE sample, current schema', path: 'schema/examples/horde-sample/', note: 'The invented sample at schema 0.2. No stage data yet, so stages 3 to 6 are empty.' },
     { name: 'HORDE sample with stage stand-ins', path: 'design/proto/snapshots/horde-sample/', note: 'Design’s copy at schema 0.1, with dialogue, audit, explain and diff stand-ins. Use this one for stages 3 to 6.', chip: ['warn', 'old schema'] },
+    { name: 'HORDE engine2, declared structure', path: 'design/proto/snapshots/engine2-structure/', note: 'Drawn from HORDE\u2019s declaration at 380ffd6 (schema 0.4: blocks and slots, declared edges, no files). Open the Signal path view.' },
     { name: 'Loops (synthetic)', path: 'design/proto/snapshots/loops-synthetic/', note: 'Made-up snapshot with all three loop kinds. Its view is bound to the wrong graph hash, so it should show as stale.', chip: ['bad', 'fails check'] },
   ];
   // The v4 viewer (design/prototype/, published as design/proto/; see ALIASES in tools/serve.mjs) resolves ?snapshot= relative to its own folder.
@@ -132,7 +133,7 @@
     try {
       const g = await (await fetch(s.path + 'graph.json')).json();
       const nodes = (g.nodes || []).length, edges = (g.edges || []).length;
-      el.textContent = `${s.path} · ${g.schema || 'schema ?'} · ${nodes} nodes · ${edges} crawled edges` + (g.source && g.source.commit ? ` · commit ${String(g.source.commit).slice(0, 8)}` : '');
+      el.textContent = `${s.path} · ${g.schema || 'schema ?'} · ${nodes} nodes · ${edges} ${g.declaration ? 'declared' : 'crawled'} edges` + (g.source && g.source.commit ? ` · commit ${String(g.source.commit).slice(0, 8)}` : '');
     } catch { el.textContent = `${s.path} · could not read graph.json`; }
   });
 

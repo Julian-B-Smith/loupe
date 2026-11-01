@@ -45,7 +45,7 @@ export function edgeSite(edge) {
 
 // What a map element points at in the code, or why it points at nothing. Only `file` nodes are files in the repo:
 // a missing node was named but never found, an external one is outside the repo, a target is a build name.
-const NOT_A_FILE = { missing: 'named by the code but not found in the repo', external: 'outside the repo', target: 'a build target, not a file' };
+const NOT_A_FILE = { block: 'a declared block, not a file', slot: 'a declared slot, not a file', missing: 'named by the code but not found in the repo', external: 'outside the repo', target: 'a build target, not a file' };
 export function codeTarget(data, sel) {
   if (!sel) return null;
   if (sel.type === 'node') {

@@ -7,6 +7,7 @@ import { join, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { adapt, FORMAT, DECL_PATH } from './engine-structure.mjs';
+import { check as loupeCheck } from './loupe-check.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SNAP = join(ROOT, 'design/prototype/snapshots/engine2-structure');
@@ -28,6 +29,9 @@ else {
   const missingEdges = decl.edges.filter((e) => !evIds.has(e.id)).map((e) => e.id);
   check('every declared item is a node', missingItems.length === 0, missingItems.join(','));
   check('every declared edge is an edge (by declared id in evidence)', missingEdges.length === 0, missingEdges.join(','));
+  const lc = loupeCheck(SNAP, { schemaDir: join(ROOT, 'schema') });
+  check('loupe-check passes on the committed snapshot with schema validation (D1 to D7 included)', lc.errors.length === 0 && lc.notes.length === 0, lc.errors.concat(lc.notes).slice(0, 3).join(' | '));
+  check('the graph declares 0.4, with no crawler, and declared.id on every node', graph.schema === 'loupe.graph/0.4' && !graph.crawler && graph.nodes.every((n) => n.declared.id && n.id === 'decl:' + n.declared.id));
   check('node count equals declared item count', graph.nodes.length === decl.items.length);
   check('census.declared is the declaration\'s own counts', same(census.declared, decl.counts));
   check('census.carried equals census.declared', same(census.carried, census.declared), JSON.stringify(census.carried));
@@ -54,6 +58,8 @@ const reported = (c, what, id) => c.unplaced.some((u) => u.what === what && (id 
   check('clean fixture: all stage ids resolve', c.stagesResolved === 2 && c.stagesUnresolved.length === 0);
   const g = JSON.parse(run(base())['graph.json']);
   check('stage refs: item to decl:, edge to e:', same(g.declaration.signalPath[0].refs, ['decl:a', g.edges[0].id]) && same(g.declaration.signalPath[0].ids, ['a', 'a->b']));
+  check('0.4 shape: no path or hash on a node, declared.cites on nodes and edges, evidence is {type, path, id}', g.schema === 'loupe.graph/0.4' && g.nodes.every((n) => !('path' in n) && !('hash' in n) && n.declared.id && Array.isArray(n.declared.cites)) && g.edges.every((e) => same(Object.keys(e.evidence[0]).sort(), ['id', 'path', 'type']) && same(Object.keys(e.declared).sort(), ['cites', 'label']) && e.provenance === 'declared'));
+  check('view sections say status declared', JSON.parse(run(base())['view.json']).elements.every((el) => el.status === 'declared'));
   check('carried.scope comes from emitted nodes', cen(base()).carried.scope.engine === 2);
 }
 {
@@ -77,6 +83,9 @@ const reported = (c, what, id) => c.unplaced.some((u) => u.what === what && (id 
   const d = base(); d.edges.push(ed('a->b#2', 'a', 'b'));
   const g = JSON.parse(run(d)['graph.json']);
   check('duplicate (from,to,kind): reported and evidence merged', reported(cen(d), 'edge', 'a->b#2') && g.edges.length === 1 && same(g.edges[0].evidence.map((v) => v.id), ['a->b', 'a->b#2']));
+  const m = base(); m.edges[0].cites = ['X-1']; m.edges.push({ ...ed('a->b#2', 'a', 'b'), cites: ['X-2', 'X-1'], label: 'other' });
+  const mg = JSON.parse(run(m)['graph.json']);
+  check('duplicate (from,to,kind): the second declaration\'s cites join the edge, a differing label is reported as not carried', same(mg.edges[0].declared.cites, ['X-1', 'X-2']) && cen(m).unplaced.some((u) => u.id === 'a->b#2' && /label is not carried/.test(u.why)));
 }
 {
   const d = base(); d.items = [it('x', { parent: 'z' }), it('y', { parent: 'x' }), it('z', { parent: 'y' }), it('a'), it('b')];

@@ -445,6 +445,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   a declaration; checks D1 to D7). Declared nodes have no `path` or `hash`; citations are `declared.cites` on nodes and
   edges; HORDE's `scope` word is kept under `declared`; a new view status `declared` for elements that only restate the
   declaration; the declared dash moves into the edge spec block. The schema diff is reviewed in the PR before merge.
+- **Julian (polls, 2026-11-01), the schema as built:** the loupe-spec `dashes` map and a section's `by: adapter:` are
+  approved; the engine2 snapshot joins `./verify`'s loupe-check list; the declared dash in Flow and Design is Q-038.
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
@@ -640,6 +642,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Julian (poll, 2026-10-31), after the critic (REWORK):** criterion 5's "no dot-directories" becomes "not `.git`": the
   crawler draws files under `.claude/` and `.github/`, and the map must open what it shows. `tools/code.test.mjs` joins
   `./verify fast` (approved, the same day).
+
+### Q-038 — The declared dash in Flow and Design (from Q-015)
+- **Status:** open (Julian, poll, 2026-11-01: a later item). Only the Signal path view draws `declared` with its own dash;
+  Flow and Design draw a declared edge solid, like a crawled one, so on the engine2 snapshot those two views mix
+  provenance silently. Adding `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its
+  marks from the longest period in that table.
+- **Acceptance criteria:** 1. Flow and Design draw `declared` with the edge spec block's dash; 2. the matrix's sizing does
+  not change for any existing snapshot; 3. the provenance legend names it; 4. a render test planted to fail; a screenshot
+  critic pass.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.

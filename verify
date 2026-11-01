@@ -74,7 +74,7 @@ fast() {
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.
   local d out
-  for d in schema/examples/*/ design/prototype/snapshots/stress/*/; do
+  for d in schema/examples/*/ design/prototype/snapshots/stress/*/ design/prototype/snapshots/engine2-structure/; do
     out="$(node tools/loupe-check.mjs "$d" 2>&1)"; local rc=$?
     printf '%s\n' "$out" | tail -1 | sed "s|^|loupe-check ${d}: |"
     [ $rc -eq 0 ] || { printf '%s\n' "$out" >&2; ok=1; }

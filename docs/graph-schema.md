@@ -1,8 +1,10 @@
 # Graph schema
 
-Version 0.3.2 (2026-10-18). Status: 0.3 accepted (PR #17); 0.3.1 accepted (PR #21, Q-016); 0.3.2 approved by Julian (poll, 2026-10-18, Q-009) (decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
+Version 0.4 (2026-11-01). Status: 0.4 shape approved by Julian (poll, 2026-11-01, Q-015; docs/schema-0.4-proposal.md), the diff reviewed in the PR; 0.3 accepted (PR #17); 0.3.1 accepted (PR #21, Q-016); 0.3.2 approved by Julian (poll, 2026-10-18, Q-009) (decisions 0015, 0018, 0020, 0026, 0027, 0028). Formal schemas live in `schema/`. Three worked examples: `schema/examples/horde-sample/` (invented, exercises every design-view primitive), `schema/examples/horde-probe/` (a real crawl of HORDE at commit c64cfdbc, graph only, one section per folder) and `schema/examples/cmake-basic-0.3/` (the build layer's facts for `fixtures/cmake-basic`, mapped to 0.3 as the table below describes). `tools/loupe-check.mjs` enforces every rule below.
 
 Changed in 0.2: `missing` nodes, file roles, `generates` and `embeds` edges, guards, resolution on sites, and the crawl scope and inventory. Why: decision 0018.
+
+Changed in 0.4: a graph is either a **crawl** (0.2 to 0.3.2, unchanged and still valid as written) or a **declaration** (`loupe.graph/0.4`): a structure a target repo states about itself, gated in its own `./verify` and read by one deterministic adapter. A graph is one or the other, never both, and nothing links a declared block to a file. See "Declaration graphs" below. Why: Q-015 (HORDE's engine2 structure, drawn with no inference).
 
 Changed in 0.3.2: every piece of evidence on a `generates` edge says `as` program or input (G10). A program is what makes the output: the first script in a custom command's command line (or, when none is recognised, every script in its DEPENDS, said in `notEvaluated`), the target that owns the command (TARGET form or `add_custom_target`), an executable target the command starts with (bare, or `$<TARGET_FILE:t>`, which the trace keeps unexpanded), or code that writes the file (a site, always a program). An input is anything the command reads or waits for. Why: only the crawler sees the command line, and the Operational lens must tell build-time code (a program) from what is compiled into the product (an input, such as the factory presets and gui2.html). A program the command runs but DEPENDS does not list now gets its own `generates` edge. `as` is allowed only on `generates` evidence and only in a graph that declares 0.3.2, where it is required.
 
@@ -106,6 +108,7 @@ Settled in Q-009: a custom command's data input stays a `generates` edge, marked
 
 | Provenance | Lives in | Evidence | Line pattern |
 | --- | --- | --- | --- |
+| declared (0.4, declaration graphs only) | graph | a declaration entry (`type: declaration`) | long dash and two dots (`12 3 1 2 1 3`, the edge spec block's `dashes.declared`) |
 | static | graph | a source site | solid |
 | config | graph | a config file and key | its own pattern |
 | runtime | overlay | a trace | dotted |
@@ -115,6 +118,37 @@ Settled in Q-009: a custom command's data input stays a `generates` edge, marked
 An overlay edge's provenance is its strongest evidence, in the fixed order runtime > annotated > inferred. When a trace later confirms an inferred edge, the trace is added and the provenance rises; the earlier evidence stays.
 
 Callee signatures are captured on every site, so bus contracts are checked against real signatures (decision 0012).
+
+## Declaration graphs (0.4)
+
+A declaration graph holds what a target repo says about its own structure (for HORDE: `engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, read by `tools/engine-structure.mjs` at a pinned commit). It has `declaration` and no `crawler`; a crawl has the reverse (D1). Its snapshot is its own: block and slot nodes, declared edges, no files.
+
+| Where | Field | Meaning |
+| --- | --- | --- |
+| top level | `declaration` | `format` (the format and version the adapter read), `path` and `blob` (the declaration file at `source.commit`), `spec` (`path`, `blob` of the spec it cites), `counts` (the declaration's own census of itself), `signalPath` |
+| `declaration.signalPath[]` | `stage`, `ids`, `refs` | One declared stage, in declared order. `ids` are the declaration's own; `refs` are the Loupe ids they resolve to (node or edge), so every stage is checked (D4). An id that resolves to nothing is reported by the adapter's census, never dropped silently |
+| node `id` | `decl:<declared id>` | A declared item is not a file |
+| node `kind` | `block`, `slot` | A slot is a reserved, unbuilt place. Declaration graphs only |
+| node `declared` | `id`, `label`, `scope`, `multiplicity`, `parent`, `cites` | The declaration's own words. `id` is what the viewer labels the node with. `scope` is the declaration's word (HORDE: `engine` or `external`) and is kept under `declared` so it is never read as the crawl's node kind `external`. `multiplicity` is a string or null. `parent` is the parent's declared id or null: nesting is the declaration's (instrument ⊃ voice ⊃ oscillator ⊃ member). `cites` are spec ids. A declared node has no `path` and no `hash` |
+| edge `kind` | `audio`, `control`, `event`, `modulation`, `observation` | The declaration format's closed list, pinned by `declaration.format`. Declaration graphs only |
+| edge `provenance` | `declared` | A fact the target states and gates, never Loupe's inference. Lives in the graph (not the overlay) and has its own line pattern |
+| edge `declared` | `label`, `cites` | The declaration's words for the edge (empty when none) and the spec ids it rests on |
+| edge `evidence` | `{type: "declaration", path, id}` | Which declaration entry, by the declaration's own id. A second declared edge with the same `src`, `dst` and `kind` merges into one edge (the id is still `sha256(src|dst|kind)`): both entries stay as evidence, their cites are joined, and the adapter reports the merge |
+| view element `status` | `declared` | An element that only restates a declaration (the adapter's sections). No agent made the claim, so there is nothing to audit. `by` may be `adapter:<name>` on a section |
+
+Checks, each with a mutation case in `tools/loupe-check.test.mjs`:
+
+| Rule | Says |
+| --- | --- |
+| D1 | A declaration graph has `declaration` and no `crawler`; a crawl has the reverse |
+| D2 | Every node is a `block` or `slot` with `declared` (its id agreeing with the node id); every edge is `declared` provenance with `declared` and declaration evidence only. A crawl carries none of these |
+| D3 | Every `declared.parent` names a node, and parents form no cycle |
+| D4 | Every `signalPath[].refs` entry names a node or edge of the graph, and `ids` and `refs` have the same length |
+| D5 | Every node and edge cites at least one spec id (Q-015 criterion 1) |
+| D6 | `declaration.counts` equals what the graph holds: items by kind and by scope, edges by kind (one per declaration carried), and the number of stages |
+| D7 | A view over a declaration graph may group but not invent: every section is a declared parent. Its members are that parent's own node and its children that are not parents themselves, it nests under its own parent's section, and its status is `declared` |
+
+The conservation rule holds unchanged: every declared item is a node and every declared edge is carried or reported in the adapter's census (`census.json`, against the declaration's own counts), and loupe-check closes the arithmetic as for any graph.
 
 ## The design view
 
@@ -132,7 +166,7 @@ Callee signatures are captured on every site, so bus contracts are checked again
 | hub | `node`, optional `placement` | |
 | loop | `cycle`, `classification`, `evidence` | Circular must be a real cycle; intentional needs evidence; unclassified waits for dialogue |
 
-Every element also carries `claim` (one sentence), `by` (`agent:<name>` or `human:<name>`) and an audit `status` (proposed, confirmed, challenged).
+Every element also carries `claim` (one sentence), `by` (`agent:<name>` or `human:<name>`) and an audit `status` (proposed, confirmed, challenged; `declared` in a view over a declaration graph, D7).
 
 `settings.hubPlacement` is `group` or `center`. `settings.offsets` (added with graph 0.3, decision 0020) holds the sections a person dragged: each key is a top-level section id, `level:<i>` for a band level, or `gutter` for the outside-layers column, with a required `dx` and `dy` in world units. It is a view preference and never changes structure. The checker refuses any other key (V8). Offsets must not make two top-level sections overlap, or a section cover a centered hub, since either could hide a node or an edge. The checker runs the viewer's own layout on `view.json` and refuses any overlap (V9), so an agent's edit is blocked without anyone opening the viewer. The viewer reads its starting offsets from `view.json`, and a drag in the browser is checked by the conservation meter, which shows broken until the sections are moved apart. `exemptions` record patterns exempt from the band rule. An exemption is pending until Julian has approved it 3 times, or once marked `explicit` (decision 0014). The checker refuses an exemption marked established without that.
 
@@ -156,6 +190,6 @@ In a target repo, the current snapshot lives in `.loupe/current/`. Every past sn
 | Command | Does |
 | --- | --- |
 | `node tools/loupe-check.mjs <snapshot dir>` | Validates schemas (when `ajv` is installed) and every rule above; prints the conservation summary |
-| `node tools/loupe-check.test.mjs` | 53 cases: deliberately broken snapshots (0.2 and 0.3) plus clean ones; each break must be caught, with schema validation on |
+| `node tools/loupe-check.test.mjs` | Deliberately broken snapshots (0.2 to 0.4) plus clean ones; each break must be caught, with schema validation on |
 | `node tools/convert-sample.mjs` | Regenerates the HORDE example from the prototype's sample data |
 | `node tools/probe-crawl.mjs <repo> <out> [config]` | Probe crawler (not P1): file level, regex based; C/C++, Python, JS, HTML, shell and CMake generation rules. `tools/probe-config/horde.json` holds HORDE's sibling and SDK prefixes |

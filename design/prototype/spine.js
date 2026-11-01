@@ -5,6 +5,7 @@
 // its reason. renderSpine(container, data, state, lay) draws that layout as SVG and returns an element map shaped like
 // renderWorks's, so conserve() (standins.js) checks it the same way as every other view.
 import { SPEC } from './render.js';
+import { SPECS } from './specs.js';
 
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const v = n => `var(--loupe-${n})`;
@@ -16,10 +17,12 @@ const f1 = n => Math.round(n * 10) / 10;
 // borrow any of them: it draws in the neutral ink below and its title says so.
 export const DECLARED_EDGE_SLOT = { audio: 'edge-3', control: 'edge-4', modulation: 'edge-5', event: 'edge-1', observation: 'edge-8' };
 export const UNKNOWN_KIND_INK = 'ink-muted';
-// proposal: moves into the edge spec block with schema 0.4 (Julian, 2026-11-01). Distinct from every SPEC.dash value
-// (static none, config 10 4, runtime 0.1 3.6, annotated 9 3 1.5 3, inferred 4 3.5, gap 2 4): a long dash then two dots,
-// a shape no other provenance uses (compared by shape in the test, not by string).
-export const DECLARED_DASH = '12 3 1 2 1 3';
+// The declared dash is read from the edge loupe-spec block (schema 0.4; Julian, 2026-11-01). It is deliberately NOT added to
+// SPEC.dash: the matrix sizes its marks from the longest dash period in that table (DASH_PERIOD, render.js), and a 22 px
+// period would shrink every mark in every matrix. Distinct from every SPEC.dash value (static none, config 10 4, runtime
+// 0.1 3.6, annotated 9 3 1.5 3, inferred 4 3.5, gap 2 4): a long dash then two dots, a shape no other provenance uses
+// (compared by shape in the test, not by string).
+export const DECLARED_DASH = SPECS.edge.dashes.declared;
 // An edge's dash is its OWN provenance's (critic M3): an overlay `inferred` edge must never draw as declared.
 export const dashOf = e => (e.provenance === 'declared' ? DECLARED_DASH : SPEC.dash[e.provenance] ?? SPEC.dash.inferred);
 
@@ -45,11 +48,11 @@ export const UNDECIDED_LABEL = 'placement not decided by the declaration';
 export function layoutSpine(data) {
   const sp = data.graph.declaration.signalPath;
   const ids = data.nodeIds, nodeOf = {};
-  ids.forEach(id => { nodeOf[data.nodes[id].path] = id; });
+  ids.forEach(id => { nodeOf[data.nodes[id].declared.id] = id; });
   const edgeOf = {};
   data.edges.forEach(e => { const d = (e.evidence || []).find(x => x.type === 'declaration'); if (d) edgeOf[d.id] = e; });
   const ext = id => (data.nodes[id].declared || {}).scope === 'external';
-  const path = id => data.nodes[id].path;
+  const path = id => data.nodes[id].declared.id;
   // A stage names blocks by declared id, edges by declared edge id; `refs` (Loupe ids, when the adapter wrote them) win.
   const resolve = x => (nodeOf[x] ? [nodeOf[x]] : data.nodes[x] ? [x] : edgeOf[x] ? [edgeOf[x].src, edgeOf[x].dst] : data.edgeById[x] ? [data.edgeById[x].src, data.edgeById[x].dst] : null);
 
@@ -403,7 +406,7 @@ export function renderSpine(container, data, state, lay) {
     const n = nm(b.id), d = n.declared || {}, mult = d.multiplicity ? ' × ' + d.multiplicity : '';
     // A continued box (this container's own node stands in another region) takes the config pattern: the same container, one more place.
     under += `<g data-container="${esc(b.key)}"><rect x="${f1(b.x)}" y="${f1(b.y)}" width="${f1(b.w)}" height="${f1(b.h)}" rx="6" style="fill:${v('surface-group')};fill-opacity:.55;stroke:${v('ink-faint')};stroke-width:1px;stroke-dasharray:${b.continued ? SPEC.dash.config : 'none'}"/>` +
-      `<text x="${f1(b.x + 8)}" y="${f1(b.y + 13)}" style="font:600 10.5px/1 ${v('font-mono')};fill:${v('ink-muted')}">${esc(cut(n.path + mult, Math.floor((b.w - 16) / 6.3)))}<title>${esc(n.path + mult + (b.continued ? ' (continued: its own block stands elsewhere)' : ''))}</title></text></g>`;
+      `<text x="${f1(b.x + 8)}" y="${f1(b.y + 13)}" style="font:600 10.5px/1 ${v('font-mono')};fill:${v('ink-muted')}">${esc(cut(n.declared.id + mult, Math.floor((b.w - 16) / 6.3)))}<title>${esc(n.declared.id + mult + (b.continued ? ' (continued: its own block stands elsewhere)' : ''))}</title></text></g>`;
   });
   const railText = (x, y, t, tip) => `<text x="${f1(x)}" y="${f1(y)}" style="font:600 10px/1 ${v('font-ui')};fill:${v('ink-muted')}">${esc(t)}<title>${esc(tip)}</title></text>`;
   if (lay.rails.L) under += railText(lay.rails.L.x, lay.ruleY - 9, 'Inputs', 'External blocks every declared edge of which to an engine block goes out of the block into the engine');
@@ -419,7 +422,8 @@ export function renderSpine(container, data, state, lay) {
     const on = selEdge === e.id || hov === e.id, known = !!DECLARED_EDGE_SLOT[e.kind], slot = known ? DECLARED_EDGE_SLOT[e.kind] : UNKNOWN_KIND_INK;
     const ink = on ? 'accent' : slot, w = on ? v('stroke-hub') : v('stroke-edge');
     const pts = lay.routes[e.id] || [], d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0]} ${p[1]}`).join('');
-    const tip = `${e.kind}${known ? '' : ' (kind not in the list: neutral colour)'}${e.label ? ': ' + e.label : ''} · ${e.provenance}${SPEC.dash[e.provenance] == null && e.provenance !== 'declared' ? ' (unknown provenance)' : ''} · ${nm(e.src).path} → ${nm(e.dst).path}${e.src === e.dst ? ' (between its instances)' : ''}${faults[e.id] ? ' · NOT ROUTED CLEANLY: ' + faults[e.id] : ''}`;
+    const ed = e.declared || {};
+    const tip = `${e.kind}${known ? '' : ' (kind not in the list: neutral colour)'}${ed.label ? ': ' + ed.label : ''} · ${e.provenance}${SPEC.dash[e.provenance] == null && e.provenance !== 'declared' ? ' (unknown provenance)' : ''}${ed.cites && ed.cites.length ? ' · ' + ed.cites.join(', ') : ''} · ${nm(e.src).declared.id} → ${nm(e.dst).declared.id}${e.src === e.dst ? ' (between its instances)' : ''}${faults[e.id] ? ' · NOT ROUTED CLEANLY: ' + faults[e.id] : ''}`;
     over += `<g data-edge="${esc(e.id)}" style="cursor:pointer"><title>${esc(tip)}</title><path d="${d}" style="fill:none;stroke:transparent;stroke-width:9px;pointer-events:stroke"/>` +
       `<path d="${d}" style="fill:none;stroke:${v(ink)};stroke-width:${w};stroke-dasharray:${dashOf(e)};pointer-events:none" marker-end="url(#sp-${known ? e.kind : 'unknown'})"/></g>`;
     map.edges[e.id] = faults[e.id] ? { via: 'unrouted' } : { via: 'drawn' };
@@ -428,7 +432,7 @@ export function renderSpine(container, data, state, lay) {
   // Long edges run in the dedicated lane above or below every row (still drawn, still counted): a small tag at each end names
   // the block at the FAR end, so the lane can be followed without tracing it. Cut to the room in the gutter; full in the title.
   for (const t of lay.tags) {
-    const far = nm(t.far).path, arrow = t.end === 'a' ? '→ ' : '← ', fit = Math.max(4, Math.floor((t.room - 10) / 5.6)), txt = esc(cut(arrow + far, fit)), w = Math.min(t.room - 6, txt.length * 5.6 + 6), x = t.side === 'r' ? t.x + 3 : t.x - 3 - w;
+    const far = nm(t.far).declared.id, arrow = t.end === 'a' ? '→ ' : '← ', fit = Math.max(4, Math.floor((t.room - 10) / 5.6)), txt = esc(cut(arrow + far, fit)), w = Math.min(t.room - 6, txt.length * 5.6 + 6), x = t.side === 'r' ? t.x + 3 : t.x - 3 - w;
     over += `<g data-lanetag="${esc(t.edge)}" data-end="${t.end}" style="pointer-events:none"><title>${esc(`${t.end === 'a' ? 'goes to' : 'comes from'} ${far}`)}</title><rect x="${f1(x)}" y="${f1(t.y - 11)}" width="${f1(w)}" height="9" rx="2" style="fill:${v('surface-panel')};opacity:.9"/><text x="${f1(x + 3)}" y="${f1(t.y - 4)}" style="font:500 8.5px/1 ${v('font-mono')};fill:${v('ink-muted')}">${txt}</text></g>`;
   }
 
@@ -436,14 +440,14 @@ export function renderSpine(container, data, state, lay) {
   // surface. A later stage that names the block again leaves a dotted chip on it; a block inside a box it is not a member
   // of carries a warn-coloured mark with the box(es) in its title.
   const chips = {}; lay.stages.forEach(s => s.refs.forEach(id => (chips[id] = chips[id] || []).push(s.i)));
-  const inBox = {}; lay.intrusions.forEach(([k, id]) => (inBox[id] = inBox[id] || []).push(nm(k.split('|')[0]).path));
+  const inBox = {}; lay.intrusions.forEach(([k, id]) => (inBox[id] = inBox[id] || []).push(nm(k.split('|')[0]).declared.id));
   for (const id of data.nodeIds) {
     const p = P[id], n = nm(id), d = n.declared || {}, on = selNode === id, slot = n.kind === 'slot', ext = d.scope === 'external', cs = chips[id] || [];
     const why = lay.undecided.find(u => u.id === id);
-    over += `<g data-node="${esc(id)}" style="cursor:pointer"><title>${esc(`${n.path}${slot ? ' (slot: reserved, not built)' : ''}${ext ? ' (external)' : ''}${d.label ? ': ' + d.label : ''}${d.cites && d.cites.length ? ' · ' + d.cites.join(', ') : ''}${why ? ' · PLACEMENT NOT DECIDED: ' + why.reason : ''}`)}</title>` +
+    over += `<g data-node="${esc(id)}" style="cursor:pointer"><title>${esc(`${n.declared.id}${slot ? ' (slot: reserved, not built)' : ''}${ext ? ' (external)' : ''}${d.label ? ': ' + d.label : ''}${d.cites && d.cites.length ? ' · ' + d.cites.join(', ') : ''}${why ? ' · PLACEMENT NOT DECIDED: ' + why.reason : ''}`)}</title>` +
       `<rect x="${f1(p.x)}" y="${f1(p.y)}" width="${p.w}" height="${p.h}" rx="5" style="fill:${v(ext ? 'surface-group-nested' : 'surface-node')};stroke:${v(on ? 'accent' : 'ink-muted')};stroke-width:${on ? 2 : 1.25}px;stroke-dasharray:${slot ? SPEC.dash.gap : 'none'}"/>` +
-      `<text x="${f1(p.x + 8)}" y="${f1(p.y + p.h / 2 + 3.5)}" style="font:500 11px/1 ${v('font-mono')};fill:${v(ext ? 'ink-muted' : 'ink')}">${esc(cut(n.path, Math.floor((p.w - 14 - cs.length * 26) / 6.6)))}</text></g>`;
-    cs.forEach((si, k) => { over += `<g data-ref="${si}" data-refnode="${esc(id)}" style="pointer-events:none"><title>${esc(`stage ${si + 1} names ${n.path} again`)}</title><rect x="${f1(p.x + p.w - 28 - 26 * k)}" y="${f1(p.y + 6)}" width="22" height="16" rx="4" style="fill:${v('surface-node')};stroke:${v('ink-muted')};stroke-width:1px;stroke-dasharray:${SPEC.dash.runtime};stroke-linecap:round"/><text x="${f1(p.x + p.w - 17 - 26 * k)}" y="${f1(p.y + 17.5)}" text-anchor="middle" style="font:600 9.5px/1 ${v('font-ui')};fill:${v('ink-muted')}">${si + 1}</text></g>`; });
+      `<text x="${f1(p.x + 8)}" y="${f1(p.y + p.h / 2 + 3.5)}" style="font:500 11px/1 ${v('font-mono')};fill:${v(ext ? 'ink-muted' : 'ink')}">${esc(cut(n.declared.id, Math.floor((p.w - 14 - cs.length * 26) / 6.6)))}</text></g>`;
+    cs.forEach((si, k) => { over += `<g data-ref="${si}" data-refnode="${esc(id)}" style="pointer-events:none"><title>${esc(`stage ${si + 1} names ${n.declared.id} again`)}</title><rect x="${f1(p.x + p.w - 28 - 26 * k)}" y="${f1(p.y + 6)}" width="22" height="16" rx="4" style="fill:${v('surface-node')};stroke:${v('ink-muted')};stroke-width:1px;stroke-dasharray:${SPEC.dash.runtime};stroke-linecap:round"/><text x="${f1(p.x + p.w - 17 - 26 * k)}" y="${f1(p.y + 17.5)}" text-anchor="middle" style="font:600 9.5px/1 ${v('font-ui')};fill:${v('ink-muted')}">${si + 1}</text></g>`; });
     if (inBox[id]) over += `<g data-intrusion="${esc(id)}" style="pointer-events:none"><title>${esc(`inside ${[...new Set(inBox[id])].join(', ')}'s box, not a member of it`)}</title><circle cx="${f1(p.x)}" cy="${f1(p.y)}" r="6" style="fill:${v('state-warn')};stroke:${v('surface-node')};stroke-width:1px"/><text x="${f1(p.x)}" y="${f1(p.y + 3.2)}" text-anchor="middle" style="font:700 9px/1 ${v('font-ui')};fill:${v('ink')}">!</text></g>`;
     map.nodes[id] = { state: 'drawn' };
   }

@@ -24,7 +24,7 @@
       ],
       "parent": "sec:instrument",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -43,7 +43,7 @@
         "decl:pitch_system"
       ],
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -63,7 +63,7 @@
       ],
       "parent": "sec:osc",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -76,7 +76,7 @@
       ],
       "parent": "sec:instrument",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -90,7 +90,7 @@
       ],
       "parent": "sec:engine",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -109,7 +109,7 @@
       ],
       "parent": "sec:voice",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -132,7 +132,7 @@
       ],
       "parent": "sec:voice",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -145,7 +145,7 @@
       ],
       "parent": "sec:engine",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -163,7 +163,7 @@
       ],
       "parent": "sec:voice",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     },
     {
       "by": "adapter:engine-structure",
@@ -189,15 +189,15 @@
       ],
       "parent": "sec:engine",
       "primitive": "section",
-      "status": "accepted"
+      "status": "declared"
     }
   ],
   "exemptions": [],
   "graph": {
-    "hash": "sha256:9d3d2f918a73ec587fed0ea6282c0b88e9dce7f35f1e4fedfdd70b53cc16311f"
+    "hash": "sha256:ca13e115e29b1382ba078d3f681aab3145283de18c9e05c8f326ce7e261e733f"
   },
   "overlay": {
-    "hash": "sha256:34d7aaa2bc673f5b72e2f0113eb983e526326246cd2fbb16cce007cf9b02f08d"
+    "hash": "sha256:09af1d0ad870a60955fbc95d75a147ba5dacb0176f9aebfa5636437ec4920a84"
   },
   "schema": "loupe.view/0.2",
   "settings": {
