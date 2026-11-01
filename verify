@@ -51,6 +51,9 @@ fast() {
   node tools/story.test.mjs || ok=1
   # The Signal path layout (Q-015; Julian, poll 2026-11-01: added to the gate).
   node tools/spine.test.mjs || ok=1
+  # The engine2 structure adapter (Q-015 criterion 2; Julian, 2026-10-31: tests join fast): nothing the declaration
+  # carries is dropped unreported. The snapshot-vs-declaration checks need a HORDE checkout and say SKIPPED without one.
+  node tools/engine-structure.test.mjs || ok=1
   # The ten stress cases (Q-029; Julian, 2026-10-27: in fast): the nine committed snapshots equal a fresh
   # tools/stress-gen.mjs run, the 4,000-file case is generated in memory, every case balances at every level of
   # detail, and what each case tests has a geometry check on the rendered frame.
@@ -126,6 +129,23 @@ full() {
       cmp -s "$out/$f" "$snap/$f" || { echo "verify[full]: $snap/$f differs from a fresh gate run (regenerate it with tools/horde-gate.mjs and review the diff)" >&2; ok=1; }
     done
     rm -r "$out"
+    # The engine2 structure snapshot (Q-015; Julian, 2026-10-31, decision 3): re-run the adapter at the commit the
+    # snapshot pins and byte-compare. A pinned commit missing from the checkout is red, not skipped: the check cannot run.
+    local esnap=design/prototype/snapshots/engine2-structure ecommit eout
+    ecommit="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('$esnap/graph.json','utf8')).source.commit)")"
+    if ! git -C "$horde" cat-file -e "$ecommit^{commit}" 2>/dev/null; then
+      echo "verify[full]: engine2-structure pins $ecommit, which is not in $horde (fetch HORDE: git -C $horde fetch origin)" >&2; ok=1
+    else
+      eout="$(mktemp -d)"
+      if node tools/engine-structure.mjs --horde "$horde" --commit "$ecommit" --out "$eout" >/dev/null; then
+        for f in graph.json overlay.json view.json census.json; do
+          cmp -s "$eout/$f" "$esnap/$f" || { echo "verify[full]: $esnap/$f differs from a fresh adapter run at $ecommit (regenerate it with tools/engine-structure.mjs and review the diff)" >&2; ok=1; }
+        done
+      else
+        echo "verify[full]: the engine2-structure adapter failed at $ecommit" >&2; ok=1
+      fi
+      rm -r "$eout"
+    fi
   else
     echo "verify[full]: SKIPPED the HORDE gates: no checkout at LOUPE_HORDE ($horde). Not a pass: exit 3." >&2
     return 3

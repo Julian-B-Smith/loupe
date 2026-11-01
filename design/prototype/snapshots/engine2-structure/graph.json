@@ -26,11 +26,17 @@
         "ids": [
           "host->allocator"
         ],
+        "refs": [
+          "e:dd43fbaeed1ab3f9"
+        ],
         "stage": "note id, key, velocity, per-note expressions"
       },
       {
         "ids": [
           "pitch_system->voice.gravity"
+        ],
+        "refs": [
+          "e:244c89fb7a120871"
         ],
         "stage": "pitch input (Hz, per note id, audio rate)"
       },
@@ -38,11 +44,17 @@
         "ids": [
           "voice"
         ],
+        "refs": [
+          "decl:voice"
+        ],
         "stage": "one voice"
       },
       {
         "ids": [
           "voice.gravity"
+        ],
+        "refs": [
+          "decl:voice.gravity"
         ],
         "stage": "voice pitch × gravity ratio"
       },
@@ -50,11 +62,17 @@
         "ids": [
           "voice.pitch"
         ],
+        "refs": [
+          "decl:voice.pitch"
+        ],
         "stage": "published voice pitch (IF-2)"
       },
       {
         "ids": [
           "voice.envelopes"
+        ],
+        "refs": [
+          "decl:voice.envelopes"
         ],
         "stage": "envelopes: ENV 1 to ENV 4 (C.12), each × its velocity factor (VO-8)"
       },
@@ -63,11 +81,18 @@
           "member",
           "osc"
         ],
+        "refs": [
+          "decl:member",
+          "decl:osc"
+        ],
         "stage": "osc 1: swarm of U members"
       },
       {
         "ids": [
           "member.base_wave"
+        ],
+        "refs": [
+          "decl:member.base_wave"
         ],
         "stage": "osc 1: base wave"
       },
@@ -75,11 +100,17 @@
         "ids": [
           "member.blade1"
         ],
+        "refs": [
+          "decl:member.blade1"
+        ],
         "stage": "osc 1: blade 1"
       },
       {
         "ids": [
           "member.blade2"
+        ],
+        "refs": [
+          "decl:member.blade2"
         ],
         "stage": "osc 1: blade 2"
       },
@@ -87,11 +118,17 @@
         "ids": [
           "member.edges"
         ],
+        "refs": [
+          "decl:member.edges"
+        ],
         "stage": "osc 1: edge correction"
       },
       {
         "ids": [
           "member.dc"
+        ],
+        "refs": [
+          "decl:member.dc"
         ],
         "stage": "osc 1: DC removal"
       },
@@ -99,11 +136,17 @@
         "ids": [
           "member.pan"
         ],
+        "refs": [
+          "decl:member.pan"
+        ],
         "stage": "osc 1: pan (mono member → L/R)"
       },
       {
         "ids": [
           "osc.sum"
+        ],
+        "refs": [
+          "decl:osc.sum"
         ],
         "stage": "osc 1: Σ members × density compensation"
       },
@@ -111,11 +154,17 @@
         "ids": [
           "voice.osc_gate"
         ],
+        "refs": [
+          "decl:voice.osc_gate"
+        ],
         "stage": "osc 1: gate"
       },
       {
         "ids": [
           "voice.osc_level"
+        ],
+        "refs": [
+          "decl:voice.osc_level"
         ],
         "stage": "osc 1: osc 1 level"
       },
@@ -123,11 +172,17 @@
         "ids": [
           "voice.osc_env"
         ],
+        "refs": [
+          "decl:voice.osc_env"
+        ],
         "stage": "osc 1: × its envelope (RC-6.5)"
       },
       {
         "ids": [
           "osc"
+        ],
+        "refs": [
+          "decl:osc"
         ],
         "stage": "osc 2: the same, independent"
       },
@@ -135,11 +190,17 @@
         "ids": [
           "voice.osc_level"
         ],
+        "refs": [
+          "decl:voice.osc_level"
+        ],
         "stage": "osc 2: osc 2 level"
       },
       {
         "ids": [
           "voice.osc_env"
+        ],
+        "refs": [
+          "decl:voice.osc_env"
         ],
         "stage": "osc 2: × its envelope"
       },
@@ -147,11 +208,17 @@
         "ids": [
           "sub.wave"
         ],
+        "refs": [
+          "decl:sub.wave"
+        ],
         "stage": "sub: one phase, one shape, eroded"
       },
       {
         "ids": [
           "sub.tone"
+        ],
+        "refs": [
+          "decl:sub.tone"
         ],
         "stage": "sub: tone"
       },
@@ -159,11 +226,17 @@
         "ids": [
           "sub.envelope"
         ],
+        "refs": [
+          "decl:sub.envelope"
+        ],
         "stage": "sub: × its envelope"
       },
       {
         "ids": [
           "sub.drive"
+        ],
+        "refs": [
+          "decl:sub.drive"
         ],
         "stage": "sub: drive"
       },
@@ -171,11 +244,17 @@
         "ids": [
           "sub.dc"
         ],
+        "refs": [
+          "decl:sub.dc"
+        ],
         "stage": "sub: DC removal"
       },
       {
         "ids": [
           "sub.pan"
+        ],
+        "refs": [
+          "decl:sub.pan"
         ],
         "stage": "sub: pan"
       },
@@ -183,11 +262,17 @@
         "ids": [
           "voice.sub_gate"
         ],
+        "refs": [
+          "decl:voice.sub_gate"
+        ],
         "stage": "sub: gate"
       },
       {
         "ids": [
           "voice.sub_level"
+        ],
+        "refs": [
+          "decl:voice.sub_level"
         ],
         "stage": "sub: level"
       },
@@ -195,11 +280,17 @@
         "ids": [
           "noise.colour"
         ],
+        "refs": [
+          "decl:noise.colour"
+        ],
         "stage": "noise: per-voice seeded source, colour"
       },
       {
         "ids": [
           "noise.resonator"
+        ],
+        "refs": [
+          "decl:noise.resonator"
         ],
         "stage": "noise: Resonator"
       },
@@ -207,11 +298,17 @@
         "ids": [
           "noise.whisper"
         ],
+        "refs": [
+          "decl:noise.whisper"
+        ],
         "stage": "noise: Whisper"
       },
       {
         "ids": [
           "noise.wind"
+        ],
+        "refs": [
+          "decl:noise.wind"
         ],
         "stage": "noise: Wind"
       },
@@ -219,11 +316,17 @@
         "ids": [
           "noise.filter"
         ],
+        "refs": [
+          "decl:noise.filter"
+        ],
         "stage": "noise: noise filter"
       },
       {
         "ids": [
           "noise.spread"
+        ],
+        "refs": [
+          "decl:noise.spread"
         ],
         "stage": "noise: stereo spread"
       },
@@ -231,11 +334,17 @@
         "ids": [
           "noise.pan"
         ],
+        "refs": [
+          "decl:noise.pan"
+        ],
         "stage": "noise: pan"
       },
       {
         "ids": [
           "voice.noise_gate"
+        ],
+        "refs": [
+          "decl:voice.noise_gate"
         ],
         "stage": "noise: gate"
       },
@@ -243,11 +352,17 @@
         "ids": [
           "voice.noise_level"
         ],
+        "refs": [
+          "decl:voice.noise_level"
+        ],
         "stage": "noise: level"
       },
       {
         "ids": [
           "voice.noise_env"
+        ],
+        "refs": [
+          "decl:voice.noise_env"
         ],
         "stage": "noise: × its envelope"
       },
@@ -255,11 +370,17 @@
         "ids": [
           "voice.filter_slot"
         ],
+        "refs": [
+          "decl:voice.filter_slot"
+        ],
         "stage": "per-voice filter slot (stereo-linked)"
       },
       {
         "ids": [
           "mono_sub"
+        ],
+        "refs": [
+          "decl:mono_sub"
         ],
         "stage": "mono sub: the sub, once for the instrument (SN-7)"
       },
@@ -267,11 +388,17 @@
         "ids": [
           "mono_sub.envelope"
         ],
+        "refs": [
+          "decl:mono_sub.envelope"
+        ],
         "stage": "mono sub: its own envelope"
       },
       {
         "ids": [
           "mono_sub.filter_slot"
+        ],
+        "refs": [
+          "decl:mono_sub.filter_slot"
         ],
         "stage": "mono sub: its own filter-slot instance, driven by its chosen note (RC-1)"
       },
@@ -279,11 +406,17 @@
         "ids": [
           "voice_sum"
         ],
+        "refs": [
+          "decl:voice_sum"
+        ],
         "stage": "Σ voices"
       },
       {
         "ids": [
           "output"
+        ],
+        "refs": [
+          "decl:output"
         ],
         "stage": "output stage (Level, guards)"
       },
@@ -291,17 +424,26 @@
         "ids": [
           "output->makeup"
         ],
+        "refs": [
+          "e:1a02a64e93d39495"
+        ],
         "stage": "stereo out"
       },
       {
         "ids": [
           "makeup"
         ],
+        "refs": [
+          "decl:makeup"
+        ],
         "stage": "make-up gain (the mixer's, RC-2)"
       },
       {
         "ids": [
           "fx_rack"
+        ],
+        "refs": [
+          "decl:fx_rack"
         ],
         "stage": "FX rack"
       }

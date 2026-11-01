@@ -36,5 +36,13 @@
     "stages": 47
   },
   "sections": 10,
+  "stagesResolved": 48,
+  "stagesUnresolved": [],
+  "unknownKeys": {
+    "edge": [],
+    "item": [],
+    "stage": [],
+    "top": []
+  },
   "unplaced": []
 }
