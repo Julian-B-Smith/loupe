@@ -428,6 +428,14 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   `scope: external` leave the columns (inputs on a rail left of the spine, outputs on a rail right of it, observers
   along the bottom); an engine block with no stage hangs at the column of its nearest neighbour on the path, not the
   earliest. Only declared scope and edge direction decide. `tools/spine.test.mjs` joins `./verify fast` (approved).
+- **Critic (opus), 2026-11-01: REWORK** of the Signal path view (the adapter is sound): edges drawn straight under
+  nodes and on top of each other while the meter counted all drawn (H2); master on the "Inputs" rail by a fallback the
+  declaration does not make (H1); 18 nodes inside boxes they are not members of, unmarked (H3); the census and decision
+  (3) not gated (H4); plus census gaps, provenance taken from the view not the edge, legend, zoom clamp, tests that copy
+  the code. **Julian (polls, 2026-11-01):** a block whose placement the declaration does not decide goes to a strip
+  labelled "placement not decided by the declaration", with its reason, no side picked; "nearest neighbour" is the lower
+  median of its neighbours' columns; the view opens at a readable zoom at stage 1, one row, the stage strip jumps along
+  it, fit still shows the whole; `declared` gets its own dash now (in the edge spec block, part of the 0.4 change).
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
