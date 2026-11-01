@@ -65,9 +65,12 @@ export function renderWorks(container, data, state, story, acc, pos) {
   });
 
   // ---- not in this story: every other file, and the edges that touch them, counted here
-  const c = acc.counts, onOut = sel && sel.type === 'storyout';
+  // Accented while its file panel or its edge list (Q-032, critic L2) is open, so the rows read as this box's.
+  const c = acc.counts, onOut = sel && (sel.type === 'storyout' || (sel.type === 'holds' && sel.id === 'story-outside'));
   svg += `<rect x="${out.x}" y="${out.y}" width="${out.w}" height="${out.h}" rx="10" style="fill:${v('surface-group-nested')};stroke:${v(onOut ? 'accent' : 'ink-faint')};stroke-width:${onOut ? 2 : 1}px;stroke-dasharray:5 4"/>`;
-  cards += `<div class="wk-out" data-storyout="1" style="left:${out.x}px;top:${out.y}px;width:${out.w}px;height:${out.h}px" title="Files this story does not use. Click to list them and every edge crossing into the story.">
+  // Q-032 (ADR 0029): the box stands for the edges among its files and those crossing into the story, so it opens to
+  // exactly them (inspect.js heldEdges 'story-outside', from the `ends` recorded below); data-count is that number.
+  cards += `<div class="wk-out" data-storyout="1" data-holds="story-outside" data-count="${c.outsideEdges + c.crossing}" style="left:${out.x}px;top:${out.y}px;width:${out.w}px;height:${out.h}px" title="Files this story does not use. Click to list them and every edge crossing into the story; right-click to list every edge the box stands for.">
     <div class="wk-label">Not in this story · ${c.outsideFiles} files</div>
     <div class="wk-does">${c.outsideEdges} edges among them · ${c.crossing} crossing into the story</div>
     ${roles.map(([r, n]) => `<div class="wk-role"><span>${esc(r)}</span><span>${n}</span></div>`).join('')}</div>`;
@@ -78,7 +81,9 @@ export function renderWorks(container, data, state, story, acc, pos) {
   const seen = { in: 0, cross: 0, out: 0 }, onCard = id => map.nodes[id] && map.nodes[id].state === 'drawn';
   data.edges.forEach(e => {
     const a = onCard(e.src), b = onCard(e.dst), k = a && b ? 'in' : a || b ? 'cross' : 'out';
-    seen[k]++; map.edges[e.id] = { via: 'folded', bundle: 'story-' + k };
+    // `ends`: what each end stands on, a file's card or the box (Q-032); an edge between two cards names only them.
+    const end = (x) => (onCard(x) ? 'n:' + x : 'story-outside');
+    seen[k]++; map.edges[e.id] = { via: 'folded', bundle: 'story-' + k, ends: [...new Set([end(e.src), end(e.dst)])] };
   });
   map.lens = { ...c, name: 'story', label: 'Story' };
   map.lensCheck = seen;      // computed from what was drawn, compared by conserve() with storyAccounting's partition

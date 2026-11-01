@@ -14,7 +14,8 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
   at overview), all 2026-10-27 to 10-29, Q-030 (matrix lens, PR #45) and Q-031 (Flow and Design side by side, PR #46,
   2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
-  `./verify full`, not yet run on a local HORDE checkout. Side
+  `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, exit 0, every HORDE gate passing
+  (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
   track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
@@ -459,8 +460,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   and the layout; 3. critic review with screenshots.
 
 ### Q-032 — The story-outside box opens to its edges (0029)
-- **Status:** open (from Q-028's critic, M3). In "How it works", the box for files outside the story lists those
-  files; the edges it stands for cannot be listed or tested.
+- **Status:** built 2026-10-31 (branch p2/q032-story-outside; trace: traces/2026-10-31-q032-story-outside.md), awaiting
+  merge. From Q-028's critic, M3: in "How it works", the box for files outside the story listed those files; the edges
+  it stands for could not be listed or tested. Julian chose it next by poll, 2026-10-31.
 - **Acceptance criteria:** as Q-028's, for that box: it opens to its exact edge list (from the meter's record), the
   render test holds the list to the box's ends, and a critic pass with a screenshot.
 
