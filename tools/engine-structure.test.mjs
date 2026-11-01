@@ -102,6 +102,11 @@ const reported = (c, what, id) => c.unplaced.some((u) => u.what === what && (id 
   check('unresolved stage id: listed and reported', same(c.stagesUnresolved, [{ id: 'nope', stage: 1 }]) && reported(c, 'stage', 'nope') && c.stagesResolved === 2);
 }
 {
+  const d = base(); d.edges.push(ed('a~>b', 'a', 'b', 'telepathy')); d.signal_path.push({ stage: 'dropped', ids: ['a~>b'] });
+  const c = cen(d), st = JSON.parse(run(d)['graph.json']).declaration.signalPath[1];
+  check('a stage naming a dropped edge: unresolved with its reason, no ref, not counted resolved', same(c.stagesUnresolved, [{ id: 'a~>b', stage: 1 }]) && c.unplaced.some((u) => u.what === 'stage' && u.id === 'a~>b' && /names a dropped edge/.test(u.why)) && st.refs.length === 0 && c.stagesResolved === 2);
+}
+{
   let threw = false; try { run({ ...base(), format: 'horde.engine-structure/2' }); } catch { threw = true; }
   check('wrong format throws', threw);
 }

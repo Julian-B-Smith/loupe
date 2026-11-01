@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { deepStrictEqual } from 'node:assert';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { SPEC } from '../design/prototype/render.js';
-import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, DECLARED_EDGE_SLOT, DECLARED_DASH, UNDECIDED_LABEL } from '../design/prototype/spine.js';
+import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, undecidedNote, DECLARED_EDGE_SLOT, DECLARED_DASH, UNDECIDED_LABEL } from '../design/prototype/spine.js';
 import { conserve } from '../design/prototype/standins.js';
 
 let failed = 0;
@@ -19,8 +19,8 @@ const build = (graph, overlay = null) => indexSnapshot({ graph, overlay, view: {
 const load = () => build(j('graph.json'), j('overlay.json'));
 const data = load();
 globalThis.document = { createElement: () => ({}) };
-const stage = (d, lay, state = { view: 'spine', stage: 2, settings: {}, zoom: { auto: true } }) => {
-  const layer = { innerHTML: '' }, container = { querySelector: () => layer, appendChild() {}, clientWidth: 1440, clientHeight: 900 };
+const stage = (d, lay, state = { view: 'spine', stage: 2, settings: {}, zoom: { auto: true } }, size = [1440, 900]) => {
+  const layer = { innerHTML: '' }, container = { querySelector: () => layer, appendChild() {}, clientWidth: size[0], clientHeight: size[1] };
   const map = renderSpine(container, d, state, lay);
   return { map, html: layer.innerHTML, c: conserve(d, state, map) };
 };
@@ -52,14 +52,16 @@ check(`every spine block (${first.size}) is in the column of the first stage tha
 check('items of one column stack in the order its stage names them', SP.every((st, i) => { const fresh = []; st.ids.forEach((x) => named(x).forEach((id) => { if (first.get(id) === i && !fresh.includes(id)) fresh.push(id); })); return fresh.every((id, k) => P[id].row === k); }));
 
 // ---- external blocks off the path: a rail only where the declared direction says so, else undecided
-const engineEdges = (id, g = G) => g.edges.filter((e) => e.src !== e.dst && (e.src === id ? scope(e.dst) !== 'external' : e.dst === id && scope(e.src) !== 'external'));
+// Edges that decide direction: to an engine block, or to an external block that stands ON the spine (it is on the declared path).
+const counts = (o) => scope(o) !== 'external' || first.has(o);
+const engineEdges = (id, g = G) => g.edges.filter((e) => e.src !== e.dst && (e.src === id ? counts(e.dst) : e.dst === id && counts(e.src)));
 const offExt = ids.filter((id) => !first.has(id) && scope(id) === 'external');
 const on = (r) => offExt.filter((id) => P[id].region === r);
 const inputsOk = on('L').every((id) => { const es = engineEdges(id); return es.length > 0 && es.every((e) => e.src === id); });
 const outputsOk = on('R').every((id) => { const es = engineEdges(id); return es.length > 0 && es.every((e) => e.dst === id) && !es.every((e) => e.kind === 'observation'); });
 const observersOk = on('B').every((id) => { const es = engineEdges(id); return es.length > 0 && es.every((e) => e.dst === id && e.kind === 'observation'); });
 check(`every block on Inputs (${on('L').length}) has a declared edge out of it into the engine and none into it`, inputsOk);
-check(`every block on Outputs (${on('R').length}) has declared edges into it from the engine only, not all observations`, outputsOk);
+check(`every block on Outputs (${on('R').length}) has only declared edges into it (counting engine and spine blocks), not all observations`, outputsOk);
 check(`every block on Observers (${on('B').length}) has only observation edges into it from the engine`, observersOk);
 check('an off-path external block is on a rail or undecided, never in a column', offExt.every((id) => ['L', 'R', 'B', 'U'].includes(P[id].region)));
 check('rails stand outside the columns: Inputs before column 0, Outputs after the last stage, Observers under every column row', (() => {
@@ -71,17 +73,27 @@ check('rails stand outside the columns: Inputs before column 0, Outputs after th
 const U = lay.undecided;
 const hintOf = new Map(U.map((u) => [u.id, u.hint]));
 const colT = (id) => (P[id].region === 'C' ? P[id].col : hintOf.get(id) ?? null);
-const reasonTrue = (u) => {
-  const id = u.id, es = engineEdges(id);
-  if (scope(id) === 'external') return !first.has(id) && (es.length === 0 || (es.some((e) => e.src === id) && es.some((e) => e.dst === id)));
+// Each reason is rebuilt here from the declaration, in the words the screen uses, and must match exactly (no looser reading).
+const expectedReason = (u) => {
+  const id = u.id, es = engineEdges(id), outs = es.filter((e) => e.src === id), ins = es.filter((e) => e.dst === id);
+  if (scope(id) === 'external') {
+    if (first.has(id)) return null;
+    if (!es.length) return 'external block with no declared edge to an engine block or to a block on the signal path: the declaration does not say whether it is an input, an output or an observer';
+    if (outs.length && ins.length) return `external block with declared edges both out of it (${outs.length}) and into it (${ins.length}), counting edges to engine blocks and to blocks on the signal path: neither only an input nor only an output`;
+    return null;
+  }
   const cn = G.edges.filter((e) => e.src !== e.dst && (e.src === id || e.dst === id)).map((e) => ({ o: e.src === id ? e.dst : e.src, out: e.src === id }));
-  if (/tie-break/.test(u.reason)) { const at = cn.filter((x) => P[x.o].region === 'C' && P[x.o].side === 0 && P[x.o].col === u.hint); return at.some((x) => cn.some((y) => y.o === x.o && y.out !== x.out)); }
-  const rel = descendants(id).map(colT).filter((c) => c != null), par = parentOf.has(id) && colT(parentOf.get(id)) != null ? [colT(parentOf.get(id))] : [];
-  const want = rel.length ? Math.min(...rel) : par.length ? par[0] : null;
-  return !cn.some((x) => P[x.o].region === 'C') && (u.hint ?? null) === want;
+  if (cn.some((x) => P[x.o].region === 'C')) { // an edge to a block in a column: only the tie-break class can be here
+    const at = cn.filter((x) => P[x.o].region === 'C' && P[x.o].col === u.hint && P[x.o].round != null && P[x.o].round < u.round);
+    const names = [...new Set(at.map((x) => pathOf(x.o)))].sort().join(', ');
+    return at.some((x) => cn.some((y) => y.o === x.o && y.out !== x.out)) ? `engine block whose side is decided only by an edge-id tie-break: its declared edges to the block(s) in its column (${names}) run both into and out of it` : null;
+  }
+  const mem = descendants(id).map(colT).filter((c) => c != null), par = parentOf.has(id) && colT(parentOf.get(id)) != null ? [colT(parentOf.get(id))] : [];
+  if (mem.length || par.length) return `engine block with no declared edge to a block in a column: its column (stage ${Math.min(...(mem.length ? mem : par)) + 1}) comes from its ${mem.length ? "members' earliest column" : "parent's column"}, but nothing in the declaration puts it on a side`;
+  return 'engine block with no declared edge to a block in a column and no member or parent in one: nothing in the declaration places it';
 };
-const badU = U.filter((u) => !reasonTrue(u));
-check(`every undecided block's reason is true of the declaration (${U.length}: ${U.map((u) => pathOf(u.id)).join(', ')})`, U.length > 0 && badU.length === 0, badU.slice(0, 3).map((u) => pathOf(u.id)).join(', '));
+const badU = U.filter((u) => expectedReason(u) !== u.reason);
+check(`every undecided block's reason is exactly what the declaration says (${U.length}: ${U.map((u) => pathOf(u.id)).join(', ')})`, U.length > 0 && badU.length === 0, badU.slice(0, 3).map((u) => `${pathOf(u.id)}: wants «${expectedReason(u)}»`).join(' | '));
 check('no block is decidable but left undecided: every external off-path block with a one-way declared direction is on a rail', offExt.every((id) => { const es = engineEdges(id); const oneWay = es.length > 0 && (es.every((e) => e.src === id) || es.every((e) => e.dst === id)); return !oneWay || P[id].region !== 'U'; }));
 check('undecided blocks stand in their own strip under every other row, with their reason in the markup', (() => {
   const maxRow = Math.max(...ids.filter((id) => P[id].region !== 'U').map((id) => P[id].row));
@@ -165,6 +177,36 @@ for (let a = 0; a < allSegs.length; a++) for (let b = a + 1; b < allSegs.length;
   const ov = Math.min(Math.max(p.a[g], p.b[g]), Math.max(q.a[g], q.b[g])) - Math.max(Math.min(p.a[g], p.b[g]), Math.min(q.a[g], q.b[g]));
   if (ov > 3) geo.shared.push(`${p.id} / ${q.id}`);
 }
+// Separation, measured here: parallel runs of different edges at least 3 apart where they overlap; no run along a box border
+// (within 3); the last run at least as long as the arrowhead (7); ends on one block side at least 5 apart (the arrowhead's height).
+const hv = (sg) => sg.a[1] === sg.b[1];
+const near = [], border = [], shortEnd = [], crowd = [];
+for (let a = 0; a < allSegs.length; a++) for (let b = a + 1; b < allSegs.length; b++) {
+  const p = allSegs[a], q = allSegs[b]; if (p.id === q.id || hv(p) !== hv(q)) continue;
+  const f = hv(p) ? 1 : 0, g = hv(p) ? 0 : 1, d = Math.abs(p.a[f] - q.a[f]);
+  const ov = Math.min(Math.max(p.a[g], p.b[g]), Math.max(q.a[g], q.b[g])) - Math.max(Math.min(p.a[g], p.b[g]), Math.min(q.a[g], q.b[g]));
+  if (d < 3 && ov > 3) near.push(`${p.id} / ${q.id} at ${d}`);
+}
+for (const sg of allSegs) for (const b of lay.boxes) {
+  const x0 = b.x, x1 = b.x + b.w, y0 = b.y, y1 = b.y + b.h;
+  if (hv(sg)) { if ((Math.abs(sg.a[1] - y0) < 3 || Math.abs(sg.a[1] - y1) < 3) && Math.min(Math.max(sg.a[0], sg.b[0]), x1) - Math.max(Math.min(sg.a[0], sg.b[0]), x0) > 3) border.push(`${sg.id} on ${b.key}`); }
+  else if ((Math.abs(sg.a[0] - x0) < 3 || Math.abs(sg.a[0] - x1) < 3) && Math.min(Math.max(sg.a[1], sg.b[1]), y1) - Math.max(Math.min(sg.a[1], sg.b[1]), y0) > 3) border.push(`${sg.id} on ${b.key}`);
+}
+const sides = {};
+for (const e of data.edges) {
+  const pts = lay.routes[e.id], l = pts[pts.length - 1], pr = pts[pts.length - 2];
+  if (Math.hypot(l[0] - pr[0], l[1] - pr[1]) < 7) shortEnd.push(e.id);
+  for (const [pt, id] of [[pts[0], e.src], [l, e.dst]]) (sides[id + (pt[0] < P[id].x + 1 ? 'L' : 'R')] = sides[id + (pt[0] < P[id].x + 1 ? 'L' : 'R')] || []).push(pt[1]);
+}
+for (const [k, ys] of Object.entries(sides)) { ys.sort((a, b) => a - b); for (let i = 1; i < ys.length; i++) if (ys[i] - ys[i - 1] < 5 - 0.01) crowd.push(`${k} ${ys[i - 1]}/${ys[i]}`); }
+check('parallel runs of different edges are at least 3 units apart where they overlap', near.length === 0, near.slice(0, 3).join(', '));
+check('no edge runs along the border of a box (within 3 units)', border.length === 0, border.slice(0, 3).join(', '));
+check('every edge arrives in a run at least as long as the arrowhead', shortEnd.length === 0, shortEnd.slice(0, 3).join(', '));
+check('ends on one block side are at least an arrowhead\'s height apart', crowd.length === 0, crowd.slice(0, 3).join(', '));
+// Long edges (LONG = 8 columns or more) run in a dedicated lane above or below every row, and are tagged at both ends.
+const rowTop = Math.min(...ids.map((id) => P[id].y)), rowBot = Math.max(...ids.map((id) => P[id].y + P[id].h));
+const longE = data.edges.filter((e) => e.src !== e.dst && Math.abs(P[e.src].col - P[e.dst].col) >= 8);
+check(`the long edges (${longE.length}) are exactly the lane edges, each run in a lane above or below every row`, [...lay.laneEdges].sort().join() === longE.map((e) => e.id).sort().join() && longE.every((e) => segsOf(e).some((sg) => sg.a[1] === sg.b[1] && (sg.a[1] < rowTop || sg.a[1] > rowBot))));
 const opp = G.edges.filter((e) => e.src !== e.dst && G.edges.some((o) => o.src === e.dst && o.dst === e.src && o.id > e.id));
 check(`every edge route is orthogonal and starts and ends on its own blocks' sides (${data.edges.length} edges)`, geo.orth.length === 0 && geo.ends.length === 0, [...geo.orth, ...geo.ends].slice(0, 3).join(', '));
 check('no edge passes through a block it does not end at', geo.through.length === 0, geo.through.slice(0, 3).join(', '));
@@ -194,9 +236,25 @@ const seen = new Set(), refsByStage = SP.map((st) => { const out = []; st.ids.fo
 check(`a later stage names a placed block again: one dotted chip per block per stage (${refsByStage.reduce((n, r) => n + r.length, 0)} chips)`, refsByStage.every((r, i) => count(new RegExp(`data-ref="${i}"`, 'g')) === r.length) && refsByStage.some((r) => r.length));
 check('stage `output->makeup` carries a chip on the already-placed output', (() => { const i = SP.findIndex((s) => s.ids.includes('output->makeup')); return i >= 0 && new RegExp(`data-ref="${i}" data-refnode="${byPath.get('output')}"`).test(html); })());
 
+check('every lane edge has two tags naming the blocks at its far ends, in the markup with the full name in the title', longE.length > 0 && count(/data-lanetag="/g) === 2 * longE.length && longE.every((e) => {
+  const tg = lay.tags.filter((t) => t.edge === e.id), A = tg.find((t) => t.end === 'a'), Bt = tg.find((t) => t.end === 'b');
+  const grp = (end) => (html.split(`data-lanetag="${e.id}" data-end="${end}"`)[1] || '').split('</g>')[0];
+  return tg.length === 2 && A.far === e.dst && Bt.far === e.src && grp('a').includes(`goes to ${pathOf(e.dst)}`) && grp('b').includes(`comes from ${pathOf(e.src)}`);
+}));
+check('hovering an edge lights its whole route as selecting does; unhovered edges stay in their kind colour', (() => {
+  const e = data.edges[5], h = stage(data, lay, { view: 'spine', stage: 2, settings: {}, zoom: { auto: true }, hover: { type: 'edge', id: e.id } }).html, g = (t, id) => t.split(`data-edge="${id}"`)[1].split('</g>')[0];
+  return g(h, e.id).includes('--loupe-accent') && !g(html, e.id).includes('--loupe-accent') && !g(h, data.edges[6].id).includes('--loupe-accent');
+})());
+check('the opening view shows stage 1\'s blocks fully, vertically, at 100% (also in a short window)', [[1440, 900], [1280, 700], [1100, 600]].every((sz) => { const t = stage(data, lay, undefined, sz), k = t.map.zoom.k; return lay.stages[0].fresh.every((id) => t.map.zoom.y + P[id].y * k >= 0 && t.map.zoom.y + (P[id].y + P[id].h) * k <= sz[1]); }) && pathOf(lay.stages[0].fresh[0]) === 'host');
+check('the node panel carries the undecided reason (undecidedNote), and nothing for a decided block', U.every((u) => undecidedNote(lay, u.id).includes(u.reason.replace(/&/g, '&amp;').replace(/'/g, "'")) && undecidedNote(lay, u.id).includes('Placement not decided by the declaration')) && undecidedNote(lay, ids.find((id) => !U.some((u) => u.id === id))) === '');
+
 // ---- one dash per meaning, each edge its own provenance, unknown kinds neutral
 const dashes = Object.values(SPEC.dash);
-check('the declared dash is its own pattern, distinct from every existing provenance dash', !dashes.includes(DECLARED_DASH) && SPEC.dash.static === 'none');
+// By SHAPE, not by string: the dashes in one period (an odd list repeats), each long (>= 3) or short; a slightly different
+// number list with the same shape would still read as the same line.
+const shape = (d) => { if (d === 'none') return 'solid'; let n = d.split(/\s+/).map(Number); if (n.length % 2) n = n.concat(n); return n.filter((_, i) => i % 2 === 0).map((x) => (x >= 3 ? 'L' : 'S')).join(''); };
+const taken = Object.entries(SPEC.dash).map(([k, d]) => [k, shape(d)]);
+check(`the declared dash has a shape no other provenance uses: ${shape(DECLARED_DASH)} (${shape(DECLARED_DASH).length} dashes a period) against ${taken.map(([k, x]) => k + ' ' + x).join(', ')}`, shape(DECLARED_DASH).length >= 3 && taken.every(([, x]) => x !== shape(DECLARED_DASH)));
 check('the declared edges draw with the declared dash', data.edges.every((e) => e.provenance === 'declared') && count(new RegExp(`stroke-dasharray:${DECLARED_DASH.replace(/ /g, ' ')};pointer-events:none`, 'g')) === data.edges.length);
 {
   const g2 = JSON.parse(JSON.stringify(G)); g2.edges[0].provenance = 'inferred'; g2.edges[1].kind = 'weird';
@@ -217,11 +275,11 @@ check('zooming out never zooms in (also below the usual floor), zooming in stops
 const syn = () => {
   const N = (id, scp, parent = null, kind = 'block') => ({ id: 'decl:' + id, kind, path: id, hash: 'none', declared: { label: id, scope: scp, multiplicity: null, cites: [], parent } });
   const E = (a, b, kind = 'audio') => ({ id: `e:${a}>${b}:${kind}`, src: 'decl:' + a, dst: 'decl:' + b, kind, provenance: 'declared', evidence: [{ type: 'declaration', path: 'x', id: `${a}->${b}`, cites: [] }] });
-  const nodes = [N('a', 'engine'), N('b', 'engine'), N('c', 'engine'), N('src_ext', 'external'), N('sink_ext', 'external'), N('watch_ext', 'external'), N('both_ext', 'external'), N('lone_ext', 'external'),
+  const nodes = [N('relay_ext', 'external'), N('fed_ext', 'external'), N('x_ext', 'external'), N('y_ext', 'external'), N('a', 'engine'), N('b', 'engine'), N('c', 'engine'), N('src_ext', 'external'), N('sink_ext', 'external'), N('watch_ext', 'external'), N('both_ext', 'external'), N('lone_ext', 'external'),
     N('hang', 'engine'), N('h2', 'engine'), N('aa1', 'engine'), N('zz1', 'engine'), N('twoway', 'engine'), N('alone', 'engine'), N('sink2_ext', 'external')];
   const edges = [E('a', 'b'), E('b', 'c'), E('src_ext', 'a'), E('c', 'sink_ext'), E('b', 'watch_ext', 'observation'), E('a', 'both_ext'), E('both_ext', 'b'), E('hang', 'b'), E('h2', 'a'), E('aa1', 'b'), E('zz1', 'b'),
-    E('b', 'twoway'), E('twoway', 'b'), E('c', 'sink2_ext'), E('b', 'sink2_ext', 'control')];
-  const graph = { schema: 'loupe.graph/0.4-draft', source: { repo: 'x', commit: 'c', commitTime: 't', dirty: false }, declaration: { signalPath: [{ stage: 'one', ids: ['a->b'] }, { stage: 'two', ids: ['c'] }] }, nodes, edges };
+    E('b', 'twoway'), E('twoway', 'b'), E('c', 'sink2_ext'), E('b', 'sink2_ext', 'control'), E('relay_ext', 'fed_ext'), E('x_ext', 'y_ext')];
+  const graph = { schema: 'loupe.graph/0.4-draft', source: { repo: 'x', commit: 'c', commitTime: 't', dirty: false }, declaration: { signalPath: [{ stage: 'one', ids: ['a->b'] }, { stage: 'two', ids: ['c'] }, { stage: 'three', ids: ['relay_ext'] }, { stage: 'ghost', ids: ['a->b'], refs: [] }] }, nodes, edges };
   return build(graph, null);
 };
 {
@@ -229,6 +287,8 @@ const syn = () => {
   check('synthetic: a block every engine edge into which comes from the engine stands on Outputs, an observer under Observers, an input on Inputs', p['decl:sink_ext'].region === 'R' && p['decl:sink2_ext'].region === 'R' && p['decl:watch_ext'].region === 'B' && p['decl:src_ext'].region === 'L');
   check('synthetic: an external block with edges both ways, and one with no edge, are undecided with a true reason', why.both_ext && /both out of it/.test(why.both_ext) && why.lone_ext && /no declared edge to an engine block/.test(why.lone_ext) && p['decl:both_ext'].region === 'U' && p['decl:lone_ext'].region === 'U');
   check('synthetic: an isolated engine block is undecided with no column; one whose edges run both ways to its neighbour is undecided on a tie-break', why.alone && /nothing in the declaration places it/.test(why.alone) && why.twoway && /tie-break/.test(why.twoway) && p['decl:hang'].region === 'C' && p['decl:hang'].side === -1);
+  check('synthetic: an edge from an external block ON the spine decides direction (fed_ext is an output); an edge between two off-path externals does not', p['decl:relay_ext'].region === 'C' && p['decl:fed_ext'].region === 'R' && why.x_ext && why.y_ext && /no declared edge to an engine block or to a block on the signal path/.test(why.x_ext + why.y_ext));
+  check('synthetic: a stage whose refs are empty names nothing drawn: flagged, with a warn mark, not skipped', l.stages[3].nothing === true && l.stages.filter((s) => s.nothing).length === 1 && stage(d, l).html.includes('data-nothing="3"') && stage(d, l).html.includes('stage 4 names nothing drawn'));
   const order = ['h2', 'aa1', 'hang', 'zz1'];
   check('synthetic: blocks hanging in one column stack by the stage order of the block they hang from (a above b), then by id', order.every((id, k) => p['decl:' + id].side === -1 && p['decl:' + id].depth === k + 1), order.map((id) => p['decl:' + id].depth).join());
   const t = stage(d, l);
@@ -236,5 +296,5 @@ const syn = () => {
 }
 
 const K = lay.counts;
-console.log(`layout: ${K.columns} columns, band ${K.band} rows, ${K.above} rows above, ${K.below} rows below; Inputs ${K.left}, Outputs ${K.right}, Observers ${K.bottom}; undecided ${K.undecided}; ${K.boxes} boxes (${K.continued} continued); ${K.overlaps} box overlaps, ${K.intrusions} marked blocks; edge faults: ${geo.orth.length + geo.ends.length} not orthogonal/on-block, ${geo.through.length} through a block, ${geo.shared.length} shared lines; lanes up to ${K.maxLanesV} wide, ${K.maxLanesH} high`);
+console.log(`layout: ${K.columns} columns, band ${K.band} rows, ${K.above} rows above, ${K.below} rows below; Inputs ${K.left}, Outputs ${K.right}, Observers ${K.bottom}; undecided ${K.undecided}; ${K.boxes} boxes (${K.continued} continued); ${K.overlaps} box overlaps, ${K.intrusions} marked blocks; ${K.laneEdges} lane edges; edge faults: ${geo.orth.length + geo.ends.length} not orthogonal/on-block, ${geo.through.length} through a block, ${geo.shared.length} shared lines, ${near.length} too close, ${border.length} on a box border, ${shortEnd.length} short arrivals, ${crowd.length} crowded ends; lanes up to ${K.maxLanesV} wide, ${K.maxLanesH} high`);
 if (failed) { console.error(`${failed} check(s) failed`); process.exit(1); }

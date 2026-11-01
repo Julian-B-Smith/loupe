@@ -110,11 +110,13 @@ export function adapt(decl, { commit, commitTime, blob }) {
   const signalPath = stages.map((st, n) => {
     const ids = Array.isArray(st.ids) ? [...st.ids] : [], refs = [];
     for (const id of ids) {
-      const isItem = byId.has(id), isEdge = seenEdgeIds.has(id);
-      if (!isItem && !isEdge) { stagesUnresolved.push({ stage: n, id }); unplaced.push({ what: 'stage', id, why: `stage ${n} names an id that is neither a declared item nor a declared edge` }); continue; }
+      // Resolved only when it emits a ref: a declared edge that was dropped (bad kind, an end that is no item) has an id in
+      // seenEdgeIds but nothing to draw, so a stage naming it is unresolved, never silently counted (critic N5).
+      const isItem = byId.has(id), drawn = declEdgeIds.has(id), dropped = seenEdgeIds.has(id) && !drawn;
+      if (!isItem && !drawn) { stagesUnresolved.push({ stage: n, id }); unplaced.push({ what: 'stage', id, why: dropped ? `stage ${n} names a dropped edge (declared, but not drawn: see its own entry)` : `stage ${n} names an id that is neither a declared item nor a declared edge` }); continue; }
       resolved++;
       if (isItem) refs.push(nodeId(id));
-      if (declEdgeIds.has(id)) refs.push(declEdgeIds.get(id));
+      if (drawn) refs.push(declEdgeIds.get(id));
     }
     return { stage: st.stage, ids, refs };
   });

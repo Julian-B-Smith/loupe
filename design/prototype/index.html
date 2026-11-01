@@ -223,7 +223,7 @@ import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
-import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, UNDECIDED_LABEL } from './spine.js';
+import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, routeFaults, undecidedNote, UNDECIDED_LABEL } from './spine.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
 import { codeSource, codeTarget, codeActions, evidenceMarks, rawUrl, githubUrl, EDITORS } from './code.js';
@@ -966,6 +966,7 @@ function nodePanel(id) {
   const d = data.diff && store.get().diff ? ['added', 'changed', 'stale'].find(k => (data.diff[k] || []).includes(id)) || ((data.diff.removed || []).some(r => r.id === id) ? 'removed' : null) : null;
   return `<div class="crumbs">${crumbs(home).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>
     <div><h2>${esc(label(id) || n.path.split('/').pop())}</h2><div class="path">${esc(n.path)}${n.loc ? ' · ' + esc(n.loc) + ' lines' : ''}${n.lang ? ' · ' + esc(n.lang) : ''}</div></div>
+    ${store.get().view === 'spine' && spineLay ? undecidedNote(spineLay, id) : ''}
     ${data.nodes[id] ? codeRow({ type: 'node', id }) : ''}
     ${d ? `<div>${chip('diff · ' + d, 'diff-' + d)}</div>` : ''}
     <p>${esc(note || (d === 'removed' ? 'Removed since the last run. Drawn as a ghost until the diff is accepted.' : 'No explainer yet.'))}</p>
@@ -1213,7 +1214,7 @@ function storyOutPanel(s) {
 function spineStagePanel() {
   const L = spineLay || layoutSpine(data), K = L.counts;
   return `<span class="eyebrow">Signal path</span><h2>${K.columns} declared stages</h2>
-    <p class="path">Placement is the declaration's own: stages in declared order, left to right (click a stage to jump to it; Fit shows all). Off-path engine blocks hang at the lower median column of their neighbours on the path, above when the edge goes into the neighbour, below when it comes out, stacked by the declared stage order of the neighbour they hang from, then by id. External blocks off the path stand on rails only when their direction is declared: ${K.left} Inputs on the left, ${K.right} Outputs on the right, ${K.bottom} Observers below. ${K.undecided} blocks are in the strip "${UNDECIDED_LABEL}", each with its reason: no side is guessed. Boxes are declared parents; marked blocks are not members of the box they stand in (${K.intrusions} marked). ${K.continued} dashed boxes continue a parent whose own block stands elsewhere. ${K.overlaps} pairs of boxes overlap. Every edge is routed through the gutters, none through a block.</p>
+    <p class="path">Placement is the declaration's own: stages in declared order, left to right (click a stage to jump to it; Fit shows all). Off-path engine blocks hang at the lower median column of their neighbours on the path, above when the edge goes into the neighbour, below when it comes out, stacked by the declared stage order of the neighbour they hang from, then by id. External blocks off the path stand on rails only when their direction is declared: ${K.left} Inputs on the left, ${K.right} Outputs on the right, ${K.bottom} Observers below. ${K.undecided} blocks are in the strip "${UNDECIDED_LABEL}", each with its reason: no side is guessed. Boxes are declared parents; marked blocks are not members of the box they stand in (${K.intrusions} marked). ${K.continued} dashed boxes continue a parent whose own block stands elsewhere. ${K.overlaps} pairs of boxes overlap. ${(() => { const f = Object.keys(routeFaults(L, data.edges)).length; return f ? `${f} edges have a route fault (see their tooltips).` : 'Every edge is routed through the gutters: none through a block, none on another edge\'s line.'; })()} A small tag at each end of a long edge names the block at its far end; hover an edge to light its whole route.</p>
     <div class="list">${L.stages.map(x => go('sstage', x.i, `<span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span>`, 'card')).join('')}</div>`;
 }
 
