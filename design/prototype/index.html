@@ -83,6 +83,8 @@ main{--panel-w:360px;display:grid;grid-template-columns:minmax(0,1fr) var(--pane
 .canvas.both.stack #paneMain .settings{display:none} /* stacked, the Design pane is too short for Hubs beside its meter; Design alone has it */
 .iso[hidden]{display:none}
 .works{position:absolute;inset:0;overflow:hidden;z-index:0}
+.spine{position:absolute;inset:0;overflow:hidden;z-index:0}
+.seg button[hidden]{display:none}
 .float{z-index:2}
 .seg[hidden]{display:none}
 .wk-world{position:absolute;left:0;top:0;transform-origin:0 0}
@@ -183,7 +185,7 @@ main{position:relative}
       <button class="meter" id="meter" title="Conservation check"></button>
       <div class="seg" id="histSeg"><button id="hBack" aria-label="Back">←</button><button id="hFwd" aria-label="Forward">→</button></div>
       <div class="seg" id="lensSeg" title="Focus lens (ADR 0019): show only what the product depends on; the rest is one counted box"><span class="lbl">Lens</span><button data-lens="">All</button><button data-lens="operational">Operational</button></div>
-      <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button><button data-view="both" title="Flow and Design side by side (ADR 0030): each pane its own zoom and meter; a selection is marked in both">Both</button><button data-view="works" title="How the code works, told as stories (ADR 0025). Inferred by the agent; yours to edit.">How it works</button></div>
+      <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button><button data-view="both" title="Flow and Design side by side (ADR 0030): each pane its own zoom and meter; a selection is marked in both">Both</button><button data-view="works" title="How the code works, told as stories (ADR 0025). Inferred by the agent; yours to edit.">How it works</button><button data-view="spine" hidden title="The declared signal path, stage by stage, with every declared edge. Nothing here is inferred.">Signal path</button></div>
       <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
       <div class="seg" id="waffleSeg" title="Zoomed out, also show one square per file in each box, changed files first (Q-035)"><button id="waffle" aria-pressed="false">Waffle</button></div>
       <div class="seg" title="Hide the lines; every edge stays counted in the ↑out ↓in tab of each box it touches"><button id="lines" aria-pressed="false">Lines off</button></div>
@@ -205,6 +207,7 @@ main{position:relative}
         <div class="float iso" id="isoBar" hidden><span class="eyebrow">Isolated</span><b id="isoName"></b><span class="eyebrow" id="isoElse" style="text-transform:none;letter-spacing:0"></span><button class="btn" id="isoExit">Back to full map</button></div>
         <div class="float zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="lod"></div></div>
       </div>
+      <div class="float zoom" id="szoom" style="display:none"><button id="szin" title="Zoom in">+</button><button id="szout" title="Zoom out">−</button><button id="szfit" title="Fit" style="font:var(--loupe-type-count)">fit</button><div class="lod" id="slod" title="Zoom"></div></div>
       <div class="float iso" id="storyBar" hidden><span class="eyebrow">Story</span><div class="seg" id="storySeg"></div></div>
       <div class="float legend" id="legend"></div>
     </section>
@@ -220,8 +223,10 @@ import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
+import { layoutSpine, renderSpine, spineLegendHtml, stepZoom, routeFaults, undecidedNote, UNDECIDED_LABEL } from './spine.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
+import { isDeclaration, nodeName, edgeOrigin, nounOf, declarationStageHtml, viewSentence, declaredNodeHtml, declaredEdgeHtml, evidenceNote } from './declared.js';
 import { codeSource, codeTarget, codeActions, evidenceMarks, rawUrl, githubUrl, EDITORS } from './code.js';
 
 const $ = id => document.getElementById(id);
@@ -240,6 +245,11 @@ const phone = () => matchMedia('(max-width:720px)').matches;
 let data;
 try { if (SNAP_FOREIGN) throw new Error(`Refused: the snapshot ${SNAP} is not on this site. Loupe reads snapshots only from the site it is served from.`); data = await loadSnapshot(SNAP); }
 catch (err) { canvas.innerHTML = `<div class="err">${esc(err.message)}</div>`; throw err; }
+
+// The Signal path view exists only for structure snapshots that declare a signal path (Q-015).
+const HAS_DECL = isDeclaration(data);
+const HAS_SPINE = !!(data.graph.declaration && data.graph.declaration.signalPath);
+let spineLay = null; // layoutSpine is pure and the data never changes in a session: laid out once, on first use
 
 // Q-037: where this crawl's code is. GitHub at the crawled commit, and, when `npm run view` serves this page on this
 // machine, the local helper (tools/serve.mjs), asked once. Hosted there is no helper and nothing is asked: the
@@ -333,15 +343,20 @@ function paint() {
   const s = store.get();
   document.documentElement.dataset.theme = s.theme;
   const padB = phone() ? 76 : 96, st = { ...s, zoom: { ...s.zoom, padBottom: padB } };
-  const works = s.view === 'works', both = s.view === 'both';
+  const works = s.view === 'works', both = s.view === 'both', spine = s.view === 'spine' && HAS_SPINE;
   canvas.classList.toggle('both', both);
   canvas.classList.toggle('stack', both && canvas.clientWidth < 720);
   paneFlow.hidden = !both; $('pmMain').hidden = !both;
   const wl = canvas.querySelector(':scope > .works'); if (wl) wl.style.display = works ? '' : 'none';
+  const sl = canvas.querySelector(':scope > .spine'); if (sl) sl.style.display = spine ? '' : 'none';
+  $('szoom').style.display = spine ? '' : 'none';
   const story = works && effStory(s);
-  paneMain.style.display = story ? 'none' : '';
+  paneMain.style.display = story || spine ? 'none' : '';
   let c;
-  if (story) {
+  if (spine) {
+    map = renderSpine(canvas, data, st, spineLay = spineLay || layoutSpine(data));
+    $('slod').textContent = Math.round(map.zoom.k * 100) + '%';
+  } else if (story) {
     const acc = storyAccounting(data, story), ed = (s.storyEdits || {})[story.id], hc = cardHeights[story.id] = cardHeights[story.id] || {};
     map = renderWorks(canvas, data, st, story, acc, layoutStory(story, ed, hc));
     // One re-layout with measured heights (bounded: heights only grow, and only for cards that overflowed).
@@ -358,7 +373,7 @@ function paint() {
     const w = worse({ c: cd, m: map, pane: 'Design' }, { c: cf, m: fmap, pane: 'Flow' });
     c = w.c; meter(c, w.m, w.pane);
     $('flod').textContent = { overview: 'ovw', structure: 'str', detail: 'det' }[fmap.lod] || ''; $('flod').title = 'Level of detail: ' + fmap.lod;
-  } else map = render(paneMain, data, works ? { ...st, view: 'design' } : st);
+  } else map = render(paneMain, data, works || s.view === 'spine' ? { ...st, view: 'design' } : st);
   if (!both) { fmap = null; c = conserve(data, s, map); meter(c, map); }
   $('lod').textContent = { overview: 'ovw', structure: 'str', detail: 'det' }[map.lod] || ''; $('lod').title = 'Level of detail: ' + map.lod;
   chrome(s);
@@ -399,7 +414,7 @@ store.on(s => {
   const via = lastView; lastView = s.view;
   // The flow↔design morph has no meaning for the story view, nor into or out of Both, where each pane is settled.
   // A morph still running is stopped there, or its timer keeps writing morph into the next one-pane view (critic L3).
-  if (['works', 'both'].includes(via) || ['works', 'both'].includes(s.view)) { if (anim) { clearTimeout(anim); anim = null; store.set({ morph: undefined }); } return; }
+  if (['works', 'both', 'spine'].includes(via) || ['works', 'both', 'spine'].includes(s.view)) { if (anim) { clearTimeout(anim); anim = null; store.set({ morph: undefined }); } return; }
   const from = s.morph != null ? s.morph : s.view === 'design' ? 0 : 1, to = s.view === 'design' ? 1 : 0;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (anim) clearTimeout(anim);
@@ -425,6 +440,7 @@ $('waffle').onclick = () => A.setDiffWaffle(!store.get().settings.diffWaffle);
 $('handle').onclick = () => $('panel').classList.toggle('open');
 // Say what made the graph: the P1a crawler, the regex probe, or nothing (a hand-made sample). Was always "not crawled".
 const crawledBy = (() => { const c = data.graph.crawler || {}, src = data.graph.source || {};
+  if (isDeclaration(data)) return `declared at ${String(src.commit || '').slice(0, 7)}`;
   if (c.name === 'loupe-crawler') return `crawled at ${String(src.commit || '').slice(0, 7)}`;
   if (c.name === 'loupe-probe') return `probe crawl at ${String(src.commit || '').slice(0, 7)}`;
   return 'not crawled'; })();
@@ -437,7 +453,7 @@ $('isoExit').onclick = () => A.isolate(null);
 $('mxExit').onclick = () => A.setMatrix(null);
 $('mxPair').onchange = e => { const m = store.get().matrix; if (m) A.setMatrix(e.target.value ? { a: m.a, b: e.target.value } : { a: m.a }); };
 $('storySeg').onclick = e => { const b = e.target.closest('[data-story]'); if (b) A.setStory(b.dataset.story); };
-$('lensSeg').onclick = e => { const b = e.target.closest('[data-lens]'); if (b) A.setLens(b.dataset.lens || null); };
+$('lensSeg').onclick = e => { if (HAS_DECL) return; const b = e.target.closest('[data-lens]'); if (b) A.setLens(b.dataset.lens || null); };
 $('hBack').onclick = () => H.back(); $('hFwd').onclick = () => H.forward();
 H.on(() => { closeMenu(); chrome(store.get()); });
 
@@ -454,7 +470,8 @@ function chrome(s) {
   $('waffle').setAttribute('aria-pressed', String(!!s.settings.diffWaffle));
   $('waffleSeg').hidden = !s.diff || !dv(s); // the waffle draws only on design-view stand-ins, with a diff on
   // The stories view shows no diff (Julian, poll 2026-10-28: out of Q-035's scope), so it offers no Re-run control.
-  $('diffSeg').hidden = !data.diff || s.view === 'works';
+  $('diffSeg').hidden = !data.diff || s.view === 'works' || s.view === 'spine';
+  document.querySelector('[data-view="spine"]').hidden = !HAS_SPINE;
   // Lines off applies to the Design view only (render.js); elsewhere the button would claim a state the map is not in.
   $('lines').parentElement.hidden = !dv(s);
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
@@ -462,7 +479,7 @@ function chrome(s) {
   $('hBack').title = H.canBack ? `Back: ${H.backLabel} (${kb})` : 'Nothing to go back to';
   $('hFwd').title = H.canForward ? `Forward: ${H.forwardLabel} (${kf})` : 'Nothing to go forward to';
   // The lens applies to the design view only (the flow view stays uninterpreted, 0006), and isolate overrides it.
-  $('lensSeg').style.display = dv(s) && !s.isolate && !s.matrix ? '' : 'none'; // the matrix is its own lens (Julian, poll 2026-10-29)
+  $('lensSeg').style.display = dv(s) && !s.isolate && !s.matrix && !HAS_DECL ? '' : 'none'; // no lens on a declaration: its Operational lens reads crawl facts (targets, build) it does not have // the matrix is its own lens (Julian, poll 2026-10-29)
   $('storyBar').hidden = s.view !== 'works' || !STORIES.length;
   const cs = curStory(s);
   $('storySeg').innerHTML = STORIES.map(x => `<button data-story="${esc(x.id)}" aria-pressed="${cs && cs.id === x.id}">${esc(x.title)}</button>`).join('');
@@ -503,7 +520,7 @@ function meter(c, m = map, tag = '') {
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
   // Lines off is said even under a lens or story line (critic S3: the lens line hid it).
   // Q-035: with the re-run diff on, the run's totals lead the line (Julian, poll 2026-10-28).
-  const ds = store.get().diff && store.get().view !== 'works' && diffSummary(data, store.get().diff.side);
+  const ds = store.get().diff && store.get().view !== 'works' && store.get().view !== 'spine' && diffSummary(data, store.get().diff.side);
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${tag ? esc(tag) + ': ' : ''}${main}</b><small>${ds ? esc(ds.text) + ' · ' : ''}${lz && map.linesOff ? 'lines hidden · ' : ''}${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
@@ -513,6 +530,10 @@ function meter(c, m = map, tag = '') {
 // may collapse but never disappear (addendum v2.3; review v4 B3).
 const strip = () => `<div class="strip">${['static', 'config', 'runtime', 'annotated', 'inferred'].map(p => `<span title="${p}">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}</span>`).join('')}</div>`;
 function legend(s) {
+  if (s.view === 'spine') {
+    $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>${spineLegendHtml()}`;
+    return;
+  }
   if (s.view === 'works') {
     const provs = ['static', 'config', 'runtime', 'annotated', 'inferred'];
     const ln = (c, d) => `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5" style="stroke:${v(c)};stroke-width:2px;stroke-dasharray:${d}"/></svg>`;
@@ -544,7 +565,7 @@ if (canvas.clientWidth < 760) $('legend').classList.add('closed');
 
 // ---------- canvas interaction
 const hit = t => {
-  const c = t.closest && t.closest('[data-diffbox],[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge],[data-holds]');
+  const c = t.closest && t.closest('[data-diffbox],[data-collapse],[data-unfold],[data-port],[data-exit],[data-lensout],[data-storyout],[data-bundle],[data-node],[data-step],[data-el],[data-edge],[data-holds],[data-sstage]');
   if (!c) return null;
   if (c.dataset.diffbox) return { type: 'diffbox', id: c.dataset.diffbox };
   if (c.dataset.collapse) return { type: 'collapse', id: c.dataset.collapse };
@@ -560,6 +581,7 @@ const hit = t => {
   // Last: only an element with no other click lists on a left click (the overview's loose block); a file port stays a
   // file (critic H1), and lists from its menu.
   if (c.dataset.holds) return { type: 'holds', id: c.dataset.holds };
+  if (c.dataset.sstage !== undefined) return { type: 'sstage', id: c.dataset.sstage };
   return { type: 'edge', id: c.dataset.edge };
 };
 let drag = null;
@@ -625,17 +647,27 @@ canvas.addEventListener('pointerup', e => {
   if (h.type === 'unfold') return A.toggleUnfold(h.id);
   if (h.type === 'port') return A.togglePort(h.id);
   if (h.type === 'exit') return A.isolate(null);
+  if (h.type === 'sstage') return spineGo(+h.id);
   if (h.type === 'holds') return A.select(tagPane({ type: 'holds', id: h.id }, t));
   if (h.type === 'diffbox') return A.select(tagPane({ type: 'diffbox', id: h.id }, t));
   A.select(tagPane(h, t));
   if (phone()) $('panel').classList.add('open');
 });
+// Signal path camera. Opening is 100% at stage 1 (zoom auto); fit is an explicit camera over the whole diagram, so the
+// shared A.fit (which only sets auto) cannot stand in for it here. A stage tick or card brings its column to the left edge.
+const spineFit = () => { if (map && map.spine) A.setZoom({ auto: false, ...map.spine.fit }); };
+const spineGo = i => { const L = spineLay, z = map.zoom; if (L && L.stages[i]) A.setZoom({ auto: false, k: z.k, x: 24 - z.k * (L.stages[i].x - L.geom.w / 2), y: z.y }); };
+const isSpine = () => store.get().view === 'spine' && HAS_SPINE;
+// The Signal path view hides paneMain (a hidden element measures 0), so it zooms about the canvas, with the same camera state.
+const mainEl = () => (isSpine() ? canvas : paneMain);
 const zoomAt = (f, cx, cy, pane = 'main') => {
-  const el = pane === 'flow' ? paneFlow : paneMain, z = frameOf(pane).zoom, k = Math.max(0.12, Math.min(4, z.k * f));
+  const el = pane === 'flow' ? paneFlow : mainEl(), z = frameOf(pane).zoom;
+  // The floor is 0.12, or the fit zoom when that is lower (the Signal path's fit is ~0.14 or less); zooming out never zooms in.
+  const lo = isSpine() && map.spine ? Math.min(0.12, map.spine.fit.k) : 0.12, k = stepZoom(z.k, f, lo);
   if (cx == null) { cx = el.clientWidth / 2; cy = el.clientHeight / 2; }
   setCam(pane)({ auto: false, k, x: cx - (cx - z.x) * (k / z.k), y: cy - (cy - z.y) * (k / z.k) });
 };
-canvas.addEventListener('wheel', e => { e.preventDefault(); const pane = paneOf(e.target), r = (pane === 'flow' ? paneFlow : paneMain).getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top, pane); }, { passive: false });
+canvas.addEventListener('wheel', e => { e.preventDefault(); const pane = paneOf(e.target), r = (pane === 'flow' ? paneFlow : mainEl()).getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top, pane); }, { passive: false });
 // ---------- right-click menu: actions for whatever is under the pointer, plus Back/Forward and Back to full map.
 let menu = null, menuReturn = null;
 const menuOpen = () => !!menu;
@@ -746,15 +778,16 @@ function showMenu(target, cx, cy) {
   items.push(null);
   if (s.view === 'works') STORIES.forEach(x => { const cs = curStory(s); if (!cs || cs.id !== x.id) items.push({ label: `Story: ${x.title}`, run: () => A.setStory(x.id) }); });
   if (s.matrix && dv(s)) items.push({ label: 'Back to the map', run: () => A.setMatrix(null) });
-  else if (dv(s) && !s.isolate) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
+  else if (dv(s) && !s.isolate && !HAS_DECL) items.push(s.lens ? { label: 'Show everything', sub: 'turn the lens off', run: () => A.setLens(null) } : { label: 'Operational lens', sub: 'only what the product depends on', run: () => A.setLens('operational') });
   if (s.isolate) items.push({ label: 'Back to full map', run: () => A.isolate(null) });
   const fromFlow = s.view === 'both' && paneOf(target) === 'flow';
-  items.push({ label: 'Fit to screen', run: () => (fromFlow ? A.fitFlow() : A.fit()) });
+  items.push({ label: 'Fit to screen', run: () => (isSpine() ? spineFit() : fromFlow ? A.fitFlow() : A.fit()) });
   // From the Flow pane, actions that change the view act on the Design pane (Flow is canonical): say so (critic L2).
   if (fromFlow) items.forEach(it => { if (it && /^(Collapse|Expand|Isolate|Matrix|Operational lens|Show everything|Back to|Show every|Show \d|Fold |List files in|Close )/.test(it.label) && !/\(Design\)$/.test(it.label)) it.label += ' (Design)'; });
   openMenu(cx, cy, items);
 }
 
+$('szin').onclick = () => zoomAt(1.25); $('szout').onclick = () => zoomAt(0.8); $('szfit').onclick = spineFit;
 $('zin').onclick = () => zoomAt(1.25); $('zout').onclick = () => zoomAt(0.8); $('zfit').onclick = () => A.fit();
 $('fzin').onclick = () => zoomAt(1.25, null, null, 'flow'); $('fzout').onclick = () => zoomAt(0.8, null, null, 'flow'); $('fzfit').onclick = () => A.fitFlow();
 for (const id of ['pmFlow', 'pmMain']) $(id).onclick = () => { if ($(id).dataset.status === 'broken') store.set({ selection: tagSel({ type: 'unaccounted', id: 'all' }, 'both', id === 'pmFlow' ? 'flow' : 'main') }); };
@@ -792,7 +825,7 @@ addEventListener('keydown', e => {
 ['mousedown', 'mouseup'].forEach(t => addEventListener(t, e => { if (e.button !== 3 && e.button !== 4) return; e.preventDefault(); if (t === 'mouseup') (e.button === 3 ? H.back : H.forward)(); }));
 
 // ---------- the code (Q-037): the four actions, built once in code.js for the menu and the panel alike
-const codeActs = (sel) => { const t = codeTarget(data, sel); return codeActions(SRC, t, { helper: helperHere(), editor: EDITOR }).map(a => ({ a, t })); };
+const codeActs = (sel) => { const t = codeTarget(data, sel); return codeActions(SRC, t, { helper: helperHere(), editor: EDITOR, declaration: isDeclaration(data) }).map(a => ({ a, t })); };
 function toast(msg) {
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
   canvas.appendChild(t); setTimeout(() => t.remove(), 4000);
@@ -829,7 +862,7 @@ async function openCode(path, line) {
   codeEl.hidden = false; drawCode();
   const want = CODE, local = helperHere();
   try {
-    if (local && local.ok) {
+    if (local && local.ok && !isDeclaration(data)) { // a declaration is read at its pinned commit (code.js)
       const r = await fetch(`/helper/file?${new URLSearchParams({ repo: SRC.repo, path })}`, { headers: { 'x-loupe-token': HELPER.token } });
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `status ${r.status}`);
       // The checkout need not be at the crawled commit; then the evidence lines may sit elsewhere, and the header says so.
@@ -840,14 +873,14 @@ async function openCode(path, line) {
     } else {
       const r = await fetch(rawUrl(SRC, path));
       if (!r.ok) throw new Error(`GitHub answered ${r.status}`);
-      Object.assign(want, { text: await r.text(), from: `GitHub at ${SRC.commit.slice(0, 7)}` });
+      Object.assign(want, { text: await r.text(), from: `${isDeclaration(data) ? 'the declaration, from ' : ''}GitHub at ${SRC.commit.slice(0, 7)}` });
     }
   } catch (err) { want.err = err.message || String(err); }
   if (CODE === want) drawCode(true);
 }
 // The open file's own actions: the file at the line it was opened at (an edge's evidence path need not be a map node).
 const paneTarget = () => ({ path: CODE.path, line: CODE.line, what: CODE.line ? `${CODE.path}:${CODE.line}` : CODE.path });
-const paneActs = () => codeActions(SRC, paneTarget(), { helper: helperHere(), editor: EDITOR });
+const paneActs = () => codeActions(SRC, paneTarget(), { helper: helperHere(), editor: EDITOR, declaration: isDeclaration(data) });
 function closeCode() { CODE = null; codeEl.hidden = true; codeEl.innerHTML = ''; }
 // The lines the selected edge stands on in this file, outlined; the line opened at, shaded.
 const selLines = () => { const sel = store.get().selection; return sel && sel.type === 'edge' && CODE ? CODE.marks.filter(m => m.edges.includes(sel.id)).map(m => m.line) : []; };
@@ -898,6 +931,7 @@ pb.onclick = e => {
   if (type === 'tour') return A.setTour({ step: +id });
   if (type === 'tourpick') return A.setTour({ index: +id, step: 0 });
   if (type === 'hub') return A.setHubPlacement(id);
+  if (type === 'sstage') return spineGo(+id);
   store.set({ selection: { type, id } });
 };
 const go = (type, id, inner, cls = '') => `<button class="${cls}" data-type="${type}" data-go="${esc(id)}">${inner}</button>`;
@@ -934,22 +968,25 @@ function nodePanel(id) {
   const home = data.home[id];
   const d = data.diff && store.get().diff ? ['added', 'changed', 'stale'].find(k => (data.diff[k] || []).includes(id)) || ((data.diff.removed || []).some(r => r.id === id) ? 'removed' : null) : null;
   return `<div class="crumbs">${crumbs(home).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>
-    <div><h2>${esc(label(id) || n.path.split('/').pop())}</h2><div class="path">${esc(n.path)}${n.loc ? ' · ' + esc(n.loc) + ' lines' : ''}${n.lang ? ' · ' + esc(n.lang) : ''}</div></div>
+    <div><h2>${esc(label(id) || nodeName(n).split('/').pop())}</h2><div class="path">${esc(n.declared ? `${nounOf(n)} · ${n.declared.id}` : n.path)}${n.loc ? ' · ' + esc(n.loc) + ' lines' : ''}${n.lang ? ' · ' + esc(n.lang) : ''}</div></div>
+    ${store.get().view === 'spine' && spineLay ? undecidedNote(spineLay, id) : ''}
     ${data.nodes[id] ? codeRow({ type: 'node', id }) : ''}
     ${d ? `<div>${chip('diff · ' + d, 'diff-' + d)}</div>` : ''}
-    <p>${esc(note || (d === 'removed' ? 'Removed since the last run. Drawn as a ghost until the diff is accepted.' : 'No explainer yet.'))}</p>
-    ${claimsFor(id).length ? `<div class="list"><span class="eyebrow">Claims about this file</span>${claimsFor(id).map(elCard).join('')}</div>` : ''}
+    ${declaredNodeHtml(n)}
+    <p>${esc(note || (d === 'removed' ? 'Removed since the last run. Drawn as a ghost until the diff is accepted.' : n.declared ? '' : 'No explainer yet.'))}</p>
+    ${claimsFor(id).length ? `<div class="list"><span class="eyebrow">Claims about this ${nounOf(n)}</span>${claimsFor(id).map(elCard).join('')}</div>` : ''}
     ${outs.length + ins.length ? `<div><span class="eyebrow">Edges · ${outs.length} out · ${ins.length} in</span>${outs.concat(ins).map(e => edgeRow(e, id)).join('')}</div>` : ''}`;
 }
 
 function edgePanel(id) {
   const e = data.edgeById[id]; if (!e) return '';
   const bus = (data.byPrimitive.bus || []).find(b => data.elements[b].edges.includes(id));
-  return `<span class="eyebrow">Edge · ${e.origin === 'graph' ? 'crawled' : 'overlay'}</span>
+  return `<span class="eyebrow">Edge · ${edgeOrigin(e)}</span>
     <div style="display:flex;flex-direction:column;gap:6px">${go('node', e.src, `<span class="mono">${esc(label(e.src))}</span>`)}<span class="row" style="justify-content:flex-start">${swatch(e)}<span class="path">${esc(e.kind)}${e.role ? ' / ' + esc(e.role) : ''}</span></span>${go('node', e.dst, `<span class="mono">${esc(label(e.dst))}</span>`)}</div>
     ${codeRow({ type: 'edge', id })}
+    ${declaredEdgeHtml(e)}
     <dl class="kv"><dt>Provenance</dt><dd>${esc(e.provenance)}</dd><dt>Kind</dt><dd>${esc(e.kind)}</dd><dt>Role</dt><dd>${e.role || 'none'}${e.roleRule ? ' · ' + esc(e.roleRule) : ''}</dd>${e.count ? `<dt>Sites</dt><dd>${e.count}</dd>` : ''}${bus ? `<dt>Bus</dt><dd>${go('element', bus, esc(data.elements[bus].label))}</dd>` : ''}${e.condition ? `<dt>Condition</dt><dd>${esc(e.condition.condition)}</dd>` : ''}<dt>Id</dt><dd class="path">${esc(e.id)}</dd></dl>
-    <div class="list"><span class="eyebrow">Evidence</span>${(e.evidence || []).map(x => `<div class="card"><span class="t">${esc(x.type)}</span><span class="s">${esc(x.rationale || x.signature || x.trace || x.key || '')}</span><span class="m">${esc([x.path, x.line && 'line ' + x.line, x.agent && 'agent:' + x.agent].filter(Boolean).join(' · '))}</span></div>`).join('') || '<p>None recorded.</p>'}</div>`;
+    <div class="list"><span class="eyebrow">Evidence</span>${(e.evidence || []).map(x => `<div class="card"><span class="t">${esc(x.type)}</span><span class="s">${esc(x.rationale || x.signature || x.trace || x.key || evidenceNote(x))}</span><span class="m">${esc([x.path, x.line && 'line ' + x.line, x.agent && 'agent:' + x.agent].filter(Boolean).join(' · '))}</span></div>`).join('') || '<p>None recorded.</p>'}</div>`;
 }
 
 function elementPanel(id) {
@@ -1001,6 +1038,7 @@ function elementPanel(id) {
 }
 
 function stagePanel(s, c) {
+  if (s.view === 'spine') return spineStagePanel();
   if (s.view === 'works') return worksStagePanel(s); // no diff in the stories view (Q-035 scope)
   const st = STAGES[s.stage - 1], S = data.stages;
   let h = `<span class="eyebrow">Stage ${st.n}</span><h2>${st.label}</h2>`;
@@ -1014,6 +1052,7 @@ function stagePanel(s, c) {
     const kinds = {}; data.edges.forEach(e => { const k = e.kind; kinds[k] = kinds[k] || { graph: 0, overlay: 0 }; kinds[k][e.origin]++; });
     const provs = {}; data.edges.forEach(e => { provs[e.provenance] = (provs[e.provenance] || 0) + 1; });
     const cr = data.graph.crawler;
+    if (HAS_DECL) h += declarationStageHtml(data); else
     h += `<p>The crawler's output, laid out by dependency rank with no interpretation. This is the reference the design view is checked against.</p>
       <dl class="kv"><dt>Crawler</dt><dd>${esc(cr.name)} ${esc(cr.version)}</dd><dt>Granularity</dt><dd>${esc(cr.granularity)}</dd><dt>Dialect</dt><dd>${esc(cr.dialect.name)} ${esc(cr.dialect.version)}</dd><dt>Files</dt><dd>${data.nodeIds.length}</dd></dl>
       <table class="t"><thead><tr><th>Kind</th><th>Crawled</th><th>Overlay</th></tr></thead><tbody>${Object.entries(kinds).map(([k, n]) => `<tr><td>${k}</td><td>${n.graph}</td><td>${n.overlay}</td></tr>`).join('')}</tbody></table>
@@ -1021,7 +1060,7 @@ function stagePanel(s, c) {
   } else if (s.stage === 2) {
     const lz = s.lens && !s.isolate && map.layout.lens;
     if (lz) {
-      const p = id => esc(data.nodes[id] ? data.nodes[id].path : id);
+      const p = id => esc(data.nodes[id] ? nodeName(data.nodes[id]) : id);
       const cfgs = ((data.graph.crawler || {}).configurations || []).map(c => c.name).join(', ') || 'no configuration recorded';
       h += `<div class="card"><div class="row"><span class="t">${esc(lz.label)} lens</span>${chip('computed', 'ink-faint')}</div>
         <span class="s">${lz.seedSource === 'build'
@@ -1033,7 +1072,7 @@ function stagePanel(s, c) {
         ${lz.ignoredAgentEdges ? `<span class="s">${lz.ignoredAgentEdges} agent-written edges were not followed; only crawled edges decide membership.</span>` : ''}
         ${lz.buildTime.length ? `<span class="s"><b>Build-time · ${lz.buildTime.length}:</b> the programs that make files the product compiles (scripts a build command runs, code that writes a file, targets the product waits on), and what they load: ${lz.buildTime.map(p).join(', ')}. Outside the lens, but not lab code.</span>` : ''}</div>`;
     }
-    h += `<p>Dialect ${esc(data.view.dialect.name)}. The structure agent composed this view from ${data.order.length} elements. Each one makes a claim the audit can test.</p>`;
+    h += viewSentence(data);
     Object.keys(PRIM).forEach(p => { const ids = data.byPrimitive[p]; if (ids) h += `<div class="list"><span class="eyebrow">${PRIM[p]} · ${ids.length}</span>${ids.map(elCard).join('')}</div>`; });
   } else if (s.stage === 3 && S) {
     const open = S.dialogue.filter(q => !q.answer).length;
@@ -1098,7 +1137,7 @@ function bundlePanel(key, map) {
 
 function lensPanel() {
   const lz = map && map.layout.lens; if (!lz) return '';
-  const p = id => esc(data.nodes[id] ? data.nodes[id].path : id), out = id => !lz.inside.has(id);
+  const p = id => esc(data.nodes[id] ? nodeName(data.nodes[id]) : id), out = id => !lz.inside.has(id);
   const files = data.nodeIds.filter(out);
   // Build classes first (Q-009), then roles: a build-time generator is not lab code, and platform code is not unshipped.
   const bt = new Set(lz.buildTime || []), nb = new Set(lz.notBuilt || []);
@@ -1159,7 +1198,7 @@ function stepPanel(key) {
       <input id="stLabel" class="fld" value="${esc(step.label)}" aria-label="Step name">
       <textarea id="stDoes" class="fld" rows="3" aria-label="What this step does">${esc(step.does)}</textarea>
       <div class="row" style="justify-content:flex-start;gap:8px">${go('st-save', key, 'Save', 'btn primary')}${go('st-pin', key, step.pinned ? 'Unpin' : 'Pin as truth', 'btn')}${go('st-add', key, 'Add step after', 'btn')}${go('st-del', key, 'Delete', 'btn')}</div></div>
-    ${step.files.length ? `<div><span class="eyebrow">Files that do it · ${step.files.length}</span>${step.files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(data.nodes[f] ? data.nodes[f].path : f + ' (not in graph)')}</span><span class="m"></span>`, 'erow')).join('')}</div>` : '<p class="path">No files yet: add them by asking the agent, or this step stays a gap.</p>'}
+    ${step.files.length ? `<div><span class="eyebrow">Files that do it · ${step.files.length}</span>${step.files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(data.nodes[f] ? nodeName(data.nodes[f]) : f + ' (not in graph)')}</span><span class="m"></span>`, 'erow')).join('')}</div>` : '<p class="path">No files yet: add them by asking the agent, or this step stays a gap.</p>'}
     ${(step.evidence || []).length ? `<div class="list"><span class="eyebrow">Evidence</span>${step.evidence.map(e => `<div class="card"><span class="t mono">${esc(e.path)}:${Number(e.line) || '?'}</span>${e.note ? `<span class="s">${esc(e.note)}</span>` : ''}</div>`).join('')}</div>` : ''}
     ${lk.length ? `<div><span class="eyebrow">Links</span>${lk.map(l => `<div class="erow"><span class="m">${l.from === stepId ? '→' : '←'}</span><span></span><span class="n">${name(l.from === stepId ? l.to : l.from)}</span><span class="m">${esc(l.carries)} · ${acc.support[l.i] ? acc.support[l.i] + ' crawled' : 'inferred only'}</span></div>`).join('')}</div>` : ''}
     <div class="list"><span class="eyebrow">Ask the agent to redraw</span>
@@ -1176,8 +1215,15 @@ function storyOutPanel(s) {
     <p>Counted, not deleted. These files and the ${acc.counts.outsideEdges} edges among them sit behind the box; every edge crossing into the story is listed.</p>
     ${go('holds', 'story-outside', `List all ${map ? heldEdges(data, map, 'story-outside').length : ''} edges the box stands for`, 'btn')}
     <div><span class="eyebrow">Crossing edges · ${cross.length}</span>${cross.map(e => go('edge', e.id, `${swatch(e)}<span class="m">${acc.inside.has(e.src) ? '→' : '←'}</span><span class="n mono">${esc(label(acc.inside.has(e.src) ? e.dst : e.src))}</span><span class="m">${esc(label(acc.inside.has(e.src) ? e.src : e.dst))}</span>`, 'erow')).join('')}</div>
-    ${Object.keys(byRole).sort((a, b) => byRole[b].length - byRole[a].length || (a < b ? -1 : 1)).map(r => `<div><span class="eyebrow">${esc(r)} · ${byRole[r].length}</span>${byRole[r].map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(data.nodes[f].path)}</span><span class="m"></span>`, 'erow')).join('')}</div>`).join('')}`;
+    ${Object.keys(byRole).sort((a, b) => byRole[b].length - byRole[a].length || (a < b ? -1 : 1)).map(r => `<div><span class="eyebrow">${esc(r)} · ${byRole[r].length}</span>${byRole[r].map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(nodeName(data.nodes[f]))}</span><span class="m"></span>`, 'erow')).join('')}</div>`).join('')}`;
 }
+function spineStagePanel() {
+  const L = spineLay || layoutSpine(data), K = L.counts;
+  return `<span class="eyebrow">Signal path</span><h2>${K.columns} declared stages</h2>
+    <p class="path">Placement is the declaration's own: stages in declared order, left to right (click a stage to jump to it; Fit shows all). Off-path engine blocks hang at the lower median column of their neighbours on the path, above when the edge goes into the neighbour, below when it comes out, stacked by the declared stage order of the neighbour they hang from, then by id. External blocks off the path stand on rails only when their direction is declared: ${K.left} Inputs on the left, ${K.right} Outputs on the right, ${K.bottom} Observers below. ${K.undecided} blocks are in the strip "${UNDECIDED_LABEL}", each with its reason: no side is guessed. Boxes are declared parents; marked blocks are not members of the box they stand in (${K.intrusions} marked). ${K.continued} dashed boxes continue a parent whose own block stands elsewhere. ${K.overlaps} pairs of boxes overlap. ${(() => { const f = Object.keys(routeFaults(L, data.edges)).length; return f ? `${f} edges have a route fault (see their tooltips).` : 'Every edge is routed through the gutters: none through a block, none on another edge\'s line.'; })()} A small tag at each end of a long edge names the block at its far end; hover an edge to light its whole route.</p>
+    <div class="list">${L.stages.map(x => go('sstage', x.i, `<span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span>`, 'card')).join('')}</div>`;
+}
+
 function worksStagePanel(s) {
   const st = effStory(s);
   if (!st) return `<span class="eyebrow">How it works</span><h2>No stories for this snapshot</h2><p>Stories are written by the Structure agent for a crawled commit. This snapshot has none yet.</p>`;

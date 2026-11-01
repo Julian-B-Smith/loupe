@@ -8,14 +8,15 @@ import { check } from './loupe-check.mjs';
 import { canonicalGraph, canonicalDoc, sha256, edgeId } from './canon.mjs';
 import { indexSnapshot } from '../design/prototype/snapshot.js';
 import { layout } from '../design/prototype/layout.js';
+import { adapt, FORMAT } from './engine-structure.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const sample = join(here, '..', 'schema', 'examples', 'horde-sample');
 const load = (f) => JSON.parse(readFileSync(join(sample, f), 'utf8'));
 
 // Write a mutated snapshot. rebind=true re-hashes so only the intended rule fails.
-function snapshot(mutate, { rebind = true } = {}) {
-  const G = load('graph.json'), O = load('overlay.json'), V = load('view.json');
+function snapshot(mutate, { rebind = true, base = null } = {}) {
+  const [G, O, V] = base ? base() : [load('graph.json'), load('overlay.json'), load('view.json')];
   mutate({ G, O, V });
   const d = mkdtempSync(join(tmpdir(), 'loupe-'));
   const g = canonicalGraph(G);
@@ -61,6 +62,22 @@ function dragOnto({ G, O, V }) {
   const [a, b] = V.elements.filter((e) => e.primitive === 'section' && !e.parent).map((e) => e.id).filter((id) => P.sections[id]);
   V.settings.offsets = { [b]: { dx: P.sections[a].x - P.sections[b].x + 5, dy: P.sections[a].y - P.sections[b].y + 5 } };
 }
+
+// Schema 0.4 (Q-015): a small declaration, read by the adapter itself, so each D case breaks one rule of a graph that is
+// valid. instrument holds voice and fx; voice holds osc and a reserved slot; osc holds member; host is external.
+const decl04 = () => {
+  const it = (id, parent, extra = {}) => ({ id, label: id, parent, kind: 'block', scope: 'engine', multiplicity: null, cites: ['S-1'], ...extra });
+  const ed = (from, to, kind) => ({ id: `${from}->${to}`, from, to, kind, label: '', cites: ['S-2'] });
+  const items = [it('instrument', null), it('voice', 'instrument', { multiplicity: 'many' }), it('osc', 'voice'), it('member', 'osc'), it('fx', 'instrument'), it('spare', 'voice', { kind: 'slot' }), it('host', null, { scope: 'external' })];
+  const edges = [ed('host', 'voice', 'event'), ed('member', 'fx', 'audio'), ed('fx', 'host', 'audio'), ed('osc', 'member', 'modulation')];
+  const out = adapt({ format: FORMAT, spec: { path: 'spec.md', blob: 'b'.repeat(40) }, counts: { items: { block: 6, slot: 1 }, scope: { engine: 6, external: 1 }, edges: { audio: 2, event: 1, modulation: 1 }, stages: 2 },
+    edge_kinds: ['audio', 'control', 'event', 'modulation', 'observation'], items, edges, signal_path: [{ stage: 'in', ids: ['host', 'host->voice'] }, { stage: 'out', ids: ['fx->host'] }] },
+    { commit: 'c'.repeat(40), commitTime: '2026-01-01T00:00:00+00:00', blob: 'a'.repeat(40) });
+  return [JSON.parse(out['graph.json']), JSON.parse(out['overlay.json']), JSON.parse(out['view.json'])];
+};
+// opts for a D case: the rule must fire on its own, so schema validation is off for the ones the schema would also refuse.
+const d04n = { base: decl04, schema: false };
+const D = (G, id) => G.nodes.find((n) => n.id === 'decl:' + id);
 
 const cases = [
   ['clean sample passes', null, () => {}],
@@ -137,13 +154,80 @@ const cases = [
   ['offset on level:00 (an alias the layout does not read)', 'V8', ({ V }) => { V.settings.offsets = { 'level:00': { dx: 1, dy: 1 } }; }],
   ['offsets that make two sections overlap', 'V9', dragOnto],
   ['offset without dy', 'S1', ({ V }) => { V.settings.offsets = { gutter: { dx: 1 } }; }],
+  // ---- schema 0.4: declaration graphs (Q-015, rules D1 to D7)
+  ['a valid 0.4 declaration graph passes', null, () => {}, { base: decl04 }],
+  ['D1 declaration graph without declaration', 'D1', ({ G }) => { delete G.declaration; }, d04n],
+  ['D1 declaration graph that also has a crawler', 'D1', ({ G }) => { G.crawler = load('graph.json').crawler; }, d04n],
+  ['D1 crawl that has a declaration', 'D1', ({ G }) => { G.declaration = decl04()[0].declaration; }, { schema: false }],
+  ['D1 crawl without a crawler', 'D1', ({ G }) => { delete G.crawler; }, { schema: false }],
+  ['D2 declaration node that is a file', 'D2', ({ G }) => { D(G, 'fx').kind = 'file'; }, d04n],
+  ['D2 declaration node without declared', 'D2', ({ G }) => { delete D(G, 'fx').declared; }, d04n],
+  ['D2 declaration node whose id is not its declared id', 'D2', ({ G }) => { D(G, 'fx').declared.id = 'other'; }, d04n],
+  ['D2 declaration edge that is static', 'D2', ({ G }) => { G.edges[0].provenance = 'static'; }, d04n],
+  ['D2 declaration edge with site evidence', 'D2', ({ G }) => { G.edges[0].evidence[0] = { type: 'site', path: 'x', line: 1 }; }, d04n],
+  ['D2 declaration edge without declared', 'D2', ({ G }) => { delete G.edges[0].declared; }, d04n],
+  ['D2 block node in a crawl', 'D2', ({ G }) => { G.nodes.push({ id: 'decl:x', kind: 'block', declared: decl04()[0].nodes[0].declared }); }, { schema: false }],
+  ['D2 declared edge in a crawl', 'D2', ({ G }) => { G.edges[0].provenance = 'declared'; }, { schema: false }],
+  ['D3 parent that names nothing', 'D3', ({ G }) => { D(G, 'fx').declared.parent = 'ghost'; }, d04n],
+  ['D3 parent cycle', 'D3', ({ G }) => { D(G, 'instrument').declared.parent = 'member'; }, d04n],
+  ['D3 a block its own parent', 'D3', ({ G }) => { D(G, 'fx').declared.parent = 'fx'; }, d04n],
+  ['D4 stage ref that names nothing', 'D4', ({ G }) => { G.declaration.signalPath[0].refs[0] = 'decl:ghost'; }, d04n],
+  ['D4 stage ref to an edge that is not there', 'D4', ({ G }) => { G.declaration.signalPath[1].refs[0] = 'e:0000000000000000'; }, d04n],
+  ['D4 stage with fewer refs than ids', 'D4', ({ G }) => { G.declaration.signalPath[0].refs.pop(); }, d04n],
+  ['D5 node citing nothing', 'D5', ({ G }) => { D(G, 'fx').declared.cites = []; }, d04n],
+  ['D5 edge citing nothing', 'D5', ({ G }) => { G.edges[0].declared.cites = []; }, d04n],
+  ['D6 counts that say one block too many', 'D6', ({ G }) => { G.declaration.counts.items.block++; }, d04n],
+  ['D6 counts that say one edge too few', 'D6', ({ G }) => { G.declaration.counts.edges.audio--; }, d04n],
+  ['D6 a node the counts do not know', 'D6', ({ G }) => { G.nodes.push({ id: 'decl:extra', kind: 'block', declared: { id: 'extra', label: 'x', scope: 'engine', multiplicity: null, parent: null, cites: ['S-1'] } }); }, d04n],
+  ['D6 counts of a different scope', 'D6', ({ G }) => { G.declaration.counts.scope = { engine: 7 }; }, d04n],
+  ['D6 stage count that is not the stages', 'D6', ({ G }) => { G.declaration.counts.stages = 3; }, d04n],
+  ['D7 section that is not a declared parent', 'D7', ({ V }) => { V.elements.push({ id: 'sec:fx', primitive: 'section', claim: 'c', by: 'adapter:x', status: 'declared', members: ['decl:fx'] }); }, d04n],
+  ['D7 section with a member that is not its child', 'D7', ({ V }) => { const s = V.elements.find((e) => e.id === 'sec:osc'); s.members.push('decl:fx'); }, d04n],
+  ['D7 section missing a child', 'D7', ({ V }) => { const s = V.elements.find((e) => e.id === 'sec:voice'); s.members = s.members.filter((m) => m !== 'decl:spare'); }, d04n],
+  ['D7 section nested under the wrong section', 'D7', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').parent = 'sec:instrument'; }, d04n],
+  ['D7 section no longer under its declared parent', 'D7', ({ V }) => { delete V.elements.find((e) => e.id === 'sec:osc').parent; }, d04n],
+  ['D7 section whose status is not declared', 'D7', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').status = 'confirmed'; }, d04n],
+  ['0.4 node with a path and a hash', 'S1', ({ G }) => { Object.assign(D(G, 'fx'), { path: 'fx', hash: 'none' }); }, { base: decl04 }],
+  ['0.4 edge with a crawl kind', 'S1', ({ G }) => { G.edges[0].kind = 'include'; }, { base: decl04 }],
+  ['0.4 edge with crawl provenance', 'S1', ({ G }) => { G.edges[0].provenance = 'config'; }, { base: decl04 }],
+  ['0.4 node without declared.cites', 'S1', ({ G }) => { delete D(G, 'fx').declared.cites; }, { base: decl04 }],
+  ['0.4 graph with a crawler', 'S1', ({ G }) => { G.crawler = load('graph.json').crawler; }, { base: decl04 }],
+  ['0.4 graph without declaration', 'S1', ({ G }) => { delete G.declaration; }, { base: decl04 }],
+  ['0.3.2 crawl carrying a declaration', 'S1', v03(({ G }) => { G.schema = 'loupe.graph/0.3.2'; G.declaration = decl04()[0].declaration; })],
+  ['0.2 crawl with a block node', 'S1', ({ G }) => { G.nodes.push({ id: 'decl:x', kind: 'block', path: 'x', hash: 'none' }); }],
+  ['0.3 crawl edge with declared provenance', 'S1', v03(({ G }) => { G.edges[0].provenance = 'declared'; })],
+  // ---- Julian's decisions, 2026-11-01: the declaration block decides; D7 both ways; D8; critic fixes
+  ['a 0.4 crawl (crawler, no declaration) validates as a crawl', null, v03(({ G }) => { G.schema = 'loupe.graph/0.4'; })],
+  ['a 0.4 crawl without crawler or declaration', 'D1', v03(({ G }) => { G.schema = 'loupe.graph/0.4'; delete G.crawler; }), { schema: false }],
+  ['a declaration graph that says 0.3.2', 'D1', ({ G }) => { G.schema = 'loupe.graph/0.3.2'; }, d04n],
+  ['a declaration graph that says 0.3.2 is refused by the schema too', 'S1', ({ G }) => { G.schema = 'loupe.graph/0.3.2'; }, { base: decl04 }],
+  ['D2 evidence path that is not the declaration', 'D2', ({ G }) => { G.edges[0].evidence[0].path = 'other/file.json'; }, d04n],
+  ['0.4 evidence path that is absolute', 'S1', ({ G }) => { G.edges[0].evidence[0].path = '/etc/passwd'; }, { base: decl04 }],
+  ['0.4 evidence path that climbs out of the repo', 'S1', ({ G }) => { G.edges[0].evidence[0].path = '../x.json'; }, { base: decl04 }],
+  ['0.4 declaration format outside the known list', 'S1', ({ G }) => { G.declaration.format = 'other.format/9'; }, { base: decl04 }],
+  ['D4 stage ref that exists but is not what its id resolves to', 'D4', ({ G }) => { const r = G.declaration.signalPath[0].refs; r.reverse(); }, d04n],
+  ['D6 one declared id on two evidence entries', 'D6', ({ G }) => { G.edges[1].evidence[0].id = G.edges[0].evidence[0].id; }, d04n],
+  ['D7 declared parent with no section', 'D7', ({ V }) => { V.elements = V.elements.filter((e) => e.id !== 'sec:osc'); }, d04n],
+  ['D7 section with an invented label', 'D7', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').label = 'oscillators (our word)'; }, d04n],
+  ['D7 section with an invented claim', 'D7', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').claim = 'a claim nobody declared'; }, d04n],
+  ['D8 a section on a crawl saying declared', 'D8', ({ V }) => { sec(V, 'sec:ui').status = 'declared'; }, { schema: false }],
+  ['D8 a section on a crawl by adapter:liar', 'D8', ({ V }) => { sec(V, 'sec:ui').by = 'adapter:liar'; }, { schema: false }],
+  ['D8 a set by an agent saying declared, on a declaration view', 'D8', ({ V }) => { V.elements.push({ id: 'set:x', primitive: 'set', claim: 'c', by: 'agent:x', status: 'declared', members: ['decl:fx'] }); }, d04n],
+  ['a set by an agent saying declared is refused by the schema too', 'S1', ({ V }) => { V.elements.push({ id: 'set:x', primitive: 'set', claim: 'c', by: 'agent:x', status: 'declared', members: ['decl:fx'] }); }, { base: decl04 }],
+  ['D8 an adapter section that is merely proposed', 'D8', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').status = 'proposed'; }, d04n],
+  ['D8 an adapter set (declared) on a declaration view', 'D8', ({ V }) => { V.elements.push({ id: 'set:x', primitive: 'set', claim: 'c', by: 'adapter:x', status: 'declared', members: ['decl:fx'] }); }, d04n],
+  ['a proposed set by an agent on a declaration view passes', null, ({ V }) => { V.elements.push({ id: 'set:x', primitive: 'set', claim: 'c', by: 'agent:x', status: 'proposed', members: ['decl:fx', 'decl:host'] }); }, { base: decl04 }],
+  ['a proposed lane by an agent on a declaration view passes', null, ({ V }) => { V.elements.push({ id: 'lane:x', primitive: 'lane', claim: 'c', by: 'agent:x', status: 'proposed', source: { provenance: 'static' }, steps: ['decl:fx', 'decl:host'] }); }, { base: decl04 }],
+  ['a band over declared nodes passes (band refs accept decl)', null, ({ V }) => { V.elements.push({ id: 'band:x', primitive: 'band', claim: 'c', by: 'agent:x', status: 'proposed', levels: [{ label: 'a', members: ['decl:fx'] }, { label: 'b', members: ['decl:host'] }] }); }, { base: decl04 }],
+  ['0.4 view section with status accepted', 'S1', ({ V }) => { V.elements.find((e) => e.id === 'sec:osc').status = 'accepted'; }, { base: decl04 }],
 ];
 
 let failed = 0;
 for (const [name, code, mutate, opts] of cases) {
   const d = snapshot(mutate, opts);
-  // Schema validation on for every case: without schemaDir, S1 cases could never fail (gap found 2026-10-16).
-  const { errors } = check(d, { schemaDir: join(here, '..', 'schema') });
+  // Schema validation on for every case unless it says otherwise: without schemaDir, S1 cases could never fail (gap found
+  // 2026-10-16). A D case turns it off so the rule itself is proven to fire, not the schema's refusal of the same fault.
+  const { errors } = check(d, { schemaDir: opts && opts.schema === false ? undefined : join(here, '..', 'schema') });
   rmSync(d, { recursive: true });
   const ok = code === null ? errors.length === 0 : errors.some((e) => e.startsWith(code + ' '));
   if (!ok) failed++;

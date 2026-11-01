@@ -8,6 +8,7 @@ import { matrixPartition, MX } from './matrix.js';
 import { elementFiles, selectionFiles } from './split.js';
 import { stem, uniqueLabels } from './snapshot.js';
 import { SPECS } from './specs.js';
+import { nodeName } from './declared.js';
 
 export const SPEC = {
   dash: { static: 'none', config: '10 4', runtime: '0.1 3.6', annotated: '9 3 1.5 3', inferred: '4 3.5', gap: '2 4' },
@@ -33,6 +34,8 @@ export function kindStyle(n) {
       title: 'Referenced by the code, not in the tree: ' + (MISSING_CHIP[reason] || 'missing') };
     case 'external': return { kind, fill: 'surface-group-nested', stroke: 'ink-muted', dash: SPEC.dash.gap, pill: false, ink: 'ink-muted', chip: 'package', title: 'A package outside the repo' };
     case 'artifact': return { kind, fill: 'surface-group-nested', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: 'artifact', title: 'A set of files the code reads as a whole (in the tree)' };
+    case 'block': return { kind, fill: 'surface-node', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: null, title: 'A declared block (not a file)' };
+    case 'slot': return { kind, fill: 'surface-node', stroke: 'ink-muted', dash: SPEC.dash.gap, pill: false, ink: 'ink-muted', chip: 'slot', title: 'A declared slot: reserved, not built' };
     case 'symbol': return { kind, fill: 'surface-node', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: 'symbol', title: 'A symbol inside a file' };
     default: return { kind: 'file', fill: 'surface-node', stroke: 'rule', dash: 'none', pill: false, ink: 'ink', chip: null, title: 'A file' };
   }
@@ -672,14 +675,14 @@ export function render(container, data, state) {
     if (ovw) {
       const [ka, kb] = ends;
       outT[ka] = (outT[ka] || 0) + b.edges.length; inT[kb] = (inT[kb] || 0) + b.edges.length;
-      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
+      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${SPEC.dash[prov] || 'none'};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
       if (!heavyOf[ka] || heavyOf[ka].n < b.edges.length || (heavyOf[ka].n === b.edges.length && key < heavyOf[ka].key)) heavyOf[ka] = { key, n: b.edges.length, d, c, sel, dim, provs };
       return;
     }
     let leader = null;
     const m = placePill(d, b.edges.length, lp => { leader = lp; });
     // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
-    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov]};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
+    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov] || 'none'};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
     bundlePill(key, b.edges.length, m, { c, sel, dim, provs }, leader);
   });
   function bundlePill(key, n, m, o, leader) {
@@ -907,7 +910,7 @@ export function render(container, data, state) {
     // A ghost keeps its kind's shape but takes the diff colour, so it never reads as a missing node (critic).
     const strokeC = sel || hov || relN || (focEl && rel && rel.has(id)) ? 'accent' : ghost ? (dm === 'removed' ? 'diff-removed' : 'diff-added') : hub ? 'hub' : ks.stroke;
     const sw = sel || hov ? v('stroke-hub') : hub ? v('stroke-hub') : v('stroke-group');
-    let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(n.path)}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
+    let g = `<g data-node="${esc(id)}" style="opacity:${dim ? v('opacity-dim') : 1};cursor:pointer"><title>${esc(nodeName(n, id))}${hub ? ' · fan-in ' + fanIn(id) : ''}</title>`;
     if (sel) g += `<rect x="${f1(r.x - 4)}" y="${f1(r.y - 4)}" width="${f1(r.w + 8)}" height="${f1(r.h + 8)}" rx="7" style="fill:${v('accent-soft')}"/>`;
     if (hub) g += `<rect x="${f1(r.x - 3.5)}" y="${f1(r.y - 3.5)}" width="${f1(r.w + 7)}" height="${f1(r.h + 7)}" rx="6.5" style="fill:${v('hub-soft')};stroke:${v('hub')};stroke-width:${v('stroke-hub')};opacity:${decor}"/>`;
     if (designish && overlapOf[id] && decor > 0) g += `<rect x="${f1(r.x - 3)}" y="${f1(r.y - 3)}" width="${f1(r.w + 6)}" height="${f1(r.h + 6)}" rx="6" style="fill:${v('set-1')};stroke:${v('set-1')};stroke-width:4px;opacity:${decor}"/>`;
@@ -1215,7 +1218,7 @@ function renderMatrix(svg, uid, W, H, data, state) {
     map.nodes[f] = { state: 'drawn' }; map.drawn.add(f);
     const on = f === sel, dk = diffOf[f] ? (diffOf[f] === 'ghost-added' ? 'added' : diffOf[f]) : null, name = (dk ? GL[dk] + ' ' : '') + label(f);
     if (on) bg.push(`<rect x="${f1(X(gx))}" y="${f1(Y(gy + i * cell))}" width="${f1(K(gw))}" height="${f1(K(cell))}" style="fill:${v(MSEL.head.fill)}"/><rect x="${f1(X(gx + i * cell))}" y="${f1(Y(gy))}" width="${f1(K(cell))}" height="${f1(K(gw))}" style="fill:${v(MSEL.head.fill)}"/>`);
-    const ink = v(on ? MSEL.head.textColor : dk ? 'diff-' + dk : MP.head.textColor), tip = `<title>${esc(((data.nodes[f] && data.nodes[f].path) || f) + (dk ? ` · ${dk} since the last run` : ''))}</title>`;
+    const ink = v(on ? MSEL.head.textColor : dk ? 'diff-' + dk : MP.head.textColor), tip = `<title>${esc(((data.nodes[f] && nodeName(data.nodes[f])) || f) + (dk ? ` · ${dk} since the last run` : ''))}</title>`;
     if (!heads) { lab.push(`<g data-node="${esc(f)}" data-diff="${dk || ''}" style="cursor:pointer">${tip}<rect x="${f1(X(gx - rowHead + 18))}" y="${f1(Y(gy + i * cell))}" width="${f1(K(rowHead - 24))}" height="${f1(kc)}" style="fill:${dk ? v('diff-' + dk + '-soft') : 'transparent'}"/><rect x="${f1(X(gx + i * cell))}" y="${f1(Y(18))}" width="${f1(kc)}" height="${f1(K(colHead - 24))}" style="fill:${dk ? v('diff-' + dk + '-soft') : 'transparent'}"/></g>`); return; }
     const t = fit(name, K(rowHead - (P.bands.length > 1 ? 26 : 10)), cw * fs / 11), tc = fit(name, K(colHead - 10), cw * fs / 11);
     lab.push(`<g data-node="${esc(f)}" data-diff="${dk || ''}" style="cursor:pointer">${tip}<text x="${f1(X(gx - 6))}" y="${f1(Y(gy + i * cell + cell / 2) + fs * 0.35)}" text-anchor="end" style="font:${MX.headWeight} ${f1(fs)}px/1 ${v('font-mono')};fill:${ink}">${esc(t)}</text><text transform="rotate(-90 ${f1(X(gx + i * cell + cell / 2) + fs * 0.35)} ${f1(Y(gy - 6))})" x="${f1(X(gx + i * cell + cell / 2) + fs * 0.35)}" y="${f1(Y(gy - 6))}" style="font:${MX.headWeight} ${f1(fs)}px/1 ${v('font-mono')};fill:${ink}">${esc(tc)}</text></g>`);

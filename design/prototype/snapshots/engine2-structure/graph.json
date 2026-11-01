@@ -1,0 +1,4103 @@
+{
+  "declaration": {
+    "blob": "8aa1ffaf71d00521c4855537e16c31a80f2ee579",
+    "counts": {
+      "edges": {
+        "audio": 46,
+        "control": 47,
+        "event": 8,
+        "modulation": 5,
+        "observation": 11
+      },
+      "items": {
+        "block": 67,
+        "slot": 12
+      },
+      "scope": {
+        "engine": 67,
+        "external": 12
+      },
+      "stages": 47
+    },
+    "format": "horde.engine-structure/1",
+    "path": "engine2/structure/engine-structure.json",
+    "signalPath": [
+      {
+        "ids": [
+          "host->allocator"
+        ],
+        "refs": [
+          "e:dd43fbaeed1ab3f9"
+        ],
+        "stage": "note id, key, velocity, per-note expressions"
+      },
+      {
+        "ids": [
+          "pitch_system->voice.gravity"
+        ],
+        "refs": [
+          "e:244c89fb7a120871"
+        ],
+        "stage": "pitch input (Hz, per note id, audio rate)"
+      },
+      {
+        "ids": [
+          "voice"
+        ],
+        "refs": [
+          "decl:voice"
+        ],
+        "stage": "one voice"
+      },
+      {
+        "ids": [
+          "voice.gravity"
+        ],
+        "refs": [
+          "decl:voice.gravity"
+        ],
+        "stage": "voice pitch × gravity ratio"
+      },
+      {
+        "ids": [
+          "voice.pitch"
+        ],
+        "refs": [
+          "decl:voice.pitch"
+        ],
+        "stage": "published voice pitch (IF-2)"
+      },
+      {
+        "ids": [
+          "voice.envelopes"
+        ],
+        "refs": [
+          "decl:voice.envelopes"
+        ],
+        "stage": "envelopes: ENV 1 to ENV 4 (C.12), each × its velocity factor (VO-8)"
+      },
+      {
+        "ids": [
+          "member",
+          "osc"
+        ],
+        "refs": [
+          "decl:member",
+          "decl:osc"
+        ],
+        "stage": "osc 1: swarm of U members"
+      },
+      {
+        "ids": [
+          "member.base_wave"
+        ],
+        "refs": [
+          "decl:member.base_wave"
+        ],
+        "stage": "osc 1: base wave"
+      },
+      {
+        "ids": [
+          "member.blade1"
+        ],
+        "refs": [
+          "decl:member.blade1"
+        ],
+        "stage": "osc 1: blade 1"
+      },
+      {
+        "ids": [
+          "member.blade2"
+        ],
+        "refs": [
+          "decl:member.blade2"
+        ],
+        "stage": "osc 1: blade 2"
+      },
+      {
+        "ids": [
+          "member.edges"
+        ],
+        "refs": [
+          "decl:member.edges"
+        ],
+        "stage": "osc 1: edge correction"
+      },
+      {
+        "ids": [
+          "member.dc"
+        ],
+        "refs": [
+          "decl:member.dc"
+        ],
+        "stage": "osc 1: DC removal"
+      },
+      {
+        "ids": [
+          "member.pan"
+        ],
+        "refs": [
+          "decl:member.pan"
+        ],
+        "stage": "osc 1: pan (mono member → L/R)"
+      },
+      {
+        "ids": [
+          "osc.sum"
+        ],
+        "refs": [
+          "decl:osc.sum"
+        ],
+        "stage": "osc 1: Σ members × density compensation"
+      },
+      {
+        "ids": [
+          "voice.osc_gate"
+        ],
+        "refs": [
+          "decl:voice.osc_gate"
+        ],
+        "stage": "osc 1: gate"
+      },
+      {
+        "ids": [
+          "voice.osc_level"
+        ],
+        "refs": [
+          "decl:voice.osc_level"
+        ],
+        "stage": "osc 1: osc 1 level"
+      },
+      {
+        "ids": [
+          "voice.osc_env"
+        ],
+        "refs": [
+          "decl:voice.osc_env"
+        ],
+        "stage": "osc 1: × its envelope (RC-6.5)"
+      },
+      {
+        "ids": [
+          "osc"
+        ],
+        "refs": [
+          "decl:osc"
+        ],
+        "stage": "osc 2: the same, independent"
+      },
+      {
+        "ids": [
+          "voice.osc_level"
+        ],
+        "refs": [
+          "decl:voice.osc_level"
+        ],
+        "stage": "osc 2: osc 2 level"
+      },
+      {
+        "ids": [
+          "voice.osc_env"
+        ],
+        "refs": [
+          "decl:voice.osc_env"
+        ],
+        "stage": "osc 2: × its envelope"
+      },
+      {
+        "ids": [
+          "sub.wave"
+        ],
+        "refs": [
+          "decl:sub.wave"
+        ],
+        "stage": "sub: one phase, one shape, eroded"
+      },
+      {
+        "ids": [
+          "sub.tone"
+        ],
+        "refs": [
+          "decl:sub.tone"
+        ],
+        "stage": "sub: tone"
+      },
+      {
+        "ids": [
+          "sub.envelope"
+        ],
+        "refs": [
+          "decl:sub.envelope"
+        ],
+        "stage": "sub: × its envelope"
+      },
+      {
+        "ids": [
+          "sub.drive"
+        ],
+        "refs": [
+          "decl:sub.drive"
+        ],
+        "stage": "sub: drive"
+      },
+      {
+        "ids": [
+          "sub.dc"
+        ],
+        "refs": [
+          "decl:sub.dc"
+        ],
+        "stage": "sub: DC removal"
+      },
+      {
+        "ids": [
+          "sub.pan"
+        ],
+        "refs": [
+          "decl:sub.pan"
+        ],
+        "stage": "sub: pan"
+      },
+      {
+        "ids": [
+          "voice.sub_gate"
+        ],
+        "refs": [
+          "decl:voice.sub_gate"
+        ],
+        "stage": "sub: gate"
+      },
+      {
+        "ids": [
+          "voice.sub_level"
+        ],
+        "refs": [
+          "decl:voice.sub_level"
+        ],
+        "stage": "sub: level"
+      },
+      {
+        "ids": [
+          "noise.colour"
+        ],
+        "refs": [
+          "decl:noise.colour"
+        ],
+        "stage": "noise: per-voice seeded source, colour"
+      },
+      {
+        "ids": [
+          "noise.resonator"
+        ],
+        "refs": [
+          "decl:noise.resonator"
+        ],
+        "stage": "noise: Resonator"
+      },
+      {
+        "ids": [
+          "noise.whisper"
+        ],
+        "refs": [
+          "decl:noise.whisper"
+        ],
+        "stage": "noise: Whisper"
+      },
+      {
+        "ids": [
+          "noise.wind"
+        ],
+        "refs": [
+          "decl:noise.wind"
+        ],
+        "stage": "noise: Wind"
+      },
+      {
+        "ids": [
+          "noise.filter"
+        ],
+        "refs": [
+          "decl:noise.filter"
+        ],
+        "stage": "noise: noise filter"
+      },
+      {
+        "ids": [
+          "noise.spread"
+        ],
+        "refs": [
+          "decl:noise.spread"
+        ],
+        "stage": "noise: stereo spread"
+      },
+      {
+        "ids": [
+          "noise.pan"
+        ],
+        "refs": [
+          "decl:noise.pan"
+        ],
+        "stage": "noise: pan"
+      },
+      {
+        "ids": [
+          "voice.noise_gate"
+        ],
+        "refs": [
+          "decl:voice.noise_gate"
+        ],
+        "stage": "noise: gate"
+      },
+      {
+        "ids": [
+          "voice.noise_level"
+        ],
+        "refs": [
+          "decl:voice.noise_level"
+        ],
+        "stage": "noise: level"
+      },
+      {
+        "ids": [
+          "voice.noise_env"
+        ],
+        "refs": [
+          "decl:voice.noise_env"
+        ],
+        "stage": "noise: × its envelope"
+      },
+      {
+        "ids": [
+          "voice.filter_slot"
+        ],
+        "refs": [
+          "decl:voice.filter_slot"
+        ],
+        "stage": "per-voice filter slot (stereo-linked)"
+      },
+      {
+        "ids": [
+          "mono_sub"
+        ],
+        "refs": [
+          "decl:mono_sub"
+        ],
+        "stage": "mono sub: the sub, once for the instrument (SN-7)"
+      },
+      {
+        "ids": [
+          "mono_sub.envelope"
+        ],
+        "refs": [
+          "decl:mono_sub.envelope"
+        ],
+        "stage": "mono sub: its own envelope"
+      },
+      {
+        "ids": [
+          "mono_sub.filter_slot"
+        ],
+        "refs": [
+          "decl:mono_sub.filter_slot"
+        ],
+        "stage": "mono sub: its own filter-slot instance, driven by its chosen note (RC-1)"
+      },
+      {
+        "ids": [
+          "voice_sum"
+        ],
+        "refs": [
+          "decl:voice_sum"
+        ],
+        "stage": "Σ voices"
+      },
+      {
+        "ids": [
+          "output"
+        ],
+        "refs": [
+          "decl:output"
+        ],
+        "stage": "output stage (Level, guards)"
+      },
+      {
+        "ids": [
+          "output->makeup"
+        ],
+        "refs": [
+          "e:1a02a64e93d39495"
+        ],
+        "stage": "stereo out"
+      },
+      {
+        "ids": [
+          "makeup"
+        ],
+        "refs": [
+          "decl:makeup"
+        ],
+        "stage": "make-up gain (the mixer's, RC-2)"
+      },
+      {
+        "ids": [
+          "fx_rack"
+        ],
+        "refs": [
+          "decl:fx_rack"
+        ],
+        "stage": "FX rack"
+      }
+    ],
+    "spec": {
+      "blob": "dfec522a586cd7be835776f75fc7c5566c1abcc5",
+      "path": "specs/SPEC-ENGINE.md"
+    }
+  },
+  "edges": [
+    {
+      "declared": {
+        "cites": [
+          "C.14"
+        ],
+        "label": "carrier phase: cross-mod from the next member, feedback from its own, one sample late"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "member.loop->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:04ee30f2563c5646",
+      "kind": "modulation",
+      "provenance": "declared",
+      "src": "decl:member.loop"
+    },
+    {
+      "declared": {
+        "cites": [
+          "PA-1",
+          "PA-2"
+        ],
+        "label": "resolved values, smoothed"
+      },
+      "dst": "decl:voice",
+      "evidence": [
+        {
+          "id": "parameters->voice",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:055a94d4c3351e26",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:parameters"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.10"
+        ],
+        "label": "leads, for the swarm spread law"
+      },
+      "dst": "decl:osc.spreads",
+      "evidence": [
+        {
+          "id": "osc.frame->osc.spreads",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:0a2ebdcd14402433",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.frame"
+    },
+    {
+      "declared": {
+        "cites": [
+          "OU-1",
+          "RC-5"
+        ],
+        "label": ""
+      },
+      "dst": "decl:master",
+      "evidence": [
+        {
+          "id": "fx_rack->master",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:0b7e0d4e17f49f36",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:fx_rack"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6"
+        ],
+        "label": "each source after its level, pan and gate, × its governing envelope, summed over voices"
+      },
+      "dst": "decl:meters",
+      "evidence": [
+        {
+          "id": "voice->meters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:0d5bfe02fe369278",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "SN-7"
+        ],
+        "label": "joins the voices after their filter slots"
+      },
+      "dst": "decl:voice_sum",
+      "evidence": [
+        {
+          "id": "mono_sub.filter_slot->voice_sum",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:16295e7268c38351",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:mono_sub.filter_slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.3",
+          "IF-2"
+        ],
+        "label": "sounding pitch, then the oscillator's transposition"
+      },
+      "dst": "decl:osc.detune",
+      "evidence": [
+        {
+          "id": "voice.pitch->osc.detune",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:163d1cc617d5d97b",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.sub_gate",
+      "evidence": [
+        {
+          "id": "sub.pan->voice.sub_gate",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:17693daefb74e069",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.pan"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.whisper",
+      "evidence": [
+        {
+          "id": "noise.resonator->noise.whisper",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:17d170b3fd1f46e0",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.resonator"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.0"
+        ],
+        "label": "blade phase φ"
+      },
+      "dst": "decl:member.base_wave",
+      "evidence": [
+        {
+          "id": "member.phase->member.base_wave",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:17f46ba7cce003dd",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:member.phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "RC-2",
+          "§4.2"
+        ],
+        "label": "stereo out"
+      },
+      "dst": "decl:makeup",
+      "evidence": [
+        {
+          "id": "output->makeup",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:1a02a64e93d39495",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:output"
+    },
+    {
+      "declared": {
+        "cites": [
+          "OU-1"
+        ],
+        "label": "out.level"
+      },
+      "dst": "decl:output",
+      "evidence": [
+        {
+          "id": "parameters->output",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:20f9541597f3d836",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:parameters"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-2",
+          "RC-3"
+        ],
+        "label": "pitch input (Hz, per note id, audio rate)"
+      },
+      "dst": "decl:voice.gravity",
+      "evidence": [
+        {
+          "id": "pitch_system->voice.gravity",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:244c89fb7a120871",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:pitch_system"
+    },
+    {
+      "declared": {
+        "cites": [
+          "EN-5",
+          "IF-3",
+          "RC-4"
+        ],
+        "label": "published sources: ENV 1 to ENV 4, R, ψ, onset burst, gravity offset, velocity, expressions"
+      },
+      "dst": "decl:modulation",
+      "evidence": [
+        {
+          "id": "voice->modulation",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:24e177a06010c64d",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-6"
+        ],
+        "label": ""
+      },
+      "dst": "decl:sub.dc",
+      "evidence": [
+        {
+          "id": "sub.drive->sub.dc",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:28493e6281e68142",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.drive"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "SN-7"
+        ],
+        "label": "the chosen note's voice: pitch, velocity, per-voice modulation, lifecycle"
+      },
+      "dst": "decl:mono_sub.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.pitch->mono_sub.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:2be0db561b844533",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.10"
+        ],
+        "label": "spread offsets"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "osc.spreads->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:2ce966011059c363",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.spreads"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.wind",
+      "evidence": [
+        {
+          "id": "noise.whisper->noise.wind",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:31117a52c465b43d",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.whisper"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "RC-6"
+        ],
+        "label": "its signal; its level, gate and place in the mixer are deferred"
+      },
+      "dst": "decl:voice.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.later_source->voice.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:314d918dbdd6abd6",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.later_source"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "label": "in the order drive → tone, env (SN-3)"
+      },
+      "dst": "decl:sub.tone",
+      "evidence": [
+        {
+          "id": "sub.dc->sub.tone",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:32379fc77e48831b",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.dc"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-9"
+        ],
+        "label": "structure setting-samples"
+      },
+      "dst": "decl:counters",
+      "evidence": [
+        {
+          "id": "voice.structure_slots->counters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:335712b48a1a2b89",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice.structure_slots"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-7",
+          "RC-7.1"
+        ],
+        "label": "tempo, time signature, position, play state"
+      },
+      "dst": "decl:transport",
+      "evidence": [
+        {
+          "id": "host->transport",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:337310521d576df8",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:host"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-11",
+          "C.11"
+        ],
+        "label": "serial interplay, blade 2 upper: it hears blade 1"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "member.blade1->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:37fb44e35602361b",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.blade1"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.pan",
+      "evidence": [
+        {
+          "id": "noise.spread->noise.pan",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:389623530f04054f",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.spread"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-8"
+        ],
+        "label": "meter peaks and clip latches"
+      },
+      "dst": "decl:gui_snapshot",
+      "evidence": [
+        {
+          "id": "meters->gui_snapshot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:3923325d1d3685a1",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:meters"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-11",
+          "PA-7"
+        ],
+        "label": "host parameters, normalised"
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "host->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:399deb10105c6741",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:host"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.6",
+          "SW-11"
+        ],
+        "label": "held voices pull toward just ratios of one another"
+      },
+      "dst": "decl:voice.gravity",
+      "evidence": [
+        {
+          "id": "voice.gravity->voice.gravity",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:3da9b27305924068",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.gravity"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.1",
+          "C.5"
+        ],
+        "label": "coupled frequencies"
+      },
+      "dst": "decl:osc.inertia",
+      "evidence": [
+        {
+          "id": "osc.coupling->osc.inertia",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:3ec0f99e5abc064e",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.coupling"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.spread",
+      "evidence": [
+        {
+          "id": "noise.filter->noise.spread",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:3f0541d7a70fd1f1",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.filter"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-2",
+          "RC-5"
+        ],
+        "label": "into the rack's first slot"
+      },
+      "dst": "decl:fx_rack",
+      "evidence": [
+        {
+          "id": "makeup->fx_rack",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:402fe3a7597c1261",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:makeup"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "state->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:4545d08a90253b3c",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:state"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.10"
+        ],
+        "label": "spread offsets"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "osc.spreads->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:48890e1a91467bd2",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.spreads"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-2",
+          "SN-7"
+        ],
+        "label": "the chosen note's sounding pitch"
+      },
+      "dst": "decl:mono_sub",
+      "evidence": [
+        {
+          "id": "voice.pitch->mono_sub",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:4d2dabf2f631aca6",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "§4.2"
+        ],
+        "label": "one stereo signal per voice"
+      },
+      "dst": "decl:voice_sum",
+      "evidence": [
+        {
+          "id": "voice.filter_slot->voice_sum",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:4e23b0c0b67dd80a",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.filter_slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6"
+        ],
+        "label": "the engine's output"
+      },
+      "dst": "decl:meters",
+      "evidence": [
+        {
+          "id": "output->meters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:4e309fed9fa5bae4",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:output"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.noise_level",
+      "evidence": [
+        {
+          "id": "voice.noise_gate->voice.noise_level",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:50022de1b39447dc",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.noise_gate"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-6",
+          "VO-10"
+        ],
+        "label": "start, release, take, free"
+      },
+      "dst": "decl:voice",
+      "evidence": [
+        {
+          "id": "allocator->voice",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:51e1864c86ceb853",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:allocator"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.9"
+        ],
+        "label": "the blade's input"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "member.base_wave->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:51ef596439b72166",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.base_wave"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3",
+          "SN-5"
+        ],
+        "label": "the default order"
+      },
+      "dst": "decl:sub.drive",
+      "evidence": [
+        {
+          "id": "sub.envelope->sub.drive",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:536b87a1c4aec108",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.envelope"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "VO-8"
+        ],
+        "label": "the governing envelope's level × its velocity factor"
+      },
+      "dst": "decl:voice.noise_env",
+      "evidence": [
+        {
+          "id": "voice.envelopes->voice.noise_env",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:54acf6e0f7279b09",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.envelopes"
+    },
+    {
+      "declared": {
+        "cites": [
+          "MO-10",
+          "RC-7"
+        ],
+        "label": "tempo, position and jumps, for the synced steps"
+      },
+      "dst": "decl:morph_resolver",
+      "evidence": [
+        {
+          "id": "transport->morph_resolver",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:56b1c3a226df19e3",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:transport"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "label": ""
+      },
+      "dst": "decl:sub.envelope",
+      "evidence": [
+        {
+          "id": "sub.tone->sub.envelope",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:5ae8c224aad504f2",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.tone"
+    },
+    {
+      "declared": {
+        "cites": [
+          "PA-2",
+          "PA-3",
+          "PA-4",
+          "RC-4"
+        ],
+        "label": "per-voice offsets by note id"
+      },
+      "dst": "decl:voice",
+      "evidence": [
+        {
+          "id": "modulation->voice",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:5bf4f3beea822a7a",
+      "kind": "modulation",
+      "provenance": "declared",
+      "src": "decl:modulation"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-4"
+        ],
+        "label": "save and load"
+      },
+      "dst": "decl:state",
+      "evidence": [
+        {
+          "id": "host->state",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:5cffa90979edea6b",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:host"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.osc_level",
+      "evidence": [
+        {
+          "id": "voice.osc_gate->voice.osc_level",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:63f1796c10508d75",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.osc_gate"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-2"
+        ],
+        "label": "each voice's envelope level and whether it is held"
+      },
+      "dst": "decl:allocator",
+      "evidence": [
+        {
+          "id": "voice->allocator",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:645cabc1dc1d71ce",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11.3"
+        ],
+        "label": "parameter gestures"
+      },
+      "dst": "decl:history_support",
+      "evidence": [
+        {
+          "id": "host->history_support",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:69573071f629ecd1",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:host"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.0",
+          "C.5"
+        ],
+        "label": "the member's frequency"
+      },
+      "dst": "decl:member.phase",
+      "evidence": [
+        {
+          "id": "osc.inertia->member.phase",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:6aff03a396d6fcec",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.inertia"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.9.1",
+          "C.13"
+        ],
+        "label": "lead, in swarm frame"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "osc.frame->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:6c767f97d9207a77",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.frame"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11.2"
+        ],
+        "label": "take and restore snapshots"
+      },
+      "dst": "decl:history_support",
+      "evidence": [
+        {
+          "id": "history->history_support",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:6e961b94cd5c0105",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:history"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.osc_env",
+      "evidence": [
+        {
+          "id": "voice.osc_level->voice.osc_env",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:7047747f834952b1",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.osc_level"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-10"
+        ],
+        "label": "heard setting sets"
+      },
+      "dst": "decl:observation_view",
+      "evidence": [
+        {
+          "id": "voice.structure_slots->observation_view",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:71bd07a342c6a4de",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice.structure_slots"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "label": "in the order drive → tone, env (SN-3)"
+      },
+      "dst": "decl:sub.pan",
+      "evidence": [
+        {
+          "id": "sub.envelope->sub.pan",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:748cece25cbc2ded",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.envelope"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-7"
+        ],
+        "label": "the gated notes: the chosen note, its starts"
+      },
+      "dst": "decl:mono_sub",
+      "evidence": [
+        {
+          "id": "allocator->mono_sub",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:752f6e2c00810afb",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:allocator"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-3",
+          "VO-6",
+          "VO-10"
+        ],
+        "label": "note-change reports (VO-6) and the voice lifecycle (VO-10): where a glide starts"
+      },
+      "dst": "decl:pitch_system",
+      "evidence": [
+        {
+          "id": "allocator->pitch_system",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:75cad256f1d4102e",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:allocator"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "§4.2"
+        ],
+        "label": "the member's output, mono"
+      },
+      "dst": "decl:member.pan",
+      "evidence": [
+        {
+          "id": "member.dc->member.pan",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:78c88c3b8e128c9f",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.dc"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-3",
+          "SN-7"
+        ],
+        "label": "the mono sub's glide, once the pitch system sends it"
+      },
+      "dst": "decl:mono_sub",
+      "evidence": [
+        {
+          "id": "pitch_system->mono_sub",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:79d1e1eb7f38ce25",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:pitch_system"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-10",
+          "SN-11"
+        ],
+        "label": "the note's pitch × Pitch: keytracking"
+      },
+      "dst": "decl:noise.filter",
+      "evidence": [
+        {
+          "id": "voice.pitch->noise.filter",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:7b27fd5146889a80",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-9",
+          "RC-8"
+        ],
+        "label": ""
+      },
+      "dst": "decl:gui_snapshot",
+      "evidence": [
+        {
+          "id": "counters->gui_snapshot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:802cac9505ea5722",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:counters"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.14"
+        ],
+        "label": "carrier phase: cross-mod from the next member, feedback from its own, one sample late"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "member.loop->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8072e821c4f9f0b1",
+      "kind": "modulation",
+      "provenance": "declared",
+      "src": "decl:member.loop"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-10"
+        ],
+        "label": "quality tier"
+      },
+      "dst": "decl:engine",
+      "evidence": [
+        {
+          "id": "device_policy->engine",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:81c6e5243483989d",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:device_policy"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "RC-2"
+        ],
+        "label": "source levels, pan, mute and solo"
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "mixer->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:86ef60753c7f3852",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:mixer"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-8"
+        ],
+        "label": "R, ψ, phases, windows, frame, level, envelope stages"
+      },
+      "dst": "decl:gui_snapshot",
+      "evidence": [
+        {
+          "id": "voice->gui_snapshot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8700c471cd6fc8e1",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-9",
+          "VO-11"
+        ],
+        "label": ""
+      },
+      "dst": "decl:counters",
+      "evidence": [
+        {
+          "id": "voice->counters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:87b0507480a8783b",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-7"
+        ],
+        "label": "the sub's signal, after its pan, gate and level"
+      },
+      "dst": "decl:mono_sub.envelope",
+      "evidence": [
+        {
+          "id": "mono_sub->mono_sub.envelope",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8808891a35ad1553",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:mono_sub"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-8"
+        ],
+        "label": ""
+      },
+      "dst": "decl:gui",
+      "evidence": [
+        {
+          "id": "gui_snapshot->gui",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8acf19fbd2b968be",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:gui_snapshot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "§4.2"
+        ],
+        "label": "the oscillator's stereo signal"
+      },
+      "dst": "decl:voice.osc_gate",
+      "evidence": [
+        {
+          "id": "osc.dc_blocker->voice.osc_gate",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8cdc041d2e56ee17",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:osc.dc_blocker"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "VO-9"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.noise_env->voice.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:8f7a782baa05ac8b",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.noise_env"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-7",
+          "SN-14"
+        ],
+        "label": "Erode: the chosen note's voice's noise"
+      },
+      "dst": "decl:mono_sub",
+      "evidence": [
+        {
+          "id": "noise.filter->mono_sub",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:91bf1d9d4dc70cf5",
+      "kind": "modulation",
+      "provenance": "declared",
+      "src": "decl:noise.filter"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SW-10"
+        ],
+        "label": "start phase at a fresh start"
+      },
+      "dst": "decl:member.phase",
+      "evidence": [
+        {
+          "id": "osc.start_phase->member.phase",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:91fb02e70a363ae7",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.start_phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-9",
+          "SN-11"
+        ],
+        "label": "the note's pitch × Pitch: the tuning"
+      },
+      "dst": "decl:noise.resonator",
+      "evidence": [
+        {
+          "id": "voice.pitch->noise.resonator",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:924580a8c7680f97",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.noise_gate",
+      "evidence": [
+        {
+          "id": "noise.pan->voice.noise_gate",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:92d8ba08436032ac",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.pan"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "label": "the default order"
+      },
+      "dst": "decl:sub.pan",
+      "evidence": [
+        {
+          "id": "sub.dc->sub.pan",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:97418b99a7f10f77",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.dc"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.resonator",
+      "evidence": [
+        {
+          "id": "noise.colour->noise.resonator",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:9f3916b7e7f7997d",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.colour"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-3",
+          "IF-4",
+          "RC-11.1"
+        ],
+        "label": "macros, intents and the morph reach the engine as parameter values"
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "modulation->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:a099a65d46520d67",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:modulation"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-12"
+        ],
+        "label": "corners, position, settings, modes"
+      },
+      "dst": "decl:morph_resolver",
+      "evidence": [
+        {
+          "id": "modulation->morph_resolver",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:a418775610de2db9",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:modulation"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "§4.2"
+        ],
+        "label": "L/R"
+      },
+      "dst": "decl:osc.sum",
+      "evidence": [
+        {
+          "id": "member.pan->osc.sum",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:a661e552895a45eb",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.pan"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4"
+        ],
+        "label": ""
+      },
+      "dst": "decl:noise.filter",
+      "evidence": [
+        {
+          "id": "noise.wind->noise.filter",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:a8a7f98407abbae8",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:noise.wind"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-12"
+        ],
+        "label": "`SettingSet` events"
+      },
+      "dst": "decl:voice.structure_slots",
+      "evidence": [
+        {
+          "id": "morph_resolver->voice.structure_slots",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:a9a7ba7c7f91b721",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:morph_resolver"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.13"
+        ],
+        "label": "phases"
+      },
+      "dst": "decl:osc.frame",
+      "evidence": [
+        {
+          "id": "member.phase->osc.frame",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:ab3a1f91d61e141d",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:member.phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "OU-1"
+        ],
+        "label": ""
+      },
+      "dst": "decl:output",
+      "evidence": [
+        {
+          "id": "voice_sum->output",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:afc5ba75d4e23fb6",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice_sum"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.noise_env",
+      "evidence": [
+        {
+          "id": "voice.noise_level->voice.noise_env",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:b2ec5dd57eca33f5",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.noise_level"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "label": "the default order"
+      },
+      "dst": "decl:sub.tone",
+      "evidence": [
+        {
+          "id": "sub.wave->sub.tone",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:b3ef61016a9144be",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.wave"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3",
+          "SN-5"
+        ],
+        "label": "in the order drive → tone, env (SN-3)"
+      },
+      "dst": "decl:sub.drive",
+      "evidence": [
+        {
+          "id": "sub.wave->sub.drive",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:b72704d54d722152",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:sub.wave"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.7"
+        ],
+        "label": "entry wait and fade"
+      },
+      "dst": "decl:member",
+      "evidence": [
+        {
+          "id": "osc.onset->member",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:b8d1b32f5d1e8301",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.onset"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-11",
+          "C.11"
+        ],
+        "label": "serial interplay, blade 1 upper: it hears blade 2"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "member.blade2->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:bb82911a081ed085",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.blade2"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.sub_level",
+      "evidence": [
+        {
+          "id": "voice.sub_gate->voice.sub_level",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c22810384b98bde0",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.sub_gate"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.1"
+        ],
+        "label": "phases: R, ψ"
+      },
+      "dst": "decl:osc.coupling",
+      "evidence": [
+        {
+          "id": "member.phase->osc.coupling",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c31fa4a9e8fa87f3",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:member.phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "VO-8"
+        ],
+        "label": "the governing envelope's level × its velocity factor"
+      },
+      "dst": "decl:voice.osc_env",
+      "evidence": [
+        {
+          "id": "voice.envelopes->voice.osc_env",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c3956611498e3f11",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.envelopes"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "SN-1"
+        ],
+        "label": "sounding pitch and master phase"
+      },
+      "dst": "decl:sub.wave",
+      "evidence": [
+        {
+          "id": "voice.pitch->sub.wave",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c3a705b8f8f35187",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.2"
+        ],
+        "label": ""
+      },
+      "dst": "decl:member.dc",
+      "evidence": [
+        {
+          "id": "member.edges->member.dc",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c4820d5189b851ee",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.edges"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11.3"
+        ],
+        "label": "parameter gestures, reported back"
+      },
+      "dst": "decl:host",
+      "evidence": [
+        {
+          "id": "history_support->host",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:c660594e6d392c90",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:history_support"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.16"
+        ],
+        "label": ""
+      },
+      "dst": "decl:osc.dc_blocker",
+      "evidence": [
+        {
+          "id": "osc.sum->osc.dc_blocker",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:cba00cfbef4f5157",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:osc.sum"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.6",
+          "IF-2"
+        ],
+        "label": "sounding pitch"
+      },
+      "dst": "decl:voice.pitch",
+      "evidence": [
+        {
+          "id": "voice.gravity->voice.pitch",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:cd6dbe7ebb05e662",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.gravity"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4",
+          "SN-14"
+        ],
+        "label": "Erode: the noise before its envelope, level and pan bends the sub's time"
+      },
+      "dst": "decl:sub.wave",
+      "evidence": [
+        {
+          "id": "noise.filter->sub.wave",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:cfc0fde1a9456b7f",
+      "kind": "modulation",
+      "provenance": "declared",
+      "src": "decl:noise.filter"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.0",
+          "C.9.1"
+        ],
+        "label": "blade phase φ"
+      },
+      "dst": "decl:member.blade1",
+      "evidence": [
+        {
+          "id": "member.phase->member.blade1",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:d373e7f0a23f07af",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:member.phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.11",
+          "§4.2"
+        ],
+        "label": "base wave + blade 1 + blade 2"
+      },
+      "dst": "decl:member.edges",
+      "evidence": [
+        {
+          "id": "member.blade1->member.edges",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:d647ccf4fb08f797",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.blade1"
+    },
+    {
+      "declared": {
+        "cites": [
+          "MO-20"
+        ],
+        "label": "`Param` events"
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "morph_resolver->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:d81f795a75aed236",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:morph_resolver"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11.4"
+        ],
+        "label": "a restore is a change, not a load"
+      },
+      "dst": "decl:parameters",
+      "evidence": [
+        {
+          "id": "history_support->parameters",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:d8c077842b378347",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:history_support"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.11",
+          "§4.2"
+        ],
+        "label": "base wave + blade 1 + blade 2"
+      },
+      "dst": "decl:member.edges",
+      "evidence": [
+        {
+          "id": "member.base_wave->member.edges",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:da02c41acf14ef84",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.base_wave"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-8",
+          "SN-11"
+        ],
+        "label": "the note's pitch × Pitch: the LFSR's clock"
+      },
+      "dst": "decl:noise.colour",
+      "evidence": [
+        {
+          "id": "voice.pitch->noise.colour",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:da870e6377ffe978",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.2",
+          "C.3"
+        ],
+        "label": "placements x"
+      },
+      "dst": "decl:osc.detune",
+      "evidence": [
+        {
+          "id": "osc.placement->osc.detune",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:dcd4fc4fa08c31d8",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.placement"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.14"
+        ],
+        "label": "the member's output"
+      },
+      "dst": "decl:member.loop",
+      "evidence": [
+        {
+          "id": "member.dc->member.loop",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:dce4fe545466bd35",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.dc"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-1",
+          "VO-1",
+          "VO-12",
+          "VO-13"
+        ],
+        "label": "notes, expressions, the pedal, all notes off, all sound off"
+      },
+      "dst": "decl:allocator",
+      "evidence": [
+        {
+          "id": "host->allocator",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:dd43fbaeed1ab3f9",
+      "kind": "event",
+      "provenance": "declared",
+      "src": "decl:host"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.0",
+          "C.9.1"
+        ],
+        "label": "blade phase φ"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "member.phase->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:e1e0bb4d520c64a5",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:member.phase"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.3"
+        ],
+        "label": "member frequencies"
+      },
+      "dst": "decl:osc.drift",
+      "evidence": [
+        {
+          "id": "osc.detune->osc.drift",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:e7ccc94a74ef0798",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.detune"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1"
+        ],
+        "label": "sounding pitch and master phase, for keytracking"
+      },
+      "dst": "decl:voice.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.pitch->voice.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:ee3e931742d50d38",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.pitch"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "VO-9"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.osc_env->voice.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:eea624014d1187be",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.osc_env"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-4"
+        ],
+        "label": "voice cap"
+      },
+      "dst": "decl:allocator",
+      "evidence": [
+        {
+          "id": "device_policy->allocator",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:f0e73007385e728d",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:device_policy"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.9"
+        ],
+        "label": "the blade's input"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "member.base_wave->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:f1f69fc0bea411c8",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.base_wave"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.9.1",
+          "C.13"
+        ],
+        "label": "lead, in swarm frame"
+      },
+      "dst": "decl:member.blade2",
+      "evidence": [
+        {
+          "id": "osc.frame->member.blade2",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:f5de06ccd9b995dc",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.frame"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.1",
+          "C.3"
+        ],
+        "label": "natural frequencies"
+      },
+      "dst": "decl:osc.coupling",
+      "evidence": [
+        {
+          "id": "osc.drift->osc.coupling",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:f7b71a411c893288",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:osc.drift"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-10"
+        ],
+        "label": ""
+      },
+      "dst": "decl:observation_view",
+      "evidence": [
+        {
+          "id": "voice->observation_view",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:f8647e92c1c064fd",
+      "kind": "observation",
+      "provenance": "declared",
+      "src": "decl:voice"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "SN-7"
+        ],
+        "label": ""
+      },
+      "dst": "decl:mono_sub.filter_slot",
+      "evidence": [
+        {
+          "id": "mono_sub.envelope->mono_sub.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:fc1119e74c62434e",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:mono_sub.envelope"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "VO-9"
+        ],
+        "label": ""
+      },
+      "dst": "decl:voice.filter_slot",
+      "evidence": [
+        {
+          "id": "voice.sub_level->voice.filter_slot",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:fc22e5c8b4e0e9c7",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:voice.sub_level"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.11",
+          "§4.2"
+        ],
+        "label": "base wave + blade 1 + blade 2"
+      },
+      "dst": "decl:member.edges",
+      "evidence": [
+        {
+          "id": "member.blade2->member.edges",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:fd8da1d4249f1e9a",
+      "kind": "audio",
+      "provenance": "declared",
+      "src": "decl:member.blade2"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "SN-3",
+          "VO-8"
+        ],
+        "label": "the governing envelope's level × its velocity factor"
+      },
+      "dst": "decl:sub.envelope",
+      "evidence": [
+        {
+          "id": "voice.envelopes->sub.envelope",
+          "path": "engine2/structure/engine-structure.json",
+          "type": "declaration"
+        }
+      ],
+      "id": "e:fdcb33cbe9a2a9d8",
+      "kind": "control",
+      "provenance": "declared",
+      "src": "decl:voice.envelopes"
+    }
+  ],
+  "nodes": [
+    {
+      "declared": {
+        "cites": [
+          "VO-1",
+          "VO-2",
+          "VO-3",
+          "VO-4",
+          "VO-6",
+          "VO-12",
+          "VO-13",
+          "§4.1"
+        ],
+        "id": "allocator",
+        "label": "the allocator: voice law, stealing, culling, the pedal, mono and legato",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:allocator",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-9",
+          "VO-11"
+        ],
+        "id": "counters",
+        "label": "operation counters",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:counters",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-10",
+          "VO-4"
+        ],
+        "id": "device_policy",
+        "label": "the device's voice cap and quality tier",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:device_policy",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§1",
+          "§4"
+        ],
+        "id": "engine",
+        "label": "the engine",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "engine"
+      },
+      "id": "decl:engine",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-7",
+          "RC-5"
+        ],
+        "id": "fx_rack",
+        "label": "the FX rack",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:fx_rack",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-2",
+          "RC-8"
+        ],
+        "id": "gui",
+        "label": "the GUI",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:gui",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-8"
+        ],
+        "id": "gui_snapshot",
+        "label": "the GUI snapshot",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:gui_snapshot",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11"
+        ],
+        "id": "history",
+        "label": "history: undo, redo, compare",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:history",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-11.2",
+          "RC-11.3",
+          "RC-11.4"
+        ],
+        "id": "history_support",
+        "label": "snapshot, restore and gestures",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:history_support",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-11",
+          "§1"
+        ],
+        "id": "host",
+        "label": "the host, through the plugin shell",
+        "multiplicity": null,
+        "parent": null,
+        "scope": "external"
+      },
+      "id": "decl:host",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§1",
+          "§4.3"
+        ],
+        "id": "instrument",
+        "label": "the instrument",
+        "multiplicity": null,
+        "parent": null,
+        "scope": "external"
+      },
+      "id": "decl:instrument",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "RC-2"
+        ],
+        "id": "makeup",
+        "label": "make-up gain (the mixer's)",
+        "multiplicity": null,
+        "parent": "mixer",
+        "scope": "external"
+      },
+      "id": "decl:makeup",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "OU-1",
+          "RC-2",
+          "RC-5"
+        ],
+        "id": "master",
+        "label": "the master stage: limiter and volume",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:master",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SW",
+          "SW-1",
+          "§2"
+        ],
+        "id": "member",
+        "label": "a member",
+        "multiplicity": "U, the oscillator's unison (1 to 16)",
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:member",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.9.3",
+          "ED-1a"
+        ],
+        "id": "member.base_wave",
+        "label": "base wave",
+        "multiplicity": "× up to four kernel settings on one member state (SB-3)",
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.base_wave",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL",
+          "C.9"
+        ],
+        "id": "member.blade1",
+        "label": "blade 1",
+        "multiplicity": "× up to four kernel settings on one member state (SB-3)",
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.blade1",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-9",
+          "C.9"
+        ],
+        "id": "member.blade2",
+        "label": "blade 2",
+        "multiplicity": "× up to four kernel settings on one member state (SB-3)",
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.blade2",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-19",
+          "C.16"
+        ],
+        "id": "member.dc",
+        "label": "DC removal",
+        "multiplicity": null,
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.dc",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "ED",
+          "ED-1",
+          "ED-3"
+        ],
+        "id": "member.edges",
+        "label": "edge correction",
+        "multiplicity": null,
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.edges",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-12",
+          "C.14"
+        ],
+        "id": "member.loop",
+        "label": "loop tap (cross-mod and feedback)",
+        "multiplicity": null,
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.loop",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "SW-18"
+        ],
+        "id": "member.pan",
+        "label": "pan (mono member → L/R)",
+        "multiplicity": null,
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.pan",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.0",
+          "SW-1"
+        ],
+        "id": "member.phase",
+        "label": "phase, at the member's own frequency",
+        "multiplicity": null,
+        "parent": "member",
+        "scope": "engine"
+      },
+      "id": "decl:member.phase",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "RC-2"
+        ],
+        "id": "meters",
+        "label": "meters and clip latches",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:meters",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "RC-2"
+        ],
+        "id": "mixer",
+        "label": "the mixer",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:mixer",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-3",
+          "IF-4",
+          "RC-4",
+          "§4.3"
+        ],
+        "id": "modulation",
+        "label": "the modulation system and the morph's editor and storage: LFOs, matrix and routes, macros, intents, morph",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:modulation",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.6",
+          "SN-7"
+        ],
+        "id": "mono_sub",
+        "label": "the mono sub: the sub, once for the instrument",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:mono_sub",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.12",
+          "SN-7"
+        ],
+        "id": "mono_sub.envelope",
+        "label": "its own envelope instance",
+        "multiplicity": null,
+        "parent": "mono_sub",
+        "scope": "engine"
+      },
+      "id": "decl:mono_sub.envelope",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-1",
+          "SN-7"
+        ],
+        "id": "mono_sub.filter_slot",
+        "label": "its own filter-slot instance, driven by its chosen note",
+        "multiplicity": null,
+        "parent": "mono_sub",
+        "scope": "engine"
+      },
+      "id": "decl:mono_sub.filter_slot",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-12",
+          "MO-1",
+          "MO-2",
+          "MO-3",
+          "MO-4",
+          "MO-5",
+          "MO-6",
+          "MO-7",
+          "MO-8",
+          "MO-9",
+          "MO-10",
+          "MO-11",
+          "MO-12",
+          "MO-13",
+          "MO-14",
+          "MO-15",
+          "MO-16",
+          "MO-17",
+          "MO-18",
+          "MO-19",
+          "MO-20"
+        ],
+        "id": "morph_resolver",
+        "label": "the morph resolver: weights, glide, the draw, the laws, modes and counts, setting sets",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:morph_resolver",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "SN-4",
+          "SN-13",
+          "§5.6"
+        ],
+        "id": "noise",
+        "label": "the noise oscillator",
+        "multiplicity": "× up to four `noise/chain` settings",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:noise",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-4",
+          "SN-8"
+        ],
+        "id": "noise.colour",
+        "label": "per-voice seeded source, colour",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.colour",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-10",
+          "SN-11"
+        ],
+        "id": "noise.filter",
+        "label": "noise filter",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.filter",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "SN-12"
+        ],
+        "id": "noise.pan",
+        "label": "pan",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.pan",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-9",
+          "SN-11"
+        ],
+        "id": "noise.resonator",
+        "label": "Resonator",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.resonator",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-12"
+        ],
+        "id": "noise.spread",
+        "label": "stereo spread",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.spread",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-9"
+        ],
+        "id": "noise.whisper",
+        "label": "Whisper",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.whisper",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-9"
+        ],
+        "id": "noise.wind",
+        "label": "Wind",
+        "multiplicity": null,
+        "parent": "noise",
+        "scope": "engine"
+      },
+      "id": "decl:noise.wind",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-10"
+        ],
+        "id": "observation_view",
+        "label": "the observation view",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:observation_view",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "SW-1",
+          "§5.3"
+        ],
+        "id": "osc",
+        "label": "an oscillator: a swarm of U members",
+        "multiplicity": "2: osc 1 and osc 2; × up to four swarm settings while `oscN/swarm` blends (SB-4)",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:osc",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.1",
+          "SW-4",
+          "SW-5",
+          "SW-6",
+          "SW-9"
+        ],
+        "id": "osc.coupling",
+        "label": "coupling and the onset burst",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.coupling",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.16"
+        ],
+        "id": "osc.dc_blocker",
+        "label": "DC blocker (with cross-mod, feedback or collision)",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.dc_blocker",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.3",
+          "SW-3"
+        ],
+        "id": "osc.detune",
+        "label": "detune law",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.detune",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.4",
+          "SW-7"
+        ],
+        "id": "osc.drift",
+        "label": "drift",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.drift",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-10",
+          "C.13"
+        ],
+        "id": "osc.frame",
+        "label": "the frame",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.frame",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.5",
+          "SW-8"
+        ],
+        "id": "osc.inertia",
+        "label": "inertia",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.inertia",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.7",
+          "SW-12"
+        ],
+        "id": "osc.onset",
+        "label": "onset scatter (the ensemble)",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.onset",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.2",
+          "SW-2"
+        ],
+        "id": "osc.placement",
+        "label": "placement",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.placement",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "BL-13",
+          "C.10"
+        ],
+        "id": "osc.spreads",
+        "label": "spreads",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.spreads",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SW-10"
+        ],
+        "id": "osc.start_phase",
+        "label": "start phases",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.start_phase",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "SW-19"
+        ],
+        "id": "osc.sum",
+        "label": "Σ members × density compensation",
+        "multiplicity": null,
+        "parent": "osc",
+        "scope": "engine"
+      },
+      "id": "decl:osc.sum",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "OU-1",
+          "OU-4",
+          "RT-3"
+        ],
+        "id": "output",
+        "label": "output stage (Level, guards)",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:output",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-11",
+          "PA-1",
+          "PA-7",
+          "§5.1"
+        ],
+        "id": "parameters",
+        "label": "parameters: the manifest's values, checked on entry and smoothed",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:parameters",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-9"
+        ],
+        "id": "parameters.later",
+        "label": "parameters still to come",
+        "multiplicity": null,
+        "parent": "parameters",
+        "scope": "engine"
+      },
+      "id": "decl:parameters.later",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-2",
+          "RC-3",
+          "§4.3"
+        ],
+        "id": "pitch_system",
+        "label": "the pitch system: bend, glide, quantizer, MTS-ESP, transpose",
+        "multiplicity": null,
+        "parent": "instrument",
+        "scope": "external"
+      },
+      "id": "decl:pitch_system",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-4",
+          "OU-3",
+          "RC-9.3"
+        ],
+        "id": "state",
+        "label": "state: save and load",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:state",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6",
+          "SN-1",
+          "§5.5"
+        ],
+        "id": "sub",
+        "label": "the sub",
+        "multiplicity": "× up to four `sub/chain` settings",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:sub",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-6"
+        ],
+        "id": "sub.dc",
+        "label": "DC removal: the driven shape's exact mean, then a 2 Hz blocker",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.dc",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-5"
+        ],
+        "id": "sub.drive",
+        "label": "drive: saturator and Crunch, at twice the host rate",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.drive",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "SN-3",
+          "VO-9"
+        ],
+        "id": "sub.envelope",
+        "label": "× its envelope, inside the sub's chain",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.envelope",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.8",
+          "SN-1"
+        ],
+        "id": "sub.pan",
+        "label": "pan",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.pan",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-3"
+        ],
+        "id": "sub.tone",
+        "label": "tone",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.tone",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SN-1",
+          "SN-2",
+          "SN-14"
+        ],
+        "id": "sub.wave",
+        "label": "one phase, one shape, eroded",
+        "multiplicity": null,
+        "parent": "sub",
+        "scope": "engine"
+      },
+      "id": "decl:sub.wave",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-7"
+        ],
+        "id": "transport",
+        "label": "tempo and transport",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:transport",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-5",
+          "VO-9",
+          "§4.1",
+          "§4.2"
+        ],
+        "id": "voice",
+        "label": "a voice",
+        "multiplicity": "one per sounding note, up to voice.polyphony (1 to 64)",
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:voice",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.12",
+          "EN",
+          "EN-1",
+          "EN-5",
+          "RC-4",
+          "VO-8"
+        ],
+        "id": "voice.envelopes",
+        "label": "ENV 1 to ENV 4, each × its velocity factor",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.envelopes",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-5",
+          "RC-1"
+        ],
+        "id": "voice.filter_slot",
+        "label": "per-voice filter slot (stereo-linked)",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.filter_slot",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "C.6",
+          "IF-2",
+          "SW-11"
+        ],
+        "id": "voice.gravity",
+        "label": "voice pitch × gravity ratio",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.gravity",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6"
+        ],
+        "id": "voice.later_source",
+        "label": "a later source",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.later_source",
+      "kind": "slot"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "VO-9"
+        ],
+        "id": "voice.noise_env",
+        "label": "× its envelope",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.noise_env",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "§4.2"
+        ],
+        "id": "voice.noise_gate",
+        "label": "gate (mute and solo)",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.noise_gate",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-9",
+          "§5.2"
+        ],
+        "id": "voice.noise_level",
+        "label": "noise level",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.noise_level",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "RC-6.5",
+          "VO-9"
+        ],
+        "id": "voice.osc_env",
+        "label": "× its envelope",
+        "multiplicity": "2: osc 1 and osc 2",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.osc_env",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "§4.2"
+        ],
+        "id": "voice.osc_gate",
+        "label": "gate (mute and solo)",
+        "multiplicity": "2: osc 1 and osc 2",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.osc_gate",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-9",
+          "§5.2"
+        ],
+        "id": "voice.osc_level",
+        "label": "osc level",
+        "multiplicity": "2: osc 1 and osc 2",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.osc_level",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-2",
+          "RC-6"
+        ],
+        "id": "voice.pitch",
+        "label": "sounding pitch and master phase, published",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.pitch",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "SB-2",
+          "SB-5",
+          "SB-6",
+          "SB-7",
+          "SB-11",
+          "SB-12",
+          "SB-13"
+        ],
+        "id": "voice.structure_slots",
+        "label": "a voice's structural slots: settings, heard weights, the slot rule",
+        "multiplicity": "per structural group, up to its count (2 or 4)",
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.structure_slots",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "IF-6",
+          "§4.2"
+        ],
+        "id": "voice.sub_gate",
+        "label": "gate (mute and solo)",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.sub_gate",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "VO-9",
+          "§5.2"
+        ],
+        "id": "voice.sub_level",
+        "label": "sub level",
+        "multiplicity": null,
+        "parent": "voice",
+        "scope": "engine"
+      },
+      "id": "decl:voice.sub_level",
+      "kind": "block"
+    },
+    {
+      "declared": {
+        "cites": [
+          "§4.1",
+          "§4.2"
+        ],
+        "id": "voice_sum",
+        "label": "Σ voices",
+        "multiplicity": null,
+        "parent": "engine",
+        "scope": "engine"
+      },
+      "id": "decl:voice_sum",
+      "kind": "block"
+    }
+  ],
+  "schema": "loupe.graph/0.4",
+  "source": {
+    "commit": "380ffd66eb5899e5da87d39c7ce63ad06ca5be68",
+    "commitTime": "2026-10-31T15:18:25-04:00",
+    "dirty": false,
+    "repo": "github.com/Julian-B-Smith/horde"
+  }
+}

@@ -45,7 +45,7 @@ export function edgeSite(edge) {
 
 // What a map element points at in the code, or why it points at nothing. Only `file` nodes are files in the repo:
 // a missing node was named but never found, an external one is outside the repo, a target is a build name.
-const NOT_A_FILE = { missing: 'named by the code but not found in the repo', external: 'outside the repo', target: 'a build target, not a file' };
+const NOT_A_FILE = { block: 'a declared block, not a file', slot: 'a declared slot, not a file', missing: 'named by the code but not found in the repo', external: 'outside the repo', target: 'a build target, not a file' };
 export function codeTarget(data, sel) {
   if (!sel) return null;
   if (sel.type === 'node') {
@@ -95,7 +95,11 @@ export function codeActions(src, target, env) {
     { id: 'reveal', label: 'Show in Finder', sub: target.what, ...act },
   ];
   // The pane reads through the helper locally, or from GitHub at the commit when hosted (Julian, poll 2026-10-30).
-  if (!target.folder) acts.push({ id: 'pane', label: 'Show the code', sub: 'here, line-numbered', ...(local || gh ? {} : no(`${noLocal}; and ${src.why}`)) });
+  // On a declaration graph an edge's evidence is the declaration file, not engine code, and the pane reads it at the
+  // pinned commit, never the checkout: a checkout at another commit can hold a different declaration from the one drawn.
+  if (!target.folder) acts.push(env.declaration
+    ? { id: 'pane', label: 'Show the declaration', sub: 'here, at the pinned commit', ...(gh ? {} : no(src.why)) }
+    : { id: 'pane', label: 'Show the code', sub: 'here, line-numbered', ...(local || gh ? {} : no(`${noLocal}; and ${src.why}`)) });
   return acts;
 }
 

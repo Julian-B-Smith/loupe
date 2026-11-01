@@ -16,7 +16,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
   `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, exit 0, every HORDE gate passing
   (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
-  track ready: engine2 from HORDE's declared structure (Q-015). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+  track: engine2 from HORDE's declared structure (Q-015), built, awaiting merge. The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
@@ -406,11 +406,65 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** ready (ball: loupe). HORDE's declaration landed on horde main at 0e577fc
+- **Status:** built 2026-11-01 (branch p2/q015-engine-structure; trace: traces/2026-10-31-q015-signal-path-view.md), awaiting Julian's review of the schema diff and merge. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
   spec in its own `./verify`; Loupe reads it through one adapter into a structure graph; no inferred edges.
+- **Julian (poll, 2026-10-31), starting the item:** (1) a block that contains others becomes a section holding one node
+  for the block itself plus its children; edges to the block land on that node (22 declared edges end on a container),
+  so no edge ends on a section and the renderer and meter are unchanged. (2) The structure is its own snapshot (block
+  and slot nodes, declared edges, no files), listed on the testbench by itself; nothing links a block to a file. (3) Pin
+  the declaration at HORDE's origin/main (fetched; read with `git show`, HORDE's working tree untouched); `./verify
+  full` re-runs the adapter at that commit and byte-compares. (4) The §4.2 signal path (47 stages) is carried in the
+  graph and counted by the census; drawing it is a later item. Order (domain invariant): the adapter writes a draft
+  snapshot, the viewer draws it, and the schema 0.4 diff goes to Julian with screenshots before it lands.
+- **Julian (poll, 2026-10-31), after the first drawing:** today's Design view stacks the nesting in one column and Flow
+  draws one long row; neither reads. The layout is a **spine from the spec**: the declared §4.2 signal path, in the
+  spec's own reading order, runs left to right; each stage's block sits on it, and blocks off the path hang above or
+  below their neighbours. No inference: the order is HORDE's. This pulls drawing the signal path into Q-015.
+- **Julian (polls, 2026-11-01), after the first spine:** the first draft piled boundary and engine-wide blocks into
+  the first column (13 overlapping container boxes, 145 intrusions). **Frame the spine:** blocks the declaration marks
+  `scope: external` leave the columns (inputs on a rail left of the spine, outputs on a rail right of it, observers
+  along the bottom); an engine block with no stage hangs at the column of its nearest neighbour on the path, not the
+  earliest. Only declared scope and edge direction decide. `tools/spine.test.mjs` joins `./verify fast` (approved).
+- **Critic (opus), 2026-11-01: REWORK** of the Signal path view (the adapter is sound): edges drawn straight under
+  nodes and on top of each other while the meter counted all drawn (H2); master on the "Inputs" rail by a fallback the
+  declaration does not make (H1); 18 nodes inside boxes they are not members of, unmarked (H3); the census and decision
+  (3) not gated (H4); plus census gaps, provenance taken from the view not the edge, legend, zoom clamp, tests that copy
+  the code. **Julian (polls, 2026-11-01):** a block whose placement the declaration does not decide goes to a strip
+  labelled "placement not decided by the declaration", with its reason, no side picked; "nearest neighbour" is the lower
+  median of its neighbours' columns; the view opens at a readable zoom at stage 1, one row, the stage strip jumps along
+  it, fit still shows the whole; `declared` gets its own dash now (in the edge spec block, part of the 0.4 change).
+- **Critic (opus), second pass 2026-11-01: ACCEPT** with notes. **Julian (polls, same day):** an edge from a boundary
+  block that stands on the spine decides direction (master, fed by the FX rack at the last stage, goes to Outputs);
+  the long-edge lanes stay drawn, with the whole route highlighted on hover and a tag at each rise or drop naming the
+  far end; the declared dash becomes a long dash and two dots (a shape no other provenance uses), tested by structure;
+  a block hanging off another off-path block keeps that block's side (a chain of declared edges).
+- **Julian (poll, 2026-11-01), schema 0.4:** approved the shape in docs/schema-0.4-proposal.md (a graph is a crawl or
+  a declaration; checks D1 to D7). Declared nodes have no `path` or `hash`; citations are `declared.cites` on nodes and
+  edges; HORDE's `scope` word is kept under `declared`; a new view status `declared` for elements that only restate the
+  declaration; the declared dash moves into the edge spec block. The schema diff is reviewed in the PR before merge.
+- **Julian (polls, 2026-11-01), the schema as built:** the loupe-spec `dashes` map and a section's `by: adapter:` are
+  approved; the engine2 snapshot joins `./verify`'s loupe-check list; the declared dash in Flow and Design is Q-038.
+- **Layer-E (criterion 4), measured 2026-11-01, non-blocking** (`tools/engine-structure-agreement.mjs`): the two maps
+  share no nodes (files against concepts, and nothing may link them), so this is citation overlap, a weak upper bound, not
+  edge identity: 74 of the 104 inferred edges cite a requirement some declared edge cites; 71 of the 117 declared edges
+  cite one an inferred edge cites; 31 ids in both, 31 only inferred, 42 only declared. The inferred map read an older spec.
+- **Critic (opus) on schema 0.4, 2026-11-01: REWORK (small).** Older graphs are not loosened (64,000 mutated crawl graphs,
+  old and new schema agree). Stage 1 throws on a declaration graph (H1); panels and the lens call declared edges crawled
+  or agent-written, one list shows 79 blank rows (H2); `status: declared` and `by: adapter:` are unguarded, even on crawl
+  graphs (H3); D6 and D4 pass tampering only `./verify full` catches (M1, M2). **Julian (polls, same day):** the `declaration`
+  block decides crawl against declaration at any version, and versions mean only shape; agents may add `proposed`
+  elements to a declaration's view, never `declared`; loupe-check requires a section for every declared parent; the
+  Operational lens is hidden on a declaration graph. An empty overlay on a declaration graph stands (no inferred edges,
+  2026-10-16).
+- **Critic (opus), confirming pass 2026-11-01: ACCEPT.** Its notes fixed: on a declaration graph the pane says "Show the
+  declaration" and reads the pinned commit, never the checkout (a checkout at another commit can hold a different
+  declaration from the one drawn); D6's stated limit widened to what it cannot see. Open, by design: an edge's code
+  actions open the declaration file, at line 1, not its entry. The crawl-graph fuzz: 0 differences on existing versions;
+  a crawl claiming 0.4 behaves as 0.3.2, per Julian's decision.
+- **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
 - **Acceptance criteria:**
@@ -604,6 +658,15 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Julian (poll, 2026-10-31), after the critic (REWORK):** criterion 5's "no dot-directories" becomes "not `.git`": the
   crawler draws files under `.claude/` and `.github/`, and the map must open what it shows. `tools/code.test.mjs` joins
   `./verify fast` (approved, the same day).
+
+### Q-038 — The declared dash in Flow and Design (from Q-015)
+- **Status:** open (Julian, poll, 2026-11-01: a later item). Only the Signal path view draws `declared` with its own dash;
+  Flow and Design draw a declared edge solid, like a crawled one, so on the engine2 snapshot those two views mix
+  provenance silently. Adding `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its
+  marks from the longest period in that table.
+- **Acceptance criteria:** 1. Flow and Design draw `declared` with the edge spec block's dash; 2. the matrix's sizing does
+  not change for any existing snapshot; 3. the provenance legend names it; 4. a render test planted to fail; a screenshot
+  critic pass.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.

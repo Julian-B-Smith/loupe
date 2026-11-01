@@ -23,6 +23,12 @@
       "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
       "additionalProperties": { "type": "number", "minimum": 0 }
     },
+    "dashes": {
+      "type": "object",
+      "description": "Line patterns that are not tokens, by name (edge: the provenances that draw with their own pattern, e.g. declared). Each is a stroke-dasharray: numbers in screen px, separated by single spaces.",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)?( [0-9]+(\\.[0-9]+)?)*$" }
+    },
     "version": { "type": "integer", "minimum": 1 },
     "parts": {
       "type": "object",

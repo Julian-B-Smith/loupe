@@ -123,15 +123,17 @@
               },
               "by": {
                 "type": "string",
-                "pattern": "^(agent|human):.+$"
+                "pattern": "^(agent|human|adapter):.+$",
+                "description": "adapter: a deterministic adapter wrote it, restating a declaration (0.4)"
               },
               "status": {
                 "enum": [
                   "proposed",
                   "confirmed",
-                  "challenged"
+                  "challenged",
+                  "declared"
                 ],
-                "description": "Audit state of the claim"
+                "description": "Audit state of the claim. declared (0.4): only an adapter section over a declaration graph; it restates the declaration, so there is nothing to audit (loupe-check D7, D8)."
               },
               "primitive": {
                 "const": "section"
@@ -736,7 +738,7 @@
   "definitions": {
     "nodeId": {
       "type": "string",
-      "pattern": "^(file|sym|ext|art|miss|target):.+$"
+      "pattern": "^(file|sym|ext|art|miss|target|decl):.+$"
     },
     "edgeId": {
       "type": "string",
@@ -748,7 +750,7 @@
     },
     "ref": {
       "type": "string",
-      "pattern": "^((file|sym|ext|art|miss|target):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
+      "pattern": "^((file|sym|ext|art|miss|target|decl):.+|[a-z]+:[A-Za-z0-9_.-]+)$",
       "description": "A node id or an element id"
     }
   }

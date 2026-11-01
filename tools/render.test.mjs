@@ -352,5 +352,42 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   check(`every inline script in the viewer pages parses (${n} scripts)${bad.length ? ' — ' + bad.join(' | ') : ''}`, bad.length === 0 && n > 0);
 }
 
+// ---- A declaration graph (schema 0.4, Q-015): Flow and Design at every zoom, a matrix, an isolate; no lens (the control is
+// hidden on a declaration, so none is swept). Blocks and slots have no path: nothing may print "undefined".
+{
+  const E = snap('design/prototype/snapshots/engine2-structure/');
+  const bad = [];
+  const run = (what, state) => {
+    try {
+      const map = render(container, E, { stage: 2, settings: {}, zoom: { auto: true }, ...state });
+      const c = conserve(E, state, map);
+      if (c.status === 'broken') bad.push(`${what}: ${c.unaccounted.slice(0, 2).join(', ')}`);
+      if (/undefined|NaN/.test(svg.innerHTML)) bad.push(`${what}: the markup says ${(/undefined|NaN/.exec(svg.innerHTML))[0]}`);
+    } catch (e) { bad.push(`${what}: threw ${e.message}`); }
+  };
+  for (const view of ['flow', 'design']) for (const zoom of ZOOMS) run(`${view} ${JSON.stringify(zoom)}`, { view, zoom });
+  const top = E.sections.find((s) => !E.parentOf[s]), inner = E.sections.find((s) => E.parentOf[s]);
+  run('matrix of a section', { view: 'design', matrix: { a: top } });
+  run('matrix of two sections', { view: 'design', matrix: { a: top, b: inner } });
+  run('isolate a section', { view: 'design', isolate: inner });
+  check(`engine2 structure (declaration graph): Flow and Design render and balance at every level of detail, plus a matrix and an isolate, with no "undefined" in the markup${bad.length ? ' — ' + bad.join(' | ') : ''}`, bad.length === 0);
+  const { kindStyle } = await import('../design/prototype/render.js');
+  const bs = kindStyle({ kind: 'block' }), ss = kindStyle({ kind: 'slot' });
+  check('a slot does not look built: it takes the gap dash a block does not, and says so', ss.dash !== bs.dash && ss.dash === (await import('../design/prototype/render.js')).SPEC.dash.gap && /reserved/.test(ss.title) && !/not built/.test(bs.title));
+  // The panels' pure parts (index.html is an inline script and cannot be imported): stage 1 of a declaration states the
+  // declaration, not a crawler (it threw on graph.crawler); no name or word is blank; the declared words reach the panels.
+  const D = await import('../design/prototype/declared.js');
+  let h1 = '', err = null; try { h1 = D.declarationStageHtml(E); } catch (e) { err = e; }
+  const decl = E.graph.declaration;
+  check('stage 1 of a declaration graph does not throw, and states its format, declaration path, blob, spec, commit and counts', !err && [decl.format, decl.path, decl.blob.slice(0, 7), decl.spec.path, E.graph.source.commit.slice(0, 7), 'items'].every((x) => h1.includes(x)) && !/undefined|crawler/i.test(h1), err && err.message);
+  check('stage 2 says the adapter restated the declaration, not that an agent composed the view', /adapter restated/.test(D.viewSentence(E)) && !/structure agent composed/.test(D.viewSentence(E)) && /structure agent composed/.test(D.viewSentence(snap('schema/examples/horde-sample/'))));
+  const blk = E.nodes[E.nodeIds.find((id) => E.nodes[id].declared.multiplicity)], edge = E.edges[0];
+  check('the node panel carries declared label, scope, multiplicity and cites; the edge panel its label and cites and its declared id in evidence', [blk.declared.label, blk.declared.scope, blk.declared.multiplicity, blk.declared.cites[0]].every((x) => D.declaredNodeHtml(blk).includes(x.replace(/&/g, '&amp;').replace(/`/g, '`'))) && D.declaredEdgeHtml(edge).includes(edge.declared.cites[0]) && D.evidenceNote(edge.evidence[0]).includes(edge.evidence[0].id));
+  check('names: a declared node is named by its declared id, an edge from the declaration is "declared" not "crawled", a block is a "block"', E.nodeIds.every((id) => D.nodeName(E.nodes[id]) === E.nodes[id].declared.id && D.nounOf(E.nodes[id]) !== 'file') && E.edges.every((e) => D.edgeOrigin(e) === 'declared') && D.edgeOrigin({ origin: 'graph', provenance: 'static' }) === 'crawled' && D.edgeOrigin({ origin: 'overlay', provenance: 'inferred' }) === 'overlay');
+  // Code actions on a declared block say why there is nothing to open.
+  const { codeTarget } = await import('../design/prototype/code.js');
+  check('a declared block has no code to open: "a declared block, not a file"', codeTarget(E, { type: 'node', id: E.nodeIds[0] }).why === 'a declared block, not a file');
+}
+
 console.log(failed ? `${failed} failed` : 'all render cases behave');
 process.exit(failed ? 1 : 0);
