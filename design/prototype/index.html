@@ -83,6 +83,8 @@ main{--panel-w:360px;display:grid;grid-template-columns:minmax(0,1fr) var(--pane
 .canvas.both.stack #paneMain .settings{display:none} /* stacked, the Design pane is too short for Hubs beside its meter; Design alone has it */
 .iso[hidden]{display:none}
 .works{position:absolute;inset:0;overflow:hidden;z-index:0}
+.spine{position:absolute;inset:0;overflow:hidden;z-index:0}
+.seg button[hidden]{display:none}
 .float{z-index:2}
 .seg[hidden]{display:none}
 .wk-world{position:absolute;left:0;top:0;transform-origin:0 0}
@@ -183,7 +185,7 @@ main{position:relative}
       <button class="meter" id="meter" title="Conservation check"></button>
       <div class="seg" id="histSeg"><button id="hBack" aria-label="Back">←</button><button id="hFwd" aria-label="Forward">→</button></div>
       <div class="seg" id="lensSeg" title="Focus lens (ADR 0019): show only what the product depends on; the rest is one counted box"><span class="lbl">Lens</span><button data-lens="">All</button><button data-lens="operational">Operational</button></div>
-      <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button><button data-view="both" title="Flow and Design side by side (ADR 0030): each pane its own zoom and meter; a selection is marked in both">Both</button><button data-view="works" title="How the code works, told as stories (ADR 0025). Inferred by the agent; yours to edit.">How it works</button></div>
+      <div class="seg" id="viewSeg"><button data-view="flow">Flow</button><button data-view="design">Design</button><button data-view="both" title="Flow and Design side by side (ADR 0030): each pane its own zoom and meter; a selection is marked in both">Both</button><button data-view="works" title="How the code works, told as stories (ADR 0025). Inferred by the agent; yours to edit.">How it works</button><button data-view="spine" hidden title="The declared signal path, stage by stage, with every declared edge. Nothing here is inferred.">Signal path</button></div>
       <div class="seg" id="diffSeg"><span class="lbl">Re-run</span><button data-diff="off">Off</button><button data-diff="before">Before</button><button data-diff="after">After</button></div>
       <div class="seg" id="waffleSeg" title="Zoomed out, also show one square per file in each box, changed files first (Q-035)"><button id="waffle" aria-pressed="false">Waffle</button></div>
       <div class="seg" title="Hide the lines; every edge stays counted in the ↑out ↓in tab of each box it touches"><button id="lines" aria-pressed="false">Lines off</button></div>
@@ -220,6 +222,7 @@ import { conserve, conformity } from './standins.js';
 import { LENSES } from './lens.js';
 import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText, DIFF_KINDS } from './inspect.js';
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
+import { layoutSpine, renderSpine, DECLARED_EDGE_SLOT } from './spine.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
 import { codeSource, codeTarget, codeActions, evidenceMarks, rawUrl, githubUrl, EDITORS } from './code.js';
@@ -240,6 +243,10 @@ const phone = () => matchMedia('(max-width:720px)').matches;
 let data;
 try { if (SNAP_FOREIGN) throw new Error(`Refused: the snapshot ${SNAP} is not on this site. Loupe reads snapshots only from the site it is served from.`); data = await loadSnapshot(SNAP); }
 catch (err) { canvas.innerHTML = `<div class="err">${esc(err.message)}</div>`; throw err; }
+
+// The Signal path view exists only for structure snapshots that declare a signal path (Q-015).
+const HAS_SPINE = !!(data.graph.declaration && data.graph.declaration.signalPath);
+let spineLay = null; // layoutSpine is pure and the data never changes in a session: laid out once, on first use
 
 // Q-037: where this crawl's code is. GitHub at the crawled commit, and, when `npm run view` serves this page on this
 // machine, the local helper (tools/serve.mjs), asked once. Hosted there is no helper and nothing is asked: the
@@ -333,15 +340,18 @@ function paint() {
   const s = store.get();
   document.documentElement.dataset.theme = s.theme;
   const padB = phone() ? 76 : 96, st = { ...s, zoom: { ...s.zoom, padBottom: padB } };
-  const works = s.view === 'works', both = s.view === 'both';
+  const works = s.view === 'works', both = s.view === 'both', spine = s.view === 'spine' && HAS_SPINE;
   canvas.classList.toggle('both', both);
   canvas.classList.toggle('stack', both && canvas.clientWidth < 720);
   paneFlow.hidden = !both; $('pmMain').hidden = !both;
   const wl = canvas.querySelector(':scope > .works'); if (wl) wl.style.display = works ? '' : 'none';
+  const sl = canvas.querySelector(':scope > .spine'); if (sl) sl.style.display = spine ? '' : 'none';
   const story = works && effStory(s);
-  paneMain.style.display = story ? 'none' : '';
+  paneMain.style.display = story || spine ? 'none' : '';
   let c;
-  if (story) {
+  if (spine) {
+    map = renderSpine(canvas, data, st, spineLay = spineLay || layoutSpine(data));
+  } else if (story) {
     const acc = storyAccounting(data, story), ed = (s.storyEdits || {})[story.id], hc = cardHeights[story.id] = cardHeights[story.id] || {};
     map = renderWorks(canvas, data, st, story, acc, layoutStory(story, ed, hc));
     // One re-layout with measured heights (bounded: heights only grow, and only for cards that overflowed).
@@ -358,7 +368,7 @@ function paint() {
     const w = worse({ c: cd, m: map, pane: 'Design' }, { c: cf, m: fmap, pane: 'Flow' });
     c = w.c; meter(c, w.m, w.pane);
     $('flod').textContent = { overview: 'ovw', structure: 'str', detail: 'det' }[fmap.lod] || ''; $('flod').title = 'Level of detail: ' + fmap.lod;
-  } else map = render(paneMain, data, works ? { ...st, view: 'design' } : st);
+  } else map = render(paneMain, data, works || s.view === 'spine' ? { ...st, view: 'design' } : st);
   if (!both) { fmap = null; c = conserve(data, s, map); meter(c, map); }
   $('lod').textContent = { overview: 'ovw', structure: 'str', detail: 'det' }[map.lod] || ''; $('lod').title = 'Level of detail: ' + map.lod;
   chrome(s);
@@ -399,7 +409,7 @@ store.on(s => {
   const via = lastView; lastView = s.view;
   // The flow↔design morph has no meaning for the story view, nor into or out of Both, where each pane is settled.
   // A morph still running is stopped there, or its timer keeps writing morph into the next one-pane view (critic L3).
-  if (['works', 'both'].includes(via) || ['works', 'both'].includes(s.view)) { if (anim) { clearTimeout(anim); anim = null; store.set({ morph: undefined }); } return; }
+  if (['works', 'both', 'spine'].includes(via) || ['works', 'both', 'spine'].includes(s.view)) { if (anim) { clearTimeout(anim); anim = null; store.set({ morph: undefined }); } return; }
   const from = s.morph != null ? s.morph : s.view === 'design' ? 0 : 1, to = s.view === 'design' ? 1 : 0;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (anim) clearTimeout(anim);
@@ -454,7 +464,8 @@ function chrome(s) {
   $('waffle').setAttribute('aria-pressed', String(!!s.settings.diffWaffle));
   $('waffleSeg').hidden = !s.diff || !dv(s); // the waffle draws only on design-view stand-ins, with a diff on
   // The stories view shows no diff (Julian, poll 2026-10-28: out of Q-035's scope), so it offers no Re-run control.
-  $('diffSeg').hidden = !data.diff || s.view === 'works';
+  $('diffSeg').hidden = !data.diff || s.view === 'works' || s.view === 'spine';
+  document.querySelector('[data-view="spine"]').hidden = !HAS_SPINE;
   // Lines off applies to the Design view only (render.js); elsewhere the button would claim a state the map is not in.
   $('lines').parentElement.hidden = !dv(s);
   const kb = mac ? '⌘Z' : 'Ctrl+Z', kf = mac ? '⇧⌘Z' : 'Ctrl+Y';
@@ -503,7 +514,7 @@ function meter(c, m = map, tag = '') {
     : `${c.edges.drawn} drawn · ${c.edges.bus} in buses · ${c.edges.folded} folded · ${c.edges.collapsed} collapsed · ${c.nodes.placed}/${c.nodes.total} nodes`;
   // Lines off is said even under a lens or story line (critic S3: the lens line hid it).
   // Q-035: with the re-run diff on, the run's totals lead the line (Julian, poll 2026-10-28).
-  const ds = store.get().diff && store.get().view !== 'works' && diffSummary(data, store.get().diff.side);
+  const ds = store.get().diff && store.get().view !== 'works' && store.get().view !== 'spine' && diffSummary(data, store.get().diff.side);
   $('meter').innerHTML = `<i style="background:${v(col)}"></i><b>${tag ? esc(tag) + ': ' : ''}${main}</b><small>${ds ? esc(ds.text) + ' · ' : ''}${lz && map.linesOff ? 'lines hidden · ' : ''}${sub}</small>`;
   $('meter').dataset.status = c.status;
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
@@ -513,6 +524,12 @@ function meter(c, m = map, tag = '') {
 // may collapse but never disappear (addendum v2.3; review v4 B3).
 const strip = () => `<div class="strip">${['static', 'config', 'runtime', 'annotated', 'inferred'].map(p => `<span title="${p}">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}</span>`).join('')}</div>`;
 function legend(s) {
+  if (s.view === 'spine') {
+    const ln = (c) => `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5" style="stroke:${v(c)};stroke-width:2px"/></svg>`;
+    $('legend').innerHTML = `<button class="kt" data-keytoggle>${$('legend').classList.contains('closed') ? 'Key' : 'Hide'}</button>
+      <div class="col">${Object.entries(DECLARED_EDGE_SLOT).map(([k, c]) => `<div class="lk">${ln(c)}${k}</div>`).join('')}<div class="lk">all edges declared (solid)</div><div class="lk">dashed box: slot, not built</div></div>`;
+    return;
+  }
   if (s.view === 'works') {
     const provs = ['static', 'config', 'runtime', 'annotated', 'inferred'];
     const ln = (c, d) => `<svg width="30" height="10" aria-hidden="true"><line x1="1" y1="5" x2="29" y2="5" style="stroke:${v(c)};stroke-width:2px;stroke-dasharray:${d}"/></svg>`;
@@ -1001,6 +1018,7 @@ function elementPanel(id) {
 }
 
 function stagePanel(s, c) {
+  if (s.view === 'spine') return spineStagePanel();
   if (s.view === 'works') return worksStagePanel(s); // no diff in the stories view (Q-035 scope)
   const st = STAGES[s.stage - 1], S = data.stages;
   let h = `<span class="eyebrow">Stage ${st.n}</span><h2>${st.label}</h2>`;
@@ -1178,6 +1196,13 @@ function storyOutPanel(s) {
     <div><span class="eyebrow">Crossing edges · ${cross.length}</span>${cross.map(e => go('edge', e.id, `${swatch(e)}<span class="m">${acc.inside.has(e.src) ? '→' : '←'}</span><span class="n mono">${esc(label(acc.inside.has(e.src) ? e.dst : e.src))}</span><span class="m">${esc(label(acc.inside.has(e.src) ? e.src : e.dst))}</span>`, 'erow')).join('')}</div>
     ${Object.keys(byRole).sort((a, b) => byRole[b].length - byRole[a].length || (a < b ? -1 : 1)).map(r => `<div><span class="eyebrow">${esc(r)} · ${byRole[r].length}</span>${byRole[r].map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(data.nodes[f].path)}</span><span class="m"></span>`, 'erow')).join('')}</div>`).join('')}`;
 }
+function spineStagePanel() {
+  const L = spineLay || layoutSpine(data), K = L.counts;
+  return `<span class="eyebrow">Signal path</span><h2>${K.columns} declared stages</h2>
+    <p class="path">Placement is the declaration's own: stages in declared order, left to right; off-path items hang off the spine by a declared edge (above when it goes into the spine item, below when it comes out); boxes are declared parents. Nothing is inferred. ${K.above} rows above the spine, ${K.below} below, ${K.tray} in the tray. ${K.overlaps} container boxes overlap and ${K.intrusions} nodes stand inside a box they are not members of: shown, not repaired.</p>
+    <div class="list">${L.stages.map(x => `<div class="card"><span class="t">${x.i + 1}. ${esc(x.text)}</span><span class="m">${esc(x.ids.join(', '))}${x.fresh.length ? '' : ' · already placed'}</span></div>`).join('')}</div>`;
+}
+
 function worksStagePanel(s) {
   const st = effStory(s);
   if (!st) return `<span class="eyebrow">How it works</span><h2>No stories for this snapshot</h2><p>Stories are written by the Structure agent for a crawled commit. This snapshot has none yet.</p>`;

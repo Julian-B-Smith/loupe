@@ -419,6 +419,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   full` re-runs the adapter at that commit and byte-compares. (4) The §4.2 signal path (47 stages) is carried in the
   graph and counted by the census; drawing it is a later item. Order (domain invariant): the adapter writes a draft
   snapshot, the viewer draws it, and the schema 0.4 diff goes to Julian with screenshots before it lands.
+- **Julian (poll, 2026-10-31), after the first drawing:** today's Design view stacks the nesting in one column and Flow
+  draws one long row; neither reads. The layout is a **spine from the spec**: the declared §4.2 signal path, in the
+  spec's own reading order, runs left to right; each stage's block sits on it, and blocks off the path hang above or
+  below their neighbours. No inference: the order is HORDE's. This pulls drawing the signal path into Q-015.
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
