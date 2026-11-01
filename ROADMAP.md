@@ -451,6 +451,14 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   share no nodes (files against concepts, and nothing may link them), so this is citation overlap, a weak upper bound, not
   edge identity: 74 of the 104 inferred edges cite a requirement some declared edge cites; 71 of the 117 declared edges
   cite one an inferred edge cites; 31 ids in both, 31 only inferred, 42 only declared. The inferred map read an older spec.
+- **Critic (opus) on schema 0.4, 2026-11-01: REWORK (small).** Older graphs are not loosened (64,000 mutated crawl graphs,
+  old and new schema agree). Stage 1 throws on a declaration graph (H1); panels and the lens call declared edges crawled
+  or agent-written, one list shows 79 blank rows (H2); `status: declared` and `by: adapter:` are unguarded, even on crawl
+  graphs (H3); D6 and D4 pass tampering only `./verify full` catches (M1, M2). **Julian (polls, same day):** the `declaration`
+  block decides crawl against declaration at any version, and versions mean only shape; agents may add `proposed`
+  elements to a declaration's view, never `declared`; loupe-check requires a section for every declared parent; the
+  Operational lens is hidden on a declaration graph. An empty overlay on a declaration graph stands (no inferred edges,
+  2026-10-16).
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
