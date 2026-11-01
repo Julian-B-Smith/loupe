@@ -550,7 +550,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   block, so those two never hold one and never need a tally; the stress test asserts the pin on both sides.
 
 ### Q-036 — loupe-spec blocks for the diff tally and the matrix lens (human gate: schema)
-- **Status:** built 2026-10-30 (branch p2/q036-spec-blocks; trace: traces/2026-10-30-q036-spec-blocks.md), awaiting merge. From REFLECTIONS, 2026-10-29. The tally (Q-035) has a prose spec only,
+- **Status:** done 2026-10-30 (PR #48, merged 2026-10-30; trace: traces/2026-10-30-q036-spec-blocks.md). From REFLECTIONS, 2026-10-29. The tally (Q-035) has a prose spec only,
   `design/system/components/diff-tally/README.md`; its loupe-spec block needs `diff-tally` added to the primitive list in
   `schema/loupe-spec.schema.json`, a schema change (human gate). Until then its values live in render.js §4b. The matrix
   lens (Q-030) joined this item (Julian, poll 2026-10-29): prose spec `design/system/components/matrix/README.md`, values
@@ -569,7 +569,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   the matrix's title band and label gaps) are layout logic and stay in render.js; the READMEs say so.
 
 ### Q-037 — See the code from the map (P2; Julian, 2026-10-30)
-- **Status:** open; criteria to agree with Julian before work starts (after Q-036).
+- **Status:** built 2026-10-31 (branch p2/q037-code-from-map; trace: traces/2026-10-31-q037-code-from-map.md), awaiting merge.
 - **Julian (2026-10-30, poll):** view the code from within Loupe, and from the right-click menu "Show in Finder" and
   "Open in [code editor]". All four in the first version: open on GitHub at the crawled commit (graph.json `source.repo`
   and `source.commit`, each node's repo-relative `path`); open in an editor (VS Code or Cursor, `vscode://file/…`); a
@@ -581,7 +581,28 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   The code pane reads files from that helper locally, from GitHub at the crawled commit when hosted.
   A graph crawled from a dirty tree (`source.dirty: true`) or with no real commit (the sample's `"sample"`) has no exact
   commit to link to on GitHub.
-- **Acceptance criteria:** not yet agreed.
+- **Julian (poll, 2026-10-30):** the local helper is `npm run view` (tools/serve.mjs) extended: a loopback-only
+  endpoint reads files from the target's checkout and runs Show in Finder; where each repo lives on disk is in a
+  gitignored local file (HORDE defaults to `LOUPE_HORDE`). Hosted, the code pane reads the file from GitHub at the
+  crawled commit. The menu is on files, edges and sections, and the same actions are buttons in the panel (no
+  right-click on a phone or iPad). The pane is plain text with line numbers: no syntax highlighting, no dependency.
+- **Acceptance criteria (agreed by poll, 2026-10-30):**
+  1. A right-click menu on files, edges and sections, and the same actions in the panel. An action that cannot run
+     here is shown disabled with its reason (no local helper, a dirty or sample crawl, a file outside the repo).
+  2. Open on GitHub: the file (or a section's folder) at `source.commit`; an edge opens its evidence file at its line.
+  3. Open in editor (VS Code or Cursor, a viewer setting) and Show in Finder, through the helper only; an edge opens at
+     its evidence line.
+  4. The code pane: line-numbered, scrolled to the line; the evidence lines of the file's edges are marked, and a mark
+     selects its edge on the map. Local through the helper; hosted from GitHub at the commit, falling back to the
+     GitHub link with the reason when the fetch fails.
+  5. The helper's guards: loopback only, an Origin check and a per-run token on every action, paths resolved inside
+     the configured root (no traversal, no dot-directories). No machine path is committed: the locations file is
+     gitignored and the leak gate stays green.
+  6. Tests planted to fail: the link building (pure), each helper guard, the pane's mark-to-edge mapping; a screenshot
+     critic pass.
+- **Julian (poll, 2026-10-31), after the critic (REWORK):** criterion 5's "no dot-directories" becomes "not `.git`": the
+  crawler draws files under `.claude/` and `.github/`, and the map must open what it shows. `tools/code.test.mjs` joins
+  `./verify fast` (approved, the same day).
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.

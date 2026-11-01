@@ -36,7 +36,7 @@ a{color:var(--loupe-accent)}a:hover{color:var(--loupe-ink)}
 .stg:hover{background:var(--loupe-surface-group-nested)}
 .stg[aria-current="step"]{background:var(--loupe-surface-group);color:var(--loupe-ink)}
 .stg[aria-current="step"] i{background:var(--loupe-ink);border-color:var(--loupe-ink);color:var(--loupe-surface-node)}
-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:0}
+main{--panel-w:360px;display:grid;grid-template-columns:minmax(0,1fr) var(--panel-w);min-height:0}
 .canvas{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--loupe-surface-canvas);touch-action:none;cursor:grab}
 .canvas.dragging{cursor:grabbing}
 .canvas.can-move{cursor:move}
@@ -139,7 +139,27 @@ table.t th,table.t td{padding:5px 4px;border-bottom:1px solid var(--loupe-rule);
 table.t th:first-child,table.t td:first-child{text-align:left}
 table.t th{color:var(--loupe-ink-faint);font-weight:500}
 .err{padding:24px;color:var(--loupe-state-bad)}
+/* Q-037: the code pane, over the map's right edge and beside the panel, so a mark can select its edge on the map while
+   the code stays open. Plain text, line-numbered: no highlighting (Julian, poll 2026-10-30). */
+main{position:relative}
+.code{position:absolute;top:0;bottom:0;right:var(--panel-w);width:min(640px,calc(100% - var(--panel-w) - 120px));z-index:4;display:flex;flex-direction:column;background:var(--loupe-surface-panel);border-left:1px solid var(--loupe-rule);box-shadow:-8px 0 24px rgb(0 0 0 / .08)}
+.code[hidden]{display:none}
+.code .chead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:10px 12px;border-bottom:1px solid var(--loupe-rule)}
+.code .chead .path{flex:1 1 100%;font:var(--loupe-type-caption);font-family:var(--loupe-font-mono);color:var(--loupe-ink);overflow-wrap:anywhere}
+.code .cbody{flex:1;min-height:0;overflow:auto;font:12px/18px var(--loupe-font-mono);color:var(--loupe-ink);padding:6px 0}
+.code .ln{display:grid;grid-template-columns:52px 18px max-content;white-space:pre}
+.code .ln .no{text-align:right;padding-right:6px;color:var(--loupe-ink-faint);user-select:none}
+.code .ln.at{background:var(--loupe-accent-soft)}
+.code .ln.on{background:var(--loupe-accent-soft);box-shadow:inset 3px 0 0 var(--loupe-accent)}
+.code .mk{width:10px;height:10px;margin:4px;border-radius:50%;background:var(--loupe-accent)}
+.code .mk:focus-visible{outline:2px solid var(--loupe-focus-ring)}
+.code .cmsg{padding:16px 12px;font:var(--loupe-type-panel-body);color:var(--loupe-ink-muted)}
+.coderow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.coderow .btn:disabled{opacity:.4;cursor:default}
+.coderow select{font:var(--loupe-type-caption);color:var(--loupe-ink-muted);background:none;border:0}
+.toast{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:12;padding:8px 14px;border-radius:var(--loupe-radius-panel);background:var(--loupe-ink);color:var(--loupe-surface-node);font:var(--loupe-type-panel-body)}
 @media (max-width:720px){
+  .code{right:0;left:0;width:auto;bottom:76px;border-left:0}
   .canvas.both.stack #paneFlow .zoom{bottom:12px}
   .top{padding:8px 12px}.brand span{display:none}
   main{grid-template-columns:minmax(0,1fr)}
@@ -188,6 +208,7 @@ table.t th{color:var(--loupe-ink-faint);font-weight:500}
       <div class="float iso" id="storyBar" hidden><span class="eyebrow">Story</span><div class="seg" id="storySeg"></div></div>
       <div class="float legend" id="legend"></div>
     </section>
+    <div class="code" id="code" role="region" aria-label="Code" hidden></div>
     <aside class="panel" id="panel"><button class="handle" id="handle"><span id="handleText"></span></button><div class="pbody" id="pbody"></div></aside>
   </main>
 </div>
@@ -201,20 +222,33 @@ import { bundleEdges, bundleEnds, heldEdges, diffHeld, diffSummary, diffBoxText,
 import { renderWorks, CARRIES as WK_CARRIES } from './works.js';
 import { applyEdits, layoutStory, storyAccounting, storiesPath } from './story.js';
 import { paneState, worse, followFor, offMap, paneFor, tagSel } from './split.js';
+import { codeSource, codeTarget, codeActions, evidenceMarks, rawUrl, githubUrl, EDITORS } from './code.js';
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 const v = n => `var(--loupe-${n})`;
 const params = new URLSearchParams(location.search);
 const SNAP = params.get('snapshot') || 'snapshots/horde-sample/';
+// Q-037 (critic H1): a snapshot only from this page's own origin. A graph from elsewhere is someone else's data drawn
+// with this origin's rights, and under `npm run view` this origin can ask the local helper for files on disk.
+const SNAP_FOREIGN = new URL(SNAP, location.href).origin !== location.origin;
 const canvas = $('canvas'), paneMain = $('paneMain'), paneFlow = $('paneFlow');
 // Q-031: Lens, isolate, matrix, collapse and section moves act on the Design pane, alone or in Both (Flow stays canonical).
 const dv = s => s.view === 'design' || s.view === 'both';
 const phone = () => matchMedia('(max-width:720px)').matches;
 
 let data;
-try { data = await loadSnapshot(SNAP); }
+try { if (SNAP_FOREIGN) throw new Error(`Refused: the snapshot ${SNAP} is not on this site. Loupe reads snapshots only from the site it is served from.`); data = await loadSnapshot(SNAP); }
 catch (err) { canvas.innerHTML = `<div class="err">${esc(err.message)}</div>`; throw err; }
+
+// Q-037: where this crawl's code is. GitHub at the crawled commit, and, when `npm run view` serves this page on this
+// machine, the local helper (tools/serve.mjs), asked once. Hosted there is no helper and nothing is asked: the
+// artifact host would answer /helper/info with someone else's 404.
+const SRC = codeSource(data.graph);
+let HELPER = null;
+if (/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) { try { const r = await fetch('/helper/info'); if (r.ok) HELPER = await r.json(); } catch {} }
+const helperHere = () => !HELPER ? null : { ...(HELPER.repos[SRC.repo] || { ok: false, why: `no checkout of ${SRC.repo || 'this crawl'} listed in .loupe-local.json` }), actions: HELPER.actions };
+let EDITOR = 'vscode'; try { EDITOR = EDITORS[localStorage.getItem('loupe-editor')] ? localStorage.getItem('loupe-editor') : 'vscode'; } catch {}
 
 // Stories (ADR 0025) live beside the prototype, keyed by repo and commit; a snapshot without one has none.
 const STORY_PATH = storiesPath(data.graph);
@@ -704,6 +738,10 @@ function showMenu(target, cx, cy) {
     [...new Set(e ? [data.home[e.src], data.home[e.dst]] : [])].filter(sec => sec && data.elements[sec] && sec !== s.isolate)
       .forEach(sec => items.push({ label: `Isolate ${label(sec)}`, run: () => A.isolate(sec) }));
   }
+  // Q-037: the code behind what is under the pointer: a file, an edge's evidence, a section's folder.
+  const asSection = h && ['element', 'collapse', 'unfold'].includes(h.type) && data.elements[h.id] && data.elements[h.id].primitive === 'section';
+  const codeSel = h && (h.type === 'node' || h.type === 'edge') ? h : asSection ? { type: 'element', id: h.id } : null;
+  if (codeSel) items.push(null, ...codeActs(codeSel).map(({ a, t }) => ({ label: a.label, sub: a.disabled ? a.why : a.sub, disabled: a.disabled, run: () => runCode(a, t) })));
   items.push(null);
   if (s.view === 'works') STORIES.forEach(x => { const cs = curStory(s); if (!cs || cs.id !== x.id) items.push({ label: `Story: ${x.title}`, run: () => A.setStory(x.id) }); });
   if (s.matrix && dv(s)) items.push({ label: 'Back to the map', run: () => A.setMatrix(null) });
@@ -745,17 +783,112 @@ addEventListener('keydown', e => {
   if (e.key === 'Tab' && menuOpen()) return closeMenu();
   if (e.key !== 'Escape') return;
   if (menuOpen()) return closeMenu();
+  if (CODE) return closeCode();
   // Escape leaves the matrix first, like an isolate (Q-030 critic H3: it cleared a hidden isolate underneath).
   const s = store.get(); if (s.selection) A.clear(); else if (s.matrix) A.setMatrix(null); else if (s.isolate) A.isolate(null);
 });
 // Mouse side buttons (3 = back, 4 = forward). preventDefault on both events stops the browser leaving the page.
 ['mousedown', 'mouseup'].forEach(t => addEventListener(t, e => { if (e.button !== 3 && e.button !== 4) return; e.preventDefault(); if (t === 'mouseup') (e.button === 3 ? H.back : H.forward)(); }));
 
+// ---------- the code (Q-037): the four actions, built once in code.js for the menu and the panel alike
+const codeActs = (sel) => { const t = codeTarget(data, sel); return codeActions(SRC, t, { helper: helperHere(), editor: EDITOR }).map(a => ({ a, t })); };
+function toast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
+  canvas.appendChild(t); setTimeout(() => t.remove(), 4000);
+}
+// Finder and the editor go through the helper: the page names repo and repo path, never a disk path.
+async function helperPost(action, params) {
+  const q = new URLSearchParams({ repo: SRC.repo, ...params });
+  try {
+    const r = await fetch(`/helper/${action}?${q}`, { method: 'POST', headers: { 'x-loupe-token': HELPER.token } });
+    if (!r.ok) toast(`Could not ${action === 'reveal' ? 'show it in Finder' : 'open the editor'}: ${(await r.json().catch(() => ({}))).error || r.status}.`);
+  } catch (err) { toast(`The local helper did not answer (${err.message}). Is npm run view still running?`); }
+}
+function runCode(a, t) {
+  if (a.disabled) return;
+  if (a.id === 'github') return window.open(a.url, '_blank', 'noopener');
+  if (a.id === 'reveal') return helperPost('reveal', { path: t.path });
+  if (a.id === 'editor') return helperPost('editor', { path: t.path, line: t.line || '', editor: EDITOR });
+  if (a.id === 'pane') return openCode(t.path, t.line);
+}
+const setEditor = (ed) => { EDITOR = ed; try { localStorage.setItem('loupe-editor', ed); } catch {} pb.dataset.key = ''; paint(); if (CODE) drawCode(); };
+const editorPick = () => `<select data-editor aria-label="Editor">${Object.entries(EDITORS).map(([k, n]) => `<option value="${k}"${k === EDITOR ? ' selected' : ''}>Editor: ${n}</option>`).join('')}</select>`;
+// The panel's row: the same actions as the menu, disabled ones kept with their reason as the tooltip.
+const codeRow = (sel) => {
+  const acts = codeActs(sel); if (!acts.length) return '';
+  return `<div class="coderow">${acts.map(({ a }) => `<button class="btn" data-type="code" data-go="${a.id}" data-sel="${esc(JSON.stringify(sel))}"${a.disabled ? ' disabled' : ''} title="${esc(a.disabled ? a.why : a.sub)}">${esc(a.label)}</button>`).join('')}${acts.some(({ a }) => a.id === 'editor' && !a.disabled) ? editorPick() : ''}</div>`;
+};
+
+// The pane. One file at a time; reading it goes local first (the checkout may hold edits the commit does not, and the
+// header says which was read), else GitHub at the crawled commit. A failed read says why and keeps the GitHub link.
+const codeEl = $('code');
+let CODE = null; // { path, line, text, from, err, marks }
+async function openCode(path, line) {
+  CODE = { path, line, text: null, from: null, err: null, marks: evidenceMarks(data, path) };
+  codeEl.hidden = false; drawCode();
+  const want = CODE, local = helperHere();
+  try {
+    if (local && local.ok) {
+      const r = await fetch(`/helper/file?${new URLSearchParams({ repo: SRC.repo, path })}`, { headers: { 'x-loupe-token': HELPER.token } });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `status ${r.status}`);
+      // The checkout need not be at the crawled commit; then the evidence lines may sit elsewhere, and the header says so.
+      // Exact only when the checkout is at the crawled commit with no uncommitted changes (critic M2).
+      const head = local.head, same = head && SRC.commit && head === SRC.commit && !local.dirty;
+      const at = `the local checkout${head ? ` at ${head.slice(0, 7)}` : ''}${local.dirty ? ' with uncommitted changes' : ''}`;
+      Object.assign(want, { text: await r.text(), from: same ? 'the local checkout, at the crawled commit' : `${at}; crawled at ${SRC.commit ? SRC.commit.slice(0, 7) : 'no commit'}, so marked lines may have moved` });
+    } else {
+      const r = await fetch(rawUrl(SRC, path));
+      if (!r.ok) throw new Error(`GitHub answered ${r.status}`);
+      Object.assign(want, { text: await r.text(), from: `GitHub at ${SRC.commit.slice(0, 7)}` });
+    }
+  } catch (err) { want.err = err.message || String(err); }
+  if (CODE === want) drawCode(true);
+}
+// The open file's own actions: the file at the line it was opened at (an edge's evidence path need not be a map node).
+const paneTarget = () => ({ path: CODE.path, line: CODE.line, what: CODE.line ? `${CODE.path}:${CODE.line}` : CODE.path });
+const paneActs = () => codeActions(SRC, paneTarget(), { helper: helperHere(), editor: EDITOR });
+function closeCode() { CODE = null; codeEl.hidden = true; codeEl.innerHTML = ''; }
+// The lines the selected edge stands on in this file, outlined; the line opened at, shaded.
+const selLines = () => { const sel = store.get().selection; return sel && sel.type === 'edge' && CODE ? CODE.marks.filter(m => m.edges.includes(sel.id)).map(m => m.line) : []; };
+function drawCode(scroll) {
+  if (!CODE) return;
+  const gh = githubUrl(SRC, CODE.path, CODE.line), acts = paneActs().map(a => ({ a }));
+  const btns = acts.filter(({ a }) => a.id !== 'pane').map(({ a }) => `<button class="btn" data-code-act="${a.id}"${a.disabled ? ' disabled' : ''} title="${esc(a.disabled ? a.why : a.sub)}">${esc(a.label)}</button>`).join('');
+  const head = `<div class="chead"><span class="path">${esc(CODE.path)}${CODE.from ? ` <span style="color:${v('ink-faint')}">· ${esc(CODE.from)}${CODE.marks.length ? ` · ${CODE.marks.length} lines with edges` : ''}</span>` : ''}</span>${btns}${acts.some(({ a }) => a.id === 'editor' && !a.disabled) ? editorPick() : ''}<span style="flex:1"></span><button class="btn" data-code-close title="Close (Esc)">Close</button></div>`;
+  let body;
+  if (CODE.err) body = `<div class="cmsg">Could not read ${esc(CODE.path)}: ${esc(CODE.err)}.${gh ? ` <a href="${esc(gh)}" target="_blank" rel="noopener">Open it on GitHub</a>.` : ''}</div>`;
+  else if (CODE.text == null) body = `<div class="cmsg">Reading…</div>`;
+  else {
+    const at = new Map(CODE.marks.map(m => [m.line, m.edges])), on = new Set(selLines());
+    body = CODE.text.split('\n').map((t, i) => {
+      const n = i + 1, es = at.get(n);
+      const mk = es ? `<button class="mk" data-mark="${n}" title="${es.length} edge${es.length > 1 ? 's' : ''}: ${esc(es.map(id => { const e = data.edgeById[id]; return `${e.kind} → ${label(e.dst)}`; }).join(', '))}" aria-label="Select the edge on line ${n}"></button>` : '<span></span>';
+      return `<div class="ln${on.has(n) ? ' on' : n === CODE.line ? ' at' : ''}" data-l="${n}"><span class="no">${n}</span>${mk}<span>${esc(t) || ' '}</span></div>`;
+    }).join('');
+  }
+  codeEl.innerHTML = head + `<div class="cbody">${body}</div>`;
+  if (scroll && CODE.line) { const el = codeEl.querySelector(`[data-l="${CODE.line}"]`); if (el) el.scrollIntoView({ block: 'center' }); }
+}
+codeEl.addEventListener('click', e => {
+  if (e.target.closest('[data-code-close]')) return closeCode();
+  const act = e.target.closest('[data-code-act]');
+  if (act) { const a = paneActs().find(x => x.id === act.dataset.codeAct); return a && runCode(a, paneTarget()); }
+  const mk = e.target.closest('[data-mark]'); if (!mk) return;
+  // A mark selects its edge on the map; a line with several edges steps through them, one per click.
+  const es = CODE.marks.find(m => m.line === +mk.dataset.mark).edges, sel = store.get().selection;
+  const cur = sel && sel.type === 'edge' ? es.indexOf(sel.id) : -1, next = es[(cur + 1) % es.length];
+  if (!(sel && sel.type === 'edge' && sel.id === next)) A.select({ type: 'edge', id: next });
+});
+codeEl.addEventListener('change', e => { if (e.target.matches('[data-editor]')) setEditor(e.target.value); });
+// A selection made on the map re-outlines the lines it stands on; only the classes change, the text stays.
+store.on(() => { if (!CODE || CODE.text == null) return; const on = new Set(selLines()); codeEl.querySelectorAll('.ln').forEach(el => { const n = +el.dataset.l; el.classList.toggle('on', on.has(n)); el.classList.toggle('at', !on.has(n) && n === CODE.line); }); });
+
 // ---------- inspector
 const pb = $('pbody');
 pb.onclick = e => {
   const b = e.target.closest('[data-go]'); if (!b) return;
   const [type, id] = [b.dataset.type, b.dataset.go];
+  if (type === 'code') { const hit = codeActs(JSON.parse(b.dataset.sel)).find(({ a }) => a.id === id); return hit && runCode(hit.a, hit.t); }
   if (type === 'collapse') return A.toggleCollapsed(id);
   if (type === 'unfold') return A.toggleUnfold(id);
   if (type === 'matrix') return A.setMatrix({ a: id });
@@ -800,7 +933,8 @@ function nodePanel(id) {
   const home = data.home[id];
   const d = data.diff && store.get().diff ? ['added', 'changed', 'stale'].find(k => (data.diff[k] || []).includes(id)) || ((data.diff.removed || []).some(r => r.id === id) ? 'removed' : null) : null;
   return `<div class="crumbs">${crumbs(home).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>
-    <div><h2>${esc(label(id) || n.path.split('/').pop())}</h2><div class="path">${esc(n.path)}${n.loc ? ' · ' + n.loc + ' lines' : ''}${n.lang ? ' · ' + n.lang : ''}</div></div>
+    <div><h2>${esc(label(id) || n.path.split('/').pop())}</h2><div class="path">${esc(n.path)}${n.loc ? ' · ' + esc(n.loc) + ' lines' : ''}${n.lang ? ' · ' + esc(n.lang) : ''}</div></div>
+    ${data.nodes[id] ? codeRow({ type: 'node', id }) : ''}
     ${d ? `<div>${chip('diff · ' + d, 'diff-' + d)}</div>` : ''}
     <p>${esc(note || (d === 'removed' ? 'Removed since the last run. Drawn as a ghost until the diff is accepted.' : 'No explainer yet.'))}</p>
     ${claimsFor(id).length ? `<div class="list"><span class="eyebrow">Claims about this file</span>${claimsFor(id).map(elCard).join('')}</div>` : ''}
@@ -812,7 +946,8 @@ function edgePanel(id) {
   const bus = (data.byPrimitive.bus || []).find(b => data.elements[b].edges.includes(id));
   return `<span class="eyebrow">Edge · ${e.origin === 'graph' ? 'crawled' : 'overlay'}</span>
     <div style="display:flex;flex-direction:column;gap:6px">${go('node', e.src, `<span class="mono">${esc(label(e.src))}</span>`)}<span class="row" style="justify-content:flex-start">${swatch(e)}<span class="path">${esc(e.kind)}${e.role ? ' / ' + esc(e.role) : ''}</span></span>${go('node', e.dst, `<span class="mono">${esc(label(e.dst))}</span>`)}</div>
-    <dl class="kv"><dt>Provenance</dt><dd>${e.provenance}</dd><dt>Kind</dt><dd>${e.kind}</dd><dt>Role</dt><dd>${e.role || 'none'}${e.roleRule ? ' · ' + esc(e.roleRule) : ''}</dd>${e.count ? `<dt>Sites</dt><dd>${e.count}</dd>` : ''}${bus ? `<dt>Bus</dt><dd>${go('element', bus, esc(data.elements[bus].label))}</dd>` : ''}${e.condition ? `<dt>Condition</dt><dd>${esc(e.condition.condition)}</dd>` : ''}<dt>Id</dt><dd class="path">${e.id}</dd></dl>
+    ${codeRow({ type: 'edge', id })}
+    <dl class="kv"><dt>Provenance</dt><dd>${esc(e.provenance)}</dd><dt>Kind</dt><dd>${esc(e.kind)}</dd><dt>Role</dt><dd>${e.role || 'none'}${e.roleRule ? ' · ' + esc(e.roleRule) : ''}</dd>${e.count ? `<dt>Sites</dt><dd>${e.count}</dd>` : ''}${bus ? `<dt>Bus</dt><dd>${go('element', bus, esc(data.elements[bus].label))}</dd>` : ''}${e.condition ? `<dt>Condition</dt><dd>${esc(e.condition.condition)}</dd>` : ''}<dt>Id</dt><dd class="path">${esc(e.id)}</dd></dl>
     <div class="list"><span class="eyebrow">Evidence</span>${(e.evidence || []).map(x => `<div class="card"><span class="t">${esc(x.type)}</span><span class="s">${esc(x.rationale || x.signature || x.trace || x.key || '')}</span><span class="m">${esc([x.path, x.line && 'line ' + x.line, x.agent && 'agent:' + x.agent].filter(Boolean).join(' · '))}</span></div>`).join('') || '<p>None recorded.</p>'}</div>`;
 }
 
@@ -829,6 +964,7 @@ function elementPanel(id) {
     const iso = store.get().isolate === id, fold = map && map.layout.folds[id], unf = store.get().unfolded.includes(id);
     body = `<div class="row"><span class="path">${data.filesIn(id)} files${data.children[id].length ? ' · ' + data.children[id].length + ' subsections' : ''}</span>${go('collapse', id, collapsed ? 'Expand' : 'Collapse', 'btn')}</div>
       <div class="row" style="justify-content:flex-start;gap:8px">${go('isolate', iso ? '-' : id, iso ? 'Back to full map' : 'Isolate', 'btn primary')}${go('matrix', id, 'Matrix', 'btn')}${fold || unf ? go('unfold', id, unf ? 'Fold again' : `Show ${fold.members.length} folded files`, 'btn') : ''}</div>
+      ${codeRow({ type: 'element', id })}
       ${data.children[id].length ? `<div class="list">${data.children[id].map(elCard).join('')}</div>` : ''}
       ${files.length ? `<div><span class="eyebrow">Files</span>${files.map(f => go('node', f, `<span></span><span></span><span class="n mono">${esc(label(f))}</span><span class="m">${data.edges.filter(e => e.src === f || e.dst === f).length} edges</span>`, 'erow')).join('')}</div>` : ''}`;
   } else if (p === 'bus') {
@@ -1090,6 +1226,7 @@ function panel(s, c) {
   if (pb.dataset.key !== key) { pb.innerHTML = html; pb.dataset.key = key; pb.scrollTop = 0; }
   $('handleText').textContent = title;
 }
+pb.addEventListener('change', e => { if (e.target.matches('[data-editor]')) setEditor(e.target.value); });
 pb.addEventListener('click', e => { const b = e.target.closest('[data-type="clear"]'); if (b) { e.stopPropagation(); A.clear(); } }, true);
 
 window.loupe = { store, data, render: () => paint(), get map() { return map; }, get fmap() { return fmap; } };
