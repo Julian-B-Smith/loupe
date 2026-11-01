@@ -447,6 +447,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   declaration; the declared dash moves into the edge spec block. The schema diff is reviewed in the PR before merge.
 - **Julian (polls, 2026-11-01), the schema as built:** the loupe-spec `dashes` map and a section's `by: adapter:` are
   approved; the engine2 snapshot joins `./verify`'s loupe-check list; the declared dash in Flow and Design is Q-038.
+- **Layer-E (criterion 4), measured 2026-11-01, non-blocking** (`tools/engine-structure-agreement.mjs`): the two maps
+  share no nodes (files against concepts, and nothing may link them), so this is citation overlap, a weak upper bound, not
+  edge identity: 74 of the 104 inferred edges cite a requirement some declared edge cites; 71 of the 117 declared edges
+  cite one an inferred edge cites; 31 ids in both, 31 only inferred, 42 only declared. The inferred map read an older spec.
 - **Since the notice:** the declaration grew (65 items, 85 edges at 0e577fc; 79 items, 117 edges at 380ffd6).
 - **Scope:** `schema/` (human gate), `tools/loupe-check.mjs` and its mutation tests, an adapter (new), the viewer,
   a snapshot and the testbench listing.
