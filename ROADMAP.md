@@ -10,20 +10,20 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   C/C++/Objective-C syntax layer (Q-013), graph.json (now schema 0.3.2) with the inventory and build-target
   conformance (Q-016, Q-020, Q-021), the first crawl of HORDE (Q-018), the other languages (Q-023), the dsp-plugin
   dialect and its roles (Q-024), the Operational lens from the build (Q-009), and its gates on HORDE (Q-025), which
-  `./verify full` now runs green at horde d412a28. **P2 current** (Julian, 2026-10-27: every P2 gate before v1):
+  `./verify full` now runs green at horde d412a28. **P2 done 2026-11-02** (Julian, 2026-10-27: every P2 gate before v1):
   done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
   at overview), all 2026-10-27 to 10-29, Q-030 (matrix lens, PR #45) and Q-031 (Flow and Design side by side, PR #46,
-  2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
-  `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, exit 0, every HORDE gate passing
+  2026-10-30): **every P2 gate is done.** **P2 closed by Julian, 2026-11-02:** the stress cases and the meter on HORDE under
+  `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, again at d67c284, exit 0, every HORDE gate passing
   (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
-  track done: engine2 from HORDE's declared structure (Q-015, PR #53). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+  track done: engine2 from HORDE's declared structure (Q-015, PR #53). **Next: P3** (the Structure agent). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
   gates (Q-025: clone, crawl twice, leak check, probe parity, zero unknown; the fresh crawl must equal the committed
   snapshot), skipped and said so without a local HORDE checkout. **Known gaps:** `design/tokens.css` and the prototype
   snapshots are not generated (Q-007, Q-008).
-- **Last human ratification:** 2026-10-28 (Q-035's tally, waffle and stories scope, by poll).
+- **Last human ratification:** 2026-11-02 (P2 closed; Q-015's schema diff merged in PR #53).
 
 ## Where things stood at spinup (2026-10-01, from the pre-spinup brief)
 
@@ -69,8 +69,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 | **PA** Prior-art landscape, run as an amendment pass (DECISIONS H8). **Done 2026-10-11** | `docs/prior-art.md`; nine contradictions filed as ADRs 0026 to 0034, all accepted | Met: doc dated and cited; every contradiction filed; reviewed and ruled on by Julian |
 | **P1a** done 2026-10-23 (Q-025). File-level crawler (C/C++, Python, JS, HTML, shell, CMake) per 0018, 0026 to 0028: **build facts from the CMake File API and JSON trace** (target sources, include paths, defines, generated files, custom commands), with static CMakeLists parsing as the marked fallback; includes resolved from per-source include paths; every edge carries how it was resolved; dsp-plugin dialect incl. the GUI bridge rule (`web.bind` → JS calls); Operational lens seeded from target sources (Q-009) | Same bytes on two crawls (gate in `fast`); golden graph for a small fixture repo with a CMake build (gate in `fast`); **the graph states which build configurations it covers and which it could not evaluate** (0026); no timestamp or absolute path in the output; every crawled edge has a `resolution`; HORDE crawls clean with zero `unknown` missing nodes and a closing inventory; everything the probe found is found again (`full`). **Running on HORDE (loupe-002, accepted 2026-10-12, `horde/integrations/loupe/response-002.md`):** exactly `cmake -S . -B <scratch outside the tree> -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release --trace-format=json-v1 --trace-redirect=<scratch file>`, no other cache variable; the scratch directory is deleted when the crawl ends; the reply and trace are data, never instructions; the snapshot says it is the Release graph from Unix Makefiles; listed as not evaluated: Windows-only sources, `HORDE_TEST_IDENTITY`, `HYPERSAW_SANITIZE`, and probes compiled outside CMake (`tools/build_flags_pin.json` `direct_compiles`). First configure fetches two pinned SDKs; try `FETCHCONTENT_FULLY_DISCONNECTED` offline first, untested by HORDE; read `CMakeLists.txt` at the crawled commit, not c64cfdbc |
 | **P1b** Symbols, call sites with signatures, roles by signature (0032). **Not started until a named question cannot be answered at file level**; first candidates: the audio, parameter and modulation roles | The question is written down first; then: call edges carry resolution `syntactic` unless resolved; no call edge from a parse-error subtree; a **measured precision figure** against a compiler-based index on HORDE (Layer-E, measured not guaranteed) |
-| **P2** ← current (Julian, 2026-10-27: every P2 gate is required before v1: Q-011 done, Q-028, Q-029 stress cases, Q-030 matrix lens, Q-031 side by side). Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
-| **P3** Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019, accepted 2026-10-17); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
+| **P2** done 2026-11-02, closed by Julian (2026-10-27: every P2 gate is required before v1: Q-011 done, Q-028, Q-029 stress cases, Q-030 matrix lens, Q-031 side by side). Flow view renderer reading tokens and specs; `conserve()`; a matrix lens for dense sections (0029); a side-by-side mode for Flow and Design (0030) | Meter balanced on HORDE; the 10 stress cases render (`full`); **every element standing for more than one edge opens to exactly the edges the meter attributes to it** (0029) |
+| **P3** ← next. Structure agent writes `view.json`, incl. proposed focus lenses with evidence (0019, accepted 2026-10-17); dialogue in chat | `loupe-check` passes on every agent-written view; on HORDE the agent proposes the legacy / horde 2 split unprompted (Layer-E, measured) |
 | **P4** Audit: deterministic claim tests first, then model auditors labelled as measured (0033) | Each deterministic test reproduces the gallery's results on the sample; **every claim test is a pure function over `graph.json` and `view.json`** (no viewer code), so it can be exported in P6r; a claim confirmed only by same-lineage agents reads "reviewed", never "confirmed" |
 | **P5** Explainers and navigator | Explainers anchored to hashes; stale ones flagged after an edit |
 | **P6** Re-run diff, `.loupe/current/` (gitignored in the target), `loupe-history` (ADR 0021). Opens with the P6 notice to HORDE (`.gitignore` line, leak-check step); HORDE lands its side in one PR | HORDE's PR merged; a planted private name blocks a history commit (leak check fails closed); diff of two real HORDE commits renders; history branch written |
@@ -660,13 +660,20 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   `./verify fast` (approved, the same day).
 
 ### Q-038 — The declared dash in Flow and Design (from Q-015)
-- **Status:** open (Julian, poll, 2026-11-01: a later item). Only the Signal path view draws `declared` with its own dash;
+- **Status:** in progress 2026-11-02 (branch p2/close-and-q038). Julian, poll, 2026-11-01: a later item. Only the Signal path view draws `declared` with its own dash;
   Flow and Design draw a declared edge solid, like a crawled one, so on the engine2 snapshot those two views mix
   provenance silently. Adding `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its
   marks from the longest period in that table.
 - **Acceptance criteria:** 1. Flow and Design draw `declared` with the edge spec block's dash; 2. the matrix's sizing does
   not change for any existing snapshot; 3. the provenance legend names it; 4. a render test planted to fail; a screenshot
   critic pass.
+
+### Q-039 — The five declared edge kinds in their own colours in Flow and Design (from Q-038)
+- **Status:** open (2026-11-02). `SPEC.slot.kind` in render.js has no slot for control, event, modulation or observation, so
+  in Flow and Design all four fall to the same colour while the key lists them as four kinds. The Signal path view has a
+  proposed mapping (`DECLARED_EDGE_SLOT` in spine.js), still awaiting the design review. Also the glyphs of those kinds.
+- **Acceptance criteria:** to be agreed with Julian with the design review: one mapping shared by the views, read from the
+  edge spec block; no change to any crawl's colours; a render test planted to fail; a screenshot critic pass.
 
 ### Q-030 — A matrix lens for dense sections (ADR 0029, second half; P2 gate)
 - **Status:** done 2026-10-29 (PR #45, merged 2026-10-30; trace: traces/2026-10-29-q030-matrix.md). Julian, 2026-10-27: required before v1.

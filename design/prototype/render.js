@@ -19,6 +19,9 @@ export const SPEC = {
   motion: { duration: 600, maxTotal: 900, crossFadeAbove: 300 },
   node: { inset: 8 }
 };
+// A provenance's dash. `declared` lives in the edge spec block, not in SPEC.dash: the matrix sizes its marks from that
+// table's longest period (DASH_PERIOD), and adding a 22 px period there would change every crawl's matrix (Q-038).
+export const provDash = p => SPEC.dash[p] ?? SPECS.edge.dashes[p] ?? 'none';
 export const slotOf = e => SPEC.slot.role[e.role] || SPEC.slot.kind[e.kind] || 8;
 
 // How each node kind looks (node loupe-spec v3, ROADMAP Q-019). One place, used by nodes, isolate ports and the key,
@@ -181,7 +184,7 @@ export function markerDefs(uid) {
 }
 export function edgeStyle(e, emph, tier) {
   const p = e.provenance;
-  return `stroke:${tier ? v('tier-' + tier) : v('edge-' + slotOf(e))};stroke-width:${emph ? v('stroke-edge-emph') : v('stroke-edge')};stroke-dasharray:${SPEC.dash[p] || 'none'};stroke-linecap:${SPEC.cap[p] || 'butt'};fill:none`;
+  return `stroke:${tier ? v('tier-' + tier) : v('edge-' + slotOf(e))};stroke-width:${emph ? v('stroke-edge-emph') : v('stroke-edge')};stroke-dasharray:${provDash(p)};stroke-linecap:${SPEC.cap[p] || 'butt'};fill:none`;
 }
 
 let UID = 0;
@@ -467,7 +470,7 @@ export function render(container, data, state) {
     (data.byPrimitive.lane || []).forEach(id => {
       const el = data.elements[id], P = D.lanes[id];
       if (!P || ovw) return;
-      const prov = (el.source && el.source.provenance) || 'static', dash = SPEC.dash[prov] || 'none', on = focEl === id;
+      const prov = (el.source && el.source.provenance) || 'static', dash = provDash(prov), on = focEl === id;
       const stepEdges = data.edges.filter(e => el.steps.includes(e.dst));
       const spineSlot = stepEdges.length ? slotOf(stepEdges[0]) : 1;
       if (P.mode === 'inline') {
@@ -675,14 +678,14 @@ export function render(container, data, state) {
     if (ovw) {
       const [ka, kb] = ends;
       outT[ka] = (outT[ka] || 0) + b.edges.length; inT[kb] = (inT[kb] || 0) + b.edges.length;
-      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${SPEC.dash[prov] || 'none'};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
+      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${provDash(prov)};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
       if (!heavyOf[ka] || heavyOf[ka].n < b.edges.length || (heavyOf[ka].n === b.edges.length && key < heavyOf[ka].key)) heavyOf[ka] = { key, n: b.edges.length, d, c, sel, dim, provs };
       return;
     }
     let leader = null;
     const m = placePill(d, b.edges.length, lp => { leader = lp; });
     // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
-    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${SPEC.dash[prov] || 'none'};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
+    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${provDash(prov)};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
     bundlePill(key, b.edges.length, m, { c, sel, dim, provs }, leader);
   });
   function bundlePill(key, n, m, o, leader) {
@@ -1155,7 +1158,11 @@ function internalCount(data, sec) {
 // carries data-holds with the key its edges' `ends` name, so each opens to exactly them (ADR 0029). The re-run diff
 // marks the heads and the chip says how many outside differ; the legend's dimmed kinds dim their marks. The lens does
 // not apply: the matrix is its own lens.
-const DASH_PERIOD = Math.max(...Object.values(SPEC.dash).map(d => d === 'none' ? 0 : d.split(/\s+/).reduce((a, x) => a + +x, 0)));
+const dashPeriod = d => (d === 'none' ? 0 : d.split(/\s+/).reduce((a, x) => a + +x, 0));
+const DASH_PERIOD = Math.max(...Object.values(SPEC.dash).map(dashPeriod));
+// A mark too short for one period folds into a count. The table's period holds for every crawl; a graph with declared
+// edges also needs room for their longer dash, or a mark would show part of it and read as another provenance (Q-038).
+export const marksPeriod = data => (data.edges.some(e => e.provenance === 'declared') ? Math.max(DASH_PERIOD, dashPeriod(provDash('declared'))) : DASH_PERIOD);
 function renderMatrix(svg, uid, W, H, data, state) {
   const P = matrixPartition(data, state.matrix), n = P.files.length, { cell, inset, rowHead, colHead, margin, gap, marks: MARKS } = MX;
   // Every stroke, radius, dash, opacity, font size and colour from the matrix's loupe-spec block (generated specs.js:
@@ -1187,7 +1194,7 @@ function renderMatrix(svg, uid, W, H, data, state) {
   const cw = charW(), bg = [], g = [], lab = [];
   // Text scales with the cells and stops where it cannot be read (critic M2: 6 px heads overlapped at 120 files); the
   // marks fold to counts below one dash period, the counts to shaded cells below readable text. The subtitle says so.
-  const kc = K(cell), fs = Math.min(MX.headMax, kc * MX.headScale), heads = fs >= MX.headMin, nums = kc >= MX.countMin, markLen = K(cell - 2 * inset), marksRead = markLen >= DASH_PERIOD;
+  const kc = K(cell), fs = Math.min(MX.headMax, kc * MX.headScale), heads = fs >= MX.headMin, nums = kc >= MX.countMin, markLen = K(cell - 2 * inset), marksRead = markLen >= marksPeriod(data);
   const removed = ((state.diff && data.diff && state.diff.side !== 'before' && data.diff.removed) || []).filter(r => P.secs.some(sid => data.descendants(sid).includes(r.home))).length;
   const title = P.bands.map(b => `${data.elements[b.sec].label} (${b.to - b.from} files)`).join(' × ');
   const sub = ['rows send, columns receive', marksRead ? 'one mark per edge' : 'counts per cell (zoom in for one mark per edge)', heads ? '' : 'zoom in to read the file names', 'click a cell to list its edges', removed ? `${removed} removed since the last run (no edges now)` : ''].filter(Boolean).join(' · ');
@@ -1238,7 +1245,7 @@ function renderMatrix(svg, uid, W, H, data, state) {
     es.forEach(e => { map.edges[e.id] = many ? { via: 'folded', bundle: key, ends: [key] } : { via: 'drawn', ends: [key] }; });
     const tip = `${label(src)} → ${label(dst)}: ${es.length} edge${es.length === 1 ? '' : 's'} (${es.map(e => `${e.kind}${e.role ? '/' + e.role : ''}, ${e.provenance}`).join('; ')}). Click to list them.`;
     const marks = many ? countOf(x, y, cell, cell, es.length)
-      : es.map((e, i) => { const mx = x + cell / 2 + (i - (es.length - 1) / 2) * MX.markSpacing, on = e.id === selE; return `<line data-edge="${esc(e.id)}" x1="${f1(X(mx))}" x2="${f1(X(mx))}" y1="${f1(Y(y + inset))}" y2="${f1(Y(y + cell - inset))}" style="stroke:${MP.mark.stroke === 'edge-kind' ? v('edge-' + slotOf(e)) : v(MP.mark.stroke)};stroke-width:${on ? MX.markWidthSelected : MX.markWidth}px;stroke-dasharray:${MP.mark.dash === 'provenance' ? SPEC.dash[e.provenance] || 'none' : MP.mark.dash === 'gap' ? SPEC.dash.gap : 'none'};stroke-linecap:${SPEC.cap[e.provenance] || 'butt'};opacity:${dimK.has(e.role || e.kind) ? MX.dimOpacity : 1}"/>`; }).join('');
+      : es.map((e, i) => { const mx = x + cell / 2 + (i - (es.length - 1) / 2) * MX.markSpacing, on = e.id === selE; return `<line data-edge="${esc(e.id)}" x1="${f1(X(mx))}" x2="${f1(X(mx))}" y1="${f1(Y(y + inset))}" y2="${f1(Y(y + cell - inset))}" style="stroke:${MP.mark.stroke === 'edge-kind' ? v('edge-' + slotOf(e)) : v(MP.mark.stroke)};stroke-width:${on ? MX.markWidthSelected : MX.markWidth}px;stroke-dasharray:${MP.mark.dash === 'provenance' ? provDash(e.provenance) : MP.mark.dash === 'gap' ? SPEC.dash.gap : 'none'};stroke-linecap:${SPEC.cap[e.provenance] || 'butt'};opacity:${dimK.has(e.role || e.kind) ? MX.dimOpacity : 1}"/>`; }).join('');
     g.push(holds(key, es.length, box + marks, tip));
   });
   // Margins: edges to a file outside (right of each row), from one (below each column).
