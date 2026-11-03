@@ -13,3 +13,4 @@
 - **Browser (local, engine2):** Flow, Design and the key; the `member` matrix, 15 marks all with the declared dash, 38 px long; counts at fit.
 - **Critic (opus): REWORK**, fixed: the close's wording and the sweep (H1), the notice's moved gap (H2), criterion 2 taken to Julian and narrowed to 19 (H3), the key tested and fresh screenshots (M1), the notice's lists and heading (M3, M4), `horde-crawl` may no longer drop out of the opens-to-exactly check silently (part of M5), stale README and plan map (M6). Filed: mixed bundles (M2, Q-040). Left, and said in ROADMAP: "opens to exactly" is checked on `heldEdges`, not a driven click; `o:loose` has no stated count to compare.
 - **Not tested:** the key's HTML itself (`index.html` is parsed, not run); hosted Testbench.
+- **Verify:** `./verify full` exit 0 at d8d6391.
