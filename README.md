@@ -37,7 +37,7 @@ Agents write the overlay and view, never the graph. Every edge carries provenanc
 | `design/` | Design system and the viewer prototype (flow and design views, meter, fold, isolate, lenses, loose nodes), in-house since ADR 0022 | Built; a headless render test in `./verify` |
 | `design/prototype/stories/` | "How it works" stories, agent-written from HORDE's source with file:line evidence | Prototype (ADR 0025) |
 | `crawler/` | P1a crawler: CMake build layer, C/C++/Objective-C syntax layer, graph.json at 0.3.2, build-target conformance | Built on a fixture; first HORDE crawl done (`design/prototype/snapshots/horde-crawl/`) |
-| `tools/engine-structure.mjs`, `design/prototype/snapshots/engine2-structure/`, `design/prototype/spine.js` | HORDE's engine2 drawn from its own declaration: the one adapter, the pinned snapshot and the Signal path view (Q-015) | Built; awaiting merge |
+| `tools/engine-structure.mjs`, `design/prototype/snapshots/engine2-structure/`, `design/prototype/spine.js` | HORDE's engine2 drawn from its own declaration: the one adapter, the pinned snapshot and the Signal path view (Q-015) | Built |
 | `tools/stress-gen.mjs`, `design/prototype/snapshots/stress/` | The ten stress cases every design must survive (nine committed, the 4,000-file one generated), checked by `tools/stress.test.mjs` | Built (Q-029) |
 | `docs/plan-map.html` | The plan as a picture: every part, its status, the path to v1 | Current |
 | Structure agent, audit, explainers, the skill in a target repo | P3–P6 | **Not built** (see the plan map) |
