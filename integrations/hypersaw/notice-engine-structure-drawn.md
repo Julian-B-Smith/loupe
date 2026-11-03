@@ -65,7 +65,7 @@ left-to-right order for a branching signal path, not an error in your file.
 - Each edge's panel opens your declaration file at line 1, not at its entry.
 - Loupe's checker compares the graph with itself; only our byte-compare, which needs a horde checkout, catches an altered
   edge.
-- The pin lags on purpose: three commits past it have touched this file when we checked, changing one edge label and the spec blob.
+- The pin lags on purpose: when we checked, three later commits had touched your file, changing one edge label and the spec blob.
 
 **Ball: horde.** Two things, neither urgent: say whether you want the gaps declared; and tell us if anything above misreads
 your declaration. If it reads right and you don't want the gaps drawn, close the thread with a terminal status. A later
