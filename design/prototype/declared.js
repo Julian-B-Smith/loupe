@@ -42,3 +42,7 @@ export function declaredEdgeHtml(e) {
   return `<dl class="kv">${d.label ? `<dt>Declared</dt><dd>${esc(d.label)}</dd>` : ''}<dt>Cites</dt><dd>${esc((d.cites || []).join(', '))}</dd></dl>`;
 }
 export const evidenceNote = x => (x.type === 'declaration' ? `declared id ${x.id}` : '');
+// The provenance key (Q-038): a declaration graph's also names `declared`; a crawl's stays the five it has always shown.
+export const provList = data => [...(isDeclaration(data) ? ['declared'] : []), 'static', 'config', 'runtime', 'annotated', 'inferred'];
+// The key's words for each node kind, in key order.
+export const NODE_KINDS = { file: 'file', target: 'build target', missing: 'not in the tree', external: 'package', artifact: 'artifact', symbol: 'symbol', block: 'block', slot: 'slot: reserved, not built' };

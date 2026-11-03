@@ -46,6 +46,11 @@ sweep('mixed view: sectioned and loose files', snap('schema/examples/horde-sampl
 const big = snap('schema/examples/horde-probe/', (raw) => ({ ...raw, view: { ...raw.view, elements: [] } }));
 sweep('large empty view (folded loose block)', big);
 sweep('large empty view, unfolded', big, { unfolded: ['loose'] });
+// The real crawl (P2's "meter balanced on HORDE"; critic on the close, 2026-11-02): its default frame and the fold open,
+// lines on. stress.test.mjs meters it only with lines off and the lens on.
+const hordeCrawl = snap('design/prototype/snapshots/horde-crawl/');
+sweep('HORDE crawl', hordeCrawl);
+sweep('HORDE crawl, unfolded', hordeCrawl, { unfolded: ['loose'] });
 
 // Node kinds (Q-019): never two kinds that look alike, never two nodes of one kind with the same label.
 for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/snapshots/cmake-basic-crawl/', 'schema/examples/horde-probe/', 'schema/examples/horde-sample/']) {
@@ -232,7 +237,8 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   const bad = [];
   const dirs = ['design/prototype/snapshots/horde-crawl/', 'schema/examples/horde-probe/', 'schema/examples/horde-sample/', 'design/prototype/snapshots/horde-sample/', 'design/prototype/snapshots/cmake-basic-crawl/'];
   for (const dir of dirs) {
-    let data; try { data = snap(dir); } catch { continue; }
+    // Only an optional snapshot may be absent: losing HORDE would pass this check on the others alone (critic M5).
+    let data; try { data = snap(dir); } catch (err) { if (dir.includes('horde-crawl')) throw err; continue; }
     const tops = data.sections.filter((s) => !data.parentOf[s]);
     // Every top isolated, then with each of its section ports open (critic H2: the first test never opened a port);
     // collapsed tops, and a collapsed child inside a collapsed parent (critic M2).
@@ -329,6 +335,47 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
     }
   }
   check(`the story-outside box opens to exactly the edges it stands for (${frames} frames, ${listed} listed)${bad.length ? ' — ' + bad.slice(0, 3).join(' | ') : ''}`, bad.length === 0 && frames > 0 && listed > 0);
+}
+
+// Q-038: Flow and Design draw a declared edge with the edge spec block's dash, never as a crawled edge; a crawl's matrix
+// sizing and markup do not change. Read off the drawn markup, not through provDash.
+{
+  const { SPECS } = await import('../design/prototype/specs.js');
+  const { marksPeriod, SPEC: S } = await import('../design/prototype/render.js');
+  const D = SPECS.edge.dashes.declared, sum = (d) => (d === 'none' ? 0 : d.split(/\s+/).reduce((a, x) => a + +x, 0));
+  const E = snap('design/prototype/snapshots/engine2-structure/'), C = snap('design/prototype/snapshots/horde-crawl/');
+  // Every visible stroke tagged with an edge or bundle: a transparent hit area carries no provenance.
+  const strokes = (html) => [...html.matchAll(/<(?:path|line)\b[^>]*data-(?:edge|bundle)="[^"]*"[^>]*>/g)].map((m) => m[0]).filter((t) => !/stroke:transparent|stroke:none/.test(t));
+  for (const view of ['flow', 'design']) {
+    for (const k of [1, 0.2]) { // 0.2: the overview's bundles are drawn by another path
+      render(container, E, { view, stage: 2, settings: {}, zoom: { k, x: 0, y: 0 } });
+      const tags = strokes(svg.innerHTML), solid = tags.filter((t) => !t.includes(`stroke-dasharray:${D}`));
+      check(`Q-038 ${view} at ${k}: every drawn declared edge has the declared dash (${tags.length} strokes)${solid.length ? ' — ' + solid[0].slice(0, 120) : ''}`, tags.length > 0 && solid.length === 0);
+    }
+    render(container, C, { view, stage: 2, settings: {}, zoom: { k: 1, x: 0, y: 0 } });
+    check(`Q-038 ${view}: a crawl never shows the declared dash`, !svg.innerHTML.includes(`stroke-dasharray:${D}`) && strokes(svg.innerHTML).length > 0);
+  }
+  // Literals on purpose: the crawl's value is what it was before Q-038, and 19 is the declared dash's long dash and two dots.
+  const tableMax = 16.5, visible = 19;
+  check('Q-038: a crawl\'s matrix period is unchanged (16.5), so its marks size as before', marksPeriod(C) === tableMax && !('declared' in S.dash));
+  check('Q-038: a declaration\'s matrix needs the declared dash\'s whole visible pattern (19), not its trailing gap (Julian, 2026-11-02)', marksPeriod(E) === visible);
+  const { provList, NODE_KINDS } = await import('../design/prototype/declared.js');
+  check('Q-038: a declaration\'s key names declared first; a crawl\'s key is the five it always showed', provList(E)[0] === 'declared' && JSON.stringify(provList(C)) === JSON.stringify(['static', 'config', 'runtime', 'annotated', 'inferred']));
+  check('Q-038: the key has words for block and slot', !!NODE_KINDS.block && !!NODE_KINDS.slot);
+  const pair = E.sections.find((x) => E.parentOf[x]);
+  render(container, E, { view: 'design', stage: 2, settings: {}, zoom: { k: 4, x: 0, y: 0 }, matrix: { a: pair } });
+  const big = svg.innerHTML;
+  check('Q-038: zoomed in, a declaration\'s matrix marks carry the declared dash', big.includes(`stroke-dasharray:${D}`));
+  // Between the two periods a declared mark is too short for one whole dash: it folds into a count, where a crawl's mark
+  // of the same length still reads. Marks are the <line data-edge> in a cell.
+  const { MX } = await import('../design/prototype/matrix.js');
+  const between = (tableMax + visible) / 2 / (MX.cell - 2 * MX.inset);
+  render(container, E, { view: 'design', stage: 2, settings: {}, zoom: { k: between, x: 0, y: 0 }, matrix: { a: pair } });
+  check('Q-038: a matrix mark too short for the declared dash folds into a count', !/<line\b[^>]*data-edge=/.test(svg.innerHTML) && /<line\b[^>]*data-edge=/.test(big));
+  // The stress case built for the matrix: its top-left cells hold marks in view at this zoom.
+  const M = snap('design/prototype/snapshots/stress/edge-matrix/');
+  const read = M.sections.some((x) => { render(container, M, { view: 'design', stage: 2, settings: {}, zoom: { k: between, x: 0, y: 0 }, matrix: { a: x } }); return /<line\b[^>]*data-edge=/.test(svg.innerHTML); });
+  check('Q-038: a crawl\'s mark of that length still reads', read);
 }
 
 // Every inline script in the viewers' HTML parses (Q-028: a template-literal slip broke the whole viewer while every
