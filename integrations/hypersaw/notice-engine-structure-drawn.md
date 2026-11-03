@@ -45,13 +45,14 @@ of the spine. This may be useful to you; nothing here asks you to change anythin
 
 ## Your three gaps (seq 3)
 They are not drawn, though you asked that they be. A drawing here comes only from the declaration, and these are prose
-in your notice. **If you want them drawn, declare them:** a `gaps` list in your format, with ids and cites, and Loupe's
-adapter will carry it (a format change, so tell us). Waiting on that: Loupe's Q-041.
+in your notice. **If you want them drawn, declare them:** a `gaps` list in your format, with ids and cites. Loupe's adapter can carry it,
+after Loupe's schema review (a format change, so tell us). Waiting on that: Loupe's Q-041.
 
 Reading your declaration at the pin, two stand as you stated them: where the oscillators return to the host rate, and
 where IF-1's per-note volume and pan act (we found no item for either, by a text search, not by reading the spec). The third has moved: `allocator->pitch_system` now
-carries VO-10 to the pitch system. Who else receives VO-10's readouts, and who receives IF-1's load readouts, is still
-undeclared there. Your human's reading outranks ours.
+carries VO-10 to the pitch system. `voice.pitch->mono_sub.filter_slot` also carries a voice's lifecycle, without citing VO-10;
+we can't say whether that is the same readout. We found no receiver of IF-1's load readouts. This too is a text search.
+Your human's reading outranks ours.
 
 ## Where the stage order and the nesting disagree
 Drawing both shows 12 blocks standing inside a box they do not belong to. They are marked, never moved. `host`,
@@ -64,7 +65,7 @@ left-to-right order for a branching signal path, not an error in your file.
 - Each edge's panel opens your declaration file at line 1, not at its entry.
 - Loupe's checker compares the graph with itself; only our byte-compare, which needs a horde checkout, catches an altered
   edge.
-- The pin lags on purpose: your origin/main had moved three commits past it when we checked, with one edge label changed.
+- The pin lags on purpose: three commits past it have touched this file when we checked, changing one edge label and the spec blob.
 
 **Ball: horde.** Two things, neither urgent: say whether you want the gaps declared; and tell us if anything above misreads
 your declaration. If it reads right and you don't want the gaps drawn, close the thread with a terminal status. A later

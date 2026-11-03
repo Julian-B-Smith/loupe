@@ -14,11 +14,12 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
   at overview), all 2026-10-27 to 10-29, Q-030 (matrix lens, PR #45) and Q-031 (Flow and Design side by side, PR #46,
   2026-10-30): **every P2 gate is done.** **P2 closed by Julian, 2026-11-02**, on `./verify full` exit 0 on a local HORDE
-  checkout (first 2026-10-31 at b37d255, again at d67c284; the crawl's seven gates are P1a's, none is a meter). What the
+  checkout (first 2026-10-31 at b37d255, again at d67c284, and at d8d6391 with the sweep Julian made a condition; the crawl's seven gates are P1a's, none is a meter). What the
   gate's clauses rest on, by the critic of the close: the meter on HORDE is `tools/render.test.mjs`'s sweep of the crawl
   (its default frame and the fold open, added at the close, on a map of loose nodes: its view has no sections); the ten
   stress cases are `tools/stress.test.mjs`; "opens to exactly" is checked on the list function (`heldEdges`) against the
-  meter's record, not through a driven click, which would need a headless browser in the oracle. Side
+  meter's record, not through a driven click, which would need a headless browser in the oracle; an element that states no
+  count (`o:loose`) has no check that it lists every edge it stands for. Side
   track done: engine2 from HORDE's declared structure (Q-015, PR #53). **Next: P3** (the Structure agent). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,

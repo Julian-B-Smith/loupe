@@ -526,7 +526,7 @@ function meter(c, m = map, tag = '') {
   $('meter').onclick = () => { if (c.status === 'broken') { store.set({ selection: { type: 'unaccounted', id: 'all' } }); } };
 }
 
-// Closed, the key shrinks to the five provenance patterns: they are only readable with the key visible, so the key
+// Closed, the key shrinks to the provenance patterns: they are only readable with the key visible, so the key
 // may collapse but never disappear (addendum v2.3; review v4 B3).
 const strip = () => `<div class="strip">${provList(data).map(p => `<span title="${p}">${swatch({ kind: 'call', role: null, provenance: p }).replace(/var\(--loupe-edge-1\)/g, v('ink-muted'))}</span>`).join('')}</div>`;
 function legend(s) {
