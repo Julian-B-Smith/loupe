@@ -13,9 +13,12 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   `./verify full` now runs green at horde d412a28. **P2 done 2026-11-02** (Julian, 2026-10-27: every P2 gate before v1):
   done Q-011, Q-028, Q-029 (the ten stress cases, with Q-033 overflow rules, Q-034 overview legibility, Q-035 the diff
   at overview), all 2026-10-27 to 10-29, Q-030 (matrix lens, PR #45) and Q-031 (Flow and Design side by side, PR #46,
-  2026-10-30): **every P2 gate is done.** **P2 closed by Julian, 2026-11-02:** the stress cases and the meter on HORDE under
-  `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, again at d67c284, exit 0, every HORDE gate passing
-  (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
+  2026-10-30): **every P2 gate is done.** **P2 closed by Julian, 2026-11-02**, on `./verify full` exit 0 on a local HORDE
+  checkout (first 2026-10-31 at b37d255, again at d67c284; the crawl's seven gates are P1a's, none is a meter). What the
+  gate's clauses rest on, by the critic of the close: the meter on HORDE is `tools/render.test.mjs`'s sweep of the crawl
+  (its default frame and the fold open, added at the close, on a map of loose nodes: its view has no sections); the ten
+  stress cases are `tools/stress.test.mjs`; "opens to exactly" is checked on the list function (`heldEdges`) against the
+  meter's record, not through a driven click, which would need a headless browser in the oracle. Side
   track done: engine2 from HORDE's declared structure (Q-015, PR #53). **Next: P3** (the Structure agent). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
@@ -406,7 +409,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** done 2026-11-01 (PR #53, merged 2026-11-01, Julian's schema review with it; trace: traces/2026-10-31-q015-signal-path-view.md). Testbench republished; the hosted view is not yet checked (the browser pane is not signed in to claude.ai). HORDE's thread still has the ball on Loupe: a notice that the declaration is drawn. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
+- **Status:** done 2026-11-01 (PR #53, merged 2026-11-01, Julian's schema review with it; trace: traces/2026-10-31-q015-signal-path-view.md). Testbench republished; the hosted view is not yet checked (the browser pane is not signed in to claude.ai). Notice to HORDE: `integrations/hypersaw/notice-engine-structure-drawn.md` (seq 4, ball: horde). Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
@@ -660,13 +663,29 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   `./verify fast` (approved, the same day).
 
 ### Q-038 — The declared dash in Flow and Design (from Q-015)
-- **Status:** in progress 2026-11-02 (branch p2/close-and-q038). Julian, poll, 2026-11-01: a later item. Only the Signal path view draws `declared` with its own dash;
-  Flow and Design draw a declared edge solid, like a crawled one, so on the engine2 snapshot those two views mix
-  provenance silently. Adding `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its
-  marks from the longest period in that table.
+- **Status:** built 2026-11-02 (branch p2/close-and-q038; trace: traces/2026-11-02-q038-declared-dash.md), awaiting merge.
+  Julian, poll, 2026-11-01: a later item. Before it, Flow and Design drew a declared edge solid, like a crawled one. Adding
+  `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its marks from the longest period
+  in that table, so the dash lives in the edge spec block and render.js reads both through `provDash`.
 - **Acceptance criteria:** 1. Flow and Design draw `declared` with the edge spec block's dash; 2. the matrix's sizing does
-  not change for any existing snapshot; 3. the provenance legend names it; 4. a render test planted to fail; a screenshot
-  critic pass.
+  not change for any crawl snapshot (below, for engine2); 3. the provenance legend names it; 4. a render test planted to
+  fail; a screenshot critic pass.
+- **Julian (poll, 2026-11-02), criterion 2:** engine2 was also an existing snapshot, and its matrix does change: a mark needs
+  19 px, the declared dash's whole visible pattern, because at 16.5 px it shows one dot and reads as annotated. On engine2
+  only zooms 0.825 to 0.95 fold to counts that did not before.
+
+### Q-040 — What a bundle of mixed provenance looks like (from Q-038's critic, M2)
+- **Status:** open (2026-11-02), needs Julian's design call, and before P3's agents write overlays. render.js draws a bundle
+  whose edges differ in provenance as `static`, solid. An overlay `inferred` edge beside a declared bundle makes a solid line
+  on a graph with no crawled edge at all; only the tooltip tells. No snapshot does this today on a declaration graph; a
+  crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
+- **Acceptance criteria:** to be written with the design.
+
+### Q-041 — Draw the gaps in HORDE's declaration (waits on HORDE)
+- **Status:** waiting (2026-11-02). HORDE (seq 3) asked that its undeclared gaps be drawn as gaps. They are prose in a notice,
+  not in the declaration, and anything drawn must come from the declaration (Julian, poll 2026-11-02): the notice (seq 4)
+  asks HORDE to declare them. If it does, the adapter carries them and the Signal path view draws them.
+- **Acceptance criteria:** written when HORDE's format says how they are declared.
 
 ### Q-039 — The five declared edge kinds in their own colours in Flow and Design (from Q-038)
 - **Status:** open (2026-11-02). `SPEC.slot.kind` in render.js has no slot for control, event, modulation or observation, so

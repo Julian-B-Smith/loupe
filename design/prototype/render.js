@@ -1160,9 +1160,11 @@ function internalCount(data, sec) {
 // not apply: the matrix is its own lens.
 const dashPeriod = d => (d === 'none' ? 0 : d.split(/\s+/).reduce((a, x) => a + +x, 0));
 const DASH_PERIOD = Math.max(...Object.values(SPEC.dash).map(dashPeriod));
-// A mark too short for one period folds into a count. The table's period holds for every crawl; a graph with declared
-// edges also needs room for their longer dash, or a mark would show part of it and read as another provenance (Q-038).
-export const marksPeriod = data => (data.edges.some(e => e.provenance === 'declared') ? Math.max(DASH_PERIOD, dashPeriod(provDash('declared'))) : DASH_PERIOD);
+// A mark too short for one period folds into a count. The table's period holds for every crawl. A graph with declared
+// edges also needs room for their whole visible pattern (the long dash and both dots: the trailing gap draws nothing,
+// so 19 px of the 22 px period), or a mark would show one dot and read as annotated (Q-038; Julian, poll 2026-11-02).
+const visibleLength = d => dashPeriod(d) - +d.split(/\s+/).pop();
+export const marksPeriod = data => (data.edges.some(e => e.provenance === 'declared') ? Math.max(DASH_PERIOD, visibleLength(provDash('declared'))) : DASH_PERIOD);
 function renderMatrix(svg, uid, W, H, data, state) {
   const P = matrixPartition(data, state.matrix), n = P.files.length, { cell, inset, rowHead, colHead, margin, gap, marks: MARKS } = MX;
   // Every stroke, radius, dash, opacity, font size and colour from the matrix's loupe-spec block (generated specs.js:
