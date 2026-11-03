@@ -16,7 +16,7 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   2026-10-30): **every P2 gate is done.** The phase exit still asks for the stress cases and the meter on HORDE under
   `./verify full`: first run on a local HORDE checkout 2026-10-31 at b37d255, exit 0, every HORDE gate passing
   (`pass`, `unknownMissing`, `inventoryCloses`, `byteIdentical`, `leakCheck`, `loupeCheck`, `probeParity`). Side
-  track: engine2 from HORDE's declared structure (Q-015), built, awaiting merge. The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
+  track done: engine2 from HORDE's declared structure (Q-015, PR #53). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
   syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
@@ -406,7 +406,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** built 2026-11-01 (branch p2/q015-engine-structure; trace: traces/2026-10-31-q015-signal-path-view.md), awaiting Julian's review of the schema diff and merge. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
+- **Status:** done 2026-11-01 (PR #53, merged 2026-11-01, Julian's schema review with it; trace: traces/2026-10-31-q015-signal-path-view.md). Testbench republished; the hosted view is not yet checked (the browser pane is not signed in to claude.ai). HORDE's thread still has the ball on Loupe: a notice that the declaration is drawn. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
