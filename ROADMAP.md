@@ -410,7 +410,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   of what inference alone produced.
 
 ### Q-015 — engine2's structure from HORDE's declaration (deterministic diagram)
-- **Status:** done 2026-11-01 (PR #53, merged 2026-11-01, Julian's schema review with it; trace: traces/2026-10-31-q015-signal-path-view.md). Testbench republished; the hosted view is not yet checked (the browser pane is not signed in to claude.ai). Notice to HORDE: `integrations/hypersaw/notice-engine-structure-drawn.md` (seq 4, ball: horde). Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
+- **Status:** done 2026-11-01 (PR #53, merged 2026-11-01, Julian's schema review with it; trace: traces/2026-10-31-q015-signal-path-view.md). Testbench republished; the hosted view is not yet checked (the browser pane is not signed in to claude.ai). The thread with HORDE is closed: seq 4 `notice-engine-structure-drawn.md`, seq 5 `notice-engine-structure-closed.md`. Critic: ACCEPT on the view and on the schema (three rework rounds). HORDE's declaration landed on horde main at 0e577fc
   (`engine2/structure/engine-structure.json`, format `horde.engine-structure/1`, gated in HORDE's `./verify`); HORDE's
   notice (seq 3) is merged here as PR #22. Loupe's answer to the brief: `integrations/hypersaw/response-engine-structure.md`.
 - **Decisions (Julian, by poll 2026-10-16):** HORDE writes a declaration in its own terms and gates it against the
@@ -664,7 +664,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   `./verify fast` (approved, the same day).
 
 ### Q-038 — The declared dash in Flow and Design (from Q-015)
-- **Status:** built 2026-11-02 (branch p2/close-and-q038; trace: traces/2026-11-02-q038-declared-dash.md), awaiting merge.
+- **Status:** done 2026-11-03 (PR #55; trace: traces/2026-11-02-q038-declared-dash.md). Testbench republished; the hosted view is not yet checked.
   Julian, poll, 2026-11-01: a later item. Before it, Flow and Design drew a declared edge solid, like a crawled one. Adding
   `declared` to render.js's `SPEC.dash` broke two stress cases, because the matrix sizes its marks from the longest period
   in that table, so the dash lives in the edge spec block and render.js reads both through `provDash`.
@@ -682,11 +682,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
 - **Acceptance criteria:** to be written with the design.
 
-### Q-041 — Draw the gaps in HORDE's declaration (waits on HORDE)
-- **Status:** waiting (2026-11-02). HORDE (seq 3) asked that its undeclared gaps be drawn as gaps. They are prose in a notice,
-  not in the declaration, and anything drawn must come from the declaration (Julian, poll 2026-11-02): the notice (seq 4)
-  asks HORDE to declare them. If it does, the adapter carries them and the Signal path view draws them.
-- **Acceptance criteria:** written when HORDE's format says how they are declared.
+### Q-041 — Draw the gaps in HORDE's declaration (dropped)
+- **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"
+  (`integrations/hypersaw/notice-engine-structure-closed.md`, seq 5, which closes the thread). HORDE's gaps stay undrawn. If
+  HORDE ever declares them, a new thread opens it.
 
 ### Q-039 — The five declared edge kinds in their own colours in Flow and Design (from Q-038)
 - **Status:** open (2026-11-02). `SPEC.slot.kind` in render.js has no slot for control, event, modulation or observation, so
