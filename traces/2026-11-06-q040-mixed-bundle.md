@@ -44,4 +44,4 @@
   static-only check could pass empty (guarded: 58 bundles); the pill check at 0.2 may find no pill, by design; for an
   unknown provenance the pill names it while the line draws inferred (unreachable under the schema).
 - **Not tested:** the key's HTML itself (`index.html` is parsed, not run); hosted Testbench.
-- **Verify:** see the PR.
+- **Verify:** `./verify full` exit 0 at 782cf43, HORDE gates included: `{"pass":true,"unknownMissing":true,"inventoryCloses":true,"byteIdentical":true,"leakCheck":true,"loupeCheck":true,"probeParity":true}`.
