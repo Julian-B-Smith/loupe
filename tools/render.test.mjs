@@ -378,6 +378,54 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
   check('Q-038: a crawl\'s mark of that length still reads', read);
 }
 
+// Q-040: a bundle of mixed provenance takes its least-trusted edge's dash and counts each provenance. The plant is the
+// case the critic named: one overlay-style `inferred` edge folded with declared ones, on a graph with no crawled edge.
+// Before Q-040 this bundle drew solid (`static`). Read off the drawn markup.
+{
+  const { SPECS } = await import('../design/prototype/specs.js');
+  const { SPEC: S, TRUST, leastTrusted, MIXED_NOTE } = await import('../design/prototype/render.js');
+  const dir = 'design/prototype/snapshots/engine2-structure/', D = SPECS.edge.dashes.declared;
+  check('Q-040: the order of trust is Julian\'s (2026-11-06), least trusted first', JSON.stringify(TRUST) === JSON.stringify(['inferred', 'annotated', 'runtime', 'declared', 'config', 'static']));
+  check('Q-040: every provenance\'s least-trusted partner is itself or below it', TRUST.every((p, i) => TRUST.slice(i).every((q) => leastTrusted([p, q]) === p)));
+  // Keys are written through esc(): a section key holds '>'.
+  const attr = (key) => key.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const tagOf = (html, key) => (html.match(new RegExp(`<path data-bundle="${attr(key).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>(?:<title>[^<]*</title>)?`)) || [''])[0];
+  for (const k of [0.5, 0.2]) { // 0.2: the overview's weighted bundle lines are drawn by another path
+    const state = { view: 'design', stage: 2, settings: {}, zoom: { k, x: 0, y: 0 } };
+    const map = render(container, snap(dir), state);
+    const held = {}; Object.entries(map.edges).forEach(([id, m]) => { if (m.via === 'folded' && m.bundle && svg.innerHTML.includes(`<path data-bundle="${attr(m.bundle)}"`)) (held[m.bundle] = held[m.bundle] || []).push(id); });
+    const key = Object.keys(held).sort().find((x) => held[x].length >= 2);
+    if (!key) { check(`Q-040 at ${k}: engine2 has a bundle of two or more to plant in`, false); continue; }
+    const plant = held[key].sort()[0];
+    const mixed = snap(dir, (raw) => { raw.graph.edges.find((e) => e.id === plant).provenance = 'inferred'; return raw; });
+    const m2 = render(container, mixed, state), tag = tagOf(svg.innerHTML, key), n = held[key].length;
+    check(`Q-040 at ${k}: a declared bundle holding one inferred edge takes the inferred dash, not solid${tag ? '' : ' — bundle not drawn'}`, tag.includes(`stroke-dasharray:${S.dash.inferred}`));
+    check(`Q-040 at ${k}: its tooltip counts each provenance, adding up to the bundle (${n})`, tag.includes(`1 inferred · ${n - 1} declared`));
+    check(`Q-040 at ${k}: the meter still balances`, conserve(mixed, state, m2).status !== 'broken');
+    const pills = [...svg.innerHTML.matchAll(/<g data-bundle="[^"]*"[^>]*>[\s\S]*?<\/g>/g)].map((m) => m[0]).filter((t) => t.includes(`data-bundle="${attr(key)}"`));
+    // At 0.2 only each box's heaviest line keeps a pill; at 0.5 every bundle has one.
+    check(`Q-040 at ${k}: its pill's tooltip says what it is drawn as, with the counts`, (k === 0.2 && pills.length === 0) || pills.some((t) => t.includes(`drawn as inferred: 1 inferred · ${n - 1} declared`)));
+    // runtime's dash is dots only with a round cap (critic H1): a butt cap draws 0.1 px dashes, nearly no ink.
+    const rt = snap(dir, (raw) => { raw.graph.edges.find((e) => e.id === plant).provenance = 'runtime'; return raw; });
+    render(container, rt, state);
+    const rtag = tagOf(svg.innerHTML, key);
+    check(`Q-040 at ${k}: a bundle whose weakest edge is runtime draws runtime's dots, round-capped`, rtag.includes(`stroke-dasharray:${S.dash.runtime}`) && rtag.includes('stroke-linecap:round'));
+    render(container, snap(dir), state);
+    check(`Q-040 at ${k}: the same bundle unplanted keeps the declared dash`, tagOf(svg.innerHTML, key).includes(`stroke-dasharray:${D}`));
+  }
+  // The crawl case of criterion 4: HORDE's crawl folds config with static, which now draws as config.
+  {
+    const state = { view: 'design', stage: 2, settings: {}, zoom: { k: 1, x: 0, y: 0 } };
+    render(container, snap('design/prototype/snapshots/horde-crawl/'), state);
+    const tags = [...svg.innerHTML.matchAll(/<path data-bundle="[^"]*"[^>]*><title>[^<]*<\/title>/g)].map((m) => m[0]);
+    const mixed = tags.filter((t) => /\d+ config · \d+ static/.test(t));
+    check(`Q-040: HORDE's crawl bundles of config and static take the config dash (${mixed.length})`, mixed.length > 0 && mixed.every((t) => t.includes(`stroke-dasharray:${S.dash.config}`)));
+    check('Q-040: HORDE\'s one-provenance static bundles stay solid', tags.filter((t) => /folded · \d+ static</.test(t)).every((t) => t.includes('stroke-dasharray:none')));
+  }
+  const page = readFileSync('design/prototype/index.html', 'utf8'), legendFn = page.slice(page.indexOf('function legend('), page.indexOf('$(\'legend\').onclick'));
+  check('Q-040: the Flow and Design key says a mixed bundle is drawn as its least-trusted edge', /least-trusted/.test(MIXED_NOTE) && (legendFn.match(/\$\{MIXED_NOTE\}/g) || []).length === 1);
+}
+
 // Every inline script in the viewers' HTML parses (Q-028: a template-literal slip broke the whole viewer while every
 // other test, which imports only the .js modules, stayed green). Module scripts are checked as modules.
 {

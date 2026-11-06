@@ -676,17 +676,17 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   only zooms 0.825 to 0.95 fold to counts that did not before.
 
 ### Q-040 — What a bundle of mixed provenance looks like (from Q-038's critic, M2)
-- **Status:** open (2026-11-02), needs Julian's design call, and before P3's agents write overlays. render.js draws a bundle
+- **Status:** in progress (2026-11-06; trace: traces/2026-11-06-q040-mixed-bundle.md). Raised 2026-11-02. render.js draws a bundle
   whose edges differ in provenance as `static`, solid. An overlay `inferred` edge beside a declared bundle makes a solid line
   on a graph with no crawled edge at all; only the tooltip tells. No snapshot does this today on a declaration graph; a
   crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
 - **Julian (2026-11-06):** a bundle is never drawn as more certain than its weakest edge: it takes the dash of the
-  least-trusted provenance it holds, and its pill or tooltip counts each provenance. The order of trust is proposed below
-  and not yet confirmed.
+  least-trusted provenance it holds, and its pill or tooltip counts each provenance. Julian confirmed the order below the
+  same day.
 - **Acceptance criteria (agreed 2026-11-06):**
   1. Wherever a bundle is drawn, a bundle whose edges differ in provenance takes the dash of its least-trusted member, read
-     from the edge spec block. It gets no new dash. Proposed order, least trusted first: inferred, annotated, runtime,
-     declared, config, static.
+     from the edge spec block. It gets no new dash. Order, least trusted first (confirmed 2026-11-06): inferred, annotated,
+     runtime, declared, config, static.
   2. Its pill or tooltip states the count of each provenance it holds (for example "3 declared · 1 inferred"), and the
      counts add up to the bundle's total, so the meter still accounts for every edge.
   3. The provenance legend says that a mixed bundle is drawn as its least-trusted edge.
