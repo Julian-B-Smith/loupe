@@ -35,9 +35,13 @@
   planted test); the snapshot list above was missing cmake-basic-crawl and horde-sample's lens frames (M1); tests for
   the cap, the crawl case and the pill (M5); an unknown provenance drew solid (L1); the rule in the edge README (L2); the
   key line only where a mix can occur (L3); the tooltip wording and review item 4 said here (L4, L5).
-  **Taken to Julian, not done here:** M2, on the overview's heavy lines (up to 7 px) round dots 3.6 px apart run
-  together and read solid, as runtime-only bundles already did; M3, collector bars, their stubs and bus exit stubs stay
-  solid whatever the lines they gather (known since review v4, item 8); M4, the key line hides when the key is closed,
-  and the strip does not mention mixing.
+  **Taken to Julian (poll, 2026-11-06):** M4, the key line hid when the key was closed: the closed strip now says
+  "mixed = weakest" where a mix can occur (done here, seen in the browser). M3, collector bars, their stubs and bus exit
+  stubs stay solid whatever the lines they gather (known since review v4, item 8): Q-042. M2, on the overview's heavy
+  lines (up to 7 px) round dots 3.6 px apart run together and read solid, as runtime-only bundles already did: Q-043,
+  scale the dash.
+- **Critic's confirming pass (opus): ACCEPT** at e427962. Its notes: the trace's verify line (fixed below); the
+  static-only check could pass empty (guarded: 58 bundles); the pill check at 0.2 may find no pill, by design; for an
+  unknown provenance the pill names it while the line draws inferred (unreachable under the schema).
 - **Not tested:** the key's HTML itself (`index.html` is parsed, not run); hosted Testbench.
 - **Verify:** see the PR.

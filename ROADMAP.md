@@ -693,6 +693,32 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   4. A bundle whose edges share one provenance draws as it does today. A crawl bundle that mixes static and config changes
      by criterion 1, and the trace lists which committed snapshots and stress cases change.
   5. A render test planted to fail (a mixed bundle drawn solid must fail it), and a screenshot critic pass.
+- **Julian (poll, 2026-11-06), after the critic:** the closed key's strip says "mixed = weakest" too (M4, in Q-040);
+  collector bars and stubs are Q-042; the overview's wide lines are Q-043.
+
+### Q-042 — Collector bars and stubs by provenance (from Q-040's critic, M3)
+- **Status:** open (2026-11-06). Julian: a follow-up, not part of Q-040. Collector bars, their stub into the box, and
+  bus exit stubs draw solid whatever the lines they gather (known since review v4, item 8).
+- **Acceptance criteria (proposed, to be agreed):** each takes Q-040's rule: the dash and cap of the least-trusted edge
+  it gathers, and its tooltip counts each provenance; a render test planted to fail; a screenshot critic pass.
+
+### Q-043 — Dash patterns that read on the overview's wide lines (from Q-040's critic, M2)
+- **Status:** open (2026-11-06). Julian: scale the dash. Zoomed out, a bundle line is up to 7 px wide, and runtime's round
+  dots 3.6 px apart run together into a solid-looking line.
+- **Acceptance criteria (proposed, to be agreed):** on the overview a dash pattern stretches with the line's width so
+  every gap stays wider than the line; a check, like Q-038's "mark still reads", fails a pattern whose gaps close; no
+  change at detail zoom; a screenshot critic pass.
+
+### Q-044 — A first dialogue with HORDE, as a test of P3's Dialogue (Julian, 2026-11-06)
+- **Status:** open (2026-11-06), after Q-040. Julian: "run the dialogue phase with Horde to fill in the gaps as a test",
+  and tell Julian what needs Julian's engagement.
+- **Julian (poll, 2026-11-06):** a Structure pass first: P3's Structure agent composes HORDE's crawl (today 0 view
+  elements, 0 overlay edges), and what it cannot decide becomes the questions. The questions go as a brief in HORDE's
+  mailbox (`horde/integrations/loupe/`); HORDE's resident answers there and marks which are Julian's. An answer from
+  HORDE's agent that changes the map enters as `inferred`, naming HORDE's session as its source, and becomes
+  `annotated` only when Julian confirms it. Questions and answers are kept in a stand-in dialogue file, like
+  `stages.sample.json`, with no schema change; Q-005 writes the schema from what the test teaches.
+- **Acceptance criteria:** to be written before the work starts.
 
 ### Q-041 — Draw the gaps in HORDE's declaration (dropped)
 - **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"

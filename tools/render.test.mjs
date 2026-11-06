@@ -420,10 +420,11 @@ for (const dir of ['design/prototype/snapshots/horde-crawl/', 'design/prototype/
     const tags = [...svg.innerHTML.matchAll(/<path data-bundle="[^"]*"[^>]*><title>[^<]*<\/title>/g)].map((m) => m[0]);
     const mixed = tags.filter((t) => /\d+ config · \d+ static/.test(t));
     check(`Q-040: HORDE's crawl bundles of config and static take the config dash (${mixed.length})`, mixed.length > 0 && mixed.every((t) => t.includes(`stroke-dasharray:${S.dash.config}`)));
-    check('Q-040: HORDE\'s one-provenance static bundles stay solid', tags.filter((t) => /folded · \d+ static</.test(t)).every((t) => t.includes('stroke-dasharray:none')));
+    const statics = tags.filter((t) => /folded · \d+ static</.test(t));
+    check(`Q-040: HORDE's one-provenance static bundles stay solid (${statics.length})`, statics.length > 0 && statics.every((t) => t.includes('stroke-dasharray:none')));
   }
   const page = readFileSync('design/prototype/index.html', 'utf8'), legendFn = page.slice(page.indexOf('function legend('), page.indexOf('$(\'legend\').onclick'));
-  check('Q-040: the Flow and Design key says a mixed bundle is drawn as its least-trusted edge', /least-trusted/.test(MIXED_NOTE) && (legendFn.match(/\$\{MIXED_NOTE\}/g) || []).length === 1);
+  check('Q-040: the Flow and Design key says a mixed bundle is drawn as its least-trusted edge', /least-trusted/.test(MIXED_NOTE) && (legendFn.match(/\$\{MIXED_NOTE\}/g) || []).length === 1 && /strip\(mix\)/.test(legendFn));
 }
 
 // Every inline script in the viewers' HTML parses (Q-028: a template-literal slip broke the whole viewer while every
