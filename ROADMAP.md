@@ -676,23 +676,49 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   only zooms 0.825 to 0.95 fold to counts that did not before.
 
 ### Q-040 — What a bundle of mixed provenance looks like (from Q-038's critic, M2)
-- **Status:** open (2026-11-02), needs Julian's design call, and before P3's agents write overlays. render.js draws a bundle
+- **Status:** in progress (2026-11-06; trace: traces/2026-11-06-q040-mixed-bundle.md). Raised 2026-11-02. render.js draws a bundle
   whose edges differ in provenance as `static`, solid. An overlay `inferred` edge beside a declared bundle makes a solid line
   on a graph with no crawled edge at all; only the tooltip tells. No snapshot does this today on a declaration graph; a
   crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
 - **Julian (2026-11-06):** a bundle is never drawn as more certain than its weakest edge: it takes the dash of the
-  least-trusted provenance it holds, and its pill or tooltip counts each provenance. The order of trust is proposed below
-  and not yet confirmed.
+  least-trusted provenance it holds, and its pill or tooltip counts each provenance. Julian confirmed the order below the
+  same day.
 - **Acceptance criteria (agreed 2026-11-06):**
   1. Wherever a bundle is drawn, a bundle whose edges differ in provenance takes the dash of its least-trusted member, read
-     from the edge spec block. It gets no new dash. Proposed order, least trusted first: inferred, annotated, runtime,
-     declared, config, static.
+     from the edge spec block. It gets no new dash. Order, least trusted first (confirmed 2026-11-06): inferred, annotated,
+     runtime, declared, config, static.
   2. Its pill or tooltip states the count of each provenance it holds (for example "3 declared · 1 inferred"), and the
      counts add up to the bundle's total, so the meter still accounts for every edge.
   3. The provenance legend says that a mixed bundle is drawn as its least-trusted edge.
   4. A bundle whose edges share one provenance draws as it does today. A crawl bundle that mixes static and config changes
      by criterion 1, and the trace lists which committed snapshots and stress cases change.
   5. A render test planted to fail (a mixed bundle drawn solid must fail it), and a screenshot critic pass.
+- **Julian (poll, 2026-11-06), after the critic:** the closed key's strip says "mixed = weakest" too (M4, in Q-040);
+  collector bars and stubs are Q-042; the overview's wide lines are Q-043.
+
+### Q-042 — Collector bars and stubs by provenance (from Q-040's critic, M3)
+- **Status:** open (2026-11-06). Julian: a follow-up, not part of Q-040. Collector bars, their stub into the box, and
+  bus exit stubs draw solid whatever the lines they gather (known since review v4, item 8).
+- **Acceptance criteria (proposed, to be agreed):** each takes Q-040's rule: the dash and cap of the least-trusted edge
+  it gathers, and its tooltip counts each provenance; a render test planted to fail; a screenshot critic pass.
+
+### Q-043 — Dash patterns that read on the overview's wide lines (from Q-040's critic, M2)
+- **Status:** open (2026-11-06). Julian: scale the dash. Zoomed out, a bundle line is up to 7 px wide, and runtime's round
+  dots 3.6 px apart run together into a solid-looking line.
+- **Acceptance criteria (proposed, to be agreed):** on the overview a dash pattern stretches with the line's width so
+  every gap stays wider than the line; a check, like Q-038's "mark still reads", fails a pattern whose gaps close; no
+  change at detail zoom; a screenshot critic pass.
+
+### Q-044 — A first dialogue with HORDE, as a test of P3's Dialogue (Julian, 2026-11-06)
+- **Status:** open (2026-11-06), after Q-040. Julian: "run the dialogue phase with Horde to fill in the gaps as a test",
+  and tell Julian what needs Julian's engagement.
+- **Julian (poll, 2026-11-06):** a Structure pass first: P3's Structure agent composes HORDE's crawl (today 0 view
+  elements, 0 overlay edges), and what it cannot decide becomes the questions. The questions go as a brief in HORDE's
+  mailbox (`horde/integrations/loupe/`); HORDE's resident answers there and marks which are Julian's. An answer from
+  HORDE's agent that changes the map enters as `inferred`, naming HORDE's session as its source, and becomes
+  `annotated` only when Julian confirms it. Questions and answers are kept in a stand-in dialogue file, like
+  `stages.sample.json`, with no schema change; Q-005 writes the schema from what the test teaches.
+- **Acceptance criteria:** to be written before the work starts.
 
 ### Q-041 — Draw the gaps in HORDE's declaration (dropped)
 - **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"

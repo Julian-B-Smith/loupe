@@ -22,6 +22,19 @@ export const SPEC = {
 // A provenance's dash. `declared` lives in the edge spec block, not in SPEC.dash: the matrix sizes its marks from that
 // table's longest period (DASH_PERIOD), and adding a 22 px period there would change every crawl's matrix (Q-038).
 export const provDash = p => SPEC.dash[p] ?? SPECS.edge.dashes[p] ?? 'none';
+// Q-040 (Julian, 2026-11-06): a bundle is never drawn as more certain than its weakest edge, so a bundle of mixed
+// provenance takes the dash of its least-trusted edge. Before, it drew as `static` (solid): an overlay `inferred` edge
+// folded with declared ones made a solid line on a graph with no crawled edge at all. Least trusted first; a provenance
+// outside the list (the schema allows none) ranks below them all.
+export const TRUST = ['inferred', 'annotated', 'runtime', 'declared', 'config', 'static'];
+const byTrust = (a, b) => TRUST.indexOf(a) - TRUST.indexOf(b) || (a < b ? -1 : 1);
+export const leastTrusted = provs => [...provs].sort(byTrust)[0];
+// "3 declared · 1 inferred", least trusted first; the counts add up to the bundle's total.
+export const provCounts = edges => {
+  const n = {}; edges.forEach(e => { n[e.provenance] = (n[e.provenance] || 0) + 1; });
+  return Object.keys(n).sort(byTrust).map(p => `${n[p]} ${p}`).join(' · ');
+};
+export const MIXED_NOTE = 'a bundle of mixed provenance is drawn as its least-trusted edge';
 export const slotOf = e => SPEC.slot.role[e.role] || SPEC.slot.kind[e.kind] || 8;
 
 // How each node kind looks (node loupe-spec v3, ROADMAP Q-019). One place, used by nodes, isolate ports and the key,
@@ -670,7 +683,10 @@ export function render(container, data, state) {
     const bar = arrive['b:' + key] && arrive['b:' + key].bar;
     b.edges.forEach(e => { map.edges[e.id] = { via: 'folded', bundle: key, ends, ...(bar ? { collector: bar } : {}) }; });
     const slots = new Set(b.edges.map(slotOf)), provs = new Set(b.edges.map(e => e.provenance));
-    const slot = slots.size === 1 ? [...slots][0] : 0, prov = provs.size === 1 ? [...provs][0] : 'static';
+    const slot = slots.size === 1 ? [...slots][0] : 0, prov = leastTrusted(provs), counts = provCounts(b.edges);
+    // The cap is part of the pattern: runtime's 0.1 px dashes are dots only when round (critic H1: butt drew ~3% ink).
+    // A provenance outside TRUST takes the inferred dash, as spine.js does, never solid.
+    const dash = TRUST.includes(prov) ? provDash(prov) : provDash('inferred');
     const anyFocus = rel && b.edges.some(e => rel.has(e.src) && rel.has(e.dst));
     const dim = rel && !anyFocus;
     const at = arrive['b:' + key], d = edgePath(b.ra, at || b.rb), c = slot ? v('edge-' + slot) : v('ink-muted');
@@ -678,19 +694,19 @@ export function render(container, data, state) {
     if (ovw) {
       const [ka, kb] = ends;
       outT[ka] = (outT[ka] || 0) + b.edges.length; inT[kb] = (inT[kb] || 0) + b.edges.length;
-      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${provDash(prov)};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}. Click to list them.</title></path>`);
-      if (!heavyOf[ka] || heavyOf[ka].n < b.edges.length || (heavyOf[ka].n === b.edges.length && key < heavyOf[ka].key)) heavyOf[ka] = { key, n: b.edges.length, d, c, sel, dim, provs };
+      eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${f1(Math.min(7, 0.8 + Math.log2(b.edges.length)))}px;stroke-dasharray:${dash};stroke-linecap:${SPEC.cap[prov] || 'butt'};fill:none;opacity:${dim ? 0.2 : 0.55}"${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${counts}. Click to list them.</title></path>`);
+      if (!heavyOf[ka] || heavyOf[ka].n < b.edges.length || (heavyOf[ka].n === b.edges.length && key < heavyOf[ka].key)) heavyOf[ka] = { key, n: b.edges.length, d, c, sel, dim, provs, counts };
       return;
     }
     let leader = null;
     const m = placePill(d, b.edges.length, lp => { leader = lp; });
     // Clickable (ADR 0029): the line and its ×N pill open the bundle's edges in the inspector (inspect.js).
-    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${provDash(prov)};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${[...provs].join(', ')}</title></path>`);
-    bundlePill(key, b.edges.length, m, { c, sel, dim, provs }, leader);
+    eg.push(`<path data-bundle="${esc(key)}" data-count="${b.edges.length}" d="${d}" style="cursor:pointer;stroke:${sel ? v('accent') : c};stroke-width:${sel ? v('stroke-hub') : v('stroke-edge-emph')};stroke-dasharray:${dash};stroke-linecap:${SPEC.cap[prov] || 'butt'};fill:none;opacity:${dim ? v('opacity-dim') : 1}" ${at && !at.spread ? '' : ` marker-end="url(#${uid}-${slot}-arrow-filled)"`}><title>${b.edges.length} edges folded · ${counts}</title></path>`);
+    bundlePill(key, b.edges.length, m, { c, sel, dim, provs, counts }, leader);
   });
   function bundlePill(key, n, m, o, leader) {
     if (leader) lg.push(`<line x1="${f1(leader.x1)}" y1="${f1(leader.y1)}" x2="${f1(leader.x2)}" y2="${f1(leader.y2)}" style="stroke:${o.c};stroke-width:1px;stroke-dasharray:2 2"/>`);
-    lg.push(`<g data-bundle="${esc(key)}" data-count="${n}" style="cursor:pointer;opacity:${o.dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + n, { anchor: 'middle', stroke: o.sel ? v('accent') : o.c, sw: o.sel ? v('stroke-hub') : '1px', ink: v('ink'), title: n + ' edges folded into one line' + (o.provs.size > 1 ? ' · mixed provenance: ' + [...o.provs].join(', ') : '') + '. Click to list them.' })}</g>`);
+    lg.push(`<g data-bundle="${esc(key)}" data-count="${n}" style="cursor:pointer;opacity:${o.dim ? v('opacity-dim') : 1}">${pill(m.x, m.y, '×' + n, { anchor: 'middle', stroke: o.sel ? v('accent') : o.c, sw: o.sel ? v('stroke-hub') : '1px', ink: v('ink'), title: n + ' edges folded into one line' + (o.provs.size > 1 ? ` · mixed provenance, drawn as ${leastTrusted(o.provs)}: ${o.counts}` : ' · ' + o.counts) + '. Click to list them.' })}</g>`);
   }
   // Deepest boxes first: a nested box's tab takes its own border, and its parent's moves around it.
   const depthOf = k => (k.startsWith('s:') && D.sections[k.slice(2)] ? D.sections[k.slice(2)].depth : -1);
