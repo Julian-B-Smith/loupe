@@ -680,7 +680,19 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   whose edges differ in provenance as `static`, solid. An overlay `inferred` edge beside a declared bundle makes a solid line
   on a graph with no crawled edge at all; only the tooltip tells. No snapshot does this today on a declaration graph; a
   crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
-- **Acceptance criteria:** to be written with the design.
+- **Julian (2026-11-06):** a bundle is never drawn as more certain than its weakest edge: it takes the dash of the
+  least-trusted provenance it holds, and its pill or tooltip counts each provenance. The order of trust is proposed below
+  and not yet confirmed.
+- **Acceptance criteria (agreed 2026-11-06):**
+  1. Wherever a bundle is drawn, a bundle whose edges differ in provenance takes the dash of its least-trusted member, read
+     from the edge spec block. It gets no new dash. Proposed order, least trusted first: inferred, annotated, runtime,
+     declared, config, static.
+  2. Its pill or tooltip states the count of each provenance it holds (for example "3 declared · 1 inferred"), and the
+     counts add up to the bundle's total, so the meter still accounts for every edge.
+  3. The provenance legend says that a mixed bundle is drawn as its least-trusted edge.
+  4. A bundle whose edges share one provenance draws as it does today. A crawl bundle that mixes static and config changes
+     by criterion 1, and the trace lists which committed snapshots and stress cases change.
+  5. A render test planted to fail (a mixed bundle drawn solid must fail it), and a screenshot critic pass.
 
 ### Q-041 — Draw the gaps in HORDE's declaration (dropped)
 - **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"
