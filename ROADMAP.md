@@ -676,7 +676,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   only zooms 0.825 to 0.95 fold to counts that did not before.
 
 ### Q-040 — What a bundle of mixed provenance looks like (from Q-038's critic, M2)
-- **Status:** in progress (2026-11-06; trace: traces/2026-11-06-q040-mixed-bundle.md). Raised 2026-11-02. render.js draws a bundle
+- **Status:** done 2026-11-06 (PR #59; trace: traces/2026-11-06-q040-mixed-bundle.md). Testbench republished; the hosted view is not yet checked. Raised 2026-11-02. render.js draws a bundle
   whose edges differ in provenance as `static`, solid. An overlay `inferred` edge beside a declared bundle makes a solid line
   on a graph with no crawled edge at all; only the tooltip tells. No snapshot does this today on a declaration graph; a
   crawl's mix of static and config has the same weakness. The domain rule is "never mix them silently".
@@ -718,7 +718,24 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   HORDE's agent that changes the map enters as `inferred`, naming HORDE's session as its source, and becomes
   `annotated` only when Julian confirms it. Questions and answers are kept in a stand-in dialogue file, like
   `stages.sample.json`, with no schema change; Q-005 writes the schema from what the test teaches.
-- **Acceptance criteria:** to be written before the work starts.
+- **Acceptance criteria (proposed 2026-11-06, to be agreed):**
+  1. **Structure pass.** This session, as P3's Structure agent, writes a view (and an overlay, if it proposes edges) over
+     HORDE's crawl, in a new snapshot `horde-structure` beside `horde-crawl`. Its `graph.json` is byte-identical to
+     `horde-crawl`'s; `horde-crawl` itself does not change. `loupe-check` passes on it: every node and edge accounted for.
+  2. **Questions.** Each thing the agent could not decide is one question in a stand-in `dialogue.json` (shaped like
+     `stages.sample.json`, no schema change), naming the node ids it is about and what the map does under each answer.
+     The agent's unprompted proposals (for example a legacy / horde 2 split) are recorded with their evidence, so P3's
+     Layer-E gate is measured here; it does not gate Q-044.
+  3. **Brief.** The questions go as brief loupe-003 to `horde/integrations/loupe/` under INTEGRATIONS.md, opening with
+     its provenance (Loupe, date, Q-044). It asks HORDE's resident to answer each, or to mark it as Julian's.
+  4. **Answers.** An answer that changes the map enters the overlay or view as `inferred`, naming HORDE's session as its
+     source, and becomes `annotated` only when Julian confirms it in chat; the confirmation is recorded in the dialogue
+     file. Julian's questions go to Julian in one message. Unanswered questions stay open, visible in the dialogue stage.
+     `loupe-check` passes after the answers are applied.
+  5. **Checks planted to fail:** a dialogue entry naming a node not in the graph; an answer from HORDE's session entered
+     as `annotated` without Julian's confirmation; an applied answer that drops an edge from the meter.
+  6. The viewer's dialogue stage reads the new snapshot's `dialogue.json`; the Testbench shows it; a trace lists every
+     question, who answered it, and what changed.
 
 ### Q-041 — Draw the gaps in HORDE's declaration (dropped)
 - **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"
