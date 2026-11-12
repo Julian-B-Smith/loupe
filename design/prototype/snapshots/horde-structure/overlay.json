@@ -1,8 +1,144 @@
 {
   "conditions": [],
-  "edges": [],
+  "edges": [
+    {
+      "dst": "file:reference/swarmsaw.html",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): src/swarm_core.h is a port of reference/swarmsaw.html.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:66c99542dc25586e",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:src/swarm_core.h"
+    },
+    {
+      "dst": "file:src/swarm_core.h",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/swarm_core.h is a lift of src/swarm_core.h.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:cfb8f962077e48ce",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "lifted from",
+      "src": "file:h2/cores/swarm/swarm_core.h"
+    },
+    {
+      "dst": "file:src/force_core.h",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/force_core.h is a lift of src/force_core.h.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:4644683389fef57f",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "lifted from",
+      "src": "file:h2/cores/swarm/force_core.h"
+    },
+    {
+      "dst": "file:src/glide_core.h",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/glide_core.h is a lift of src/glide_core.h.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:d734bcb6667dfe6a",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "lifted from",
+      "src": "file:h2/cores/swarm/glide_core.h"
+    },
+    {
+      "dst": "file:reference/scalpel/prototype/razor-core.js",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/scalpel/razor_core.h is a port of reference/scalpel/prototype/razor-core.js.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:9972d6383b97b047",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:h2/cores/scalpel/razor_core.h"
+    },
+    {
+      "dst": "file:docs/design/scalpel-horde-engine.js",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/js.h is a port of docs/design/scalpel-horde-engine.js.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:61405b78b918bb76",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:h2/engine/js.h"
+    },
+    {
+      "dst": "file:docs/design/scalpel-horde-engine.js",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/swarm.h is a port of docs/design/scalpel-horde-engine.js.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:aa8bfef26c8c6a3c",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:h2/engine/swarm.h"
+    },
+    {
+      "dst": "file:docs/design/scalpel-horde-engine.js",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/blade.h is a port of docs/design/scalpel-horde-engine.js.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:67aaa2c4c6c7b408",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:h2/engine/blade.h"
+    },
+    {
+      "dst": "file:docs/design/scalpel-horde-engine.js",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/engine.h is a port of docs/design/scalpel-horde-engine.js.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:57d0f7059c3f228f",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:h2/engine/engine.h"
+    }
+  ],
   "graph": {
-    "hash": "sha256:8d993751fa2d6489d45db7c2f40904f1d424c2e488069ddb4e431bcb082365cf"
+    "hash": "sha256:605b868a11950193b0afed49d719de7fcbd404e5856c6387dadd6e5e382eba84"
   },
   "roles": [],
   "schema": "loupe.overlay/0.2"

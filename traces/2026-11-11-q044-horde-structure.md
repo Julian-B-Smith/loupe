@@ -41,7 +41,7 @@
   after it, shown in the test); an inferred edge not naming HORDE's session; an annotated edge no question applied; a
   section moved and confirmed with no answer; a section moved by HORDE's answer still signed by the asking agent; the
   asking agent answering itself; a confirmation without an answer; an unlisted overlay role; malformed input. After the confirming pass: re-baselining after a change (the pin);
-  Julian's answer with no confirmation in his words; an asked question deleted; a question reworded after its answer; a
+  Julian's answer with no confirmation in Julian's words; an asked question deleted; a question reworded after its answer; a
   section removed on HORDE's unconfirmed answer; the view's settings changed; an unlisted overlay condition; a later
   unconfirmed answer overwriting an edge Julian annotated.
 - **Browser (local, 1440×900, Design):** 2541 of 2541 edges accounted, 1612/1612 nodes; stage 3 lists the questions with
@@ -63,3 +63,37 @@
   HORDE's residents commit it.
 - **Verify:** `./verify fast` exit 0 before the rework (815 pass) and after both rework rounds. `dialogue.test.mjs` and
   loupe-check on `horde-structure` are not in `./verify` yet (Julian's approval).
+
+## Round 2 (2026-11-12): HORDE's answers, the recrawl, and Julian's q4
+
+- **HORDE answered** (`horde/integrations/loupe/response-005.md`, seq 14, horde PR #1500), relayed by HORDE's lead
+  session; read as data. q1 not current, recrawl at 8c9521db; q2 SWARM-FX parked, legacy side; q3 three originals from
+  h2/README.md's parity-target column (h2/engine's direct original is docs/design/scalpel-horde-engine.js); q4 group
+  by product, marked Julian's.
+- **Julian (polls, 2026-11-12):** recrawl inside Q-044; q4 HORDE's by-product grouping ("HORDE's by-product grouping",
+  recorded as the q4 confirmation); then, after the recrawl failed two gates, the map on the new crawl with the gates
+  as their own item (Q-046). Criterion 1 amended accordingly (ROADMAP).
+- **Recrawl:** `node tools/horde-gate.mjs --commit 8c9521db…` on HORDE's terms. Passes: determinism (byte-identical),
+  inventory (2,018 files, 2,004 crawled), leak check (0 machine paths, 0 private names), loupe-check. Fails:
+  `unknownMissing` (13) and `probeParity` (28 lost). `horde-crawl` and its committed gate report are unchanged.
+- **The pass rerun on 8c9521db** (the new baseline, pinned): the round-1 grouping, with every fact the claims rest on
+  re-derived and asserted by the composer on the new graph (the product reach sets, the unwired cores reached only by
+  checks, no src/–h2/–engine2/ edge, no engine2/–reference/ edge, 31 two-line engine2/core files). New sections for
+  tools/engine-preview/ and the other new tool folders.
+- **Applied:** q1 (HORDE) `sec:engine2`'s claim says the engine is built outside horde, signed by HORDE's session,
+  proposed; q2 (HORDE) nothing; q3 (HORDE) 9 overlay edges, kind `reference`, role `port of` or `lifted from`, inferred,
+  evidence naming HORDE's session (reference → src → h2 for the swarm cores, as HORDE asked); q4 (Julian) the
+  by-product top level: HYPERSAW 1.0 with SWARM-FX inside and its own checks, horde 2 with the specs and its checks,
+  GUI 3 and the design system (docs/design*, the GUI session's, ADR-336), reference/ on its own, shared verification,
+  build, records, outside; 22 element changes. A check belongs to a product when every repo file it names lies on that
+  product's side; tools/engine-preview/ goes to horde 2.
+- **Checks (`node tools/dialogue.test.mjs`, 33 pass):** the graph is the gate run's (hash and commit); the gate report
+  is beside it and names the two failing gates; every node homed; the baseline pinned; as answered, loupe-check with
+  schema validation, the dialogue check and the meter (four zooms, lens on and off, stages 2 and 3) pass; q3's edges
+  are inferred and HORDE's; only q4 is confirmed; q3 confirmed and annotated passes. 21 plants, each caught for its
+  stated reason (the round-1 set rebuilt on the answered snapshot, plus a runtime edge from an answer and one change
+  claimed by two answers).
+- **Browser (local, 1440×900, Design, stage 3):** 3095 of 3095 edges accounted, 2325/2325 nodes; four questions
+  answered, HORDE's marked "not yet confirmed by Julian", q4 "human:julian".
+- **Also:** the dialogue check's question digest no longer includes `owner` (the answerer sets it); pronouns for Julian
+  in the check, the test and this trace replaced with the name.

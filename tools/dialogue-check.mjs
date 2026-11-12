@@ -23,7 +23,8 @@ const digest = (x) => 'sha256:' + createHash('sha256').update(JSON.stringify(sor
 // question as asked, and one for the rest of the view (settings, exemptions; not its overlay binding, which every
 // applied edge changes). The baseline sits in the file answers are written to, so tools/dialogue.test.mjs pins its
 // digest to a literal: re-baselining is a visible test edit, never a side effect of applying an answer (critic R1).
-const ASKED = ({ id, nodes, elements, question, options, owner }) => ({ id, nodes, elements, question, options, owner });
+// owner is not part of the question as asked: the answerer marks a question as Julian's.
+const ASKED = ({ id, nodes, elements, question, options }) => ({ id, nodes, elements, question, options });
 export function baselineOf(overlay, view, questions) {
   const o = overlay || {};
   const { elements, overlay: _binding, ...rest } = view;
@@ -74,7 +75,7 @@ function check({ graph, overlay, view, dialogue }) {
     if (q.confirmation && !answered) errors.push(`${at}: confirmed, but not answered`);
     if (q.confirmation && (q.confirmation.by !== JULIAN || !q.confirmation.date || !q.confirmation.quote))
       errors.push(`${at}: a confirmation needs by ${JULIAN}, a date and Julian's words`);
-    // Julian's own answer too carries a confirmation with his words: criterion 4 records it in this file (critic R2).
+    // Julian's own answer too carries a confirmation with Julian's words: criterion 4 records it in this file (critic R2).
     const confirmed = !!(q.confirmation && q.confirmation.by === JULIAN && q.confirmation.date && q.confirmation.quote);
     if (q.answeredBy === JULIAN && !confirmed) errors.push(`${at}: Julian's answer needs its confirmation recorded`);
     if (confirmed) confirmedQ.add(q.id);
@@ -86,7 +87,7 @@ function check({ graph, overlay, view, dialogue }) {
       const e = oEdges.get(id);
       if (!e) continue; // a removal: judged below with every other difference
       // An edge Julian annotated earlier changes only on Julian's word.
-      if (base.annotated && base.annotated.includes(id) && !confirmed) errors.push(`${at}: edge ${id} was annotated by Julian; changing it needs his confirmation`);
+      if (base.annotated && base.annotated.includes(id) && !confirmed) errors.push(`${at}: edge ${id} was annotated by Julian; changing it needs Julian's confirmation`);
       if (e.provenance === 'annotated') {
         if (!confirmed) errors.push(`${at}: edge ${id} is annotated, but Julian has not confirmed the answer`);
         else if (!e.evidence.some((v) => v.type === 'annotation' && v.author === JULIAN && v.dialogue === q.id))

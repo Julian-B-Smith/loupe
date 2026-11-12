@@ -1,7 +1,8 @@
-// The HORDE dialogue test (ROADMAP Q-044): the agent-written snapshot keeps the crawl's graph byte for byte and balances
-// the meter at every level of detail (criterion 1); an answer applied as Q-044 says passes loupe-check and the dialogue
-// check (criterion 4); and the dialogue check fails each plant of criterion 5, plus the bypasses the critic found
-// (2026-11-11). Run: node tools/dialogue.test.mjs
+// The HORDE dialogue test (ROADMAP Q-044). horde-structure is the Structure pass on HORDE's 8c9521db crawl with
+// HORDE's answers to brief loupe-005 applied (response-005) and Julian's choice for q4 recorded. This checks that
+// the snapshot is that crawl, byte for byte (criterion 1, as Julian amended it 2026-11-12); that it passes
+// loupe-check, the dialogue check and the meter as answered (criterion 4); and that the dialogue check fails each plant
+// of criterion 5, plus the bypasses the critic found (2026-11-11). Run: node tools/dialogue.test.mjs
 import { readFileSync, writeFileSync, mkdtempSync, copyFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -23,23 +24,42 @@ const DIR = 'design/prototype/snapshots/horde-structure/';
 const SCHEMA = join(dirname(fileURLToPath(import.meta.url)), '..', 'schema');
 const clone = (x) => structuredClone(x);
 const base = loadDialogueSnapshot(DIR);
+const gate = JSON.parse(readFileSync(DIR + 'gate.json', 'utf8'));
+const HORDE = 'agent:HYPERSAW (response-005)';
+const q = (s, id) => s.dialogue.questions.find((x) => x.id === id);
+const el = (s, id) => s.view.elements.find((e) => e.id === id);
+const rebind = (s) => { s.view.overlay = { hash: sha256(canonicalDoc(s.overlay)) }; return s; };
 
-check('horde-structure: graph.json is byte-identical to horde-crawl\'s',
-  readFileSync(DIR + 'graph.json').equals(readFileSync('design/prototype/snapshots/horde-crawl/graph.json')));
+// ---- criterion 1: the crawl it stands on
+check('horde-structure: graph.json is the gate run\'s graph at the commit q1 named',
+  sha256(readFileSync(DIR + 'graph.json', 'utf8')) === gate.graph.hash && gate.commit === base.dialogue.commit
+  && base.graph.source.commit === gate.commit);
+check('horde-structure: its gate report is kept beside it and says which P1a gates fail (horde-crawl keeps the gated crawl)',
+  gate.pass === false && Object.entries(gate.gates).filter(([, v]) => !v.pass).map(([k]) => k).sort().join() === 'probeParity,unknownMissing');
 check('horde-structure: every node has a home section', (() => {
   const homed = new Set(base.view.elements.filter((e) => e.primitive === 'section').flatMap((e) => e.members));
   return base.graph.nodes.every((n) => homed.has(n.id));
 })());
-check('horde-structure: every element is the agent\'s and proposed',
-  base.view.elements.every((e) => e.by === ASKER && e.status === 'proposed'));
-// The baseline is pinned here, answered or not: it lives in the file answers are written to, so recomputing it after an
-// answer would launder any change (critic R1). Re-baselining (a new round of questions) is this deliberate edit.
-const BASELINE = 'sha256:64d484c82224187b6e3282dd4577acd4203f4fbf928d7859ea32c56899738fb8';
-check('horde-structure: the baseline is the one pinned when brief loupe-005 was asked', sha256(canonicalDoc(base.dialogue.baseline)) === BASELINE);
-if (base.dialogue.questions.every((q) => q.answer === null))
-  check('horde-structure: nothing answered yet, so the baseline is the overlay and view as committed',
-    canonicalDoc(base.dialogue.baseline) === canonicalDoc(baselineOf(base.overlay, base.view, base.dialogue.questions)));
+// The baseline is pinned here: it lives in the file answers are written to, so recomputing it after an answer would
+// launder any change (critic R1). A new round of questions re-pins it, deliberately, in this line.
+const BASELINE = 'sha256:feb33faa0f2afb5517332c41ac46db32747d940550bf58fdbb9143d17879c8f2';
+check('horde-structure: the baseline is the one pinned when the pass was rerun on 8c9521db', sha256(canonicalDoc(base.dialogue.baseline)) === BASELINE);
 
+// ---- criterion 4: as answered
+const onDisk = (s) => {
+  const dir = mkdtempSync(join(tmpdir(), 'loupe-dialogue-'));
+  try {
+    copyFileSync(DIR + 'graph.json', join(dir, 'graph.json'));
+    writeFileSync(join(dir, 'overlay.json'), canonicalDoc(s.overlay));
+    writeFileSync(join(dir, 'view.json'), canonicalDoc(s.view));
+    return loupeCheck(dir, { schemaDir: SCHEMA });
+  } finally { rmSync(dir, { recursive: true }); }
+};
+const lc0 = loupeCheck(DIR, { schemaDir: SCHEMA });
+check(`horde-structure as answered: loupe-check passes with schema validation${lc0.errors.length ? ' — ' + lc0.errors.join(' | ') : ''}`,
+  lc0.errors.length === 0 && !lc0.notes.some((n) => n.includes('skipped')));
+const e0 = checkDialogue(base);
+check(`horde-structure as answered: the dialogue check passes${e0.length ? ' — ' + e0.join(' | ') : ''}`, e0.length === 0);
 const ZOOMS = [{ auto: true }, { k: 1, x: 0, y: 0 }, { k: 0.5, x: 0, y: 0 }, { k: 0.2, x: 0, y: 0 }];
 const meter = (snap) => {
   const data = indexSnapshot({ graph: snap.graph, overlay: snap.overlay, view: snap.view, stages: { dialogue: dialogueStages(snap.dialogue) }, diff: null, hashes: {} });
@@ -52,112 +72,83 @@ const meter = (snap) => {
   return bad;
 };
 const m0 = meter(base);
-check(`horde-structure: renders and balances at every level of detail, lens on and off, stages 2 and 3${m0.length ? ' — ' + m0.join(' | ') : ''}`, m0.length === 0);
-const e0 = checkDialogue(base);
-check(`horde-structure: the dialogue check passes${e0.length ? ' — ' + e0.join(' | ') : ''}`, e0.length === 0);
+check(`horde-structure as answered: renders and balances at every level of detail, lens on and off, stages 2 and 3${m0.length ? ' — ' + m0.join(' | ') : ''}`, m0.length === 0);
+const q3edges = q(base, 'q3').applied.edges;
+check('q3\'s edges are inferred, name HORDE\'s session, and are in the overlay',
+  q3edges.length === 9 && q3edges.every((id) => { const e = base.overlay.edges.find((x) => x.id === id); return e && e.provenance === 'inferred' && e.evidence.some((v) => v.agent === HORDE); }));
+check('q4 is Julian\'s, confirmed in Julian\'s words; no answer from HORDE is confirmed',
+  q(base, 'q4').answeredBy === JULIAN && q(base, 'q4').confirmation.quote.length > 0
+  && base.dialogue.questions.filter((x) => x.answeredBy === HORDE).every((x) => x.confirmation === null));
+const st = dialogueStages(base.dialogue);
+check('the stage 3 stand-in keeps who answered, the effect, and that only q4 is confirmed',
+  st.find((x) => x.id === 'q3').answeredBy === HORDE && st.find((x) => x.id === 'q3').effect.startsWith('Loupe adds one inferred edge')
+  && st.filter((x) => x.confirmed).map((x) => x.id).join() === 'q4');
+const CONFIRM = { by: JULIAN, date: '2026-11-12', quote: 'yes' };
+{ // Julian confirms q3: its edges may then become annotated, citing q3.
+  const s = clone(base); q(s, 'q3').confirmation = CONFIRM;
+  for (const e of s.overlay.edges) if (q3edges.includes(e.id)) { e.provenance = 'annotated'; e.evidence.push({ type: 'annotation', author: JULIAN, note: 'Confirmed in chat.', dialogue: 'q3' }); }
+  rebind(s);
+  check('q3 confirmed by Julian and its edges annotated passes loupe-check and the dialogue check', onDisk(s).errors.length === 0 && checkDialogue(s).length === 0);
+}
 
-// An answer from HORDE's session, applied as Q-044 says: an inferred edge naming that session, written canonically with
-// the view rebound to the new overlay, so loupe-check judges it as it would a committed answer (critic M3).
-const HORDE = 'agent:HYPERSAW (loupe-005)';
-const SRC = 'file:h2/cores/scalpel/razor_core.h', DST = 'file:reference/scalpel/prototype/razor-core.js';
-const ID = edgeId(SRC, DST, 'reference');
-const rebind = (s) => { s.view.overlay = { hash: sha256(canonicalDoc(s.overlay)) }; return s; };
-const answered = (prov, confirmation = null) => {
-  const s = clone(base), q = s.dialogue.questions.find((x) => x.id === 'q3');
-  const edge = { id: ID, src: SRC, dst: DST, kind: 'reference', provenance: prov,
-    evidence: [{ type: 'inference', agent: HORDE, rationale: 'HORDE\'s answer to loupe-005 q3: the port of this prototype.' }] };
-  if (prov === 'annotated') edge.evidence.push({ type: 'annotation', author: JULIAN, note: 'Confirmed in chat.', dialogue: 'q3' });
-  s.overlay.edges.push(edge);
-  Object.assign(q, { answer: 'Pairs you list', answeredBy: HORDE, confirmation, applied: { edges: [ID], elements: [], roles: [] } });
-  // The view's overlay binding changes with the overlay; that is the answer's own change, not a view element.
-  return rebind(s);
-};
-const onDisk = (s) => {
-  const dir = mkdtempSync(join(tmpdir(), 'loupe-dialogue-'));
-  try {
-    copyFileSync(DIR + 'graph.json', join(dir, 'graph.json'));
-    writeFileSync(join(dir, 'overlay.json'), canonicalDoc(s.overlay));
-    writeFileSync(join(dir, 'view.json'), canonicalDoc(s.view));
-    return loupeCheck(dir, { schemaDir: SCHEMA });
-  } finally { rmSync(dir, { recursive: true }); }
-};
-const ok1 = answered('inferred');
-const lc1 = onDisk(ok1);
-check(`an answer from HORDE applied as inferred passes loupe-check with schema validation${lc1.errors.length ? ' — ' + lc1.errors.join(' | ') : ''}`,
-  lc1.errors.length === 0 && !lc1.notes.some((n) => n.includes('skipped')));
-check('… and the dialogue check', checkDialogue(ok1).length === 0);
-const m1 = meter(ok1);
-check(`… and keeps the meter balanced${m1.length ? ' — ' + m1.join(' | ') : ''}`, m1.length === 0);
-const CONFIRM = { by: JULIAN, date: '2026-11-11', quote: 'yes, razor-core.js is the original' };
-const ok2 = answered('annotated', CONFIRM);
-check('the same answer, confirmed by Julian and annotated, passes loupe-check and the dialogue check',
-  onDisk(ok2).errors.length === 0 && checkDialogue(ok2).length === 0);
-const st = dialogueStages(ok1.dialogue).find((q) => q.id === 'q3');
-check('the stage 3 stand-in keeps who answered, its effect, and that Julian has not confirmed',
-  st.answeredBy === HORDE && st.effect.startsWith('Loupe adds one inferred edge') && st.confirmed === false);
-check('the stage 3 stand-in shows Julian\'s own answer, with its confirmation recorded, as confirmed',
-  dialogueStages({ questions: [{ ...ok1.dialogue.questions[0], answer: 'Still true', answeredBy: JULIAN, confirmation: CONFIRM }] })[0].confirmed === true);
-
-// Plants: each must fail, and fail for the reason named.
+// ---- plants: each must fail, for the reason named
 const plant = (name, s, expect) => {
   const errs = checkDialogue(s);
   check(`plant caught: ${name}${errs.some((e) => e.includes(expect)) ? '' : ' — got: ' + (errs.join(' | ') || 'no error')}`, errs.some((e) => e.includes(expect)));
 };
-{ const s = clone(base); s.dialogue.questions[0].nodes.push('file:h2/no_such_file.h');
+const ID = q3edges[0];
+{ const s = clone(base); q(s, 'q1').nodes.push('file:h2/no_such_file.h');
   plant('a question naming a node not in the graph', s, 'is not in the graph'); }
-plant('an answer from HORDE entered as annotated without Julian\'s confirmation', answered('annotated'), 'Julian has not confirmed');
-// Criterion 5's third plant, without the strawman (critic H1): an overlay edge that was there when the questions were
-// asked is deleted and nothing lists it. The meter balances on what is left, so only the baseline can see the loss.
-{ const s = clone(ok1); s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
-  s.overlay.edges = s.overlay.edges.filter((e) => e.id !== ID); s.dialogue.questions.forEach((q) => { q.applied = { edges: [], elements: [], roles: [] }; });
+{ const s = clone(base), e = s.overlay.edges.find((x) => x.id === ID); e.provenance = 'annotated'; e.evidence.push({ type: 'annotation', author: JULIAN, note: 'x', dialogue: 'q3' });
+  plant('an answer from HORDE entered as annotated without Julian\'s confirmation', rebind(s), 'Julian has not confirmed'); }
+// Criterion 5's third plant (critic H1): an overlay edge present at the baseline is deleted and nothing lists it. The
+// meter balances on what is left, so only the baseline sees the loss.
+{ const s = clone(base); s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
+  s.overlay.edges = s.overlay.edges.filter((e) => e.id !== ID); q(s, 'q3').applied.edges = q3edges.filter((x) => x !== ID);
   rebind(s);
   check('the meter alone balances after that edge is deleted (why the baseline is needed)', meter(s).length === 0);
-  plant('an answer that drops an edge present when the questions were asked', s, 'is gone'); }
-{ const s = answered('inferred'); s.overlay.edges.at(-1).evidence[0].agent = ASKER;
-  plant('an inferred edge that does not name HORDE\'s session as its source', s, 'does not name'); }
-// Critic H2: an annotated edge that cites no question, and a view change on no one's word.
-{ const s = clone(base);
-  s.overlay.edges.push({ id: ID, src: SRC, dst: DST, kind: 'reference', provenance: 'annotated', evidence: [{ type: 'annotation', author: JULIAN, note: 'x' }] });
+  plant('an answer that drops an edge present at the baseline', s, 'is gone'); }
+{ const s = clone(base); s.overlay.edges.find((x) => x.id === ID).evidence[0].agent = ASKER;
+  plant('an inferred edge that does not name HORDE\'s session as its source', rebind(s), 'does not name'); }
+{ const s = clone(base), src = 'file:h2/engine/engine.h', dst = 'file:reference/swarmsaw.html';
+  s.overlay.edges.push({ id: edgeId(src, dst, 'reference'), src, dst, kind: 'reference', provenance: 'annotated', evidence: [{ type: 'annotation', author: JULIAN, note: 'x' }] });
   plant('an annotated edge that no answered question applied', rebind(s), 'no answered question lists it'); }
-{ const s = clone(base), el = s.view.elements.find((e) => e.id === 'sec:swarmfx'); el.parent = 'sec:horde2'; el.status = 'confirmed';
+{ const s = clone(base), e = el(s, 'sec:cmake'); e.parent = 'sec:records'; e.status = 'confirmed';
   plant('a section moved and confirmed with no answer behind it', s, 'no answered question lists it'); }
-// Critic M4: the element's author, a self-answer, a confirmation without an answer, an unlisted role.
-{ const s = clone(base), q = s.dialogue.questions.find((x) => x.id === 'q2'), el = s.view.elements.find((e) => e.id === 'sec:swarmfx');
-  el.parent = 'sec:horde2'; Object.assign(q, { answer: 'Live, or moving to horde 2', answeredBy: HORDE, applied: { edges: [], elements: ['sec:swarmfx'], roles: [] } });
-  plant('a section moved by HORDE\'s answer but still signed by the asking agent', s, `not by ${HORDE}`);
-  el.by = HORDE; check('… and passes once it names HORDE\'s session', checkDialogue(s).length === 0); }
-{ const s = clone(base); Object.assign(s.dialogue.questions[0], { answer: 'Still true', answeredBy: ASKER });
+{ const s = clone(base); el(s, 'sec:engine2').by = ASKER;
+  plant('q1\'s change to a section still signed by the asking agent', s, `not by ${HORDE}`); }
+{ const s = clone(base); q(s, 'q2').answeredBy = ASKER;
   plant('the asking agent answering its own question', s, 'the agent that asked it'); }
-{ const s = clone(base); s.dialogue.questions[0].confirmation = CONFIRM;
+{ const s = clone(base); Object.assign(q(s, 'q2'), { answer: null, answeredBy: null, confirmation: CONFIRM });
   plant('a confirmation on an unanswered question', s, 'confirmed, but not answered'); }
+{ const s = clone(base); q(s, 'q4').confirmation = null;
+  plant('Julian\'s answer with no confirmation in Julian\'s words', s, 'needs its confirmation recorded'); }
 { const s = clone(base); s.overlay.roles.push({ edge: base.graph.edges[0].id, role: 'product' });
   plant('an overlay role no answer applied', rebind(s), 'no answered question lists it'); }
-// Critic's confirming pass: R1 laundering, R2 Julian's word unrecorded, and the LOW holes.
-{ const s = clone(base);
-  s.overlay.edges.push({ id: ID, src: SRC, dst: DST, kind: 'reference', provenance: 'annotated', evidence: [{ type: 'annotation', author: JULIAN, note: 'x' }] });
-  rebind(s); s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
-  check('plant caught: re-baselining after a change (the pinned digest no longer matches)', sha256(canonicalDoc(s.dialogue.baseline)) !== BASELINE); }
-{ const s = answered('annotated'); s.dialogue.questions.find((x) => x.id === 'q3').answeredBy = JULIAN;
-  plant('an answer recorded as Julian\'s with no confirmation in his words', s, 'needs its confirmation recorded'); }
-{ const s = clone(base); s.dialogue.questions.pop();
-  plant('an asked question deleted', s, 'is gone'); }
-{ const s = answered('inferred'); s.dialogue.questions.find((x) => x.id === 'q3').question += ' (reworded)';
-  plant('a question reworded after it was answered', s, 'not as it was asked'); }
-{ const s = clone(base), q = s.dialogue.questions.find((x) => x.id === 'q2');
-  s.view.elements = s.view.elements.filter((e) => e.id !== 'sec:fx-shared');
-  s.view.elements.find((e) => e.id === 'sec:legacy').members.push('file:src/notch_core.h', 'file:src/time_core.h');
-  s.view.elements.find((e) => e.id === 'sec:legacy').by = HORDE;
-  Object.assign(q, { answer: 'Live, or moving to horde 2', answeredBy: HORDE, applied: { edges: [], elements: ['sec:fx-shared', 'sec:legacy'], roles: [] } });
-  plant('a section removed on HORDE\'s unconfirmed answer', s, 'is removed, but Julian has not confirmed'); }
-{ const s = clone(base); s.view.settings.hubPlacement = 'center';
-  plant('the view\'s settings changed by no answer', s, 'settings or exemptions'); }
 { const s = clone(base); s.overlay.conditions.push({ edge: base.graph.edges[0].id, expr: 'x' });
   plant('an overlay condition no answer applied', rebind(s), 'no answered question lists it'); }
-{ const s = answered('annotated', CONFIRM); s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
-  const q = s.dialogue.questions.find((x) => x.id === 'q4'), e = s.overlay.edges.find((x) => x.id === ID);
+{ const s = clone(base); s.view.settings.hubPlacement = 'center';
+  plant('the view\'s settings changed by no answer', s, 'settings or exemptions'); }
+{ const s = clone(base); s.dialogue.questions.pop();
+  plant('an asked question deleted', s, 'is gone'); }
+{ const s = clone(base); q(s, 'q3').question += ' (reworded)';
+  plant('a question reworded after it was answered', s, 'not as it was asked'); }
+{ const s = clone(base); s.view.elements = s.view.elements.filter((e) => e.id !== 'sec:engine2');
+  plant('a section removed on HORDE\'s unconfirmed answer', s, 'is removed, but Julian has not confirmed'); }
+{ const s = clone(base); s.overlay.edges.find((x) => x.id === ID).provenance = 'runtime';
+  plant('an answer that makes a runtime edge', rebind(s), 'can only make inferred or annotated'); }
+{ const s = clone(base); q(s, 'q4').applied.elements.push(q(s, 'q1').applied.elements[0]);
+  plant('one change claimed by two answers', s, 'is also applied by'); }
+{ // A later unconfirmed answer may not overwrite an edge Julian annotated.
+  const s = clone(base); q(s, 'q3').confirmation = CONFIRM;
+  const e = s.overlay.edges.find((x) => x.id === ID); e.provenance = 'annotated'; e.evidence.push({ type: 'annotation', author: JULIAN, note: 'x', dialogue: 'q3' });
+  rebind(s); s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
   e.provenance = 'inferred'; e.evidence = [{ type: 'inference', agent: HORDE, rationale: 'second round' }];
-  Object.assign(q, { answer: 'As drawn', answeredBy: HORDE, applied: { edges: [ID], elements: [], roles: [] } });
+  q(s, 'q3').applied.edges = q3edges.filter((x) => x !== ID); q(s, 'q2').applied.edges = [ID];
   plant('a later unconfirmed answer overwriting an edge Julian annotated', rebind(s), 'was annotated by Julian'); }
+{ const s = clone(base); s.overlay.edges.push({ id: ID, src: 'x', dst: 'y', kind: 'reference', provenance: 'inferred', evidence: [] });
+  s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
+  check('plant caught: re-baselining after a change (the pinned digest no longer matches)', sha256(canonicalDoc(s.dialogue.baseline)) !== BASELINE); }
 plant('a snapshot missing the dialogue\'s fields reports, not throws', { ...clone(base), dialogue: { graph: base.dialogue.graph } }, 'malformed');
 
 console.log(failed ? `\n${failed} FAILED` : '\nall dialogue checks passed');

@@ -742,14 +742,39 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   number was "loupe-003" in the agreed text; HORDE's mailbox already held brief-001 to 004, so it is loupe-005.
   The check's rule after the critic (REWORK, H1; confirming pass R1 to R3): every difference from the overlay, view and
   questions as asked must be applied by one answered question, no overlay edge may be dropped (the meter balances on
-  whatever the overlay holds), the baseline's digest is pinned in the test, and even Julian's own answer records his
-  words.
+  whatever the overlay holds), the baseline's digest is pinned in the test, and even Julian's own answer records
+  Julian's words.
   An answer that changes an element enters as `proposed`, signed by HORDE's session: my reading of "enters as
   inferred" for elements, to be confirmed by Julian.
 - **Open for Julian:** (1) criterion 2's "P3's Layer-E gate is measured here" is not met: this session had read ROADMAP,
   which names the split, so no proposal is an unprompted measurement (`dialogue.json` `layerE`); close Q-044 without it,
   or run a fresh-context Structure pass inside Q-044? (2) wiring `tools/dialogue.test.mjs` and `horde-structure` into
   `./verify fast` (an edit to `./verify`).
+
+- **HORDE answered 2026-11-11** (`horde/integrations/loupe/response-005.md`, seq 14, horde PR #1500): q1 not current,
+  recrawl at 8c9521db; q2 SWARM-FX parked, legacy side; q3 three originals from h2/README.md's parity-target column
+  (swarmsaw.html → src/swarm_core.h → h2 by the lift; razor-core.js → razor_core.h; h2/engine's direct original is
+  docs/design/scalpel-horde-engine.js); q4 group by product (HYPERSAW 1.0, horde 2, GUI 3 and the design system,
+  reference/, checks under the product they belong to), marked Julian's.
+- **Julian (poll, 2026-11-12):** recrawl at 8c9521db inside Q-044, then rerun the Structure pass and apply the answers to
+  the new map (a recrawl starts a new baseline, as q1's option said); q4: HORDE's by-product grouping.
+- **Julian (poll, 2026-11-12), after the recrawl:** the 8c9521db crawl fails two P1a gates (13 unknown missing nodes,
+  28 lost probe edges), so `horde-crawl` stays at d412a28 with its gates green; `horde-structure` takes the 8c9521db
+  graph with its gate report beside it. **Criterion 1 amended:** its graph is byte-identical to the gate run's graph at
+  the commit q1 named (`gate.json`'s hash), not to `horde-crawl`'s. The gate work is Q-046.
+- **Answers applied 2026-11-12:** q1 (HORDE) the pass rerun on 8c9521db, and `sec:engine2` says the engine is built
+  outside horde; q2 (HORDE) no change; q3 (HORDE) 9 inferred edges, `port of` and `lifted from`; q4 (Julian, confirmed
+  in Julian's words) the by-product top level, 22 element changes. `loupe-check`, the dialogue check and the meter pass
+  as answered (3095 of 3095 edges).
+
+### Q-046 — The P1a gates at HORDE 8c9521db (from Q-044)
+- **Status:** open (2026-11-12). The gate run at 8c9521db (beside `horde-structure` as `gate.json`, `parity.json`): 13
+  `unknown` missing nodes, mostly includes from `tools/engine-preview/` and `tools/admission/` of headers outside horde
+  (`horde_engine.h`, `manifest/`, `scape/`, `weir/`: HORDE says the new engine is built in separate clean-room repos);
+  28 probe edges lost, several of them probe false positives (an `h2/h2/` path, "imports" read out of minified HTML).
+  Only HORDE can declare siblings (brief-004's precedent), so this needs a brief.
+- **Acceptance criteria:** to be agreed with Julian. Then `horde-crawl` moves to 8c9521db and `horde-structure`'s graph
+  is `horde-crawl`'s again.
 
 ### Q-045 — Nested section labels overlap on the overview (from Q-044)
 - **Status:** open (2026-11-11). On `horde-structure`, the first nested view of a real repo, the default frame draws each
