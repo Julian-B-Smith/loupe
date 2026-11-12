@@ -710,7 +710,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   change at detail zoom; a screenshot critic pass.
 
 ### Q-044 — A first dialogue with HORDE, as a test of P3's Dialogue (Julian, 2026-11-06)
-- **Status:** open (2026-11-06), after Q-040. Julian: "run the dialogue phase with Horde to fill in the gaps as a test",
+- **Status:** in progress (2026-11-11). Julian: "run the dialogue phase with Horde to fill in the gaps as a test",
   and tell Julian what needs Julian's engagement.
 - **Julian (poll, 2026-11-06):** a Structure pass first: P3's Structure agent composes HORDE's crawl (today 0 view
   elements, 0 overlay edges), and what it cannot decide becomes the questions. The questions go as a brief in HORDE's
@@ -718,7 +718,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   HORDE's agent that changes the map enters as `inferred`, naming HORDE's session as its source, and becomes
   `annotated` only when Julian confirms it. Questions and answers are kept in a stand-in dialogue file, like
   `stages.sample.json`, with no schema change; Q-005 writes the schema from what the test teaches.
-- **Acceptance criteria (proposed 2026-11-06, to be agreed):**
+- **Acceptance criteria (agreed 2026-11-11, "Approved"):**
   1. **Structure pass.** This session, as P3's Structure agent, writes a view (and an overlay, if it proposes edges) over
      HORDE's crawl, in a new snapshot `horde-structure` beside `horde-crawl`. Its `graph.json` is byte-identical to
      `horde-crawl`'s; `horde-crawl` itself does not change. `loupe-check` passes on it: every node and edge accounted for.
@@ -726,7 +726,7 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      `stages.sample.json`, no schema change), naming the node ids it is about and what the map does under each answer.
      The agent's unprompted proposals (for example a legacy / horde 2 split) are recorded with their evidence, so P3's
      Layer-E gate is measured here; it does not gate Q-044.
-  3. **Brief.** The questions go as brief loupe-003 to `horde/integrations/loupe/` under INTEGRATIONS.md, opening with
+  3. **Brief.** The questions go as brief loupe-005 to `horde/integrations/loupe/` under INTEGRATIONS.md, opening with
      its provenance (Loupe, date, Q-044). It asks HORDE's resident to answer each, or to mark it as Julian's.
   4. **Answers.** An answer that changes the map enters the overlay or view as `inferred`, naming HORDE's session as its
      source, and becomes `annotated` only when Julian confirms it in chat; the confirmation is recorded in the dialogue
@@ -736,6 +736,26 @@ Each gate is a checkable condition. A phase is done when its gate passes in
      as `annotated` without Julian's confirmation; an applied answer that drops an edge from the meter.
   6. The viewer's dialogue stage reads the new snapshot's `dialogue.json`; the Testbench shows it; a trace lists every
      question, who answered it, and what changed.
+- **Structure pass done 2026-11-11** (trace: traces/2026-11-11-q044-horde-structure.md): `horde-structure`, 44 sections,
+  every node homed, 2541 of 2541 edges accounted at every zoom; four questions; brief loupe-005 filed. No roles question:
+  HORDE's response-004 invited Loupe's own role proposal as a separate brief (to follow). Criterion 3's
+  number was "loupe-003" in the agreed text; HORDE's mailbox already held brief-001 to 004, so it is loupe-005.
+  The check's rule after the critic (REWORK, H1; confirming pass R1 to R3): every difference from the overlay, view and
+  questions as asked must be applied by one answered question, no overlay edge may be dropped (the meter balances on
+  whatever the overlay holds), the baseline's digest is pinned in the test, and even Julian's own answer records his
+  words.
+  An answer that changes an element enters as `proposed`, signed by HORDE's session: my reading of "enters as
+  inferred" for elements, to be confirmed by Julian.
+- **Open for Julian:** (1) criterion 2's "P3's Layer-E gate is measured here" is not met: this session had read ROADMAP,
+  which names the split, so no proposal is an unprompted measurement (`dialogue.json` `layerE`); close Q-044 without it,
+  or run a fresh-context Structure pass inside Q-044? (2) wiring `tools/dialogue.test.mjs` and `horde-structure` into
+  `./verify fast` (an edit to `./verify`).
+
+### Q-045 — Nested section labels overlap on the overview (from Q-044)
+- **Status:** open (2026-11-11). On `horde-structure`, the first nested view of a real repo, the default frame draws each
+  top-level section as a tall column whose rotated label overlaps its first child's ("LHYPERSAW plug", "hh2/: compo… er
+  gine"). The meter balances; the labels do not read.
+- **Acceptance criteria:** to be agreed with Julian.
 
 ### Q-041 — Draw the gaps in HORDE's declaration (dropped)
 - **Status:** dropped 2026-11-03. Julian, through HORDE's session: "No Loupe gaps for now, tell them it reads right"

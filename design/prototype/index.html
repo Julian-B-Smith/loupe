@@ -967,7 +967,7 @@ function nodePanel(id) {
   const n = data.nodes[id] || ((data.diff && data.diff.removed) || []).find(r => r.id === id);
   if (!n) return '';
   const outs = data.edges.filter(e => e.src === id), ins = data.edges.filter(e => e.dst === id);
-  const note = data.stages && data.stages.explain.notes[id];
+  const note = data.stages && data.stages.explain && data.stages.explain.notes[id];
   const home = data.home[id];
   const d = data.diff && store.get().diff ? ['added', 'changed', 'stale'].find(k => (data.diff[k] || []).includes(id)) || ((data.diff.removed || []).some(r => r.id === id) ? 'removed' : null) : null;
   return `<div class="crumbs">${crumbs(home).map(s => go('element', s, esc(data.elements[s].label))).join('<span>/</span>')}</div>
@@ -1079,13 +1079,13 @@ function stagePanel(s, c) {
     Object.keys(PRIM).forEach(p => { const ids = data.byPrimitive[p]; if (ids) h += `<div class="list"><span class="eyebrow">${PRIM[p]} · ${ids.length}</span>${ids.map(elCard).join('')}</div>`; });
   } else if (s.stage === 3 && S) {
     const open = S.dialogue.filter(q => !q.answer).length;
-    h += `<p>${S.dialogue.length} questions from the structure agent, ${open} open. Pins mark the file each one is about.</p><div class="list">${S.dialogue.map(q => go('node', q.node, `<div class="row"><span class="t mono">${esc(label(q.node))}</span>${chip(q.answer ? 'answered' : 'open')}</div><span class="s">${esc(q.question)}</span>${q.answer ? `<span class="s" style="color:${v('ink')}">Julian: ${esc(q.answer)}</span>` : ''}${q.effect ? `<span class="m">${esc(q.effect)}</span>` : ''}`, 'card')).join('')}</div>`;
-  } else if (s.stage === 4 && S) {
+    h += `<p>${S.dialogue.length} questions from the structure agent, ${open} open. Pins mark the file each one is about.</p><div class="list">${S.dialogue.map(q => go('node', q.node, `<div class="row"><span class="t mono">${esc(label(q.node))}</span>${chip(q.answer ? 'answered' : 'open')}</div><span class="s">${esc(q.question)}</span>${q.answer ? `<span class="s" style="color:${v('ink')}">${esc(q.answeredBy || 'Julian')}: ${esc(q.answer)}${q.answeredBy && !q.confirmed ? ' (not yet confirmed by Julian)' : ''}</span>` : q.owner === 'julian' ? '<span class="m">For Julian</span>' : ''}${q.effect ? `<span class="m">${esc(q.effect)}</span>` : ''}`, 'card')).join('')}</div>`;
+  } else if (s.stage === 4 && S && S.audit) {
     const V = { confirmed: 'pass', challenged: 'fail', open: 'warn' };
     h += `<p>${S.audit.length} findings. Element verdicts show as badges on the map; proposed elements have none yet.</p><div class="list">${S.audit.map(a => go(a.element ? 'element' : 'node', a.element || a.nodes[0], `<div class="row"><span class="t">${esc(a.nodes.map(label).join(', '))}</span>${chip(a.verdict, { confirmed: 'state-ok', challenged: 'state-bad', open: 'state-warn' }[a.verdict])}</div><span class="s">${esc(a.text)}</span><span class="m">${esc(a.by)}${a.reply ? ' · Reply: ' + esc(a.reply) : ''}</span>`, 'card')).join('')}</div>`;
-  } else if (s.stage === 5 && S) {
+  } else if (s.stage === 5 && S && S.explain) {
     h += `<p>How a block of audio moves through the plugin.</p><div class="list">${S.explain.flow.map((t, i) => `<div class="card"><span class="m">${i + 1}</span><span class="s" style="color:${v('ink')}">${esc(t)}</span></div>`).join('')}</div><span class="path">${Object.keys(S.explain.notes).length} files have explainers. Select a file to read its note.</span>`;
-  } else if (s.stage === 6 && S) {
+  } else if (s.stage === 6 && S && S.tours) {
     const ti = s.tour.index, t = S.tours[ti], i = Math.min(s.tour.step, t.steps.length - 1);
     h = `<span class="eyebrow">Stage 6 · tour · step ${i + 1} of ${t.steps.length}</span><h2>${esc(t.title)}</h2>
       <div class="seg" style="align-self:flex-start;flex-wrap:wrap">${S.tours.map((x, j) => `<button data-type="tourpick" data-go="${j}" aria-pressed="${j === ti}">${j + 1}</button>`).join('')}</div>
@@ -1251,7 +1251,7 @@ function unaccountedPanel(c) {
 let lastTourNode = null;
 function panel(s, c) {
   // tour step drives the selection highlight
-  if (s.stage === 6 && data.stages && !s.selection) {
+  if (s.stage === 6 && data.stages && data.stages.tours && !s.selection) {
     const t = data.stages.tours[s.tour.index], node = t && t.steps[Math.min(s.tour.step, t.steps.length - 1)].node;
     if (node !== lastTourNode) { lastTourNode = node; }
   }

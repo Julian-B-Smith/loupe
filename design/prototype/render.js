@@ -981,8 +981,8 @@ export function render(container, data, state) {
   const addPin = (id, html) => { (pins[id] = pins[id] || []).push(html); };
   const ST = data.stages;
   if (ST && state.stage === 3) ST.dialogue.forEach(q => addPin(q.node, (x, y) => `<g data-node="${esc(q.node)}"><title>${esc(q.question)}</title><rect x="${f1(x - 7.5)}" y="${f1(y - 7.5)}" width="15" height="15" rx="3" style="fill:${q.answer ? v('surface-panel') : v('state-warn')};stroke:${q.answer ? v('ink-faint') : v('state-warn')};stroke-width:1px"/><text x="${f1(x)}" y="${f1(y + 3.5)}" text-anchor="middle" style="font:700 10px/1 ${v('font-ui')};fill:${q.answer ? v('ink-muted') : v('surface-node')}">?</text></g>`));
-  if (ST && state.stage === 4) ST.audit.forEach(a => addPin(a.nodes[0], (x, y) => `<g><title>${esc(a.by + ': ' + a.text)}</title>${badge(x, y, { confirmed: 'pass', challenged: 'fail', open: 'warn' }[a.verdict])}</g>`));
-  if (ST && state.stage === 6) {
+  if (ST && ST.audit && state.stage === 4) ST.audit.forEach(a => addPin(a.nodes[0], (x, y) => `<g><title>${esc(a.by + ': ' + a.text)}</title>${badge(x, y, { confirmed: 'pass', challenged: 'fail', open: 'warn' }[a.verdict])}</g>`));
+  if (ST && ST.tours && state.stage === 6) {
     const tour = ST.tours[(state.tour && state.tour.index) || 0], cur = (state.tour && state.tour.step) || 0;
     if (tour) tour.steps.forEach((s, i) => addPin(s.node, (x, y) => `<g><title>${esc(s.text)}</title><circle cx="${f1(x)}" cy="${f1(y)}" r="8.5" style="fill:${i === cur ? v('accent') : v('ink')};stroke:${v('surface-canvas')};stroke-width:1.5px"/><text x="${f1(x)}" y="${f1(y + 3.5)}" text-anchor="middle" style="font:${v('type-count')};fill:${v('surface-node')}">${i + 1}</text></g>`));
   }

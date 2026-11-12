@@ -1,0 +1,272 @@
+{
+  "agent": {
+    "by": "agent:structure",
+    "read": [
+      "horde-crawl graph.json",
+      "HORDE at d412a28: h2/README.md, engine2/README.md, CLAUDE.md, CMakeLists.txt, h2/cores/swarm/lift-ledger.json, src/osc_preset.h, ROADMAP.md rows B20, B44, B77, B81",
+      "horde integrations/loupe/response-004.md (it invites a role proposal for the 88 unroled files as its own brief, so roles are not asked here)"
+    ],
+    "session": "Loupe lead session, 2026-11-11 (Q-044)"
+  },
+  "baseline": {
+    "annotated": [],
+    "conditions": {},
+    "edges": {},
+    "elements": {
+      "sec:agent-harness": "sha256:fedd50ac58fa8b4a3d5b6f91ae78baaeb1b05f90378ab49eeb5bc5db09e7d571",
+      "sec:build": "sha256:81c0cee663329d2f4e4c8cb3d15d7b9ce18ed149216d82f2f1a3adc8b63ec738",
+      "sec:cmake": "sha256:4a88b407284d51c870857cfff9935ff48f04fd2c9ea2336bfcd1d324b225a07d",
+      "sec:docs": "sha256:985d8e6314c00cef280632f365112183da2f70f612e2fed7300c894aac24495f",
+      "sec:e2-core": "sha256:a3749fb85954fa26b4319f397682bcd2e6bcea275e8ed80b2bcf1247cff15afe",
+      "sec:e2-data": "sha256:d030a4dcf39e78c277e81963edf88ce78734da280cbdc559b996acef7508154f",
+      "sec:engine2": "sha256:113ef0e66d584d7d24e660afd1544ed74c1b1f2f01dcc5615b33cfa6ddd57822",
+      "sec:fx-shared": "sha256:302f5ab30a5d1df5bcad45a1681df1545e76ad91ee855b65cea4348827db1881",
+      "sec:generated": "sha256:1344322483a94a3362321165e467752f930569ac6a38fbe3c2c303ff5a7be0e3",
+      "sec:governance": "sha256:a18fcaed702a97a4891e774de15f2a45c54ce0e6b2e75c86e07d04cd038462a5",
+      "sec:h2": "sha256:5e5af1f56f64a7afe94656bf7fc577e09b187b23b1d2b9958f36615d8ebc0b95",
+      "sec:h2-cores": "sha256:47d99044a07c10f43870965317acf976f6671113e513e6adec16300b13638a31",
+      "sec:h2-engine": "sha256:b03683a5300e773b5a52d9da102dc4a0d260763b47adf9efdd53b326c3ce787f",
+      "sec:h2-harness": "sha256:07e66dc405ab62c82e81a570e3b428f06bdab2de7937a49fadc01f8dc104b7eb",
+      "sec:h2-scalpel": "sha256:f1083e8299b9fb921916a0f57bd57795a45622d80172421c2be2f85fc3419c6a",
+      "sec:h2-swarm": "sha256:ee06f470edd5d1914b4f4968e958054919fc6a5b36aaed243a21e9fe8be129ff",
+      "sec:horde2": "sha256:8e30eaf8fbfeb75226a45f4fe1f140692e5495fa31cbe320b5f8a46d141e29b7",
+      "sec:hs-dsp": "sha256:02988b2a06874c3d9b49a864294951ff33dcaf6f0543174ab42bfd11c2d2f517",
+      "sec:hs-gui": "sha256:62e6fa77071854e406d6a1af034b47dbe5e4c92f2e973da0604102404f0a5836",
+      "sec:hs-shell": "sha256:3be98a77ef7c2da4ab45328a7bae5c078e71c0c4dc8a65338785e7669214a00b",
+      "sec:hs-swarm": "sha256:598809dd58c5aaedbf5283160863c80146ca885052c62fcedf519926e06764d9",
+      "sec:hypersaw": "sha256:413f7ea9881a765eb7317e03b6cf9d01c9167762ba09aa0ec4d06bcc7e2d66e1",
+      "sec:legacy": "sha256:b99452b6fd61cafc399ae70851eb06071d407e534d3b51773a502077af5c47f9",
+      "sec:mail": "sha256:a48dfad8aab2bd880cf89639ae15b058955eb373a1702f30772e7703d11b7bd5",
+      "sec:outside": "sha256:65b1876bf7abfeea7f5fc48e9c93f05b99ec3ec6a521b1bd48c525de504bbb4d",
+      "sec:records": "sha256:3db056daa9144c3c3efe66c629d304d9895b7ca387f3d2f5426b86d755bebb82",
+      "sec:reference": "sha256:890baf21e3d826a21e659ee82ea25c0926cd83b6ce65c757356ea857a57cbe96",
+      "sec:sdk": "sha256:2e2de773a472f53d9d32fce90846cd9e3e416a5471f4964250bb8250b703ec1e",
+      "sec:specs": "sha256:9dc419e37cdb237a999085bca8491e53ccd5eafcd809c929f9650b932ae81dd2",
+      "sec:swarmfx": "sha256:882f5bb6ed69915284f2deda8fd1ba6fa92a5806809fd4fa685da8499081a5c1",
+      "sec:t-auhost": "sha256:02e5688f54857fd1e233a0ddeb9330d3065c8def2d2640342691353c31873621",
+      "sec:t-bench": "sha256:f2045ec3efb5560b332f7d7db8aa61f292a1509993c8fa019a70bca8a79034f4",
+      "sec:t-checks": "sha256:6006857911fe2edf86be81a2fe08a2dd63a1ce52821eb5335dc9147962b9222a",
+      "sec:t-fixtures": "sha256:03bf2f4c98c40a571faedc64c15cb8526316a2fca61faa4ef18cc0a95e812f62",
+      "sec:t-gen": "sha256:0360eadadd2b7eb095d0adc5b608ec0b180b1a2f689b88f829cbe3e3ccead09a",
+      "sec:t-golden": "sha256:79c844a65216407d4ef510391d7eab206aac79342a7330ec333a58027f259289",
+      "sec:t-lab": "sha256:3d22056cc32242e71b6eb71baf57c2b59e665c5844dd11e5dea98de1222ca1ea",
+      "sec:t-nightly": "sha256:bede19fb1a1ed2f77e336ce9c5ed4ed6c7304b4c0b9a73bd0357eb2040578494",
+      "sec:t-other": "sha256:a57fe03b631699fb01249f75537af04a5aace4bf69ba8adb806b723da05db7cf",
+      "sec:t-patch": "sha256:a0d33a41f5b18aecb40b349e485cec7f0591288eda3f6aca442131d7353d7347",
+      "sec:t-probes": "sha256:ddcb3655158e51f118fb06e38eef8aad1c730c5a4921b2a82da9939f6da7d8a9",
+      "sec:traces": "sha256:ed9a97eb872ff90fb1a365a057d8005b2febc0fcb79a9ad941c70f4842584980",
+      "sec:unwired": "sha256:3b0685d0586e93d795ac6c79eca97088063085c75011e8015ea9292a49e7d416",
+      "sec:verification": "sha256:7d2651b5cc877d4a8f4c5f0c35e4ddb974e2fc1551d7508aad0093f011820e3d"
+    },
+    "questions": {
+      "q1": "sha256:fc30998bc4745004a041c4be51ebc8a513cf9e60ba9f3b4c898b9f1afa755f6b",
+      "q2": "sha256:22cc4ceb63063d0dbc015fec5150870d70a029a0fe27d40217d75a26a1d135c3",
+      "q3": "sha256:545c6bd83fd4889f42b2be981fe19c726bbae367201571fd225c5f38007dd8bc",
+      "q4": "sha256:8d1ffeb0240a1a7eb64d4c9c4c97dc0817b01b3b379a5d937fe409280e209008"
+    },
+    "roles": {},
+    "view": "sha256:d37fb1bf19d9f991301bd3c9f3f70c52fb223280bda8a98a0b9b476dcca783c5"
+  },
+  "brief": "loupe-005",
+  "commit": "d412a28b03976135a403f5b4d4555574659941e5",
+  "graph": {
+    "hash": "sha256:8d993751fa2d6489d45db7c2f40904f1d424c2e488069ddb4e431bcb082365cf"
+  },
+  "layerE": "Not measured. P3's gate asks whether the Structure agent proposes the legacy / horde 2 split unprompted. This session had read Loupe's ROADMAP, which names the split and states p4 and half of p5, and the history of Q-014 and Q-015, so none of the proposals below is an unprompted measurement. It needs a Structure run in a fresh context that has not read ROADMAP.",
+  "note": "Stand-in for stage 3 (Dialogue) until Q-005 writes its schema; the shape is what Q-044 needs and nothing more. Questions come from the Structure pass over horde-crawl. baseline is the overlay and view as they were when the questions were asked; every difference from it must be the applied change of one answered question (tools/dialogue-check.mjs). An answer from HORDE's session that changes the map enters as inferred (edges) or proposed (elements) naming that session; it becomes annotated only with Julian's confirmation (ROADMAP Q-044, Julian's poll 2026-11-06).",
+  "proposals": [
+    {
+      "claim": "The repo splits into a frozen legacy shell (src/) and horde 2 (h2/ and engine2/).",
+      "elements": [
+        "sec:legacy",
+        "sec:horde2"
+      ],
+      "evidence": [
+        "0 crawled edges from src/ to h2/ or engine2/, and 0 back",
+        "h2/README.md rule 1 (\"copied forward, never shared\"); h2_rules_check rule 4 (no file includes both a legacy and an h2 core): the crawl finds no file that reaches both",
+        "h2/README.md: \"The legacy shell in src/ is frozen.\""
+      ],
+      "id": "p1",
+      "unprompted": null
+    },
+    {
+      "claim": "h2/'s swarm, force and glide cores are lifted copies of src/'s, differing only by ledgered hunks.",
+      "elements": [
+        "sec:hs-swarm",
+        "sec:h2-swarm"
+      ],
+      "evidence": [
+        "h2/cores/swarm/lift-ledger.json names each source file and blob",
+        "tools/h2_lift_check.py rebuilds the copies byte for byte"
+      ],
+      "id": "p2",
+      "note": "Drawn as two section claims, not as twins: loupe-check V10 lets twins only share one parent, and this lift crosses the legacy / horde 2 boundary. A grammar gap for the visual-grammar review.",
+      "unprompted": null
+    },
+    {
+      "claim": "engine2/ is an empty clean-room skeleton at this commit, joined to nothing in src/, h2/ or reference/ by a code edge.",
+      "elements": [
+        "sec:engine2",
+        "sec:e2-core"
+      ],
+      "evidence": [
+        "all 31 files in engine2/core/ are 2 lines long",
+        "engine2/README.md: \"Nothing is built yet\"",
+        "0 crawled edges between reference/ and engine2/"
+      ],
+      "id": "p3",
+      "unprompted": null
+    },
+    {
+      "claim": "gui2.html is the shipped editor page and gui.html the legacy one.",
+      "elements": [
+        "sec:hs-gui"
+      ],
+      "evidence": [
+        "CMakeLists.txt:106 option HYPERSAW_GUI2 defaults ON and embeds gui2.html",
+        "crawl: gui2.html generates ${build}/generated/gui_html.h, which hypersaw_gui_common.h includes"
+      ],
+      "id": "p4",
+      "unprompted": null
+    },
+    {
+      "claim": "Five cores in src/ are reached only by their checks, and SWARM-FX's entry file is built but tested by nothing.",
+      "elements": [
+        "sec:unwired",
+        "sec:swarmfx"
+      ],
+      "evidence": [
+        "the crawler dialect's rule build/reached-only-by-tests (a deterministic finding, not the agent's) on station, strata, svf, swarmalator and osc_preset",
+        "HORDE ROADMAP: STATION deferred past 1.0 (B44); STRATA increment 1 shipped unwired (B77); SVF awaiting shell integration (B81); osc_preset's wiring deferred to the GUI that calls it (B20)",
+        "CLAUDE.md: SWARM-FX parked, \"tested by nothing\"; the crawl finds only its build edge"
+      ],
+      "id": "p5",
+      "unprompted": null
+    }
+  ],
+  "questions": [
+    {
+      "answer": null,
+      "answeredBy": null,
+      "applied": {
+        "edges": [],
+        "elements": [],
+        "roles": []
+      },
+      "confirmation": null,
+      "elements": [
+        "sec:h2",
+        "sec:engine2"
+      ],
+      "id": "q1",
+      "nodes": [
+        "file:h2/README.md",
+        "file:engine2/README.md"
+      ],
+      "options": [
+        {
+          "answer": "Still true",
+          "effect": "The two sections keep their claims."
+        },
+        {
+          "answer": "Changed",
+          "effect": "Loupe recrawls at the commit you name and reruns this pass; answers to q2 to q4 carry over where they still apply."
+        }
+      ],
+      "owner": null,
+      "question": "This map is of d412a28 (2026-10-18). It draws h2/engine as the composed engine kept until engine2 replaces it, and engine2 as an empty skeleton. Your response-004 said engine2's layout is still growing. Is that still true at your head, or should Loupe recrawl before the rest is answered?"
+    },
+    {
+      "answer": null,
+      "answeredBy": null,
+      "applied": {
+        "edges": [],
+        "elements": [],
+        "roles": []
+      },
+      "confirmation": null,
+      "elements": [
+        "sec:swarmfx"
+      ],
+      "id": "q2",
+      "nodes": [
+        "file:src/swarmfx_clap.cpp"
+      ],
+      "options": [
+        {
+          "answer": "Parked, part of legacy",
+          "effect": "It stays a child of the legacy shell."
+        },
+        {
+          "answer": "Live, or moving to horde 2",
+          "effect": "It moves to the side you name."
+        }
+      ],
+      "owner": null,
+      "question": "CLAUDE.md says SWARM-FX is parked and will be deleted when E1 folds into the rack. Does that still stand, and is SWARM-FX part of the frozen legacy shell?"
+    },
+    {
+      "answer": null,
+      "answeredBy": null,
+      "applied": {
+        "edges": [],
+        "elements": [],
+        "roles": []
+      },
+      "confirmation": null,
+      "elements": [
+        "sec:reference",
+        "sec:h2-scalpel"
+      ],
+      "id": "q3",
+      "nodes": [
+        "file:reference/scalpel/prototype/razor-core.js",
+        "file:h2/cores/scalpel/razor_core.h"
+      ],
+      "options": [
+        {
+          "answer": "Pairs you list",
+          "effect": "Loupe adds one inferred edge per pair, naming your session as the source; Julian's confirmation makes it annotated."
+        },
+        {
+          "answer": "None",
+          "effect": "No edge; reference/ stays joined to h2/ only by the crawled edges it has today (the tools, and h2/harness/gen_patches.mjs reading SCALPEL's presets)."
+        }
+      ],
+      "owner": null,
+      "question": "h2/README.md calls razor_core.h the blade oracle's port, and the composed engine was written against a JS golden. Which reference/ files are the originals of which h2 files? Loupe would draw each as an inferred edge until Julian confirms it, so the map shows h2 resting on reference/ while engine2 must not."
+    },
+    {
+      "answer": null,
+      "answeredBy": null,
+      "applied": {
+        "edges": [],
+        "elements": [],
+        "roles": []
+      },
+      "confirmation": null,
+      "elements": [
+        "sec:legacy",
+        "sec:horde2"
+      ],
+      "id": "q4",
+      "nodes": [
+        "file:src/hypersaw_clap.cpp",
+        "file:h2/engine/engine.h"
+      ],
+      "options": [
+        {
+          "answer": "As drawn",
+          "effect": "No change."
+        },
+        {
+          "answer": "Another grouping",
+          "effect": "Loupe recomposes the top level to the grouping you describe; every node and edge stays accounted for."
+        }
+      ],
+      "owner": null,
+      "question": "The map's top level puts legacy (src/) and horde 2 (h2/, engine2/) side by side, with verification, build and records as their own sections. Is that how the repo should be explained to a newcomer, or would you group it another way (for example by product: HYPERSAW 1.0, horde 2)?"
+    }
+  ],
+  "schema": "loupe.dialogue-standin/0"
+}
