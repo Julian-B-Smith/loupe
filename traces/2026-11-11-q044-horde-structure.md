@@ -76,24 +76,52 @@
 - **Recrawl:** `node tools/horde-gate.mjs --commit 8c9521db…` on HORDE's terms. Passes: determinism (byte-identical),
   inventory (2,018 files, 2,004 crawled), leak check (0 machine paths, 0 private names), loupe-check. Fails:
   `unknownMissing` (13) and `probeParity` (28 lost). `horde-crawl` and its committed gate report are unchanged.
-- **The pass rerun on 8c9521db** (the new baseline, pinned): the round-1 grouping, with every fact the claims rest on
+- **The pass rerun on 8c9521db** (the new baseline, pinned, and committed as `baseline.view.json` and
+  `baseline.overlay.json`): the round-1 grouping and round 1's words, with every fact the claims rest on
   re-derived and asserted by the composer on the new graph (the product reach sets, the unwired cores reached only by
   checks, no src/–h2/–engine2/ edge, no engine2/–reference/ edge, 31 two-line engine2/core files). New sections for
   tools/engine-preview/ and the other new tool folders.
-- **Applied:** q1 (HORDE) `sec:engine2`'s claim says the engine is built outside horde, signed by HORDE's session,
-  proposed; q2 (HORDE) nothing; q3 (HORDE) 9 overlay edges, kind `reference`, role `port of` or `lifted from`, inferred,
-  evidence naming HORDE's session (reference → src → h2 for the swarm cores, as HORDE asked); q4 (Julian) the
-  by-product top level: HYPERSAW 1.0 with SWARM-FX inside and its own checks, horde 2 with the specs and its checks,
-  GUI 3 and the design system (docs/design*, the GUI session's, ADR-336), reference/ on its own, shared verification,
-  build, records, outside; 22 element changes. A check belongs to a product when every repo file it names lies on that
-  product's side; tools/engine-preview/ goes to horde 2.
-- **Checks (`node tools/dialogue.test.mjs`, 33 pass):** the graph is the gate run's (hash and commit); the gate report
-  is beside it and names the two failing gates; every node homed; the baseline pinned; as answered, loupe-check with
+- **Applied:** q1 (HORDE) `sec:engine2`'s claim, HORDE's content only, signed by HORDE's session, proposed; q2 (HORDE)
+  nothing; q3 (HORDE) 11 overlay edges, kind `reference`, role `port of` or `lifted from`, inferred, evidence naming
+  HORDE's session; each points from the copy or port to its original (HORDE's "reference → src → h2" reads
+  h2 → src → reference); h2/engine's secondary originals are not drawn (q3's note says why); q4 (Julian) the by-product
+  top level: HYPERSAW 1.0 with SWARM-FX inside, horde 2, GUI 3 and the design system, reference/, shared verification,
+  build, records, outside. Julian's confirmation covers the split only (10 element changes); Loupe's allocations (14,
+  `agentElements`, proposed, the agent's own) are: a tools/ file belongs to a product when it names at least one file
+  under that product's tree and none under the other's; tools/engine-preview/ under horde 2 (its own section);
+  SPEC-ENGINE.md and SPEC-SCALPEL.md as horde 2's specs, the rest shared; tools/golden/ shared (a deviation from HORDE's
+  layout, stated in its claim).
+- **Checks (`node tools/dialogue.test.mjs`, 38 pass):** the graph is the gate run's (hash and commit; this compares the
+  graph with its own gate report, since nothing re-crawls 8c9521db until Q-046); the gate report
+  is beside it and names the two failing gates; every node homed; the baseline pinned, and equal to the committed rerun files; as answered, loupe-check with
   schema validation, the dialogue check and the meter (four zooms, lens on and off, stages 2 and 3) pass; q3's edges
-  are inferred and HORDE's; only q4 is confirmed; q3 confirmed and annotated passes. 21 plants, each caught for its
+  are inferred and HORDE's; only q4 is confirmed, and its agent allocations stay proposed; q3 confirmed and annotated
+  passes. 24 plants, each caught for its
   stated reason (the round-1 set rebuilt on the answered snapshot, plus a runtime edge from an answer and one change
-  claimed by two answers).
-- **Browser (local, 1440×900, Design, stage 3):** 3095 of 3095 edges accounted, 2325/2325 nodes; four questions
+  claimed by two answers, an allocation marked confirmed, an allocation removed, a question marked Julian's answered
+  by HORDE).
+- **Browser (local, 1440×900, Design, stage 3, before the critic's fixes):** 3095 of 3095 edges accounted, 2325/2325 nodes; four questions
   answered, HORDE's marked "not yet confirmed by Julian", q4 "human:julian".
 - **Also:** the dialogue check's question digest no longer includes `owner` (the answerer sets it); pronouns for Julian
   in the check, the test and this trace replaced with the name.
+- **Critic, round 2 (opus): REWORK**, fixed:
+  - H1, the rerun had absorbed q1's content unlisted. `sec:horde2`, `sec:h2-engine` and `sec:specs` had lost
+    "engine2/", which only response-005 could have changed: round 1's words are restored. The rerun is committed and
+    the pin is checked against it. `agent.read` names response-005 and the dialogue note is corrected.
+  - H2, false claims on the new graph: both check sections (now the rule actually used), `sec:docs`, `sec:t-lab`,
+    `sec:t-auhost`, and the empty `sec:t-preview`, which now holds engine-preview under horde 2.
+  - H3, notice-006 told HORDE that three of its own files might be a sibling's. It now gives three groups: six
+    outside, four horde's own (Loupe's to resolve), three unclassified. `sec:outside` and Q-046 are corrected too.
+  - M1, specs: only SPEC-ENGINE and SPEC-SCALPEL are horde 2's.
+  - M2 and M3, the `sec:gui3` and `sec:reference` claims are attributed and bounded.
+  - M4, golden: the deviation is stated.
+  - M5, q4's scope, which Julian answered: the top-level split only. The recorded quote says the option text was
+    Loupe's.
+  - M6, the owner rule and its plant; the narrowing is in ROADMAP.
+  - L1, the force and glide edges; rationales; omissions.
+  - L2, the arrow convention.
+  - L3, criterion 1 amended in place.
+  - L6, `sec:engine2` holds HORDE's content only.
+  - L7, `sec:outside` names the one declared sibling.
+  - Not done: L4 (p1 and q4 still name `sec:legacy`, which round 1 had and q4 removed; they record what was asked).
+- **Verify:** `./verify fast` below, after the fixes.

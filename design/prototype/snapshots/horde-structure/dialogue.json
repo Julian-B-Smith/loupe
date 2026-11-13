@@ -4,14 +4,15 @@
     "read": [
       "horde-crawl graph.json",
       "HORDE at d412a28: h2/README.md, engine2/README.md, CLAUDE.md, CMakeLists.txt, h2/cores/swarm/lift-ledger.json, src/osc_preset.h, ROADMAP.md rows B20, B44, B77, B81",
-      "horde integrations/loupe/response-004.md (it invites a role proposal for the 88 unroled files as its own brief, so roles are not asked here)"
+      "horde integrations/loupe/response-004.md (it invites a role proposal for the 88 unroled files as its own brief, so roles are not asked here)",
+      "horde integrations/loupe/response-005.md, read before the rerun on 8c9521db: the rerun keeps round 1's words wherever only an answer could have changed them, and states new crawl facts only"
     ],
     "session": "Loupe lead session, 2026-11-11 (Q-044)"
   },
   "askedAt": {
-    "commit": "d412a28b03976135a403f5b4d4555574659941e5",
+    "commit": "8c9521db991bca4f6e615b42f8ad525b69401e09",
     "graph": {
-      "hash": "sha256:8d993751fa2d6489d45db7c2f40904f1d424c2e488069ddb4e431bcb082365cf"
+      "hash": "sha256:605b868a11950193b0afed49d719de7fcbd404e5856c6387dadd6e5e382eba84"
     },
     "note": "The questions were asked of the d412a28 crawl. q1's answer moved the map to 8c9521db; the baseline is the Structure pass rerun there, before q1 to q4 were applied."
   },
@@ -32,11 +33,11 @@
       "sec:governance": "sha256:a18fcaed702a97a4891e774de15f2a45c54ce0e6b2e75c86e07d04cd038462a5",
       "sec:h2": "sha256:5e5af1f56f64a7afe94656bf7fc577e09b187b23b1d2b9958f36615d8ebc0b95",
       "sec:h2-cores": "sha256:47d99044a07c10f43870965317acf976f6671113e513e6adec16300b13638a31",
-      "sec:h2-engine": "sha256:1d761deff023f9c904e2b7a0ae046508a34cf11ea0162bf13621c33fafeb2b61",
+      "sec:h2-engine": "sha256:b03683a5300e773b5a52d9da102dc4a0d260763b47adf9efdd53b326c3ce787f",
       "sec:h2-harness": "sha256:07e66dc405ab62c82e81a570e3b428f06bdab2de7937a49fadc01f8dc104b7eb",
       "sec:h2-scalpel": "sha256:f1083e8299b9fb921916a0f57bd57795a45622d80172421c2be2f85fc3419c6a",
       "sec:h2-swarm": "sha256:ee06f470edd5d1914b4f4968e958054919fc6a5b36aaed243a21e9fe8be129ff",
-      "sec:horde2": "sha256:e88e9d3d1b5064027c183ac73f1f482ebbe6016fb306c88fdb5b2eb0f0503b7a",
+      "sec:horde2": "sha256:8e30eaf8fbfeb75226a45f4fe1f140692e5495fa31cbe320b5f8a46d141e29b7",
       "sec:hs-dsp": "sha256:02988b2a06874c3d9b49a864294951ff33dcaf6f0543174ab42bfd11c2d2f517",
       "sec:hs-gui": "sha256:62e6fa77071854e406d6a1af034b47dbe5e4c92f2e973da0604102404f0a5836",
       "sec:hs-shell": "sha256:3be98a77ef7c2da4ab45328a7bae5c078e71c0c4dc8a65338785e7669214a00b",
@@ -44,11 +45,11 @@
       "sec:hypersaw": "sha256:413f7ea9881a765eb7317e03b6cf9d01c9167762ba09aa0ec4d06bcc7e2d66e1",
       "sec:legacy": "sha256:b99452b6fd61cafc399ae70851eb06071d407e534d3b51773a502077af5c47f9",
       "sec:mail": "sha256:541806748b7e8f2919a8bb280856a347b9f995e1650c0b103a9894c36040db2a",
-      "sec:outside": "sha256:7ee495bc13e6ca25f8b18631a59f01b7734a3a7c4199681a02b55bc70c16e984",
+      "sec:outside": "sha256:5d6b8fa363881ea2bd42d2a1a640c9beb1485f701950c147ff877ac73e8146c8",
       "sec:records": "sha256:3db056daa9144c3c3efe66c629d304d9895b7ca387f3d2f5426b86d755bebb82",
-      "sec:reference": "sha256:940fd0131db5fbebf02be850e0b742f52232bf3f0a7bc05f768de662af33cc52",
-      "sec:sdk": "sha256:e1cab232141b6674b793ecc7b5a1b534dc1aee817ec1e838f6441442a0146277",
-      "sec:specs": "sha256:dc78b9b57fbe78c764c46237d4adf27eb70c1b9a1eb7343460c89887af87de8e",
+      "sec:reference": "sha256:0c8c064973fbfb1cba0cd06598ff76906ee1b01dbdc34f699d44620360c95396",
+      "sec:sdk": "sha256:2e2de773a472f53d9d32fce90846cd9e3e416a5471f4964250bb8250b703ec1e",
+      "sec:specs": "sha256:4b64e0002a402a3f43421a22323c64abc5741a52cd46b98db83eca3b717b6156",
       "sec:swarmfx": "sha256:882f5bb6ed69915284f2deda8fd1ba6fa92a5806809fd4fa685da8499081a5c1",
       "sec:t-auhost": "sha256:02e5688f54857fd1e233a0ddeb9330d3065c8def2d2640342691353c31873621",
       "sec:t-bench": "sha256:7af67206d7a64cd99b8ddee1202e69512c31eb1301d46b7cc75c894d229d292f",
@@ -61,7 +62,7 @@
       "sec:t-nightly": "sha256:2a8b61b2f81ff6ccd98809c2bf753ede47609c001252853e49986f2ab79f9b18",
       "sec:t-other": "sha256:9d21174361faefbdf5b3f2430391ca0838c3fbddffe6cf951225f81577ff2687",
       "sec:t-patch": "sha256:a0d33a41f5b18aecb40b349e485cec7f0591288eda3f6aca442131d7353d7347",
-      "sec:t-preview": "sha256:1b66253e34f8566581a5e258ba9286dbcf8c832fd88cc5cd5f9101c3d387ff0b",
+      "sec:t-preview": "sha256:2f85219069d5cd0dd242ff8f8c3a71031f8594cd4ffcbc97cd01f341cb6211b8",
       "sec:t-probes": "sha256:61f5770a985b35ee1719789bde3ef727938bb89fbd17cfd6dce9d212cdeaf229",
       "sec:traces": "sha256:234bf26ca0cf7a20c823b94ec6aad91e95a7115d72734643adced1cedf4466a0",
       "sec:unwired": "sha256:3b0685d0586e93d795ac6c79eca97088063085c75011e8015ea9292a49e7d416",
@@ -82,7 +83,7 @@
     "hash": "sha256:605b868a11950193b0afed49d719de7fcbd404e5856c6387dadd6e5e382eba84"
   },
   "layerE": "Not measured. P3's gate asks whether the Structure agent proposes the legacy / horde 2 split unprompted. This session had read Loupe's ROADMAP, which names the split and states p4 and half of p5, and the history of Q-014 and Q-015, so none of the proposals below is an unprompted measurement. It needs a Structure run in a fresh context that has not read ROADMAP.",
-  "note": "Stand-in for stage 3 (Dialogue) until Q-005 writes its schema; the shape is what Q-044 needs and nothing more. Questions come from the Structure pass over horde-crawl. baseline is the overlay and view as they were when the questions were asked; every difference from it must be the applied change of one answered question (tools/dialogue-check.mjs). An answer from HORDE's session that changes the map enters as inferred (edges) or proposed (elements) naming that session; it becomes annotated only with Julian's confirmation (ROADMAP Q-044, Julian's poll 2026-11-06).",
+  "note": "Stand-in for stage 3 (Dialogue) until Q-005 writes its schema; the shape is what Q-044 needs and nothing more. Questions come from the Structure pass over horde-crawl. baseline is the map before any answer was applied (here, the pass rerun on 8c9521db, committed as baseline.view.json and baseline.overlay.json); every difference from it must be the applied change of one answered question (tools/dialogue-check.mjs). An answer from HORDE's session that changes the map enters as inferred (edges) or proposed (elements) naming that session; it becomes annotated only with Julian's confirmation (ROADMAP Q-044, Julian's poll 2026-11-06).",
   "proposals": [
     {
       "claim": "The repo splits into a frozen legacy shell (src/) and horde 2 (h2/ and engine2/).",
@@ -229,6 +230,8 @@
         "conditions": [],
         "edges": [
           "e:66c99542dc25586e",
+          "e:a436f60d06f88cd0",
+          "e:85d72106f3dc1427",
           "e:cfb8f962077e48ce",
           "e:4644683389fef57f",
           "e:d734bcb6667dfe6a",
@@ -251,7 +254,7 @@
         "file:reference/scalpel/prototype/razor-core.js",
         "file:h2/cores/scalpel/razor_core.h"
       ],
-      "note": "From h2/README.md's parity-target column: reference/swarmsaw.html is the original of src/swarm_core.h, which h2 lifted (draw reference → src → h2); razor-core.js of razor_core.h; h2/engine's direct original is docs/design/scalpel-horde-engine.js.",
+      "note": "From h2/README.md's parity-target column: reference/swarmsaw.html is the original of src/swarm_core.h, force_core.h and glide_core.h, which h2 lifted (HORDE: \"reference → src → h2\"; each edge points from the copy or port to its original, so h2 → src → reference); razor-core.js of razor_core.h; h2/engine's direct original is docs/design/scalpel-horde-engine.js. Not drawn: h2/engine's secondary originals HORDE named (razor-core.js, swarmsaw.html, reference/scalpel/data/presets.json, the B366 presets), because HORDE called the JS engine its direct original.",
       "options": [
         {
           "answer": "Pairs you list",
@@ -270,44 +273,49 @@
       "answer": "Another grouping",
       "answeredBy": "human:julian",
       "applied": {
+        "agentElements": [
+          "sec:h2-checks",
+          "sec:h2-specs",
+          "sec:hs-checks",
+          "sec:specs",
+          "sec:t-auhost",
+          "sec:t-bench",
+          "sec:t-checks",
+          "sec:t-gen",
+          "sec:t-golden",
+          "sec:t-lab",
+          "sec:t-other",
+          "sec:t-preview",
+          "sec:t-probes",
+          "sec:verification"
+        ],
         "conditions": [],
         "edges": [],
         "elements": [
           "sec:docs",
           "sec:fx-shared",
           "sec:gui3",
-          "sec:h2-checks",
-          "sec:hs-checks",
           "sec:hypersaw",
           "sec:hypersaw10",
           "sec:legacy",
           "sec:records",
           "sec:reference",
-          "sec:specs",
           "sec:swarmfx",
-          "sec:t-auhost",
-          "sec:t-bench",
-          "sec:t-checks",
-          "sec:t-gen",
-          "sec:t-lab",
-          "sec:t-other",
-          "sec:t-preview",
-          "sec:t-probes",
-          "sec:unwired",
-          "sec:verification"
+          "sec:unwired"
         ],
         "roles": []
       },
       "confirmation": {
         "by": "human:julian",
         "date": "2026-11-12",
-        "quote": "HORDE's by-product grouping"
+        "quote": "Poll, option chosen: \"HORDE's by-product grouping\" (option text written by Loupe). Scope, second poll the same day: \"Only the top-level split\"."
       },
       "elements": [
         "sec:legacy",
         "sec:horde2"
       ],
       "id": "q4",
+      "loupeChoices": "Not confirmed by Julian (agentElements): which checks belong to one product (a tools/ file naming files under one product and none under the other), tools/engine-preview/ under horde 2, SPEC-ENGINE.md and SPEC-SCALPEL.md as horde 2's specs, tools/golden/ left shared, and every claim's wording.",
       "nodes": [
         "file:src/hypersaw_clap.cpp",
         "file:h2/engine/engine.h"

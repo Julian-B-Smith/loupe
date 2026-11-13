@@ -6,7 +6,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): src/swarm_core.h is a port of reference/swarmsaw.html.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): src/swarm_core.h is a port of reference/swarmsaw.html. The edge points from the port to its original.",
           "type": "inference"
         }
       ],
@@ -17,11 +17,41 @@
       "src": "file:src/swarm_core.h"
     },
     {
+      "dst": "file:reference/swarmsaw.html",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): src/force_core.h is a port of reference/swarmsaw.html. The edge points from the port to its original.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:a436f60d06f88cd0",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:src/force_core.h"
+    },
+    {
+      "dst": "file:reference/swarmsaw.html",
+      "evidence": [
+        {
+          "agent": "agent:HYPERSAW (response-005)",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): src/glide_core.h is a port of reference/swarmsaw.html. The edge points from the port to its original.",
+          "type": "inference"
+        }
+      ],
+      "id": "e:85d72106f3dc1427",
+      "kind": "reference",
+      "provenance": "inferred",
+      "role": "port of",
+      "src": "file:src/glide_core.h"
+    },
+    {
       "dst": "file:src/swarm_core.h",
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/swarm_core.h is a lift of src/swarm_core.h.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005): the swarm cores reach h2 through the lift, so h2/cores/swarm/swarm_core.h is lifted from src/swarm_core.h (h2/cores/swarm/lift-ledger.json). The edge points from the copy to its original.",
           "type": "inference"
         }
       ],
@@ -36,7 +66,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/force_core.h is a lift of src/force_core.h.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005): the swarm cores reach h2 through the lift, so h2/cores/swarm/force_core.h is lifted from src/force_core.h (h2/cores/swarm/lift-ledger.json). The edge points from the copy to its original.",
           "type": "inference"
         }
       ],
@@ -51,7 +81,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/swarm/glide_core.h is a lift of src/glide_core.h.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005): the swarm cores reach h2 through the lift, so h2/cores/swarm/glide_core.h is lifted from src/glide_core.h (h2/cores/swarm/lift-ledger.json). The edge points from the copy to its original.",
           "type": "inference"
         }
       ],
@@ -66,7 +96,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/scalpel/razor_core.h is a port of reference/scalpel/prototype/razor-core.js.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/cores/scalpel/razor_core.h is a port of reference/scalpel/prototype/razor-core.js. The edge points from the port to its original.",
           "type": "inference"
         }
       ],
@@ -81,7 +111,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/js.h is a port of docs/design/scalpel-horde-engine.js.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/js.h is a port of docs/design/scalpel-horde-engine.js. The edge points from the port to its original.",
           "type": "inference"
         }
       ],
@@ -96,7 +126,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/swarm.h is a port of docs/design/scalpel-horde-engine.js.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/swarm.h is a port of docs/design/scalpel-horde-engine.js. The edge points from the port to its original.",
           "type": "inference"
         }
       ],
@@ -111,7 +141,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/blade.h is a port of docs/design/scalpel-horde-engine.js.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/blade.h is a port of docs/design/scalpel-horde-engine.js. The edge points from the port to its original.",
           "type": "inference"
         }
       ],
@@ -126,7 +156,7 @@
       "evidence": [
         {
           "agent": "agent:HYPERSAW (response-005)",
-          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/engine.h is a port of docs/design/scalpel-horde-engine.js.",
+          "rationale": "HORDE's answer to loupe-005 q3 (response-005, from h2/README.md's parity-target column): h2/engine/engine.h is a port of docs/design/scalpel-horde-engine.js. The edge points from the port to its original.",
           "type": "inference"
         }
       ],

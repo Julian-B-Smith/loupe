@@ -721,7 +721,8 @@ Each gate is a checkable condition. A phase is done when its gate passes in
 - **Acceptance criteria (agreed 2026-11-11, "Approved"):**
   1. **Structure pass.** This session, as P3's Structure agent, writes a view (and an overlay, if it proposes edges) over
      HORDE's crawl, in a new snapshot `horde-structure` beside `horde-crawl`. Its `graph.json` is byte-identical to
-     `horde-crawl`'s; `horde-crawl` itself does not change. `loupe-check` passes on it: every node and edge accounted for.
+     `horde-crawl`'s (amended by Julian 2026-11-12: to the gate run's graph at the commit q1 named, with that run's
+     `gate.json` beside it); `horde-crawl` itself does not change. `loupe-check` passes on it: every node and edge accounted for.
   2. **Questions.** Each thing the agent could not decide is one question in a stand-in `dialogue.json` (shaped like
      `stages.sample.json`, no schema change), naming the node ids it is about and what the map does under each answer.
      The agent's unprompted proposals (for example a legacy / horde 2 split) are recorded with their evidence, so P3's
@@ -763,16 +764,27 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   graph with its gate report beside it. **Criterion 1 amended:** its graph is byte-identical to the gate run's graph at
   the commit q1 named (`gate.json`'s hash), not to `horde-crawl`'s. The gate work is Q-046.
 - **Answers applied 2026-11-12:** q1 (HORDE) the pass rerun on 8c9521db, and `sec:engine2` says the engine is built
-  outside horde; q2 (HORDE) no change; q3 (HORDE) 9 inferred edges, `port of` and `lifted from`; q4 (Julian, confirmed
-  in Julian's words) the by-product top level, 22 element changes. `loupe-check`, the dialogue check and the meter pass
-  as answered (3095 of 3095 edges).
+  outside horde; q2 (HORDE) no change; q3 (HORDE) 11 inferred edges, `port of` and `lifted from`, each from the copy
+  or port to its original; q4 (Julian) the by-product top level. `loupe-check`, the dialogue check and the meter pass
+  as answered (3097 of 3097 edges).
+- **Julian (poll, 2026-11-12), q4's scope:** the confirmation covers only the top-level split (10 element changes).
+  Loupe's allocations under it (14: the check rule, engine-preview under horde 2, SPEC-ENGINE and SPEC-SCALPEL as
+  horde 2's specs, golden left shared, the claims' wording) are `agentElements`: the agent's own, proposed, never
+  confirmed by the answer. The rerun on 8c9521db is committed (`baseline.view.json`, `baseline.overlay.json`) and
+  keeps round 1's words wherever only an answer could have changed them (critic round 2, H1).
+- **Narrowed and widened in the check (recorded here, not in `./verify` yet):** `owner` left the question digest,
+  because the answerer marks a question Julian's; in its place, a question marked Julian's may only be answered by
+  Julian. Criterion 1's byte check compares the graph with its own gate report; nothing re-crawls 8c9521db until
+  Q-046 moves `horde-crawl` there.
 
 ### Q-046 — The P1a gates at HORDE 8c9521db (from Q-044)
 - **Status:** open (2026-11-12). The gate run at 8c9521db (beside `horde-structure` as `gate.json`, `parity.json`): 13
-  `unknown` missing nodes, mostly includes from `tools/engine-preview/` and `tools/admission/` of headers outside horde
-  (`horde_engine.h`, `manifest/`, `scape/`, `weir/`: HORDE says the new engine is built in separate clean-room repos);
-  28 probe edges lost, several of them probe false positives (an `h2/h2/` path, "imports" read out of minified HTML).
-  Only HORDE can declare siblings (brief-004's precedent), so this needs a brief.
+  `unknown` missing nodes. Six look like headers from outside horde (`horde_engine.h`, `manifest/manifest.h`, three
+  `scape/`, `weir/svf.h`; HORDE says the new engine is built in separate clean-room repos): only HORDE can declare
+  siblings (brief-004's precedent), so a brief. Four are horde's own and the crawler's to resolve (`h2/flush_to_zero.h`,
+  `tools/engine-preview/bank.h`, a logo PNG, choc's `choc_JSON.h` in the submodule). Three are not yet classified
+  (`bank_embedded.inc`, `pf3_chord.h`, `preview_page.h`). 28 probe edges lost, several of them probe false positives
+  (an `h2/h2/` path, "imports" read out of minified HTML). HORDE was told all this in notice-006.
 - **Acceptance criteria:** to be agreed with Julian. Then `horde-crawl` moves to 8c9521db and `horde-structure`'s graph
   is `horde-crawl`'s again.
 

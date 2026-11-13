@@ -39,6 +39,10 @@ export function baselineOf(overlay, view, questions) {
   };
 }
 const KINDS = ['edges', 'elements', 'roles', 'conditions'];
+// agentElements: what the Structure agent decided itself while applying an answer (critic round 2, M5: Julian
+// confirmed q4's top-level split, not Loupe's allocations under it). They never inherit the answer's confirmation:
+// each stays the agent's own, proposed, until an audit or a later answer settles it.
+const OWNED = [...KINDS, 'agentElements'];
 
 // Ids present in either map whose digest differs, with whether they were removed.
 const diff = (before, after) => {
@@ -59,29 +63,37 @@ function check({ graph, overlay, view, dialogue }) {
   const oEdges = new Map(((overlay && overlay.edges) || []).map((e) => [e.id, e]));
   if (dialogue.graph.hash !== view.graph.hash) errors.push('dialogue.graph.hash differs from view.graph.hash');
   const base = dialogue.baseline, now = baselineOf(overlay, view, dialogue.questions);
-  const owner = Object.fromEntries(KINDS.map((k) => [k, new Map()]));
+  const owner = Object.fromEntries(OWNED.map((k) => [k, new Map()]));
   const confirmedQ = new Set();
   for (const q of dialogue.questions) {
     const at = `question ${q.id}`;
     if (!q.nodes.length) errors.push(`${at}: names no node`);
     q.nodes.forEach((n) => { if (!nodes.has(n)) errors.push(`${at}: node ${n} is not in the graph`); });
     q.elements.forEach((e) => { if (!(e in base.elements)) errors.push(`${at}: element ${e} was not in the view when asked`); });
-    const applied = { edges: [], elements: [], roles: [], conditions: [], ...(q.applied || {}) };
+    const applied = { edges: [], elements: [], roles: [], conditions: [], agentElements: [], ...(q.applied || {}) };
     const answered = q.answer !== null;
     if (answered && !q.answeredBy) errors.push(`${at}: answered, but by no one`);
     if (answered && q.answeredBy === ASKER) errors.push(`${at}: answered by ${ASKER}, the agent that asked it`);
     if (answered && !q.options.some((o) => o.answer === q.answer) && !q.effect) errors.push(`${at}: an answer outside its options must state its own effect`);
-    if (!answered && KINDS.some((k) => applied[k].length)) errors.push(`${at}: applied changes without an answer`);
+    if (!answered && OWNED.some((k) => applied[k].length)) errors.push(`${at}: applied changes without an answer`);
     if (q.confirmation && !answered) errors.push(`${at}: confirmed, but not answered`);
     if (q.confirmation && (q.confirmation.by !== JULIAN || !q.confirmation.date || !q.confirmation.quote))
       errors.push(`${at}: a confirmation needs by ${JULIAN}, a date and Julian's words`);
     // Julian's own answer too carries a confirmation with Julian's words: criterion 4 records it in this file (critic R2).
     const confirmed = !!(q.confirmation && q.confirmation.by === JULIAN && q.confirmation.date && q.confirmation.quote);
     if (q.answeredBy === JULIAN && !confirmed) errors.push(`${at}: Julian's answer needs its confirmation recorded`);
+    // A question the answerer marked Julian's is answered by Julian, or stays open (owner is not in the digest).
+    if (q.owner === 'julian' && answered && q.answeredBy !== JULIAN) errors.push(`${at}: marked Julian's, but answered by ${q.answeredBy}`);
     if (confirmed) confirmedQ.add(q.id);
-    for (const k of KINDS) for (const id of applied[k]) {
-      if (owner[k].has(id)) errors.push(`${at}: ${k.slice(0, -1)} ${id} is also applied by ${owner[k].get(id)}`);
-      owner[k].set(id, q.id);
+    for (const k of OWNED) for (const id of applied[k]) {
+      const kk = k === 'agentElements' ? 'elements' : k;
+      if (owner[kk].has(id)) errors.push(`${at}: ${kk.slice(0, -1)} ${id} is also applied by ${owner[kk].get(id)}`);
+      owner[kk].set(id, q.id);
+    }
+    for (const id of applied.agentElements) {
+      const el = els.get(id);
+      if (!el) errors.push(`${at}: agent element ${id} is removed; only an answer Julian confirmed may remove an element`);
+      else if (el.by !== ASKER || el.status !== 'proposed') errors.push(`${at}: agent element ${id} must stay ${ASKER}'s and proposed, got ${el.by}, ${el.status}`);
     }
     for (const id of applied.edges) {
       const e = oEdges.get(id);

@@ -42,8 +42,14 @@ check('horde-structure: every node has a home section', (() => {
 })());
 // The baseline is pinned here: it lives in the file answers are written to, so recomputing it after an answer would
 // launder any change (critic R1). A new round of questions re-pins it, deliberately, in this line.
-const BASELINE = 'sha256:feb33faa0f2afb5517332c41ac46db32747d940550bf58fdbb9143d17879c8f2';
+const BASELINE = 'sha256:889afa317f227ef37b671d96f12d0c5b9b5fc06897ed5ebd34172b3ada9ffbe2';
 check('horde-structure: the baseline is the one pinned when the pass was rerun on 8c9521db', sha256(canonicalDoc(base.dialogue.baseline)) === BASELINE);
+// The rerun itself is committed (critic round 2, H1), so the pin is checked against a state a commit holds.
+{ const bv = JSON.parse(readFileSync(DIR + 'baseline.view.json', 'utf8')), bo = JSON.parse(readFileSync(DIR + 'baseline.overlay.json', 'utf8'));
+  check('horde-structure: baseline.view.json and baseline.overlay.json give exactly the pinned baseline',
+    sha256(canonicalDoc(baselineOf(bo, bv, base.dialogue.questions))) === BASELINE);
+  check('horde-structure: the rerun is the agent\'s alone (every element agent:structure, proposed) on the same graph',
+    bv.elements.every((e) => e.by === ASKER && e.status === 'proposed') && bv.graph.hash === base.view.graph.hash); }
 
 // ---- criterion 4: as answered
 const onDisk = (s) => {
@@ -75,9 +81,10 @@ const m0 = meter(base);
 check(`horde-structure as answered: renders and balances at every level of detail, lens on and off, stages 2 and 3${m0.length ? ' — ' + m0.join(' | ') : ''}`, m0.length === 0);
 const q3edges = q(base, 'q3').applied.edges;
 check('q3\'s edges are inferred, name HORDE\'s session, and are in the overlay',
-  q3edges.length === 9 && q3edges.every((id) => { const e = base.overlay.edges.find((x) => x.id === id); return e && e.provenance === 'inferred' && e.evidence.some((v) => v.agent === HORDE); }));
-check('q4 is Julian\'s, confirmed in Julian\'s words; no answer from HORDE is confirmed',
+  q3edges.length === 11 && q3edges.every((id) => { const e = base.overlay.edges.find((x) => x.id === id); return e && e.provenance === 'inferred' && e.evidence.some((v) => v.agent === HORDE); }));
+check('q4 is Julian\'s, confirmed in Julian\'s words, and Loupe\'s allocations under it stay the agent\'s and proposed; no answer from HORDE is confirmed',
   q(base, 'q4').answeredBy === JULIAN && q(base, 'q4').confirmation.quote.length > 0
+  && q(base, 'q4').applied.agentElements.length > 0 && q(base, 'q4').applied.agentElements.every((id) => el(base, id).by === ASKER && el(base, id).status === 'proposed')
   && base.dialogue.questions.filter((x) => x.answeredBy === HORDE).every((x) => x.confirmation === null));
 const st = dialogueStages(base.dialogue);
 check('the stage 3 stand-in keeps who answered, the effect, and that only q4 is confirmed',
@@ -149,6 +156,13 @@ const ID = q3edges[0];
 { const s = clone(base); s.overlay.edges.push({ id: ID, src: 'x', dst: 'y', kind: 'reference', provenance: 'inferred', evidence: [] });
   s.dialogue.baseline = baselineOf(s.overlay, s.view, s.dialogue.questions);
   check('plant caught: re-baselining after a change (the pinned digest no longer matches)', sha256(canonicalDoc(s.dialogue.baseline)) !== BASELINE); }
+{ const s = clone(base); el(s, q(s, 'q4').applied.agentElements[0]).status = 'confirmed';
+  plant('one of Loupe\'s allocations marked confirmed under Julian\'s q4 confirmation', s, 'must stay'); }
+{ const s = clone(base), id = q(s, 'q4').applied.agentElements.find((x) => x !== 'sec:verification' && !s.view.elements.some((e) => e.parent === x));
+  s.view.elements = s.view.elements.filter((e) => e.id !== id);
+  plant('one of Loupe\'s allocations removed', s, 'only an answer Julian confirmed may remove'); }
+{ const s = clone(base); q(s, 'q2').owner = 'julian';
+  plant('a question marked Julian\'s answered by HORDE', s, 'marked Julian\'s, but answered by'); }
 plant('a snapshot missing the dialogue\'s fields reports, not throws', { ...clone(base), dialogue: { graph: base.dialogue.graph } }, 'malformed');
 
 console.log(failed ? `\n${failed} FAILED` : '\nall dialogue checks passed');
