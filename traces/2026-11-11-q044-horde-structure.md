@@ -124,4 +124,4 @@
   - L6, `sec:engine2` holds HORDE's content only.
   - L7, `sec:outside` names the one declared sibling.
   - Not done: L4 (p1 and q4 still name `sec:legacy`, which round 1 had and q4 removed; they record what was asked).
-- **Verify:** `./verify fast` below, after the fixes.
+- **Verify:** `./verify fast` exit 0 on the tree committed as 44823f7.
