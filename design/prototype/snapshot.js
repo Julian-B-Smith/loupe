@@ -33,6 +33,15 @@ export function stem(path, kind) {
   return base.replace(/\.(cpp|cc|cxx|hpp|hh|h|c|mjs|js|ts|tsx|jsx)$/, '');
 }
 
+// A snapshot's dialogue.json (Q-044's stand-in, until Q-005 writes the schema) feeds stage 3 in the shape the stand-in
+// stages already use: one pin per question, on its first node. Who answered is kept, because an answer from HORDE's
+// session is not Julian's until Julian confirms it.
+export const dialogueStages = d => d.questions.map(q => {
+  const picked = q.answer && q.options.find(o => o.answer === q.answer);
+  const confirmed = !!(q.confirmation && q.confirmation.by === 'human:julian'); // even Julian's own answer records it
+  return { id: q.id, node: q.nodes[0], question: q.question, answer: q.answer, answeredBy: q.answeredBy, confirmed, owner: q.owner, effect: q.answer ? (picked ? picked.effect : q.effect || null) : null };
+});
+
 export async function loadSnapshot(dir) {
   if (!dir.endsWith('/')) dir += '/';
   const get = async (name, optional) => {
@@ -40,8 +49,9 @@ export async function loadSnapshot(dir) {
     if (!r.ok) { if (optional) return null; throw new Error(`Could not load ${dir}${name} (${r.status})`); }
     return r.text();
   };
-  const [g, o, v, s, d] = await Promise.all([get('graph.json'), get('overlay.json', true), get('view.json'), get('stages.sample.json', true), get('diff.sample.json', true)]);
+  const [g, o, v, s, d, q] = await Promise.all([get('graph.json'), get('overlay.json', true), get('view.json'), get('stages.sample.json', true), get('diff.sample.json', true), get('dialogue.json', true)]);
   const raw = { graph: JSON.parse(g), overlay: o ? JSON.parse(o) : null, view: JSON.parse(v), stages: s ? JSON.parse(s) : null, diff: d ? JSON.parse(d) : null };
+  if (q) raw.stages = { ...(raw.stages || {}), dialogue: dialogueStages(JSON.parse(q)) };
   raw.hashes = { graph: await sha256(g), overlay: o ? await sha256(o) : null };
   return indexSnapshot(raw);
 }

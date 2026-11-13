@@ -1,0 +1,66 @@
+{
+  "commit": "8c9521db991bca4f6e615b42f8ad525b69401e09",
+  "dialect": null,
+  "dirty": false,
+  "gates": {
+    "byteIdentical": {
+      "files": [
+        "conformance.json",
+        "graph.json",
+        "overlay.json",
+        "view.json"
+      ],
+      "pass": true
+    },
+    "inventoryCloses": {
+      "crawled": 2004,
+      "excluded": 14,
+      "files": 2018,
+      "pass": true
+    },
+    "leakCheck": {
+      "machinePaths": 0,
+      "pass": true,
+      "privateNameHits": 0
+    },
+    "loupeCheck": {
+      "pass": true,
+      "tail": "OK"
+    },
+    "probeParity": {
+      "expanded": 1,
+      "explained": 0,
+      "kind": 134,
+      "lost": 28,
+      "package": 309,
+      "pass": false,
+      "resolved": 6,
+      "same": 873
+    },
+    "unknownMissing": {
+      "count": 13,
+      "ids": [
+        "miss:bank.h",
+        "miss:bank_embedded.inc",
+        "miss:choc/text/choc_JSON.h",
+        "miss:docs/design-system/master/assets/Logos/mindlathe-saturated.png",
+        "miss:flush_to_zero.h",
+        "miss:horde_engine.h",
+        "miss:manifest/manifest.h",
+        "miss:pf3_chord.h",
+        "miss:preview_page.h",
+        "miss:scape/fx_module.h",
+        "miss:scape/patch.h",
+        "miss:scape/reverb.h",
+        "miss:weir/svf.h"
+      ],
+      "pass": false
+    }
+  },
+  "graph": {
+    "hash": "sha256:605b868a11950193b0afed49d719de7fcbd404e5856c6387dadd6e5e382eba84"
+  },
+  "pass": false,
+  "proposedConfig": false,
+  "schema": "loupe.horde-gate/0.0-internal"
+}
