@@ -308,7 +308,20 @@
       "confirmation": {
         "by": "human:julian",
         "date": "2026-11-12",
-        "quote": "Poll, option chosen: \"HORDE's by-product grouping\" (option text written by Loupe). Scope, second poll the same day: \"Only the top-level split\"."
+        "elements": [
+          "sec:docs",
+          "sec:fx-shared",
+          "sec:gui3",
+          "sec:hypersaw",
+          "sec:hypersaw10",
+          "sec:legacy",
+          "sec:records",
+          "sec:reference",
+          "sec:swarmfx",
+          "sec:unwired"
+        ],
+        "quote": "Poll, option chosen: \"HORDE's by-product grouping\" (option text written by Loupe). Scope, second poll the same day: \"Only the top-level split\".",
+        "scope": "Placement only: which top-level product sections exist and which sections sit under them; the claims' wording stays Loupe's, proposed."
       },
       "elements": [
         "sec:legacy",

@@ -90,6 +90,14 @@ function check({ graph, overlay, view, dialogue }) {
       if (owner[kk].has(id)) errors.push(`${at}: ${kk.slice(0, -1)} ${id} is also applied by ${owner[kk].get(id)}`);
       owner[kk].set(id, q.id);
     }
+    // Loupe's allocations ride only on an answer Julian confirmed that itself changed elements (critic, confirming pass
+    // P2): a HORDE "no change" cannot be the owner of record for the agent's own moves.
+    if (applied.agentElements.length && !(confirmed && applied.elements.length))
+      errors.push(`${at}: agent elements need an answer Julian confirmed that changes elements itself`);
+    // The scope of Julian's confirmation is what the confirmation itself lists, not whatever applied.elements says
+    // later (critic, confirming pass P1); the test pins both lists.
+    if (confirmed && q.confirmation.elements && [...applied.elements].sort().join() !== [...q.confirmation.elements].sort().join())
+      errors.push(`${at}: applied.elements differ from the elements Julian's confirmation lists`);
     for (const id of applied.agentElements) {
       const el = els.get(id);
       if (!el) errors.push(`${at}: agent element ${id} is removed; only an answer Julian confirmed may remove an element`);
@@ -124,6 +132,12 @@ function check({ graph, overlay, view, dialogue }) {
   }
   for (const k of KINDS) for (const [id, qid] of owner[k])
     if (base[k][id] === now[k][id]) errors.push(`question ${qid}: lists ${k.slice(0, -1)} ${id} as applied, but it is unchanged`);
+  // Only an element a confirmation of Julian's lists, with `claims: true` (Julian confirmed the wording, not just the
+  // placement), may stop being proposed or carry Julian's name.
+  const julianListed = new Set(dialogue.questions.flatMap((x) => (x.confirmation && x.confirmation.claims && x.confirmation.elements) || []));
+  for (const e of view.elements)
+    if ((e.status !== 'proposed' || e.by === JULIAN) && !julianListed.has(e.id))
+      errors.push(`element ${e.id} is ${e.status}, by ${e.by}, but no confirmation of Julian's lists it`);
   if (base.view !== now.view) errors.push('the view\'s settings or exemptions differ from the baseline; no answer may change them');
   for (const { id, removed } of diff(base.questions, now.questions))
     errors.push(removed ? `question ${id} was asked and is gone: questions stay, open or answered` : `question ${id} is not as it was asked`);

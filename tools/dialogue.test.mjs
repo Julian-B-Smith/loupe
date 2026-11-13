@@ -80,6 +80,13 @@ const meter = (snap) => {
 const m0 = meter(base);
 check(`horde-structure as answered: renders and balances at every level of detail, lens on and off, stages 2 and 3${m0.length ? ' — ' + m0.join(' | ') : ''}`, m0.length === 0);
 const q3edges = q(base, 'q3').applied.edges;
+// The scope of Julian's q4 confirmation (the top-level split only; poll, 2026-11-12) is pinned here, like the baseline:
+// it lives in the file answers are written to (critic, confirming pass P1).
+const Q4_CONFIRMED = 'sec:docs,sec:fx-shared,sec:gui3,sec:hypersaw,sec:hypersaw10,sec:legacy,sec:records,sec:reference,sec:swarmfx,sec:unwired';
+const Q4_AGENT = 'sec:h2-checks,sec:h2-specs,sec:hs-checks,sec:specs,sec:t-auhost,sec:t-bench,sec:t-checks,sec:t-gen,sec:t-golden,sec:t-lab,sec:t-other,sec:t-preview,sec:t-probes,sec:verification';
+check('q4: what Julian confirmed and what stays Loupe\'s are the pinned lists',
+  [...q(base, 'q4').applied.elements].sort().join() === Q4_CONFIRMED && [...q(base, 'q4').confirmation.elements].sort().join() === Q4_CONFIRMED
+  && [...q(base, 'q4').applied.agentElements].sort().join() === Q4_AGENT && !q(base, 'q4').confirmation.claims);
 check('q3\'s edges are inferred, name HORDE\'s session, and are in the overlay',
   q3edges.length === 11 && q3edges.every((id) => { const e = base.overlay.edges.find((x) => x.id === id); return e && e.provenance === 'inferred' && e.evidence.some((v) => v.agent === HORDE); }));
 check('q4 is Julian\'s, confirmed in Julian\'s words, and Loupe\'s allocations under it stay the agent\'s and proposed; no answer from HORDE is confirmed',
@@ -163,6 +170,17 @@ const ID = q3edges[0];
   plant('one of Loupe\'s allocations removed', s, 'only an answer Julian confirmed may remove'); }
 { const s = clone(base); q(s, 'q2').owner = 'julian';
   plant('a question marked Julian\'s answered by HORDE', s, 'marked Julian\'s, but answered by'); }
+{ const s = clone(base), x = q(s, 'q4'), id = x.applied.agentElements[0];
+  x.applied.agentElements = x.applied.agentElements.filter((y) => y !== id); x.applied.elements.push(id); x.confirmation.elements.push(id);
+  el(s, id).status = 'confirmed';
+  check('plant caught: one of Loupe\'s allocations moved into Julian\'s confirmed list (the pinned lists no longer match)',
+    [...x.applied.elements].sort().join() !== Q4_CONFIRMED); }
+{ const s = clone(base); el(s, 'sec:gui3').status = 'confirmed'; el(s, 'sec:gui3').by = JULIAN;
+  plant('a section Julian placed marked confirmed, as if Julian had confirmed its claim', s, 'no confirmation of Julian\'s lists it'); }
+{ const s = clone(base); q(s, 'q4').applied.elements.pop();
+  plant('applied elements that differ from what Julian\'s confirmation lists', s, 'differ from the elements Julian\'s confirmation lists'); }
+{ const s = clone(base), e = el(s, 'sec:cmake'); e.parent = 'sec:records'; q(s, 'q2').applied.agentElements = ['sec:cmake'];
+  plant('an agent allocation riding on HORDE\'s unconfirmed "no change"', s, 'agent elements need an answer Julian confirmed'); }
 plant('a snapshot missing the dialogue\'s fields reports, not throws', { ...clone(base), dialogue: { graph: base.dialogue.graph } }, 'malformed');
 
 console.log(failed ? `\n${failed} FAILED` : '\nall dialogue checks passed');

@@ -124,4 +124,22 @@
   - L6, `sec:engine2` holds HORDE's content only.
   - L7, `sec:outside` names the one declared sibling.
   - Not done: L4 (p1 and q4 still name `sec:legacy`, which round 1 had and q4 removed; they record what was asked).
+- **Critic, round 2 confirming pass (opus): REWORK, small**, fixed:
+  - L1, wording: the rerun committed is the rerun with round 1's words restored, re-pinned (889afa…), not its first
+    output (feb33f…).
+  - P1, the scope of Julian's q4 confirmation was whatever the file said. `confirmation.elements` now lists it, the test
+    pins both q4 lists, and no element may leave `proposed` or carry Julian's name unless a confirmation with
+    `claims: true` lists it (q4's covers placement only).
+  - P2, an agent allocation could ride on HORDE's unconfirmed "no change". It now needs an answer Julian confirmed that
+    changes elements itself.
+  - N1 to N4, the 13 includes (the critic's own round-2 H3 had misfiled `bank.h`): eight from outside horde, including
+    `bank.h` and `pf3_chord.h` from the clean-room engine's exported tests (`tools/c2a_remainder/CMakeLists.txt:19`,
+    checked); five horde's own or generated (`preview_page.h` and `bank_embedded.inc` at
+    `tools/engine-preview/CMakeLists.txt:87,103`, checked). The check rule in the notice uses the view's wording, and
+    its invitation no longer asks for an answer.
+  - L2, `sec:verification` names the tests/ fixtures.
+  - Known gap, recorded in ROADMAP: member moves inside sections one answer may change (P3).
+  - Tests: 43 pass; 28 plants caught.
+  No further critic pass: its confirming pass named these fixes as what remained.
+- **Verify (final):** `./verify fast` exit 0 on the tree of the commit that adds this line.
 - **Verify:** `./verify fast` exit 0 on the tree committed as 44823f7.

@@ -971,7 +971,7 @@
     },
     {
       "by": "agent:structure",
-      "claim": "tools/ files that name files under both src/ and h2/ or engine2/, or under neither; the rest sit under the product they name.",
+      "claim": "tools/ files that name files under both src/ and h2/ or engine2/, or under neither, and the tests/ fixtures; the other tools/ files sit under the product they name.",
       "id": "sec:verification",
       "label": "Shared verification",
       "members": [],
