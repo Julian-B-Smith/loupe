@@ -70,11 +70,16 @@ fast() {
   # The committed HORDE gate report (Q-025): it describes the committed graph, partitions every probe edge, loses
   # none, and every hand-written parity explanation is still used. The gate itself needs HORDE: see full.
   node tools/gate.test.mjs || ok=1
+  # The HORDE dialogue (Q-044; Julian, 2026-11-13: in fast): the answers applied to the horde-structure snapshot keep
+  # the provenance rule (HORDE's answers inferred or proposed, annotated only on Julian's confirmation), every change
+  # from the pinned baseline belongs to one answered question, and each planted violation is refused.
+  node tools/dialogue.test.mjs || ok=1
   # loupe-check on every example snapshot and every committed stress case, with schema validation REQUIRED.
   # The checker silently skips JSON Schema when ajv is missing and still says
   # OK; that is a declared-not-effective gate, so the skip note is fatal here.
   local d out
-  for d in schema/examples/*/ design/prototype/snapshots/stress/*/ design/prototype/snapshots/engine2-structure/; do
+  for d in schema/examples/*/ design/prototype/snapshots/stress/*/ design/prototype/snapshots/engine2-structure/ \
+           design/prototype/snapshots/horde-structure/; do
     out="$(node tools/loupe-check.mjs "$d" 2>&1)"; local rc=$?
     printf '%s\n' "$out" | tail -1 | sed "s|^|loupe-check ${d}: |"
     [ $rc -eq 0 ] || { printf '%s\n' "$out" >&2; ok=1; }

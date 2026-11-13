@@ -143,3 +143,13 @@
   No further critic pass: its confirming pass named these fixes as what remained.
 - **Verify (final):** `./verify fast` exit 0 on the tree of the commit that adds this line.
 - **Verify:** `./verify fast` exit 0 on the tree committed as 44823f7.
+
+## 2026-11-13: wired into `./verify fast`
+
+- **What:** `./verify fast` now runs `node tools/dialogue.test.mjs`, and the loupe-check loop (schema validation
+  required) includes `design/prototype/snapshots/horde-structure/`. ROADMAP's oracle line, Q-044's open item (2) and
+  CLAUDE.md's verify-target prose updated to match.
+- **Why:** Julian, 2026-11-13, after PR #61 merged: "merged, wire them into verify fast" (the human gate on editing
+  `./verify`, ROADMAP Q-044 open item 2).
+- **Evidence:** `./verify fast` exit 0 on this branch; output includes "all dialogue checks passed" and
+  "loupe-check design/prototype/snapshots/horde-structure/: OK".

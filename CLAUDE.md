@@ -111,8 +111,8 @@ repo; its own session runs the skill (0021). `.loupe/config.json` there is human
 **Verify targets.** `fast`: kit integrity, leak gate, the loupe-check mutation tests, the viewer's history, lens,
 render, story and stress tests (the ten stress cases, generated and byte-compared, rendered with geometry checks), the crawler's build, syntax and graph tests on its fixture (goldens; needs `cmake`), loupe-check
 with schema validation required on every `schema/examples/*` and committed stress case, `horde-sample` regenerated and byte-compared. Counts live
-in the test output, not in prose (they drifted in three files: autonomous audit, 2026-10-17); and the committed HORDE gate
-report. `full`: fast, then the HORDE gates (`tools/horde-gate.mjs` on a local HORDE checkout, `LOUPE_HORDE`; SKIPPED and
+in the test output, not in prose (they drifted in three files: autonomous audit, 2026-10-17); the committed HORDE gate
+report, and the HORDE dialogue check (`tools/dialogue.test.mjs`) with loupe-check on `horde-structure`. `full`: fast, then the HORDE gates (`tools/horde-gate.mjs` on a local HORDE checkout, `LOUPE_HORDE`; SKIPPED and
 said so without one) with the fresh crawl byte-compared to the committed snapshot.
 
 ## Mailbox

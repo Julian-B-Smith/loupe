@@ -23,7 +23,8 @@ State lives here; conversations are ephemeral. Phase plan seeded from
   track done: engine2 from HORDE's declared structure (Q-015, PR #53). **Next: P3** (the Structure agent). The plan as a picture: [docs/plan-map.html](docs/plan-map.html).
 - **Oracle:** `./verify fast` = kit integrity, leak gate, the loupe-check mutation cases, schema validation on every
   example, `horde-sample` freshness, the viewer's history, lens, render and story tests, and the crawler's build,
-  syntax and graph tests on the fixture (goldens), and the committed HORDE gate report. `full` = `fast` plus the HORDE
+  syntax and graph tests on the fixture (goldens), the committed HORDE gate report, and the HORDE dialogue check
+  on `horde-structure` (Q-044). `full` = `fast` plus the HORDE
   gates (Q-025: clone, crawl twice, leak check, probe parity, zero unknown; the fresh crawl must equal the committed
   snapshot), skipped and said so without a local HORDE checkout. **Known gaps:** `design/tokens.css` and the prototype
   snapshots are not generated (Q-007, Q-008).
@@ -749,8 +750,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   inferred" for elements, to be confirmed by Julian.
 - **Open for Julian:** (1) criterion 2's "P3's Layer-E gate is measured here" is not met: this session had read ROADMAP,
   which names the split, so no proposal is an unprompted measurement (`dialogue.json` `layerE`); close Q-044 without it,
-  or run a fresh-context Structure pass inside Q-044? (2) wiring `tools/dialogue.test.mjs` and `horde-structure` into
-  `./verify fast` (an edit to `./verify`).
+  or run a fresh-context Structure pass inside Q-044? (2) ~~wiring `tools/dialogue.test.mjs` and `horde-structure` into
+  `./verify fast`~~ **done 2026-11-13** (Julian: "merged, wire them into verify fast", after PR #61 merged):
+  `./verify fast` runs `tools/dialogue.test.mjs` and loupe-check, schema validation required, on `horde-structure`.
 
 - **HORDE answered 2026-11-11** (`horde/integrations/loupe/response-005.md`, seq 14, horde PR #1500): q1 not current,
   recrawl at 8c9521db; q2 SWARM-FX parked, legacy side; q3 three originals from h2/README.md's parity-target column
