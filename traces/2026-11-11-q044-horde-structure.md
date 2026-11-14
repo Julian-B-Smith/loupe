@@ -153,3 +153,11 @@
   `./verify`, ROADMAP Q-044 open item 2).
 - **Evidence:** `./verify fast` exit 0 on this branch; output includes "all dialogue checks passed" and
   "loupe-check design/prototype/snapshots/horde-structure/: OK".
+
+## 2026-11-14: closed
+
+- **What:** Q-044 marked done in ROADMAP; criterion 2's Layer-E clause recorded as not measured.
+- **Why:** Julian, 2026-11-14, after PR #62 merged: "close Q-044 without the Layer-E measurement". The clause never
+  gated Q-044 (criterion 2's own text); P3's Layer-E gate still needs a pass by a session that has not read ROADMAP.
+- **Evidence:** `./verify full` exit 0 at 01761ba (main after #62), HORDE gates on the local checkout:
+  `{"pass":true,"unknownMissing":true,"inventoryCloses":true,"byteIdentical":true,"leakCheck":true,"loupeCheck":true,"probeParity":true}`.
