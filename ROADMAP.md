@@ -711,8 +711,10 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   change at detail zoom; a screenshot critic pass.
 
 ### Q-044 — A first dialogue with HORDE, as a test of P3's Dialogue (Julian, 2026-11-06)
-- **Status:** in progress (2026-11-11). Julian: "run the dialogue phase with Horde to fill in the gaps as a test",
-  and tell Julian what needs Julian's engagement.
+- **Status:** done 2026-11-14, closed by Julian ("close Q-044 without the Layer-E measurement"); merged as PRs #61
+  and #62 (trace: traces/2026-11-11-q044-horde-structure.md). `./verify full` exit 0 at 01761ba. Criterion 2's Layer-E
+  clause is **not measured** (see open item 1 below); it never gated Q-044. Julian: "run the dialogue phase with Horde
+  to fill in the gaps as a test", and tell Julian what needs Julian's engagement.
 - **Julian (poll, 2026-11-06):** a Structure pass first: P3's Structure agent composes HORDE's crawl (today 0 view
   elements, 0 overlay edges), and what it cannot decide becomes the questions. The questions go as a brief in HORDE's
   mailbox (`horde/integrations/loupe/`); HORDE's resident answers there and marks which are Julian's. An answer from
@@ -748,7 +750,9 @@ Each gate is a checkable condition. A phase is done when its gate passes in
   Julian's words.
   An answer that changes an element enters as `proposed`, signed by HORDE's session: my reading of "enters as
   inferred" for elements, to be confirmed by Julian.
-- **Open for Julian:** (1) criterion 2's "P3's Layer-E gate is measured here" is not met: this session had read ROADMAP,
+- **Open for Julian (both resolved):** (1) **closed without it, 2026-11-14** (Julian: "close Q-044 without the Layer-E
+  measurement"): P3's Layer-E gate still needs an unprompted Structure pass by a session that has not read ROADMAP.
+  Was: criterion 2's "P3's Layer-E gate is measured here" is not met: this session had read ROADMAP,
   which names the split, so no proposal is an unprompted measurement (`dialogue.json` `layerE`); close Q-044 without it,
   or run a fresh-context Structure pass inside Q-044? (2) ~~wiring `tools/dialogue.test.mjs` and `horde-structure` into
   `./verify fast`~~ **done 2026-11-13** (Julian: "merged, wire them into verify fast", after PR #61 merged):
